@@ -216,16 +216,16 @@ public class FacturaApiController {
 //						items.setPrecioUnitario(producto.getPrecioVenta() - (producto.getPrecioVenta() * (factura.getItemsFactura().get(i).getDescuento() / 100)));
 //						items.setPrecioUnitario(factura.calcularDescuento(producto.getPrecioVenta()));
 						items.setPrecioUnitario(factura.redondearPrecio(producto.getPrecioVenta() - (producto.getPrecioVenta() * (factura.getItemsFactura().get(i).getDescuento() / 100))));
-						System.out.println(items.getPrecioUnitario());
 					} else {
 						items.setPrecioUnitario((double) producto.getPrecioVenta());
 					}
 
 					items.setPrecio(items.getPrecioUnitario() * items.getCantidad());
-					System.out.println(items.getPrecio());
 					items.setUnidadMedida("UND");
 					items.setTotal(items.getPrecio() - items.getDescuento());
-					System.out.println(items.getTotal());
+
+					// IGUALAR SUBTOTAL DE FEL EN LA FACTURA GUARDADA
+					factura.getItemsFactura().get(i).setSubTotal(items.getPrecio());
 
 					for (int j = 1; j <= 1; j++) {
 						ImpuestosDetalle impuestos_detalle = new ImpuestosDetalle();
@@ -266,6 +266,9 @@ public class FacturaApiController {
 				// totales.setGranTotal(Double.parseDouble(txtTotal.getText()));
 				totales.setGranTotal(granTotal);
 				documento_fel.setTotales(totales);
+
+				// CONFIGURAR GRAN TOTAL PARA QUE CUADRE CON FACTURA A REGISTRAR EN LA BASE DE DATOS
+				factura.setTotal(totales.getGranTotal());
 
 				// Adendas
 				Adendas adendas = new Adendas();
