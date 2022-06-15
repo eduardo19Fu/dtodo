@@ -50,8 +50,17 @@ export class ClienteService {
     );
   }
 
-  getClienteByNit(nit: string): Observable<Cliente>{
+  getClienteByNit(nit: string): Observable<Cliente> {
     return this.http.get<Cliente>(`${this.url}/clientes/nit/${nit}`);
+  }
+
+  getTotalClientes(): Observable<any> {
+    return this.http.get<any>(`${this.url}/clientes/cantidad-clientes`).pipe(
+      catchError(e => {
+        swal.fire(e.error.mensaje, e.error.error, 'error');
+        return throwError(e);
+      })
+    );
   }
 
   create(cliente: Cliente): Observable<any> {

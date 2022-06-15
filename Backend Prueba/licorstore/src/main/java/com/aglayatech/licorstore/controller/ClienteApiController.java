@@ -92,6 +92,22 @@ public class ClienteApiController {
 		return new ResponseEntity<Cliente>(cliente, HttpStatus.OK);
 	}
 
+	@GetMapping(value = "/clientes/cantidad-clientes")
+	public ResponseEntity<?> getTotalClientes(){
+		Integer total = 0;
+		Map<String, Object> response = new HashMap<>();
+
+		try {
+			total = this.serviceCliente.totalClientes();
+		} catch(DataAccessException e){
+			response.put("mensaje", "¡Ha ocurrido un error en la base de datos!");
+			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
+		return new ResponseEntity<Integer>(total, HttpStatus.OK);
+	}
+
 	@Secured(value = {"ROLE_COBRADOR","ROLE_ADMIN"})
 	@PostMapping(value = "/clientes")
 	public ResponseEntity<?> create(@RequestBody Cliente cliente) {

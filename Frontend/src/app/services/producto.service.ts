@@ -27,7 +27,7 @@ export class ProductoService {
     return this.http.get<Producto[]>(this.url + '/productos');
   }
 
-  getProductosActivos(): Observable<Producto[]>{
+  getProductosActivos(): Observable<Producto[]> {
     return this.http.get<Producto[]>(`${this.url}/productos-activos`);
   }
 
@@ -62,8 +62,17 @@ export class ProductoService {
   }
 
 
-  getProductosByNombre(nombre: string): Observable<Producto[]>{
+  getProductosByNombre(nombre: string): Observable<Producto[]> {
     return this.http.get<Producto[]>(`${this.url}/productos/name/${nombre}`);
+  }
+
+  getTotalProductos(): Observable<any> {
+    return this.http.get<any>(`${this.url}/productos/cantidad-productos`).pipe(
+      catchError(e => {
+        swal.fire(e.error.mensaje, e.error.error, 'error');
+        return throwError(e);
+      })
+    );
   }
 
   create(producto: Producto): Observable<any> {
@@ -100,7 +109,7 @@ export class ProductoService {
 
   /********* SERVICIO DE MOVIMIENTOS PRODUCTO **********/
 
-  getMovimientos(idproducto: number, page: number): Observable<MovimientoProducto>{
+  getMovimientos(idproducto: number, page: number): Observable<MovimientoProducto> {
     return this.http.get<MovimientoProducto>(`${this.url}/productos/movimientos/${idproducto}/${page}`).pipe(
       map((response: any) => {
         (response.content as MovimientoProducto[]).map(movimientoProducto => {

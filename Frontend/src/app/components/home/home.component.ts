@@ -45,29 +45,31 @@ export class HomeComponent implements OnInit {
   ngOnInit(): void {
     this.getProductos();
     this.getClientes();
-    this.getMarcas();
     this.getUsuarios();
     this.getFacturas();
   }
 
   getProductos(): void {
-    this.serviceProducto.getProductos().subscribe(productos => this.totalProductos = productos.length);
+    this.serviceProducto.getTotalProductos().subscribe(
+      total => this.totalProductos = total
+    );
   }
 
   getClientes(): void {
-    this.serviceCliente.getClientes().subscribe(clientes => this.totalClientes = clientes.length);
-  }
-
-  getMarcas(): void {
-    this.serviceMarca.getMarcas().subscribe(marcas => this.totalMarcas = marcas.length);
+    this.serviceCliente.getTotalClientes().subscribe(
+      total => this.totalClientes = total
+    );
   }
 
   getUsuarios(): void {
-    this.serviceUsuario.getUsuarios().subscribe(usuarios => this.totalUsuarios = usuarios.length);
+    this.serviceUsuario.getTotalUsuarios().subscribe(
+      total => this.totalUsuarios = total
+    );
   }
 
   getFacturas(): void {
-    this.serviceFactura.getFacturas().subscribe(facturas => this.totalFacturas = facturas.length);
+    this.serviceFactura.getTotalVentas().subscribe(
+      total => this.totalFacturas = total
+    );
   }
-
 }

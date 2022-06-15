@@ -15,6 +15,8 @@ public interface IUsuarioService {
 	public Page<Usuario> findAll(Pageable pageable);
 	
 	public Usuario findById(Integer idusaurio);
+
+	public Integer totalUsuarios();
 	
 	public Usuario save(Usuario usuario);
 	

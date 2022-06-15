@@ -22,11 +22,11 @@ export class FacturaService {
     this.url = global.url;
   }
 
-  getFacturas(): Observable<Factura[]>{
+  getFacturas(): Observable<Factura[]> {
     return this.http.get<Factura[]>(`${this.url}/facturas`);
   }
 
-  getFacturasPage(page: number): Observable<any>{
+  getFacturasPage(page: number): Observable<any> {
     return this.http.get<any>(`${this.url}/facturas/page/${page}`).pipe(
       map((response: any) => {
         (response.content as Factura[]).map(factura => {
@@ -37,7 +37,7 @@ export class FacturaService {
     );
   }
 
-  getFactura(id: number): Observable<Factura>{
+  getFactura(id: number): Observable<Factura> {
     return this.http.get<Factura>(`${this.url}/facturas/factura/${id}`).pipe(
       catchError(e => {
         swal.fire(e.error.mensaje, e.error.error, 'error');
@@ -46,7 +46,16 @@ export class FacturaService {
     );
   }
 
-  cancel(id: number, idusuario: number): Observable<any>{
+  getTotalVentas(): Observable<any> {
+    return this.http.get<any>(`${this.url}/facturas/cantidad-ventas`).pipe(
+      catchError(e => {
+        swal.fire(e.error.mensaje, e.error.error, 'error');
+        return throwError(e);
+      })
+    );
+  }
+
+  cancel(id: number, idusuario: number): Observable<any> {
     return this.http.delete<any>(`${this.url}/facturas/cancel/${id}/${idusuario}`).pipe(
       catchError(e => {
         swal.fire(e.error.mensaje, e.error.error, 'error');
@@ -55,7 +64,7 @@ export class FacturaService {
     );
   }
 
-  create(factura: Factura): Observable<any>{
+  create(factura: Factura): Observable<any> {
     return this.http.post<any>(`${this.url}/facturas`, factura).pipe(
       catchError(e => {
         swal.fire(e.error.mensaje, e.error.error, 'error');
@@ -65,14 +74,14 @@ export class FacturaService {
   }
 
   /*********** FACTURA PDF **************/
-  getBillPDF(idfactura: number): Observable<any>{
+  getBillPDF(idfactura: number): Observable<any> {
     const headers = new HttpHeaders();
     headers.append('Accept', 'application/pdf');
     const requestOptions: any = { headers, responseType: 'blob' };
 
     return this.http.get<any>(`${this.url}/facturas/generate/${idfactura}`, requestOptions).pipe(
       map((response: any) => {
-        return{
+        return {
           filename: 'factura.pdf',
           data: new Blob([response], { type: 'application/pdf' })
         };
@@ -80,16 +89,16 @@ export class FacturaService {
     );
   }
 
-  getSellsDaillyReportPDF(cajero: number, fecha: Date): Observable<any>{
+  getSellsDaillyReportPDF(cajero: number, fecha: Date): Observable<any> {
     const headers = new HttpHeaders();
     headers.append('Accept', 'application/pdf');
-    const requestOptions: any = {headers, responseType: 'blob'};
+    const requestOptions: any = { headers, responseType: 'blob' };
 
     return this.http.get<any>(`${this.url}/facturas/daily-sales?usuario=${cajero}&fecha=${fecha.toString()}`, requestOptions).pipe(
       map((response: any) => {
         return {
           filename: 'poliza.pdf',
-          data: new Blob([response], {type: 'application/pdf'})
+          data: new Blob([response], { type: 'application/pdf' })
         };
       })
     );

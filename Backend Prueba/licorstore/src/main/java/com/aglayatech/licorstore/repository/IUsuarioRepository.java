@@ -27,4 +27,7 @@ public interface IUsuarioRepository extends JpaRepository<Usuario, Integer> {
 			nativeQuery = true)
 	public List<Usuario> findByRole();
 
+	@Query(value = "Select get_cant_usuarios()", nativeQuery = true)
+	Integer getCantidadUsuarios();
+
 }

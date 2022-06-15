@@ -18,6 +18,8 @@ public interface IClienteService {
 	public List<Cliente> findByName(String nombre);
 	
 	public Cliente findByNit(String nit);
+
+	public Integer totalClientes();
 	
 	public Cliente save(Cliente cliente);
 	

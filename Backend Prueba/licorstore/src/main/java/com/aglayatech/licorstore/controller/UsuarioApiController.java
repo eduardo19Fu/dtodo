@@ -80,6 +80,23 @@ public class UsuarioApiController {
 		
 		return new ResponseEntity<Usuario>(usuario, HttpStatus.OK);
 	}
+
+	@Secured(value = {"ROLE_ADMIN"})
+	@GetMapping(value = "/usuarios/cantidad-usuarios")
+	public ResponseEntity<?> getTotalUsuarios(){
+		Integer total = 0;
+		Map<String, Object> response = new HashMap<>();
+
+		try {
+			total = this.serviceUsuario.totalUsuarios();
+		} catch (DataAccessException e) {
+			response.put("mensaje", "Error ocurrido en la base de datos!");
+			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
+		return new ResponseEntity<Integer>(total, HttpStatus.OK);
+	}
 	
 	@Secured(value = {"ROLE_ADMIN"})
 	@PostMapping(value = "/usuarios")

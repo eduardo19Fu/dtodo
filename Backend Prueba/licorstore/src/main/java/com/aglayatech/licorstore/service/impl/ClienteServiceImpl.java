@@ -44,6 +44,11 @@ public class ClienteServiceImpl implements IClienteService {
 	}
 
 	@Override
+	public Integer totalClientes() {
+		return this.repoCliente.getCantClientes() == null ? 0 : this.repoCliente.getCantClientes();
+	}
+
+	@Override
 	public Cliente save(Cliente cliente) {
 		return repoCliente.save(cliente);
 	}

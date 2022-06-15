@@ -21,6 +21,8 @@ public interface IProductoService {
 	public Page<Producto> findAll(Pageable pageable);
 	
 	public Producto findById(Integer idproducto);
+
+	public Integer totalProductos();
 	
 	public Producto save(Producto producto);
 	

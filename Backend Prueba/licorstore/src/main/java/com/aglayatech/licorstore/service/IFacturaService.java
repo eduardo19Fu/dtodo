@@ -24,6 +24,8 @@ public interface IFacturaService {
 	public Factura save(Factura factura);
 
 	public TipoFactura findTipoFactura(Integer idTipoFactura);
+
+	public Integer totalVentas();
 	
 	/********* PDF REPORTS SERVICES ***********/
 	

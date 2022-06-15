@@ -73,6 +73,11 @@ public class UsuarioServiceImpl implements UserDetailsService, IUsuarioService {
 	}
 
 	@Override
+	public Integer totalUsuarios() {
+		return this.repoUsuario.getCantidadUsuarios() == null ? 0 : this.repoUsuario.getCantidadUsuarios();
+	}
+
+	@Override
 	public Usuario save(Usuario usuario) {
 		return repoUsuario.save(usuario);
 	}

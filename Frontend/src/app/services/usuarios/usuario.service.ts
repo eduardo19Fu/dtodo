@@ -32,7 +32,7 @@ export class UsuarioService {
         (response.content as Usuario[]).map(usuario => {
           usuario.primerNombre = usuario.primerNombre.toUpperCase();
           usuario.apellido = usuario.apellido.toUpperCase();
-          if (usuario.segundoNombre != null){
+          if (usuario.segundoNombre != null) {
             usuario.segundoNombre = usuario.segundoNombre.toUpperCase();
           }
           return usuario;
@@ -42,12 +42,21 @@ export class UsuarioService {
     );
   }
 
-  getCajeros(): Observable<Usuario[]>{
+  getCajeros(): Observable<Usuario[]> {
     return this.http.get<Usuario[]>(`${this.url}/usuarios/cajero`);
   }
 
   getUsuario(id: number): Observable<UsuarioAuxiliar> {
     return this.http.get<UsuarioAuxiliar>(`${this.url}/usuarios/${id}`).pipe(
+      catchError(e => {
+        swal.fire(e.error.mensaje, e.error.error, 'error');
+        return throwError(e);
+      })
+    );
+  }
+
+  getTotalUsuarios(): Observable<any> {
+    return this.http.get<any>(`${this.url}/usuarios/cantidad-usuarios`).pipe(
       catchError(e => {
         swal.fire(e.error.mensaje, e.error.error, 'error');
         return throwError(e);
@@ -73,7 +82,7 @@ export class UsuarioService {
     );
   }
 
-  delete(id: number): Observable<any>{
+  delete(id: number): Observable<any> {
     return this.http.delete<any>(`${this.url}/usuarios/${id}`).pipe(
       catchError(e => {
         swal.fire(e.error.mensaje, e.error.error, 'error');

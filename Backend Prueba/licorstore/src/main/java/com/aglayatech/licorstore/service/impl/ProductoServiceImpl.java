@@ -58,6 +58,11 @@ public class ProductoServiceImpl implements IProductoService {
 	}
 
 	@Override
+	public Integer totalProductos() {
+		return this.repoProducto.getCantProductos() == null ? 0 : this.repoProducto.getCantProductos();
+	}
+
+	@Override
 	public Producto save(Producto producto) {
 		return repoProducto.save(producto);
 	}

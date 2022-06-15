@@ -85,6 +85,23 @@ public class FacturaApiController {
 	}
 
 	@Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
+	@GetMapping(value = "/facturas/cantidad-ventas")
+	public ResponseEntity<?> cantidadVentas(){
+		Integer cantidadVentas = 0;
+		Map<String, Object> response = new HashMap<>();
+
+		try {
+			cantidadVentas = this.serviceFactura.totalVentas();
+		} catch(DataAccessException e) {
+			response.put("mensaje", "¡Error en la base de datos!");
+			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
+		return new ResponseEntity<Integer>(cantidadVentas, HttpStatus.OK);
+	}
+
+	@Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
 	@GetMapping(value = "/facturas/factura/{id}")
 	public ResponseEntity<?> showFactura(@PathVariable("id") Long idfactura){
 		

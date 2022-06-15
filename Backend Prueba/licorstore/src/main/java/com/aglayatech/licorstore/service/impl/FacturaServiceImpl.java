@@ -71,6 +71,11 @@ public class FacturaServiceImpl implements IFacturaService {
 		return this.tipoFacturaRepository.findById(idTipoFactura).orElse(null);
 	}
 
+	@Override
+	public Integer totalVentas() {
+		return this.repoFactura.getCantidadVentas();
+	}
+
 	/****************** PDF REPORT SERVICES *******************/
 
 	// REPORTE DE VENTAS DIARIAS
