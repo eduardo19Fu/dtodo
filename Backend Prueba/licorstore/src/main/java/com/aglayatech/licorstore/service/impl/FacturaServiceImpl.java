@@ -6,10 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.sql.DataSource;
 
@@ -52,6 +49,11 @@ public class FacturaServiceImpl implements IFacturaService {
 	}
 
 	@Override
+	public List<Factura> findAllWithProcedure(Date date1, Date date2) {
+		return this.repoFactura.findAllFacturas(date1, date2);
+	}
+
+	@Override
 	public Page<Factura> findAll(Pageable pageable) {
 		return repoFactura.findAll(pageable);
 	}
@@ -59,6 +61,11 @@ public class FacturaServiceImpl implements IFacturaService {
 	@Override
 	public Factura findFactura(Long idfactura) {
 		return repoFactura.findById(idfactura).orElse(null);
+	}
+
+	@Override
+	public Factura findFacturaCorrelativo(Long correlativo) {
+		return (this.repoFactura.findFacturaByNoFactura(correlativo).isPresent() ? this.repoFactura.findFacturaByNoFactura(correlativo).get() : null);
 	}
 
 	@Override
@@ -74,6 +81,11 @@ public class FacturaServiceImpl implements IFacturaService {
 	@Override
 	public Integer totalVentas() {
 		return this.repoFactura.getCantidadVentas();
+	}
+
+	@Override
+	public List<Factura> facturasPorFecha(Date iniDate, Date endDate) {
+		return this.repoFactura.findByFechaBetween(iniDate, endDate);
 	}
 
 	/****************** PDF REPORT SERVICES *******************/

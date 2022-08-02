@@ -16,16 +16,22 @@ import net.sf.jasperreports.engine.JRException;
 public interface IFacturaService {
 	
 	public List<Factura> findAll();
+
+	public List<Factura> findAllWithProcedure(Date date1, Date date2);
 	
 	public Page<Factura> findAll(Pageable pageable);
 	
 	public Factura findFactura(Long idfactura);
+
+	public Factura findFacturaCorrelativo(Long correlativo);
 	
 	public Factura save(Factura factura);
 
 	public TipoFactura findTipoFactura(Integer idTipoFactura);
 
 	public Integer totalVentas();
+
+	public List<Factura> facturasPorFecha(Date iniDate, Date endDate);
 	
 	/********* PDF REPORTS SERVICES ***********/
 	
