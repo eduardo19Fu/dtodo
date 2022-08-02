@@ -19,14 +19,14 @@ import swal from 'sweetalert2';
 export class FacturasComponent implements OnInit, AfterViewInit {
 
   title: string;
+  fechaIni: Date;
+  fechaFin: Date;
 
   facturas: Factura[];
 
   usuario: Usuario;
   facturaSeleccionada: Factura;
   jQueryConfigs: JqueryConfigs;
-
-  private notificarAnulacion: EventEmitter<any>;
 
   swalWithBootstrapButtons = swal.mixin({
     customClass: {
@@ -45,22 +45,44 @@ export class FacturasComponent implements OnInit, AfterViewInit {
     this.title = 'Facturas';
     this.jQueryConfigs = new JqueryConfigs();
     this.usuario = auth.usuario;
+    this.facturas = [];
   }
 
   ngOnInit(): void {
-    this.getFacturas();
+    // this.getFacturas();
   }
 
   ngAfterViewInit(): void {
   }
 
-  getFacturas(): void {
-    this.facturaService.getFacturas().subscribe(
-      facturas => {
-        this.facturas = facturas;
-        this.jQueryConfigs.configDataTable('facturas');
+  // getFacturas(): void {
+  //   this.facturaService.getFacturas().subscribe(
+  //     facturas => {
+  //       this.facturas = facturas;
+  //       this.jQueryConfigs.configDataTable('facturas');
+  //     }
+  //   );
+  // }
+
+  getFacturasSP(): void {
+    this.facturas = [];
+    if (this.fechaIni === undefined || this.fechaFin === undefined) {
+      swal.fire('Advertencia', 'Porfavor ingrese un rango de fechas valido.', 'warning');
+    } else {
+      if (this.jQueryConfigs) {
+        this.facturaService.getFacturasSP(this.fechaIni, this.fechaFin).subscribe(
+          facturas => {
+            this.facturas = facturas;
+            this.jQueryConfigs.configDataTable('facturas');
+            this.jQueryConfigs = new JqueryConfigs();
+          }
+        );
       }
-    );
+    }
+  }
+
+  reloadPage(): void {
+    location.reload();
   }
 
   abrirDetalle(factura: Factura): void {

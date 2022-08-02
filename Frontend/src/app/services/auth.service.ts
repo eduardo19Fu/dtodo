@@ -8,9 +8,7 @@ import { Usuario } from '../models/usuario';
 })
 export class AuthService {
 
-  // tslint:disable-next-line: variable-name
   private _usuario: Usuario;
-  // tslint:disable-next-line: variable-name
   private _token: string;
 
   url: string;
@@ -18,8 +16,8 @@ export class AuthService {
   constructor(
     private http: HttpClient
   ) {
-    this.url = 'http://localhost:8282';
-    // this.url = 'https://dtodojalapa.xyz:8282';
+    // this.url = 'http://localhost:8282';
+    this.url = 'https://dtodojalapa.xyz:8282';
   }
 
   public get usuario(): Usuario {
