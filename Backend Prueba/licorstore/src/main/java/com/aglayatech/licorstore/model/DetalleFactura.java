@@ -28,7 +28,7 @@ public class DetalleFactura implements Serializable {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "id_producto")
-	@JsonIgnoreProperties({"tipoProducto", "marcaProducto", "movimientos", "hibernateLazyInitializer", "handler" })
+	@JsonIgnoreProperties({ "movimientos", "hibernateLazyInitializer", "handler" })
 	private Producto producto;
 
 	public DetalleFactura() {
