@@ -49,13 +49,13 @@ public class Producto implements Serializable {
 
 	private int stock;
 
-	// @NotNull(message = "Marca no puede estar vacío.")
+	@NotNull(message = "Marca no puede estar vacío.")
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "id_marca_producto")
 	@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 	private MarcaProducto marcaProducto;
 
-	// @NotNull(message = "Tipo no puede estar vacío.")
+	@NotNull(message = "Tipo no puede estar vacío.")
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "id_tipo_producto")
 	@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
