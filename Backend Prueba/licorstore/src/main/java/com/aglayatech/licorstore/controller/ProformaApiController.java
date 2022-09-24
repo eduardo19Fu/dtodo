@@ -2,6 +2,7 @@ package com.aglayatech.licorstore.controller;
 
 import com.aglayatech.licorstore.model.Proforma;
 import com.aglayatech.licorstore.service.IProformaService;
+import net.sf.jasperreports.engine.JRException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
@@ -9,6 +10,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,5 +55,85 @@ public class ProformaApiController {
         }
 
         return new ResponseEntity<Proforma>(proforma, HttpStatus.OK);
+    }
+
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
+    @PostMapping(value = "/proformas")
+    public ResponseEntity<?> create(@RequestBody Proforma proforma) {
+
+        Proforma newProforma = null;
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            newProforma = proformaService.save(proforma);
+        } catch(DataAccessException e) {
+            response.put("mensaje", "¡Ha ocurrido un error en la Base de Datos!");
+            response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
+            return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        if (newProforma == null) {
+            response.put("mensaje", "No fué posible registrar la nueva proforma");
+            return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
+        }
+
+        response.put("mensaje", "Registro llevado a cabo con éxito");
+        response.put("proforma", newProforma);
+        return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
+    }
+
+    @Secured(value = "ROLE_ADMIN")
+    @DeleteMapping(value = "/proformas/{id}")
+    public ResponseEntity<?> delete(@PathVariable("id") Long id) {
+
+        Proforma proforma = null;
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            proforma = proformaService.findProforma(id);
+            proformaService.delete(id);
+        } catch(DataAccessException e) {
+            response.put("mensaje", "¡Ha ocurrido un error en la Base de Datos!");
+            response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
+            return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        if (proforma == null) {
+            response.put("mensaje", "¡Proforma no se encuentra registrada en la Base de Datos!");
+            return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+        }
+
+        response.put("mensaje", "proforma eliminada con éxito");
+        response.put("proforma", proforma);
+        return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+    }
+
+    /**
+     * metodos controlador que permiten devolver un pdf con la información solicitada por
+     * los usuarios desde el frontend.
+     * */
+
+    @GetMapping("/proformas/generate/{id}")
+    public void showProforma(@PathVariable("id") Long idproforma, HttpServletResponse httpServletResponse)
+            throws JRException, SQLException, FileNotFoundException {
+
+        try {
+            byte[] bytesFactura = proformaService.showProforma(idproforma);
+            ByteArrayOutputStream out = new ByteArrayOutputStream(bytesFactura.length);
+            out.write(bytesFactura, 0, bytesFactura.length);
+
+            httpServletResponse.setContentType("application/pdf");
+            httpServletResponse.addHeader("Content-Disposition", "inline; filename=bill-" + idproforma + ".pdf");
+
+            OutputStream os;
+
+            os = httpServletResponse.getOutputStream();
+            out.writeTo(os);
+            os.flush();
+            os.close();
+        } catch (IOException e) {
+            // new ServletException(e);
+            e.printStackTrace();
+        }
     }
 }
