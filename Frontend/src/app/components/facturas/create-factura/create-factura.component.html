@@ -226,8 +226,11 @@
             </div>
 
             <div class="card-footer">
-                <input type="submit" role="button" class="btn btn-primary" value="Pagar"
+                <input type="submit" role="button" class="btn btn-primary margin" value="Pagar"
                     [disabled]="!cliente.idCliente || (factura.itemsFactura.length <= 0)" (click)="createFactura()">
+
+                <input type="submit" role="button" class="btn btn-danger margin" value="Proforma"
+                [disabled]="!cliente.idCliente || (factura.itemsFactura.length <= 0)" (click)="createProforma()">
             </div>
         </div>
     </div>

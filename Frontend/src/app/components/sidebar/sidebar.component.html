@@ -84,6 +84,14 @@
 
                 <!-- MENUS DE FACTURAS -->
                 <li class="nav-header" *ngIf="authService.hasRole('ROLE_COBRADOR') || authService.hasRole('ROLE_ADMIN')">Ventas</li>
+
+                <li class="nav-item" *ngIf="authService.hasRole('ROLE_COBRADOR') || authService.hasRole('ROLE_ADMIN')">
+                    <a [routerLink]="['/proformas/index']" class="nav-link" [ngClass]="{'active' : router.url.startsWith('/proformas')}">
+                        <i class="nav-icon fas fa-street-view"></i>
+                        <p>Proformas</p>
+                    </a>
+                </li>
+
                 <li class="nav-item" *ngIf="authService.hasRole('ROLE_COBRADOR') || authService.hasRole('ROLE_ADMIN')"
                     [ngClass]="{'menu-open': router.url.startsWith('/facturas')}">
                     <a href="" class="nav-link" [ngClass]="{'active': router.url.startsWith('/facturas')}">

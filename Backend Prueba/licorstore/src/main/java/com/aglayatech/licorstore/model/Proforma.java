@@ -14,7 +14,7 @@ public class Proforma implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idproforma;
-    private Long noProforma;
+    private String noProforma;
     private Double total;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -53,11 +53,11 @@ public class Proforma implements Serializable {
         this.idproforma = idproforma;
     }
 
-    public Long getNoProforma() {
+    public String getNoProforma() {
         return noProforma;
     }
 
-    public void setNoProforma(Long noProforma) {
+    public void setNoProforma(String noProforma) {
         this.noProforma = noProforma;
     }
 

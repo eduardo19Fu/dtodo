@@ -17,6 +17,10 @@ import { UsuarioService } from 'src/app/services/usuarios/usuario.service';
 
 import swal from 'sweetalert2';
 import { ModalCambioService } from '../../../services/facturas/modal-cambio.service';
+import { ProformaService } from '../../../services/proformas/proforma.service';
+import { Proforma } from '../../../models/proforma';
+import { DetalleProforma } from '../../../models/detalle-proforma';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-create-factura',
@@ -33,6 +37,7 @@ export class CreateFacturaComponent implements OnInit {
   cliente: Cliente;
   usuario: UsuarioAuxiliar;
   factura: Factura;
+  proforma: Proforma;
   correlativo: Correlativo;
 
   efectivo: number;
@@ -40,13 +45,15 @@ export class CreateFacturaComponent implements OnInit {
 
   constructor(
     private facturaService: FacturaService,
+    private proformaService: ProformaService,
     private productoService: ProductoService,
     private clienteService: ClienteService,
     private usuarioService: UsuarioService,
     private clienteCreateService: ClienteCreateService,
     private modalCambioService: ModalCambioService,
     private correlativoService: CorrelativoService,
-    public authService: AuthService
+    public authService: AuthService,
+    private activatedRoute: ActivatedRoute
   ) {
     this.title = 'Crear Factura';
     this.cliente = new Cliente();
@@ -54,6 +61,7 @@ export class CreateFacturaComponent implements OnInit {
     this.factura = new Factura();
     this.correlativo = new Correlativo();
     this.producto = new Producto();
+    this.proforma = new Proforma();
   }
 
   ngOnInit(): void {
@@ -136,9 +144,13 @@ export class CreateFacturaComponent implements OnInit {
     } else {
       if (this.producto) { // comprueba que el producto exista
         const item = new DetalleFactura();
+        const itemProforma = new DetalleProforma();
 
         item.cantidad = +((document.getElementById('cantidad') as HTMLInputElement)).value; // valor obtenido del formulario de cantidad
         item.descuento = 0; // valor obtenido del input de descuento
+
+        itemProforma.cantidad = +((document.getElementById('cantidad') as HTMLInputElement)).value;
+        itemProforma.descuento = 0;
 
         if (item.cantidad > this.producto.stock) {
           swal.fire('Stock Insuficiente', 'No existen las suficientes existencias de este producto.', 'warning');
@@ -153,7 +165,13 @@ export class CreateFacturaComponent implements OnInit {
               item.producto = this.producto;
               item.subTotalDescuento = item.calcularImporte();
               item.subTotal = item.calcularImporte();
+
+              itemProforma.producto = this.producto;
+              itemProforma.subTotalDescuento = itemProforma.calcularImporte();
+              itemProforma.subTotal = itemProforma.calcularImporte();
+
               this.factura.itemsFactura.push(item);
+              this.proforma.itemsProforma.push(itemProforma);
               this.producto = new Producto();
 
               (document.getElementById('cantidad') as HTMLInputElement).value = '';
@@ -183,6 +201,17 @@ export class CreateFacturaComponent implements OnInit {
         }
       }
 
+      return item;
+    });
+
+    this.proforma.itemsProforma = this.proforma.itemsProforma.map((item: DetalleProforma) => {
+      
+      if (idProducto === item.producto.idProducto) {
+        item.cantidad = cantidad;
+        item.subTotal = item.calcularImporte();
+        item.subTotalDescuento = item.calcularImporteDescuento();
+      }
+      
       return item;
     });
   }
@@ -221,10 +250,21 @@ export class CreateFacturaComponent implements OnInit {
 
       return item;
     });
+
+    this.proforma.itemsProforma = this.proforma.itemsProforma.map((item: DetalleProforma) => {
+      if (idProducto === item.producto.idProducto) {
+        item.cantidad = item.cantidad + cantidad;
+        item.subTotal = item.calcularImporte();
+        item.subTotalDescuento = item.calcularImporteDescuento();
+      }
+
+      return item;
+    });
   }
 
   eliminarItem(index: number): void {
     this.factura.itemsFactura.splice(index, 1);
+    this.proforma.itemsProforma.splice(index, 1);
   }
 
   createFactura(): void {
@@ -232,7 +272,6 @@ export class CreateFacturaComponent implements OnInit {
     this.factura.serie = this.correlativo.serie;
     this.factura.cliente = this.cliente;
     this.factura.usuario = this.usuario;
-    console.log(this.factura.itemsFactura);
     this.factura.total = this.factura.calcularTotal();
 
     this.facturaService.create(this.factura).subscribe(
@@ -271,6 +310,32 @@ export class CreateFacturaComponent implements OnInit {
         //   });
       }
     );
+  }
+
+  createProforma(): void {
+    this.proforma.noProforma = this.proforma.generarNoProforma();
+    this.proforma.cliente = this.cliente;
+    this.proforma.usuario = this.usuario;
+    this.proforma.total = this.proforma.calcularTotal();
+
+    this.proformaService.create(this.proforma).subscribe(response => {
+      
+    });
+
+  }
+
+  generarProformaPdf(id: number): void {
+    
+  }
+
+  cargarProforma(): void {
+    this.activatedRoute.params.subscribe(params => {
+      const id = params['id'];
+
+      if (id) {
+        
+      }
+    })
   }
 
   calcularCambio(event): void {

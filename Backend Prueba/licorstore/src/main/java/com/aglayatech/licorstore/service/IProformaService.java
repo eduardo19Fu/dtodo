@@ -22,6 +22,8 @@ public interface IProformaService {
 
     public void delete(Long id);
 
+    public List<Proforma> proformasPorFecha(Date iniDate, Date endDate);
+
     // REPORTES PARA PROFORMAS
 
     public byte[] resportDailyProforms(Integer usuario, Date fecha) throws JRException, FileNotFoundException, SQLException;

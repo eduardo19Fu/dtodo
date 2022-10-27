@@ -52,13 +52,13 @@ public class Producto implements Serializable {
 	@NotNull(message = "Marca no puede estar vacío.")
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "id_marca_producto")
-	@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
+	@JsonIgnoreProperties({ "usuario", "hibernateLazyInitializer", "handler" })
 	private MarcaProducto marcaProducto;
 
 	@NotNull(message = "Tipo no puede estar vacío.")
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "id_tipo_producto")
-	@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
+	@JsonIgnoreProperties({ "usuario", "hibernateLazyInitializer", "handler" })
 	private TipoProducto tipoProducto;
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -67,7 +67,7 @@ public class Producto implements Serializable {
 	private Estado estado;
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "producto")
-	@JsonIgnoreProperties({ "producto", "hibernateLazyInitializer", "handler" })
+	@JsonIgnoreProperties({ "movimientos", "hibernateLazyInitializer", "handler" })
 	private List<MovimientoProducto> movimientos;
 
 	public Producto() {

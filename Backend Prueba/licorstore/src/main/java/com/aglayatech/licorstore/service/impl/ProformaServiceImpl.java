@@ -57,6 +57,11 @@ public class ProformaServiceImpl implements IProformaService {
     }
 
     @Override
+    public List<Proforma> proformasPorFecha(Date iniDate, Date endDate) {
+        return proformaRepository.findProformasByFecha(iniDate, endDate);
+    }
+
+    @Override
     public byte[] resportDailyProforms(Integer usuario, Date fecha) throws JRException, FileNotFoundException, SQLException {
         return new byte[0];
     }

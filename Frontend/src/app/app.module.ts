@@ -42,6 +42,7 @@ import { ModalCambioComponent } from './components/facturas/create-factura/modal
 import { ModalBuscarProductoComponent } from './components/facturas/create-factura/modal-buscar-producto/modal-buscar-producto.component';
 import { ModalBuscarClienteComponent } from './components/facturas/create-factura/modal-buscar-cliente/modal-buscar-cliente.component';
 import { ModalBuscarProductoMovimientoComponent } from './components/movimientos-producto/create-movimiento/modal-buscar-producto-movimiento/modal-buscar-producto-movimiento.component';
+import { ProformasComponent } from './components/proformas/proformas.component';
 
 @NgModule({
   declarations: [
@@ -79,7 +80,8 @@ import { ModalBuscarProductoMovimientoComponent } from './components/movimientos
     ModalCambioComponent,
     ModalBuscarProductoComponent,
     ModalBuscarClienteComponent,
-    ModalBuscarProductoMovimientoComponent
+    ModalBuscarProductoMovimientoComponent,
+    ProformasComponent
   ],
   imports: [
     BrowserModule,
