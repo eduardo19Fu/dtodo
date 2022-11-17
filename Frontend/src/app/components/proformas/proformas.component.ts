@@ -6,6 +6,7 @@ import { ProformaService } from '../../services/proformas/proforma.service';
 import { JqueryConfigs } from 'src/app/utils/jquery/jquery-utils';
 import Swal from 'sweetalert2';
 import { AuthService } from 'src/app/services/auth.service';
+import { DetailService } from 'src/app/services/facturas/detail.service';
 
 @Component({
   selector: 'app-proformas',
@@ -19,12 +20,15 @@ export class ProformasComponent implements OnInit {
   fechaIni: Date;
   fechaFin: Date;
 
+  proformaSeleccionada: Proforma;
+
   proformas: Proforma[] = [];
   jQueryConfigs: JqueryConfigs;
 
   constructor(
     private proformaService: ProformaService,
-    public auth: AuthService
+    public auth: AuthService,
+    public detailService: DetailService
   ) {
     this.title = 'Listado de Proformas';
     this.jQueryConfigs = new JqueryConfigs();
@@ -80,4 +84,9 @@ export class ProformasComponent implements OnInit {
   }
 
   cancel(): void {}
+
+  abrirDetalle(proforma: Proforma): void {
+    this.proformaSeleccionada = proforma;
+    this.detailService.abrirModal();
+  }
 }

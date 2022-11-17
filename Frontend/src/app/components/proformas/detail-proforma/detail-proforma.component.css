@@ -1,0 +1,43 @@
+.modal-header{
+    color: #ffffff;
+    background-color: green;
+}
+
+#close:hover{
+    background-color: red;
+}
+
+.abrir-modal{
+    background-color: rgba(0, 0, 0, 0.7);
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: 1000 !important;
+}
+
+.animacion{
+    animation-duration: 1s;
+    animation-fill-mode: both;
+    -webkit-animation-duration: 1s;
+    -webkit-animation-fill-mode: both;
+}
+
+.fadeIn{
+    animation-name: fadeIn;
+    -webkit-animation-name: fadeIn;
+}
+
+.etiquetas{
+    background-color: #ff8566;
+    color: brown;
+}
+
+@keyframes fadeIn {
+    0% {opacity: 0} to {opacity: 1}
+}
+
+@-webkit-keyframes fadeIn {
+    0% {opacity: 0} to {opacity: 1}
+}

@@ -1,3 +1,6 @@
+<!-- MODAL PARA MOSTRAR EL DETALLE DE LA PROFORMA -->
+<app-detail-proforma *ngIf="proformaSeleccionada" [proforma]="proformaSeleccionada"></app-detail-proforma>
+
 <section class="content-header">
     <div class="container-fluid">
         <div class="row mb-2">
@@ -7,12 +10,7 @@
                 <a [routerLink]="['/facturas/create']" class="btn bg-gradient-success">
                     <i class="fas fa-plus-circle"></i>
                     Nuevo
-                </a>&nbsp;
-
-                <button type="button" class="btn btn-outline-warning" data-toggle="modal" data-target="#modal-poliza">
-                    <i class="fa fa-print"></i>
-                    Reporte
-                </button>
+                </a>
             </div>
         </div>
     </div><!-- /.container-fluid -->
