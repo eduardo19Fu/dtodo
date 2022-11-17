@@ -58,7 +58,8 @@ public class ProformaServiceImpl implements IProformaService {
 
     @Override
     public List<Proforma> proformasPorFecha(Date iniDate, Date endDate) {
-        return proformaRepository.findProformasByFecha(iniDate, endDate);
+        // return proformaRepository.findAllProformas(iniDate, endDate);
+        return proformaRepository.findAllByFechaEmisionBetween(iniDate, endDate);
     }
 
     @Override
@@ -70,7 +71,7 @@ public class ProformaServiceImpl implements IProformaService {
     public byte[] showProforma(Long idproforma) throws JRException, FileNotFoundException, SQLException {
         Connection con = dataSource.getConnection();
         Map<String, Object> params = new HashMap<>();
-        params.put("idproforma", idproforma);
+        params.put("proformaId", idproforma);
         InputStream file = getClass().getResourceAsStream("/reports/proforma.jrxml");
 
         JasperReport jasperReport = JasperCompileManager.compileReport(file);

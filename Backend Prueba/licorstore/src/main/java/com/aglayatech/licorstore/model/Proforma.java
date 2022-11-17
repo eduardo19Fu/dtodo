@@ -13,7 +13,7 @@ public class Proforma implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idproforma;
+    private Long idProforma;
     private String noProforma;
     private Double total;
 
@@ -45,12 +45,12 @@ public class Proforma implements Serializable {
         this.fechaEmision = new Date();
     }
 
-    public Long getIdproforma() {
-        return idproforma;
+    public Long getIdProforma() {
+        return idProforma;
     }
 
-    public void setIdproforma(Long idproforma) {
-        this.idproforma = idproforma;
+    public void setIdProforma(Long idProforma) {
+        this.idProforma = idProforma;
     }
 
     public String getNoProforma() {
@@ -112,7 +112,7 @@ public class Proforma implements Serializable {
     @Override
     public String toString() {
         return "Proforma{" +
-                "idproforma=" + idproforma +
+                "idproforma=" + idProforma +
                 ", noProforma=" + noProforma +
                 ", total=" + total +
                 ", fechaEmision=" + fechaEmision +

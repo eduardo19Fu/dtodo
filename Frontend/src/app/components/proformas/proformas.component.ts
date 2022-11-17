@@ -5,6 +5,7 @@ import { ProformaService } from '../../services/proformas/proforma.service';
 
 import { JqueryConfigs } from 'src/app/utils/jquery/jquery-utils';
 import Swal from 'sweetalert2';
+import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-proformas',
@@ -22,7 +23,8 @@ export class ProformasComponent implements OnInit {
   jQueryConfigs: JqueryConfigs;
 
   constructor(
-    private proformaService: ProformaService
+    private proformaService: ProformaService,
+    public auth: AuthService
   ) {
     this.title = 'Listado de Proformas';
     this.jQueryConfigs = new JqueryConfigs();
@@ -55,9 +57,26 @@ export class ProformasComponent implements OnInit {
   reloadPage() {
     location.reload();
   }
-  
-  getFacturasSP() {
-    throw new Error('Method not implemented.');
+
+  printProforma(proforma: Proforma): void {
+    this.proformaService.getProformaPdf(proforma.idProforma).subscribe(response => {
+      const url = window.URL.createObjectURL(response.data);
+      const a = document.createElement('a');
+      document.body.appendChild(a);
+      a.setAttribute('style', 'display: none');
+      a.setAttribute('target', 'blank');
+      a.href = url;
+      /*
+        opcion para pedir descarga de la respuesta obtenida
+        a.download = response.filename;
+      */
+      window.open(a.toString(), '_blank');
+      window.URL.revokeObjectURL(url);
+      a.remove();
+    },
+      error => {
+        console.log(error);
+      });
   }
 
   cancel(): void {}

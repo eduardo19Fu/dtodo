@@ -90,14 +90,15 @@
                     <td>{{proforma.noProforma}}</td>
                     <td>{{proforma.fechaEmision | date: 'dd/MM/yyyy - hh:mm'}}</td>
                     <td>{{proforma.total | currency: 'Q' : 'symbol'}}</td>
-                    <td>{{proforma.cliente}}</td>
                     <td>
                         <span class="badge"
-                            [ngClass]="{'badge-success': proforma.estado.idEstado === 1, 'badge-danger': factura.estado.idEstado === 4}">
+                            [ngClass]="{'badge-success': proforma.estado.idEstado === 1, 'badge-danger': proforma.estado.idEstado === 4}">
                             {{proforma.estado.estado}}
                         </span>
                     </td>
                     <td>{{proforma.usuario.usuario}}</td>
+                    <td>{{proforma.cliente.nombre}}</td>
+                    
                     <td class="center-options" *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR')">
 
                         <button class="btn bg-gradient-success margin" name="detail" type="button"
@@ -106,7 +107,7 @@
                         </button>
 
                         <button class="btn bg-gradient-warning margin" name="print" type="button"
-                            (click)="printBill(proforma)" [disabled]="proforma.estado.idEstado === 4">
+                            (click)="printProforma(proforma)" [disabled]="proforma.estado.idEstado === 4">
                             <i class="fas fa-print"></i>
                         </button>
 

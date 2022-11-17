@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 import { global } from '../global';
 import Swal from 'sweetalert2';
 import { Observable, throwError } from 'rxjs';
 import { Proforma } from 'src/app/models/proforma';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -33,8 +33,8 @@ export class ProformaService {
     );
   }
 
-  getProformasSP(fechaIni: Date, fechaFin: Date): Observable<any> {
-    return this.httpClient.get<any>(`${this.url}/proformas/get-listado-sp/get?fechaIni=${fechaIni.toString()}&fechaFin=${fechaFin.toString()}`).pipe(
+  getProformasSP(date1: Date, date2: Date): Observable<any> {
+    return this.httpClient.get<any>(`${this.url}/proformas/get-listado-sp/get?date1=${date1.toString()}&date2=${date2.toString()}`).pipe(
       catchError(e => {
         Swal.fire(e.error.mensaje, e.error.error, 'error');
         return throwError(e);
@@ -56,6 +56,21 @@ export class ProformaService {
       catchError(e => {
         Swal.fire(e.error.mensaje, e.error.error, 'error');
         return throwError(e);
+      })
+    );
+  }
+
+  getProformaPdf(id: number): Observable<any> {
+    const headers = new HttpHeaders();
+    headers.append('Accept', 'application/pdf');
+    const requestOptions: any = { headers, responseType: 'blob' };
+
+    return this.httpClient.get<any>(`${this.url}/proformas/generate/${id}`, requestOptions).pipe(
+      map((response: any) => {
+        return {
+          filename: 'factura.pdf',
+          data: new Blob([response], { type: 'application/pdf' })
+        };
       })
     );
   }

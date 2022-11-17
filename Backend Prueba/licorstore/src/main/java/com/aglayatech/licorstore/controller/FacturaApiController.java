@@ -139,9 +139,7 @@ public class FacturaApiController {
         try {
             if (fechaIni != null && fechaFin != null) {
                 date1 = format.parse(fechaIni);
-                System.out.println(date1);
                 date2 = format.parse(fechaFin);
-                System.out.println(date2);
                 facturas = this.serviceFactura.facturasPorFecha(date1, date2);
                 for (Factura factura : facturas) {
                     System.out.println(factura);

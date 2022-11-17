@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.19.1.final using JasperReports Library version 6.19.1-867c00bf88cd4d784d404379d6c05e1b419e8a4c  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="proforma" pageWidth="612" pageHeight="792" whenNoDataType="BlankPage" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="43b882bf-ba62-4b95-bdc4-89df88a8570a">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="proforma" pageWidth="612" pageHeight="792" whenNoDataType="NoPages" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="43b882bf-ba62-4b95-bdc4-89df88a8570a">
 	<property name="ireport.zoom" value="1.3310000000000006"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
@@ -52,7 +52,7 @@ ORDER BY p.nombre ASC]]>
 			<![CDATA[date_format(pr.fecha_emision,'%d/%m/%Y')]]>
 		</property>
 	</field>
-	<field name="no_proforma" class="java.lang.Long">
+	<field name="no_proforma" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="no_proforma"/>
 		<property name="com.jaspersoft.studio.field.label" value="no_proforma"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="proformas"/>

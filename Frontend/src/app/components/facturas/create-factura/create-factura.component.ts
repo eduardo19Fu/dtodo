@@ -205,13 +205,13 @@ export class CreateFacturaComponent implements OnInit {
     });
 
     this.proforma.itemsProforma = this.proforma.itemsProforma.map((item: DetalleProforma) => {
-      
+
       if (idProducto === item.producto.idProducto) {
         item.cantidad = cantidad;
         item.subTotal = item.calcularImporte();
         item.subTotalDescuento = item.calcularImporteDescuento();
       }
-      
+
       return item;
     });
   }
@@ -319,13 +319,32 @@ export class CreateFacturaComponent implements OnInit {
     this.proforma.total = this.proforma.calcularTotal();
 
     this.proformaService.create(this.proforma).subscribe(response => {
-      
+      if (response.proforma) {
+        this.generarProformaPdf(response.proforma.idProforma);
+      }
     });
 
   }
 
   generarProformaPdf(id: number): void {
-    
+    this.proformaService.getProformaPdf(id).subscribe(response => {
+      const url = window.URL.createObjectURL(response.data);
+      const a = document.createElement('a');
+      document.body.appendChild(a);
+      a.setAttribute('style', 'display: none');
+      a.setAttribute('target', 'blank');
+      a.href = url;
+      /*
+        opcion para pedir descarga de la respuesta obtenida
+        a.download = response.filename;
+      */
+      window.open(a.toString(), '_blank');
+      window.URL.revokeObjectURL(url);
+      a.remove();
+    },
+      error => {
+        console.log(error);
+      });
   }
 
   cargarProforma(): void {
@@ -333,7 +352,7 @@ export class CreateFacturaComponent implements OnInit {
       const id = params['id'];
 
       if (id) {
-        
+
       }
     })
   }

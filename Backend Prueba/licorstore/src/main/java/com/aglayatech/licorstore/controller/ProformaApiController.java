@@ -1,6 +1,9 @@
 package com.aglayatech.licorstore.controller;
 
+import com.aglayatech.licorstore.model.Estado;
+import com.aglayatech.licorstore.model.Factura;
 import com.aglayatech.licorstore.model.Proforma;
+import com.aglayatech.licorstore.service.IEstadoService;
 import com.aglayatech.licorstore.service.IProformaService;
 import net.sf.jasperreports.engine.JRException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +19,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +34,9 @@ public class ProformaApiController {
 
     @Autowired
     private IProformaService proformaService;
+
+    @Autowired
+    private IEstadoService estadoService;
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
     @GetMapping("/proformas")
@@ -62,9 +72,12 @@ public class ProformaApiController {
     public ResponseEntity<?> create(@RequestBody Proforma proforma) {
 
         Proforma newProforma = null;
+        Estado estado = null;
         Map<String, Object> response = new HashMap<>();
 
         try {
+            estado = estadoService.findByEstado("activo".toUpperCase());
+            proforma.setEstado(estado);
             newProforma = proformaService.save(proforma);
         } catch(DataAccessException e) {
             response.put("mensaje", "¡Ha ocurrido un error en la Base de Datos!");
@@ -107,6 +120,48 @@ public class ProformaApiController {
         response.put("proforma", proforma);
         return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
     }
+
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
+    @GetMapping("/proformas/get-listado-sp/get")
+    public ResponseEntity<?> getProformasPorFecha(@RequestParam(value = "date1", required = false) String fechaIni,
+                                                  @RequestParam(value = "date2", required = false) String fechaFin
+    ) {
+        Date date1;
+        Date date2;
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+
+        List<Proforma> proformas = new ArrayList<>();
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            if (fechaIni != null && fechaFin != null) {
+                date1 = format.parse(fechaIni);
+                date2 = format.parse(fechaFin);
+                proformas = proformaService.proformasPorFecha(date1, date2);
+                for (Proforma proforma : proformas) {
+                    System.out.println(proforma);
+                }
+            } else {
+                System.out.println("No hay nada");
+            }
+        } catch(DataAccessException e) {
+            response.put("mensaje", "¡Error en la base de datos!");
+            response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
+            return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch(ParseException e) {
+            response.put("mensaje", "¡Error al intentar convertir una fecha con formato inválido");
+            response.put("error", e.getMessage().concat(": ").concat(e.getCause().getMessage()));
+            return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        if (proformas == null) {
+            response.put("mensaje", "No existen proformas emitidas que coincidan con las fechas ingresadas.");
+            return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+        }
+
+        return new ResponseEntity<List<Proforma>>(proformas, HttpStatus.OK);
+    }
+
 
     /**
      * metodos controlador que permiten devolver un pdf con la información solicitada por
