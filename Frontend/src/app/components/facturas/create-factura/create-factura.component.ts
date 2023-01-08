@@ -162,19 +162,19 @@ export class CreateFacturaComponent implements OnInit {
               this.producto = new Producto();
               (document.getElementById('cantidad') as HTMLInputElement).value = '';
             } else {
-              item.producto = this.producto;
-              item.subTotalDescuento = item.calcularImporte();
-              item.subTotal = item.calcularImporte();
+                item.producto = this.producto;
+                item.subTotalDescuento = item.calcularImporte();
+                item.subTotal = item.calcularImporte();
 
-              itemProforma.producto = this.producto;
-              itemProforma.subTotalDescuento = itemProforma.calcularImporte();
-              itemProforma.subTotal = itemProforma.calcularImporte();
+                itemProforma.producto = this.producto;
+                itemProforma.subTotalDescuento = itemProforma.calcularImporte();
+                itemProforma.subTotal = itemProforma.calcularImporte();
 
-              this.factura.itemsFactura.push(item);
-              this.proforma.itemsProforma.push(itemProforma);
-              this.producto = new Producto();
+                this.factura.itemsFactura.push(item);
+                this.proforma.itemsProforma.push(itemProforma);
+                this.producto = new Producto();
 
-              (document.getElementById('cantidad') as HTMLInputElement).value = '';
+                (document.getElementById('cantidad') as HTMLInputElement).value = '';
             }
 
           } else if (item.cantidad === 0) {
@@ -227,6 +227,16 @@ export class CreateFacturaComponent implements OnInit {
       }
 
       return item;
+    });
+
+    this.proforma.itemsProforma = this.proforma.itemsProforma.map((itemProforma: DetalleProforma) => {
+      if (idProducto === itemProforma.producto.idProducto) {
+        itemProforma.descuento = descuento;
+        itemProforma.subTotal = itemProforma.calcularImporte();
+        itemProforma.subTotalDescuento = itemProforma.calcularImporteDescuento();
+      }
+      
+      return itemProforma;
     });
   }
 
@@ -341,6 +351,7 @@ export class CreateFacturaComponent implements OnInit {
       window.open(a.toString(), '_blank');
       window.URL.revokeObjectURL(url);
       a.remove();
+      location.reload();
     },
       error => {
         console.log(error);

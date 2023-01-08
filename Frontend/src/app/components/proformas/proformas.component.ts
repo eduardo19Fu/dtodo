@@ -52,7 +52,7 @@ export class ProformasComponent implements OnInit {
   getProformasSp(): void {
     this.proformaService.getProformasSP(this.fechaIni, this.fechaFin).subscribe(response => {
       this.proformas = response;
-      this.jQueryConfigs.configDataTable("proformas");
+      this.jQueryConfigs.configDataTable('proformas');
       this.jQueryConfigs = new JqueryConfigs();
     })
   }
