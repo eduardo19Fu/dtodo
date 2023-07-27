@@ -14,7 +14,8 @@
         date_format(pr.fecha_emision,'%d/%m/%Y'),
 		pr.no_proforma,
         pr.total,
-        p.precio_venta,
+--        IF(prd.descuento > 0, ROUND(p.precio_venta-((prd.descuento/100)*p.precio_venta), 2), p.precio_venta) as precio_venta,
+		IF(prd.descuento > 0, prd.n_precio_venta, p.precio_venta) as precio_venta,
         p.nombre AS producto,
         prd.cantidad,
         prd.descuento,
@@ -62,7 +63,7 @@ ORDER BY p.nombre ASC]]>
 		<property name="com.jaspersoft.studio.field.label" value="total"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="proformas"/>
 	</field>
-	<field name="precio_venta" class="java.math.BigDecimal">
+	<field name="precio_venta" class="java.lang.Double">
 		<property name="com.jaspersoft.studio.field.name" value="precio_venta"/>
 		<property name="com.jaspersoft.studio.field.label" value="precio_venta"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="productos"/>
@@ -286,15 +287,6 @@ Teléfonos: 4582-1048/5728-2246]]></text>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{producto}]]></textFieldExpression>
 			</textField>
-			<textField pattern="Q#,##0.00;¤-#,##0.00">
-				<reportElement x="409" y="1" width="79" height="18" uuid="382f4c52-5383-4b89-b359-27f7202a4b52">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="635e107d-b317-4d02-961b-a631c573e465"/>
-				</reportElement>
-				<textElement textAlignment="Center">
-					<font fontName="Arial" size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{precio_venta}]]></textFieldExpression>
-			</textField>
 			<textField>
 				<reportElement x="490" y="1" width="69" height="18" uuid="3d09a50b-b315-44de-94e6-1b7840d931c2">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="3f67dabd-d54e-4d23-bfe3-9fa5aa240f2b"/>
@@ -303,6 +295,15 @@ Teléfonos: 4582-1048/5728-2246]]></text>
 					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{sub_total_descuento}]]></textFieldExpression>
+			</textField>
+			<textField pattern="Q#,##0.00;¤-#,##0.00">
+				<reportElement x="409" y="0" width="79" height="19" uuid="6aa3cea0-b2c6-48c6-b962-5456fa04866b">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7cc09a8f-a48f-4f50-93f0-1b9c26a49c9d"/>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{precio_venta}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

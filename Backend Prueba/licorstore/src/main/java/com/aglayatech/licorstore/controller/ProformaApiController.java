@@ -138,9 +138,6 @@ public class ProformaApiController {
                 date1 = format.parse(fechaIni);
                 date2 = format.parse(fechaFin);
                 proformas = proformaService.proformasPorFecha(date1, date2);
-                for (Proforma proforma : proformas) {
-                    System.out.println(proforma);
-                }
             } else {
                 System.out.println("No hay nada");
             }
@@ -166,6 +163,7 @@ public class ProformaApiController {
     /**
      * metodos controlador que permiten devolver un pdf con la información solicitada por
      * los usuarios desde el frontend.
+     * @param idproforma Valor de tipo entero que refencia el ID de la proforma que se desea generar.
      * */
 
     @GetMapping("/proformas/generate/{id}")

@@ -2,6 +2,7 @@ package com.aglayatech.licorstore.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -28,7 +29,6 @@ public class Usuario implements Serializable {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer idUsuario;
 	private String usuario;
-	@JsonIgnore
 	private String password;
 	private String primerNombre;
 	private String segundoNombre;

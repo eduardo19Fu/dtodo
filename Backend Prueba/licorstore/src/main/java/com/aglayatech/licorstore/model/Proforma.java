@@ -22,7 +22,7 @@ public class Proforma implements Serializable {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario")
-    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
+    @JsonIgnoreProperties({"password", "roles", "hibernateLazyInitializer", "handler" })
     private Usuario usuario;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -111,16 +111,17 @@ public class Proforma implements Serializable {
 
     @Override
     public String toString() {
-        return "Proforma{" +
-                "idproforma=" + idProforma +
-                ", noProforma=" + noProforma +
-                ", total=" + total +
-                ", fechaEmision=" + fechaEmision +
-                ", usuario=" + usuario +
-                ", estado=" + estado +
-                ", cliente=" + cliente +
-                ", itemsProforma=" + itemsProforma +
-                '}';
+        final StringBuilder sb = new StringBuilder("Proforma{");
+        sb.append("idProforma=").append(idProforma);
+        sb.append(", noProforma='").append(noProforma).append('\'');
+        sb.append(", total=").append(total);
+        sb.append(", fechaEmision=").append(fechaEmision);
+        sb.append(", usuario=").append(usuario);
+        sb.append(", estado=").append(estado);
+        sb.append(", cliente=").append(cliente);
+        sb.append(", itemsProforma=").append(itemsProforma);
+        sb.append('}');
+        return sb.toString();
     }
 
     private static final long serialVersionUID = 1L;

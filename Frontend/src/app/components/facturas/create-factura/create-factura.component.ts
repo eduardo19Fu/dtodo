@@ -234,6 +234,8 @@ export class CreateFacturaComponent implements OnInit {
         itemProforma.descuento = descuento;
         itemProforma.subTotal = itemProforma.calcularImporte();
         itemProforma.subTotalDescuento = itemProforma.calcularImporteDescuento();
+        itemProforma.nPrecioVenta = itemProforma.clacularNuevoPrecioVenta();
+        console.log(itemProforma.nPrecioVenta);
       }
       
       return itemProforma;

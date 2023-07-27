@@ -13,6 +13,7 @@ public class DetalleProforma {
     private Long idDetalle;
     private Integer cantidad;
     private Float descuento;
+    private Double nPrecioVenta;
     private Double subTotal;
     private Double subTotalDescuento;
 
@@ -45,6 +46,14 @@ public class DetalleProforma {
         this.descuento = descuento;
     }
 
+    public Double getnPrecioVenta() {
+        return nPrecioVenta;
+    }
+
+    public void setnPrecioVenta(Double nPrecioVenta) {
+        this.nPrecioVenta = nPrecioVenta;
+    }
+
     public Double getSubTotal() {
         return subTotal;
     }
@@ -70,4 +79,8 @@ public class DetalleProforma {
     }
 
     private static final long serialVersionUID = 1L;
+
+    private void calculateNewPrice() {
+
+    }
 }
