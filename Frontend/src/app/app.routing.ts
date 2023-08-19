@@ -24,6 +24,7 @@ import { RoleGuard } from './components/usuarios/guards/role.guard';
 import { MovimientosProductoComponent } from './components/movimientos-producto/movimientos-producto.component';
 import { CreateMovimientoComponent } from './components/movimientos-producto/create-movimiento/create-movimiento.component';
 import { ProformasComponent } from './components/proformas/proformas.component';
+import { CreateProformaComponent } from './components/proformas/create-proforma/create-proforma.component';
 
 const appRoutes: Routes = [
     { path: '', component: LoginComponent },
@@ -43,9 +44,10 @@ const appRoutes: Routes = [
     { path: 'productos/inventario/index', component: MovimientosProductoComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_INVENTARIO'] } },
     { path: 'productos/inventario/create', component: CreateMovimientoComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_INVENTARIO'] } },
 
-    /****** MENUS DE CLIENTES ******/
+    /****** MENUS DE PROFORMAS ******/
     { path: 'proformas/index', component: ProformasComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_COBRADOR'] } },
-
+    { path: 'proformas/create', component: CreateProformaComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_COBRADOR'] } },
+    
     /****** MENUS DE FACTURAS ******/
     { path: 'facturas/index', component: FacturasComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_COBRADOR'] } },
     { path: 'facturas/create', component: CreateFacturaComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_COBRADOR'] } },
@@ -75,8 +77,6 @@ const appRoutes: Routes = [
         canActivate: [AuthGuard, RoleGuard],
         data: { role: ['ROLE_ADMIN'] }
     },
-
-
 
     /****** MENUS DE CLIENTES ******/
     { path: 'clientes/index', component: ClientesComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_COBRADOR'] } },

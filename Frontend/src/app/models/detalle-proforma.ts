@@ -13,8 +13,6 @@ export class DetalleProforma {
 
     public calcularImporte(): number{
         return this.producto.precioVenta * this.cantidad;
-
-        // return this.producto.precioVenta * this.cantidad;
     }
 
     public calcularImporteDescuento(): number {

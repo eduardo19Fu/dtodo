@@ -1,9 +1,6 @@
 <!-- MODAL DE REGISTRO PARA CLIENTES -->
 <app-modal-create *ngIf="nitIngresado" [nit]="nitIngresado" (clienteCreado)="cargarCliente($event)"></app-modal-create>
 
-<!-- MODAL CALCULAR CAMBIO -->
-<app-modal-cambio *ngIf="pagar" [factura]="factura"></app-modal-cambio>
-
 <!-- MODAL PARA BUSCAR PRODUCTOS -->
 <app-modal-buscar-producto (producto)="loadProducto($event)"></app-modal-buscar-producto>
 
@@ -44,17 +41,8 @@
 
                         <div class="col">
                             <div class="form-group">
-                                <label for="correlativo">Correlativo</label>
-                                <input type="text" class="form-control" name="correlativo"
-                                    [disabled]="correlativo.correlativoActual" [value]="correlativo.correlativoActual">
-                            </div>
-                        </div>
-
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="serie">Serie</label>
-                                <input class="form-control" type="text" name="serie" [value]="correlativo.serie"
-                                    [disabled]="correlativo.serie">
+                                <label for="correlativo">No. de Proforma</label>
+                                <input type="text" class="form-control" name="correlativo" value="{{noProforma}}" disabled>
                             </div>
                         </div>
 
@@ -154,7 +142,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr *ngFor="let item of factura.itemsFactura; let i = index">
+                            <tr *ngFor="let item of proforma.itemsProforma; let i = index">
                                 <td>{{item.producto.codProducto}}</td>
                                 <td>{{item.producto.nombre}}</td>
                                 <td>{{item.producto.precioVenta | currency: "Q" : "symbol"}}</td>
@@ -172,7 +160,7 @@
                                 </td>
 
                                 <td>
-                                    {{item.calcularPrecioDescuento() | currency: "Q" : "symbol"}}
+                                    {{item.clacularNuevoPrecioVenta() | currency: "Q" : "symbol"}}
                                 </td>
 
                                 <!-- <td>{{item.calcularImporte() | currency: "Q" : "symbol"}}</td> -->
@@ -207,28 +195,15 @@
             </div>
             <div class="card-body">
                 <h4>
-                    Total: <span><strong>{{factura.calcularTotal() | currency: "Q": "symbol"}}</strong></span>
+                    Total: <span><strong>{{proforma.calcularTotal() | currency: "Q": "symbol"}}</strong></span>
                 </h4>
-                <form action="">
-                    <div class="form-group">
-                        <label for="efectivo">Efectivo:</label>
-                        <input type="number" name="efectivo" id="efectivo" class="form-control"
-                            (keyup)="calcularCambio($event)" [(ngModel)]="efectivo">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="">Cambio:</label>
-                        <h3>
-                            <span><strong>{{cambio | currency: "Q":"symbol"}}</strong></span>
-                        </h3>
-                    </div>
-                </form>
             </div>
 
             <div class="card-footer">
-                <input type="submit" role="button" class="btn btn-primary margin" value="Pagar"
-                    [disabled]="!cliente.idCliente || (factura.itemsFactura.length <= 0)" (click)="createFactura()">
+                <input type="submit" role="button" class="btn btn-danger margin" value="Guardar"
+                [disabled]="!cliente.idCliente || (proforma.itemsProforma.length <= 0)" (click)="createProforma()">
             </div>
         </div>
     </div>
+
 </div>

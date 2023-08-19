@@ -324,42 +324,6 @@ export class CreateFacturaComponent implements OnInit {
     );
   }
 
-  createProforma(): void {
-    this.proforma.noProforma = this.proforma.generarNoProforma();
-    this.proforma.cliente = this.cliente;
-    this.proforma.usuario = this.usuario;
-    this.proforma.total = this.proforma.calcularTotal();
-
-    this.proformaService.create(this.proforma).subscribe(response => {
-      if (response.proforma) {
-        this.generarProformaPdf(response.proforma.idProforma);
-      }
-    });
-
-  }
-
-  generarProformaPdf(id: number): void {
-    this.proformaService.getProformaPdf(id).subscribe(response => {
-      const url = window.URL.createObjectURL(response.data);
-      const a = document.createElement('a');
-      document.body.appendChild(a);
-      a.setAttribute('style', 'display: none');
-      a.setAttribute('target', 'blank');
-      a.href = url;
-      /*
-        opcion para pedir descarga de la respuesta obtenida
-        a.download = response.filename;
-      */
-      window.open(a.toString(), '_blank');
-      window.URL.revokeObjectURL(url);
-      a.remove();
-      location.reload();
-    },
-      error => {
-        console.log(error);
-      });
-  }
-
   cargarProforma(): void {
     this.activatedRoute.params.subscribe(params => {
       const id = params['id'];

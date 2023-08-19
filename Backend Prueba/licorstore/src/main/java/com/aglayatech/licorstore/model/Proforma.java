@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -15,7 +16,7 @@ public class Proforma implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idProforma;
     private String noProforma;
-    private Double total;
+    private BigDecimal total;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date fechaEmision;
@@ -61,11 +62,11 @@ public class Proforma implements Serializable {
         this.noProforma = noProforma;
     }
 
-    public Double getTotal() {
+    public BigDecimal getTotal() {
         return total;
     }
 
-    public void setTotal(Double total) {
+    public void setTotal(BigDecimal total) {
         this.total = total;
     }
 
