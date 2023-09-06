@@ -110,10 +110,9 @@
                         </button>
 
                         <!-- Aquí va el botón de eliminar -->
-                        <button class="btn bg-gradient-danger margin" name="cancel" type="button"
-                            (click)="cancel(proforma)" *ngIf="auth.hasRole('ROLE_ADMIN')"
-                            [disabled]="proforma.estado.idEstado === 4">
-                            <i class="fas fa-ban"></i>
+                        <button class="btn bg-gradient-secondary margin" name="facturar" type="button" *ngIf="auth.hasRole('ROLE_ADMIN')"
+                            [disabled]="proforma.estado.idEstado === 4" [routerLink]="['/facturas/create', proforma.idProforma]" >
+                            <i class="fas fa-share-square"></i>
                         </button>
                     </td>
                 </tr>

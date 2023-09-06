@@ -61,7 +61,7 @@ export class CreateFacturaComponent implements OnInit {
     this.factura = new Factura();
     this.correlativo = new Correlativo();
     this.producto = new Producto();
-    this.proforma = new Proforma();
+    this.proforma = null;
   }
 
   ngOnInit(): void {
@@ -71,6 +71,8 @@ export class CreateFacturaComponent implements OnInit {
         this.cargarCorrelativo();
       }
     );
+
+    this.cargarProforma();
   }
 
   buscarCliente(): void {
@@ -326,12 +328,36 @@ export class CreateFacturaComponent implements OnInit {
 
   cargarProforma(): void {
     this.activatedRoute.params.subscribe(params => {
-      const id = params['id'];
+      const id = params['proformaId'];
 
       if (id) {
-
+        this.buscarProformaPorId(id);
       }
     })
+  }
+
+  buscarProformaPorId(id: number): void {
+    this.proformaService.getProforma(id).subscribe(
+      proforma => {
+        this.proforma = proforma;
+
+        this.cliente = proforma.cliente;
+        this.factura.total = this.proforma.total;
+
+        this.proforma.itemsProforma.forEach((itemProforma) => {
+          let item: DetalleFactura = new DetalleFactura();
+
+          item.cantidad = itemProforma.cantidad;
+          item.subTotal = itemProforma.subTotal;
+          item.subTotalDescuento = itemProforma.subTotalDescuento;
+          item.producto = itemProforma.producto;
+          item.descuento = itemProforma.descuento;
+          
+          this.factura.itemsFactura.push(item);
+          console.log(this.factura.itemsFactura);
+        });
+      }
+    );
   }
 
   calcularCambio(event): void {
