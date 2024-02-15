@@ -25,6 +25,8 @@ import { MovimientosProductoComponent } from './components/movimientos-producto/
 import { CreateMovimientoComponent } from './components/movimientos-producto/create-movimiento/create-movimiento.component';
 import { ProformasComponent } from './components/proformas/proformas.component';
 import { CreateProformaComponent } from './components/proformas/create-proforma/create-proforma.component';
+import { NotasCreditoComponent } from './components/notas-credito/notas-credito.component';
+import { CreateNotaComponent } from './components/notas-credito/create-nota/create-nota.component';
 
 const appRoutes: Routes = [
     { path: '', component: LoginComponent },
@@ -88,6 +90,10 @@ const appRoutes: Routes = [
     { path: 'usuarios/index', component: UsuariosComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN'] } },
     { path: 'usuarios/create', component: CreateUsuarioComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN'] } },
     { path: 'usuarios/create/:id', component: CreateUsuarioComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN'] } },
+
+    /****** MENUS DE USUARIOS ******/
+    {path: 'notas-credito/index', component: NotasCreditoComponent, canActivate: [AuthGuard, RoleGuard], data: {role: ['ROLE_ADMIN', 'ROLE_COBRADOR']}},
+    {path: 'notas-credito/create', component: CreateNotaComponent, canActivate: [AuthGuard, RoleGuard], data: {role: ['ROLE_ADMIN', 'ROLE_COBRADOR']}},
 
     { path: '**', component: ErrorComponent }
 ];

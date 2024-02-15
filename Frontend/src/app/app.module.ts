@@ -45,6 +45,10 @@ import { ModalBuscarProductoMovimientoComponent } from './components/movimientos
 import { ProformasComponent } from './components/proformas/proformas.component';
 import { DetailProformaComponent } from './components/proformas/detail-proforma/detail-proforma.component';
 import { CreateProformaComponent } from './components/proformas/create-proforma/create-proforma.component';
+import { NotasCreditoComponent } from './components/notas-credito/notas-credito.component';
+import { CreateNotaComponent } from './components/notas-credito/create-nota/create-nota.component';
+import { DetailNotaComponent } from './components/notas-credito/detail-nota/detail-nota.component';
+import { ModalNotasCreditoComponent } from './components/notas-credito/modal-notas-credito/modal-notas-credito.component';
 
 @NgModule({
   declarations: [
@@ -85,7 +89,11 @@ import { CreateProformaComponent } from './components/proformas/create-proforma/
     ModalBuscarProductoMovimientoComponent,
     ProformasComponent,
     DetailProformaComponent,
-    CreateProformaComponent
+    CreateProformaComponent,
+    NotasCreditoComponent,
+    CreateNotaComponent,
+    DetailNotaComponent,
+    ModalNotasCreditoComponent
   ],
   imports: [
     BrowserModule,

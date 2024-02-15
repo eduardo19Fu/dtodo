@@ -146,13 +146,9 @@ export class CreateFacturaComponent implements OnInit {
     } else {
       if (this.producto) { // comprueba que el producto exista
         const item = new DetalleFactura();
-        const itemProforma = new DetalleProforma();
 
         item.cantidad = +((document.getElementById('cantidad') as HTMLInputElement)).value; // valor obtenido del formulario de cantidad
         item.descuento = 0; // valor obtenido del input de descuento
-
-        itemProforma.cantidad = +((document.getElementById('cantidad') as HTMLInputElement)).value;
-        itemProforma.descuento = 0;
 
         if (item.cantidad > this.producto.stock) {
           swal.fire('Stock Insuficiente', 'No existen las suficientes existencias de este producto.', 'warning');
@@ -168,12 +164,7 @@ export class CreateFacturaComponent implements OnInit {
                 item.subTotalDescuento = item.calcularImporte();
                 item.subTotal = item.calcularImporte();
 
-                itemProforma.producto = this.producto;
-                itemProforma.subTotalDescuento = itemProforma.calcularImporte();
-                itemProforma.subTotal = itemProforma.calcularImporte();
-
                 this.factura.itemsFactura.push(item);
-                this.proforma.itemsProforma.push(itemProforma);
                 this.producto = new Producto();
 
                 (document.getElementById('cantidad') as HTMLInputElement).value = '';
@@ -230,18 +221,6 @@ export class CreateFacturaComponent implements OnInit {
 
       return item;
     });
-
-    this.proforma.itemsProforma = this.proforma.itemsProforma.map((itemProforma: DetalleProforma) => {
-      if (idProducto === itemProforma.producto.idProducto) {
-        itemProforma.descuento = descuento;
-        itemProforma.subTotal = itemProforma.calcularImporte();
-        itemProforma.subTotalDescuento = itemProforma.calcularImporteDescuento();
-        itemProforma.nPrecioVenta = itemProforma.clacularNuevoPrecioVenta();
-        console.log(itemProforma.nPrecioVenta);
-      }
-      
-      return itemProforma;
-    });
   }
 
   existeItem(id: number): boolean {
@@ -256,16 +235,6 @@ export class CreateFacturaComponent implements OnInit {
 
   incrementaCantidad(idProducto: number, cantidad: number): void {
     this.factura.itemsFactura = this.factura.itemsFactura.map((item: DetalleFactura) => {
-      if (idProducto === item.producto.idProducto) {
-        item.cantidad = item.cantidad + cantidad;
-        item.subTotal = item.calcularImporte();
-        item.subTotalDescuento = item.calcularImporteDescuento();
-      }
-
-      return item;
-    });
-
-    this.proforma.itemsProforma = this.proforma.itemsProforma.map((item: DetalleProforma) => {
       if (idProducto === item.producto.idProducto) {
         item.cantidad = item.cantidad + cantidad;
         item.subTotal = item.calcularImporte();

@@ -1,0 +1,104 @@
+<!-- MODAL DETALLE NOTA CREDITO -->
+<app-detail-nota *ngIf="notaSeleccionada" [factura]="notaSeleccionada"></app-detail-nota>
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>{{title}}</h1>
+                <br>
+                <a [routerLink]="['/notas-credito/create']" class="btn bg-gradient-success">
+                    <i class="fas fa-plus-circle"></i>
+                    Nuevo
+                </a>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+
+<div class="card">
+    <div class="card-header">
+        Listado de Notas de Cr&eacute;dito Creadas
+    </div>
+    <div class="card-body table-responsive">
+
+        <div *ngIf="notasCredito?.length == 0" class="alert alert-info alert-dismissible">
+            <h5>
+                <i class="icon fas fa-info"></i>
+                Atención!
+            </h5>
+
+            No existe ninguna nota de cr&eacute;dito registrada en la base de datos!
+        </div>
+
+        <table id="notas-credito" class="table table-hover table-striped table-bordered dataTable dtr-inline table-sm"
+            role="grid" *ngIf="notasCredito?.length > 0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Abono</th>
+                    <th>Total</th>
+                    <th>Restante</th>
+                    <th>Emisor</th>
+                    <th>Fecha Creaci&oacute;n</th>
+                    <th>Fecha L&iacute;mite de Pago</th>
+                    <th>Estado</th>
+                    <th *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR')">Opciones</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr *ngFor="let nota of notasCredito">
+                    <td>{{nota.idNotaCredito}}</td>
+                    <td>{{nota.abono}}</td>
+                    <td>{{nota.total}}</td>
+                    <td>{{nota.restante}}</td>
+                    <td>{{nota.usuario.usuario}}</td>
+                    <td>{{nota.fechaCreacion | date: 'dd/MM/yyyy - hh:mm'}}</td>
+                    <td>{{nota.fechaPagoLimite | date: 'dd/MM/yyyy'}}</td>
+                    <td>
+                        <span class="badge"
+                            [ngClass]="{'badge-success': nota.estado.idEstado === 3, 'badge-danger': nota.estado.idEstado === 4}">
+                            {{nota.estado.estado}}
+                        </span>
+                    </td>
+                    <td class="center-options" *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR')">
+
+                        <button class="btn bg-gradient-success margin" name="detail" type="button" placement="top" ngbTooltip="Detalle"
+                            (click)="abrirDetalle(nota)">
+                            <i class="fas fa-asterisk"></i>
+                        </button>
+
+                        <!-- <button class="btn bg-gradient-warning margin" name="print" type="button" placement="top" ngbTooltip="Imprimir Comprobante"
+                            (click)="printBill(nota)" [disabled]="nota.estado.idEstado === 4">
+                            <i class="fas fa-print"></i>
+                        </button> -->
+
+                        <!-- Aquí va el botón de eliminar -->
+                        <button class="btn bg-gradient-danger margin" name="cancel" type="button" placement="top" ngbTooltip="Anular Factura"
+                            (click)="cancel(nota)" *ngIf="auth.hasRole('ROLE_ADMIN')"
+                            [disabled]="nota.estado.idEstado === 4">
+                            <i class="fas fa-ban"></i>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+
+            <tfoot>
+                <tr>
+                    <th>ID</th>
+                    <th>Abono</th>
+                    <th>Total</th>
+                    <th>Restante</th>
+                    <th>Emisor</th>
+                    <th>Fecha Creaci&oacute;n</th>
+                    <th>Fecha L&iacute;mite de Pago</th>
+                    <th>Estado</th>
+                    <th *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR')">Opciones</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+

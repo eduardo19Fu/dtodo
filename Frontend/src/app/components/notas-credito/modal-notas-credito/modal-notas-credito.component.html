@@ -1,0 +1,67 @@
+<div class="modal fade" id="modal-notas-credito">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header header-modal" style="background-color: rebeccapurple;">
+                <h4 class="modal-title" style="color: #ffffff">{{title}}</h4>
+                <button #myButton2XChild type="button" name="button-2x" id="button-2x" class="close"
+                    data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="card-body">
+                <div class="modal-body table-responsive">
+                    <table id="notas-credito"
+                        class="table table-hover table-striped table-bordered dataTable dtr-inline table-sm" role="grid"
+                        *ngIf="notasCredito?.length > 0">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Abono</th>
+                                <th>Total</th>
+                                <th>Restante</th>
+                                <th>Emisor</th>
+                                <th>Cliente</th>
+                                <th>Fecha Creaci&oacute;n</th>
+                                <th>Fecha L&iacute;mite de Pago</th>
+                                <th>Opciones</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr *ngFor="let nota of notasCredito">
+                                <td>{{nota.idNotaCredito}}</td>
+                                <td>{{nota.abono}}</td>
+                                <td>{{nota.total}}</td>
+                                <td>{{nota.restante}}</td>
+                                <td>{{nota.usuario.usuario}}</td>
+                                <td>{{nota.cliente.nombre}}</td>
+                                <td>{{nota.fechaCreacion | date: 'dd/MM/yyyy - hh:mm'}}</td>
+                                <td>{{nota.fechaPagoLimite | date: 'dd/MM/yyyy'}}</td>
+                                <td class="center-options">
+                                    <button class="btn bg-gradient-cyan" (click)="chooseNotaCredito(nota)">
+                                        Elegir
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+
+                        <tfoot>
+                            <tr>
+                                <th>ID</th>
+                                <th>Abono</th>
+                                <th>Total</th>
+                                <th>Restante</th>
+                                <th>Emisor</th>
+                                <th>Fecha Creaci&oacute;n</th>
+                                <th>Fecha L&iacute;mite de Pago</th>
+                                <th>Opciones</th>
+                            </tr>
+                        </tfoot>
+
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

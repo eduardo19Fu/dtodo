@@ -16,8 +16,8 @@ export class AuthService {
   constructor(
     private http: HttpClient
   ) {
-    // this.url = 'http://localhost:8382';
-    this.url = 'https://dtodojalapa.xyz:8382';
+    this.url = 'http://localhost:8382';
+    // this.url = 'https://dtodojalapa.xyz:8382';
   }
 
   public get usuario(): Usuario {

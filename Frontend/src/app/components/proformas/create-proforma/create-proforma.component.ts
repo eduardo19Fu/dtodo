@@ -67,7 +67,6 @@ export class CreateProformaComponent implements OnInit {
   }
 
   loadCliente(event): void {
-    console.log(event);
     (document.getElementById('buscar') as HTMLInputElement).value = event.nit;
     (document.getElementById('button-2x')).click();
     this.buscarCliente();
@@ -210,8 +209,7 @@ export class CreateProformaComponent implements OnInit {
         itemProforma.descuento = descuento;
         itemProforma.subTotal = itemProforma.calcularImporte();
         itemProforma.subTotalDescuento = itemProforma.calcularImporteDescuento();
-        itemProforma.nPrecioVenta = itemProforma.clacularNuevoPrecioVenta();
-        console.log(itemProforma.nPrecioVenta);
+        itemProforma.nPrecioVenta = itemProforma.calcularNuevoPrecioVenta();
       }
       
       return itemProforma;
