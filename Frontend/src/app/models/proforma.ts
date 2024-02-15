@@ -7,7 +7,7 @@ import { DetalleProforma } from './detalle-proforma';
 export class Proforma {
 
     idProforma: number;
-    noProforma: number;
+    noProforma: string;
     total: number;
     fechaEmision: Date;
 
@@ -24,5 +24,12 @@ export class Proforma {
         });
 
         return this.total;
+    }
+
+    generarNoProforma(): string {
+        let min = 0;
+        let max = 100000;
+        let noProforma = Math.floor(Math.random() * (max - min + 1) + min) + 'P';
+        return noProforma;
     }
 }

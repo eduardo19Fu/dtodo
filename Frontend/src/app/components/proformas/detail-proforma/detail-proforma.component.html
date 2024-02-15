@@ -1,0 +1,84 @@
+<div *ngIf="detailService.modal" class="abrir-modal animacion fadeIn">
+    <div class="modal" tabindex="-1" style="display: block; overflow-y: scroll;">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{title}}</h5>
+                    <button (click)="cerrarModal()" id="close" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true" style="color: white;">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="container">
+                        <h4>Datos Generales</h4>
+                        <div class="row">
+                            <div class="col-sm">
+
+                                <ul *ngIf="proforma" class="list-group mb-3">
+                                    <li class="list-group-item">
+                                        <strong>REGISTRO: </strong>
+                                        {{proforma.idProforma}}
+                                    </li>
+                                    <li class="list-group-item">
+                                        <strong>NO. Proforma: </strong>
+                                        {{proforma.noProforma}}
+                                    </li>
+                                    <li class="list-group-item">
+                                        <strong>TOTAL: </strong>
+                                        {{proforma.total | currency: "Q" : "symbol"}}
+                                    </li>
+                                    <li class="list-group-item">
+                                        <strong>FECHA EMISIÓN: </strong>
+                                        {{proforma.fechaEmision | date: 'dd/MM/yyyy - hh:mm'}}
+                                    </li>
+                                    <li class="list-group-item">
+                                        <strong>CLIENTE: </strong>
+                                        {{proforma.cliente.nombre}}
+                                    </li>
+                                    <li class="list-group-item">
+                                        <strong>VENDEDOR: </strong>
+                                        {{proforma.usuario.usuario}}
+                                    </li>
+                                </ul>
+
+                            </div>
+
+
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <h4>Detalle de Proforma</h4>&nbsp;
+                            <table class="table table-hover">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Fila</th>
+                                        <th>Producto</th>
+                                        <th>Cantidad</th>
+                                        <th>SubTotal</th>
+                                        <th>Descuento</th>
+                                        <th>Descuento Aplicado</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    <tr class="" *ngFor="let item of proforma.itemsProforma; let i = index">
+                                        <td>{{item.idDetalle}}</td>
+                                        <td>{{item.producto.nombre}}</td>
+                                        <td>{{item.cantidad}}</td>
+                                        <td>{{item.subTotal | currency : "Q" : "symbol"}}</td>
+                                        <td>{{item.descuento + '%'}}</td>
+                                        <td>{{item.subTotalDescuento | currency: "Q" : "symbol"}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button (click)="cerrarModal()" type="button" class="btn btn-secondary"
+                        data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

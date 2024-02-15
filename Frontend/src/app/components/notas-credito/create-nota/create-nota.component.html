@@ -1,0 +1,227 @@
+<!-- MODAL DE REGISTRO PARA CLIENTES -->
+<app-modal-create *ngIf="nitIngresado" [nit]="nitIngresado" (clienteCreado)="cargarCliente($event)"></app-modal-create>
+
+<!-- MODAL PARA BUSCAR PRODUCTOS -->
+<app-modal-buscar-producto (producto)="loadProducto($event)"></app-modal-buscar-producto>
+
+<!-- MODAL PARA BUSCAR CLIENTES -->
+<app-modal-buscar-cliente (cliente)="loadCliente($event)"></app-modal-buscar-cliente>
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark">{{title}}</h1>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-9">
+        <div class="card card-orange">
+            <div class="card-header">
+                <h3 class="card-title">Rellene el formulario de envío</h3>
+            </div>
+
+            <form #envioForm="ngForm">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="usuario">Vendedor</label>
+                                <input class="form-control" type="text" name="usuario"
+                                    value="{{usuario.primerNombre + ' ' + usuario.apellido}}" [disabled]="usuario">
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="buscar" style="display: block;">Buscar</label>
+                                <input #mybuscar type="text" id="buscar" name="buscar" class="form-control"
+                                    style="width: 70%; display: inline; margin-right: 10px;" (keyup.enter)="buscarCliente()"
+                                    autofocus>
+
+                                <button type="button" role="button" class="btn bg-fuchsia" data-toggle="modal"
+                                    data-target="#modal-buscar-cliente">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="nit">NIT:</label>
+                                <input type="text" class="form-control" name="nit"
+                                    value="{{cliente ? cliente.nit : ''}}" disabled>
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="nombre">Nombre:</label>
+                                <input type="text" class="form-control" name="nombre"
+                                    value="{{cliente ? cliente.nombre : ''}}" disabled>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="direccion">Dirección:</label>
+                                <input type="text" class="form-control" name="direccion"
+                                    value="{{cliente ? cliente.direccion : ''}}" disabled>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+
+                    <div class="row">
+                        <!-- <div class="col">
+                            <div class="form-group">
+                                <label for="telefono-referencia">Tel&eacute;fono</label>
+                                <input type="text" class="form-control" name="telefono-referencia" id="telefono-referencia"
+                                    [(ngModel)]="envio.telefonoReferencia">
+                            </div>
+                        </div> -->
+
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="fecha-pedido">Fecha L&iacute;mite de Pago</label>
+                                <input type="date" class="form-control" name="fecha-pedido" id="fecha-pedido"
+                                    [(ngModel)]="notaCredito.fechaPagoLimite">
+                            </div>
+
+                        </div>
+                    </div>
+                    <hr>
+
+                    <div class="row">
+                        <div class="col-md-auto">
+                            <div class="form-group">
+                                <label for="codigo" style="display: block;">Codigo</label>
+                                <input #myCodProductoChild type="text" class="form-control" name="codigo" id="codigo"
+                                    value="{{producto ? producto.codProducto : ''}}"
+                                    style="width: 70%; display: inline; margin-right: 10px;"
+                                    (keyup.enter)="buscarProducto()">
+
+                                <button type="button" class="btn bg-gradient-fuchsia" data-toggle="modal"
+                                    data-target="#modal-buscar-producto">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="nombre">Producto</label>
+                                <input type="text" class="form-control" name="nombre"
+                                    value="{{producto ? producto.nombre : ''}}" [disabled]="producto.nombre">
+
+                            </div>
+                        </div>
+
+                        <div class="col-sm-2">
+                            <div class="form-group">
+                                <label for="cantidad" style="display: block;">Cantidad</label>
+                                <input #myCantidadChild type="number" name="cantidad" id="cantidad" class="form-control"
+                                    style="width: 65%; display: inline; margin-right: 10px;" value="0"
+                                    (keyup.enter)="agregarLinea()" autofocus>
+
+                                <button type="button" class="btn bg-gradient-cyan" (click)="agregarLinea()">
+                                    <i class="fas fa-plus-square"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LISTADO DE PRODUCTOS AGREGADOS -->
+                <div class="card-body table-responsive">
+                    <table class="table table-hover table-sm">
+                        <thead>
+                            <tr>
+                                <th>Codigo</th>
+                                <th>Producto</th>
+                                <th>Precio</th>
+                                <th>Cantidad</th>
+                                <th>Descuento</th>
+                                <th>N. Precio</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr *ngFor="let item of notaCredito.items; let i = index">
+                                <td>{{item.producto.codProducto}}</td>
+                                <td>{{item.producto.nombre}}</td>
+                                <td>{{item.producto.precioVenta | currency: "Q" : "symbol"}}</td>
+                                <td>
+                                    <input type="number" id="cant" value="{{item.cantidad}}"
+                                        class="form-control col-sm-6"
+                                        (change)="actualizarCantidad(item.producto.idProducto, $event)"
+                                        (keyup)="actualizarCantidad(item.producto.idProducto, $event)">
+                                </td>
+                                <td>
+                                    <input type="number" id="descuento" name="descuento" value="{{item.descuento}}"
+                                        class="form-control col-sm-6"
+                                        (change)="actualizarCantidadDescuento(item.producto.idProducto, $event)"
+                                        (keyup)="actualizarCantidadDescuento(item.producto.idProducto, $event)">
+                                </td>
+
+                                <td>
+                                    {{item.calcularPrecioDescuento() | currency: "Q" : "symbol"}}
+                                </td>
+
+                                <td>{{item.subTotalDescuento | currency: "Q" : "symbol"}}</td>
+                                <td>
+                                    <button type="button" class="btn bg-gradient-danger" (click)="eliminarItem(i)">
+                                        X
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- VENTANA DE CALCULO DE SALDO RESTANTE SEGÚN ABONO DADO -->
+    <div class="col-md-3">
+        <div class="card card-fuchsia">
+            <div class="card-header">
+                <h3 class="card-title">Calculo de Cambio y Total</h3>
+            </div>
+            <div class="card-body">
+                <h4>
+                    Total: <span><strong>{{notaCredito.calcularTotal() | currency: "Q": "symbol"}}</strong></span>
+                </h4>
+                <form action="">
+                    <div class="form-group">
+                        <label for="abono">Abono:</label>
+                        <input #myAbono type="number" name="abono" id="abono" class="form-control"
+                            [(ngModel)]="abono" 
+                            (keyup)="calcularSaldo($event)">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="">Saldo Restante:</label>
+                        <h3>
+                            <span><strong #mySaldoChild>{{saldoRestante | currency: "Q":"symbol"}}</strong></span>
+                        </h3>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card-footer">
+                <input type="submit" role="button" class="btn btn-primary" value="Guardar"
+                    [disabled]="!cliente.idCliente || (notaCredito.items.length <= 0)" (click)="create()">
+            </div>
+        </div>
+    </div>
+</div>
+

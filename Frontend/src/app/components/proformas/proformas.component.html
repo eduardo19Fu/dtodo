@@ -1,0 +1,135 @@
+<!-- MODAL PARA MOSTRAR EL DETALLE DE LA PROFORMA -->
+<app-detail-proforma *ngIf="proformaSeleccionada" [proforma]="proformaSeleccionada"></app-detail-proforma>
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>{{title}}</h1>
+                <br>
+                <a [routerLink]="['/proformas/create']" class="btn bg-gradient-success">
+                    <i class="fas fa-plus-circle"></i>
+                    Nuevo
+                </a>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+
+<div class="card card-secondary">
+    <div class="card-header">
+        Filtros
+    </div>
+
+    <form #searchForm="ngForm">
+        <div class="card-body">
+            <div class="form-group">
+                <div class="row">
+                    <div class="col">
+                        <label for="fecha-inicio">Fecha Inicio</label>
+                        <input type="date" name="fecha-inicio" id="fecha-inicio" class="form-control" [(ngModel)]="fechaIni">
+                    </div>
+
+                    <div class="col">
+                        <label for="fecha-fin">Fecha Fin</label>
+                        <input type="date" name="fecha-fin" id="fecha-fin" class="form-control" [(ngModel)]="fechaFin">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-footer">
+            <button type="submit" class="btn bg-gradient-info" (click)="getProformasSp()" [disabled]="proformas.length > 0">
+                <i class="fas fa-search"></i>
+                Búscar
+            </button>
+            &nbsp;
+            <button type="button" class="btn bg-gradient-warning" (click)="reloadPage()">
+                <i class="fas fa-brush"></i>
+                Limpiar
+            </button>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        Listado de Tipos de Proformas
+    </div>
+    <div class="card-body table-responsive">
+
+        <div *ngIf="proformas?.length == 0" class="alert alert-info alert-dismissible">
+            <h5>
+                <i class="icon fas fa-info"></i>
+                Atención!
+            </h5>
+
+            No existe ninguna proforma registrada en la base de datos!
+        </div>
+
+        <table id="proformas" class="table table-hover table-striped table-bordered dataTable dtr-inline table-sm"
+            role="grid" *ngIf="proformas?.length > 0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>No. Proforma</th>
+                    <th>Fecha</th>
+                    <th>Total</th>
+                    <th>Estado</th>
+                    <th>Emisor</th>
+                    <th>Cliente</th>
+                    <th *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR')">Opciones</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr *ngFor="let proforma of proformas">
+                    <td>{{proforma.idProforma}}</td>
+                    <td>{{proforma.noProforma}}</td>
+                    <td>{{proforma.fechaEmision | date: 'dd/MM/yyyy - hh:mm'}}</td>
+                    <td>{{proforma.total | currency: 'Q' : 'symbol'}}</td>
+                    <td>
+                        <span class="badge"
+                            [ngClass]="{'badge-success': proforma.estado.idEstado === 1, 'badge-danger': proforma.estado.idEstado === 4}">
+                            {{proforma.estado.estado}}
+                        </span>
+                    </td>
+                    <td>{{proforma.usuario.usuario}}</td>
+                    <td>{{proforma.cliente.nombre}}</td>
+                    
+                    <td class="center-options" *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR')">
+
+                        <button class="btn bg-gradient-success margin" name="detail" type="button"
+                            (click)="abrirDetalle(proforma)">
+                            <i class="fas fa-asterisk"></i>
+                        </button>
+
+                        <button class="btn bg-gradient-warning margin" name="print" type="button"
+                            (click)="printProforma(proforma)" [disabled]="proforma.estado.idEstado === 4">
+                            <i class="fas fa-print"></i>
+                        </button>
+
+                        <!-- Aquí va el botón de eliminar -->
+                        <button class="btn bg-gradient-secondary margin" name="facturar" type="button" *ngIf="auth.hasRole('ROLE_ADMIN')"
+                            [disabled]="proforma.estado.idEstado === 4" [routerLink]="['/facturas/create', proforma.idProforma]" >
+                            <i class="fas fa-share-square"></i>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+
+            <tfoot>
+                <tr>
+                    <th>ID</th>
+                    <th>No. Proforma</th>
+                    <th>Fecha</th>
+                    <th>Total</th>
+                    <th>Estado</th>
+                    <th>Emisor</th>
+                    <th>Cliente</th>
+                    <th *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR')">Opciones</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>

@@ -79,25 +79,21 @@
             <version>1.0.9.RELEASE</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.28</version>
+            <scope>provided</scope>
+        </dependency>
+
+
         <!-- Solo para JDK 9+ -->
         <!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
         <dependency>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
         </dependency>
-
-        <!-- JASPER REPORTS DEPENDENCY -->
-<!--        <dependency>-->
-<!--            <groupId>net.sf.jasperreports</groupId>-->
-<!--            <artifactId>jasperreports</artifactId>-->
-<!--            <version>6.12.2</version>-->
-<!--            <exclusions>-->
-<!--                <exclusion>-->
-<!--                    <groupId>com.lowagie</groupId>-->
-<!--                    <artifactId>itext</artifactId>-->
-<!--                </exclusion>-->
-<!--            </exclusions>-->
-<!--        </dependency>-->
 
         <!-- JASPER REPORTS DEPENDENCY -->
         <dependency>

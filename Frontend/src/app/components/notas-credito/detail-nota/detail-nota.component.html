@@ -1,0 +1,92 @@
+<div *ngIf="detailService.modal" class="abrir-modal animacion fadeIn">
+    <div class="modal" tabindex="-1" style="display: block; overflow-y: scroll;">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{title}}</h5>
+                    <button (click)="cerrarModal()" id="close" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true" style="color: white;">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="container">
+                        <h4>Datos Generales</h4>
+                        <div class="row">
+                            <div class="col-sm">
+
+                                <ul *ngIf="notaCredito" class="list-group mb-3">
+                                    <!-- <li class="list-group-item">
+                                        <strong>TRANSACCIÓN: </strong>
+                                        {{factura.idFactura}}
+                                    </li>
+                                    <li class="list-group-item">
+                                        <strong>NO. FACTURA: </strong>
+                                        {{factura.noFactura}}
+                                    </li> -->
+                                    <li class="list-group-item">
+                                        <strong>TOTAL: </strong>
+                                        {{notaCredito.total | currency: "Q" : "symbol"}}
+                                    </li>
+                                    <li class="list-group-item">
+                                        <strong>PENDIENTE: </strong>
+                                        {{notaCredito.restante | currency: "Q" : "symbol"}}
+                                    </li>
+                                    <li class="list-group-item">
+                                        <strong>FECHA EMISIÓN: </strong>
+                                        {{notaCredito.fechaCreacion | date: 'dd/MM/yyyy - hh:mm'}}
+                                    </li>
+                                    <li class="list-group-item">
+                                        <strong>FECHA LIMITE DE PAGO;: </strong>
+                                        {{notaCredito.fechaPagoLimite | date: 'dd/MM/yyyy - hh:mm'}}
+                                    </li>
+                                    <li class="list-group-item">
+                                        <strong>CLIENTE: </strong>
+                                        {{notaCredito.cliente.nombre}}
+                                    </li>
+                                    <li class="list-group-item">
+                                        <strong>VENDEDOR: </strong>
+                                        {{notaCredito.usuario.usuario}}
+                                    </li>
+                                </ul>
+
+                            </div>
+
+
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <h4>Detalle de Nota de Cr&eacute;dito</h4>&nbsp;
+                            <table class="table table-hover">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Fila</th>
+                                        <th>Producto</th>
+                                        <th>Cantidad</th>
+                                        <th>SubTotal</th>
+                                        <th>Descuento</th>
+                                        <th>Descuento Aplicado</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    <tr class="" *ngFor="let item of notaCredito.items; let i = index">
+                                        <td>{{item.idNotaDetalle}}</td>
+                                        <td>{{item.producto.nombre}}</td>
+                                        <td>{{item.cantidad}}</td>
+                                        <td>{{item.subTotal | currency : "Q" : "symbol"}}</td>
+                                        <td>{{item.descuento + '%'}}</td>
+                                        <td>{{item.subTotalDescuento | currency: "Q" : "symbol"}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button (click)="cerrarModal()" type="button" class="btn btn-secondary"
+                        data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

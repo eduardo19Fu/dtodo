@@ -3,6 +3,7 @@ package com.aglayatech.licorstore.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "proformas_detalle")
@@ -13,8 +14,9 @@ public class DetalleProforma {
     private Long idDetalle;
     private Integer cantidad;
     private Float descuento;
-    private Double subTotal;
-    private Double subTotalDescuento;
+    private BigDecimal nPrecioVenta;
+    private BigDecimal subTotal;
+    private BigDecimal subTotalDescuento;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_producto")
@@ -45,19 +47,27 @@ public class DetalleProforma {
         this.descuento = descuento;
     }
 
-    public Double getSubTotal() {
+    public BigDecimal getnPrecioVenta() {
+        return nPrecioVenta;
+    }
+
+    public void setnPrecioVenta(BigDecimal nPrecioVenta) {
+        this.nPrecioVenta = nPrecioVenta;
+    }
+
+    public BigDecimal getSubTotal() {
         return subTotal;
     }
 
-    public void setSubTotal(Double subTotal) {
+    public void setSubTotal(BigDecimal subTotal) {
         this.subTotal = subTotal;
     }
 
-    public Double getSubTotalDescuento() {
+    public BigDecimal getSubTotalDescuento() {
         return subTotalDescuento;
     }
 
-    public void setSubTotalDescuento(Double subTotalDescuento) {
+    public void setSubTotalDescuento(BigDecimal subTotalDescuento) {
         this.subTotalDescuento = subTotalDescuento;
     }
 
@@ -70,4 +80,8 @@ public class DetalleProforma {
     }
 
     private static final long serialVersionUID = 1L;
+
+    private void calculateNewPrice() {
+
+    }
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -13,16 +14,16 @@ public class Proforma implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idproforma;
-    private Long noProforma;
-    private Double total;
+    private Long idProforma;
+    private String noProforma;
+    private BigDecimal total;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date fechaEmision;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario")
-    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
+    @JsonIgnoreProperties({"password", "roles", "hibernateLazyInitializer", "handler" })
     private Usuario usuario;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -45,27 +46,27 @@ public class Proforma implements Serializable {
         this.fechaEmision = new Date();
     }
 
-    public Long getIdproforma() {
-        return idproforma;
+    public Long getIdProforma() {
+        return idProforma;
     }
 
-    public void setIdproforma(Long idproforma) {
-        this.idproforma = idproforma;
+    public void setIdProforma(Long idProforma) {
+        this.idProforma = idProforma;
     }
 
-    public Long getNoProforma() {
+    public String getNoProforma() {
         return noProforma;
     }
 
-    public void setNoProforma(Long noProforma) {
+    public void setNoProforma(String noProforma) {
         this.noProforma = noProforma;
     }
 
-    public Double getTotal() {
+    public BigDecimal getTotal() {
         return total;
     }
 
-    public void setTotal(Double total) {
+    public void setTotal(BigDecimal total) {
         this.total = total;
     }
 
@@ -111,16 +112,17 @@ public class Proforma implements Serializable {
 
     @Override
     public String toString() {
-        return "Proforma{" +
-                "idproforma=" + idproforma +
-                ", noProforma=" + noProforma +
-                ", total=" + total +
-                ", fechaEmision=" + fechaEmision +
-                ", usuario=" + usuario +
-                ", estado=" + estado +
-                ", cliente=" + cliente +
-                ", itemsProforma=" + itemsProforma +
-                '}';
+        final StringBuilder sb = new StringBuilder("Proforma{");
+        sb.append("idProforma=").append(idProforma);
+        sb.append(", noProforma='").append(noProforma).append('\'');
+        sb.append(", total=").append(total);
+        sb.append(", fechaEmision=").append(fechaEmision);
+        sb.append(", usuario=").append(usuario);
+        sb.append(", estado=").append(estado);
+        sb.append(", cliente=").append(cliente);
+        sb.append(", itemsProforma=").append(itemsProforma);
+        sb.append('}');
+        return sb.toString();
     }
 
     private static final long serialVersionUID = 1L;

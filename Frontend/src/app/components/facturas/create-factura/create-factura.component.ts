@@ -17,6 +17,10 @@ import { UsuarioService } from 'src/app/services/usuarios/usuario.service';
 
 import swal from 'sweetalert2';
 import { ModalCambioService } from '../../../services/facturas/modal-cambio.service';
+import { ProformaService } from '../../../services/proformas/proforma.service';
+import { Proforma } from '../../../models/proforma';
+import { DetalleProforma } from '../../../models/detalle-proforma';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-create-factura',
@@ -33,6 +37,7 @@ export class CreateFacturaComponent implements OnInit {
   cliente: Cliente;
   usuario: UsuarioAuxiliar;
   factura: Factura;
+  proforma: Proforma;
   correlativo: Correlativo;
 
   efectivo: number;
@@ -40,13 +45,15 @@ export class CreateFacturaComponent implements OnInit {
 
   constructor(
     private facturaService: FacturaService,
+    private proformaService: ProformaService,
     private productoService: ProductoService,
     private clienteService: ClienteService,
     private usuarioService: UsuarioService,
     private clienteCreateService: ClienteCreateService,
     private modalCambioService: ModalCambioService,
     private correlativoService: CorrelativoService,
-    public authService: AuthService
+    public authService: AuthService,
+    private activatedRoute: ActivatedRoute
   ) {
     this.title = 'Crear Factura';
     this.cliente = new Cliente();
@@ -54,6 +61,7 @@ export class CreateFacturaComponent implements OnInit {
     this.factura = new Factura();
     this.correlativo = new Correlativo();
     this.producto = new Producto();
+    this.proforma = null;
   }
 
   ngOnInit(): void {
@@ -63,6 +71,8 @@ export class CreateFacturaComponent implements OnInit {
         this.cargarCorrelativo();
       }
     );
+
+    this.cargarProforma();
   }
 
   buscarCliente(): void {
@@ -150,13 +160,14 @@ export class CreateFacturaComponent implements OnInit {
               this.producto = new Producto();
               (document.getElementById('cantidad') as HTMLInputElement).value = '';
             } else {
-              item.producto = this.producto;
-              item.subTotalDescuento = item.calcularImporte();
-              item.subTotal = item.calcularImporte();
-              this.factura.itemsFactura.push(item);
-              this.producto = new Producto();
+                item.producto = this.producto;
+                item.subTotalDescuento = item.calcularImporte();
+                item.subTotal = item.calcularImporte();
 
-              (document.getElementById('cantidad') as HTMLInputElement).value = '';
+                this.factura.itemsFactura.push(item);
+                this.producto = new Producto();
+
+                (document.getElementById('cantidad') as HTMLInputElement).value = '';
             }
 
           } else if (item.cantidad === 0) {
@@ -181,6 +192,17 @@ export class CreateFacturaComponent implements OnInit {
           item.subTotal = item.calcularImporte();
           item.subTotalDescuento = item.calcularImporteDescuento();
         }
+      }
+
+      return item;
+    });
+
+    this.proforma.itemsProforma = this.proforma.itemsProforma.map((item: DetalleProforma) => {
+
+      if (idProducto === item.producto.idProducto) {
+        item.cantidad = cantidad;
+        item.subTotal = item.calcularImporte();
+        item.subTotalDescuento = item.calcularImporteDescuento();
       }
 
       return item;
@@ -225,6 +247,7 @@ export class CreateFacturaComponent implements OnInit {
 
   eliminarItem(index: number): void {
     this.factura.itemsFactura.splice(index, 1);
+    this.proforma.itemsProforma.splice(index, 1);
   }
 
   createFactura(): void {
@@ -232,7 +255,6 @@ export class CreateFacturaComponent implements OnInit {
     this.factura.serie = this.correlativo.serie;
     this.factura.cliente = this.cliente;
     this.factura.usuario = this.usuario;
-    console.log(this.factura.itemsFactura);
     this.factura.total = this.factura.calcularTotal();
 
     this.facturaService.create(this.factura).subscribe(
@@ -269,6 +291,40 @@ export class CreateFacturaComponent implements OnInit {
         //   error => {
         //     console.log(error);
         //   });
+      }
+    );
+  }
+
+  cargarProforma(): void {
+    this.activatedRoute.params.subscribe(params => {
+      const id = params['proformaId'];
+
+      if (id) {
+        this.buscarProformaPorId(id);
+      }
+    })
+  }
+
+  buscarProformaPorId(id: number): void {
+    this.proformaService.getProforma(id).subscribe(
+      proforma => {
+        this.proforma = proforma;
+
+        this.cliente = proforma.cliente;
+        this.factura.total = this.proforma.total;
+
+        this.proforma.itemsProforma.forEach((itemProforma) => {
+          let item: DetalleFactura = new DetalleFactura();
+
+          item.cantidad = itemProforma.cantidad;
+          item.subTotal = itemProforma.subTotal;
+          item.subTotalDescuento = itemProforma.subTotalDescuento;
+          item.producto = itemProforma.producto;
+          item.descuento = itemProforma.descuento;
+          
+          this.factura.itemsFactura.push(item);
+          console.log(this.factura.itemsFactura);
+        });
       }
     );
   }
