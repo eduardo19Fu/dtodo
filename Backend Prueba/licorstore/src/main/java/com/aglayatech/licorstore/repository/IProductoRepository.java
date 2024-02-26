@@ -15,7 +15,10 @@ public interface IProductoRepository extends JpaRepository<Producto, Integer> {
 	
 	// Buscar listado de productos por estado
 	List<Producto> findByEstado(Estado estado);
-	
+
+	@Query(value = "{call sp_consultar_productos(:idestado)}", nativeQuery = true)
+	List<Producto> listarPorEstadoSP(Integer idestado);
+
 	// Filtra los productos por nombre y devuelve un listado con las coincidencias
 	// select * from Producto where nombre = /*valor ingresado por usuario*/
 	List<Producto> findByNombreContaining(String nombre);
