@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -19,6 +20,9 @@ import java.util.List;
 @Table(name = "notas_credito")
 public class NotaCredito implements Serializable {
 
+    @Serial
+    private static final long serialVersionUID = 3881631841718824337L;
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idNotaCredito;
@@ -49,6 +53,4 @@ public class NotaCredito implements Serializable {
     @JoinColumn(name = "id_usuario")
     @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler", "password"})
     private Usuario usuario;
-
-    private static final long serialVersionUID = 1L;
 }

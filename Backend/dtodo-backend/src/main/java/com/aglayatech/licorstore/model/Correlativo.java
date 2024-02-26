@@ -1,7 +1,8 @@
 package com.aglayatech.licorstore.model;
 
+import java.io.Serial;
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -12,14 +13,25 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@ToString
 @Entity
 @Table(name = "correlativos")
 public class Correlativo implements Serializable {
+
+	@Serial
+	private static final long serialVersionUID = 6089200377612236893L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,9 +40,7 @@ public class Correlativo implements Serializable {
 	private Long correlativoFinal;
 	private Long correlativoActual;
 	private String serie;
-
-	@Temporal(TemporalType.TIMESTAMP)
-	private Date fechaCreacion;
+	private LocalDateTime fechaCreacion;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "id_estado")
@@ -44,73 +54,8 @@ public class Correlativo implements Serializable {
 
 	@PrePersist
 	public void preConfig() {
-		this.fechaCreacion = new Date();
+		this.fechaCreacion = LocalDateTime.now();
 	}
 
-	public Long getIdCorrelativo() {
-		return idCorrelativo;
-	}
-
-	public void setIdCorrelativo(Long idCorrelativo) {
-		this.idCorrelativo = idCorrelativo;
-	}
-
-	public Long getCorrelativoInicial() {
-		return correlativoInicial;
-	}
-
-	public void setCorrelativoInicial(Long correlativoInicial) {
-		this.correlativoInicial = correlativoInicial;
-	}
-
-	public Long getCorrelativoFinal() {
-		return correlativoFinal;
-	}
-
-	public void setCorrelativoFinal(Long correlativoFinal) {
-		this.correlativoFinal = correlativoFinal;
-	}
-
-	public Long getCorrelativoActual() {
-		return correlativoActual;
-	}
-
-	public void setCorrelativoActual(Long correlativoActual) {
-		this.correlativoActual = correlativoActual;
-	}
-
-	public String getSerie() {
-		return serie;
-	}
-
-	public void setSerie(String serie) {
-		this.serie = serie;
-	}
-
-	public Date getFechaCreacion() {
-		return fechaCreacion;
-	}
-
-	public void setFechaCreacion(Date fechaCreacion) {
-		this.fechaCreacion = fechaCreacion;
-	}
-
-	public Estado getEstado() {
-		return estado;
-	}
-
-	public void setEstado(Estado estado) {
-		this.estado = estado;
-	}
-
-	public Usuario getUsuario() {
-		return usuario;
-	}
-
-	public void setUsuario(Usuario usuario) {
-		this.usuario = usuario;
-	}
-
-	private static final long serialVersionUID = 1L;
 
 }

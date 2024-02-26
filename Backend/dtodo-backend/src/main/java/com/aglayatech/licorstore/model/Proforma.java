@@ -1,25 +1,48 @@
 package com.aglayatech.licorstore.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.PrePersist;
+import javax.persistence.Table;
+
+import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@ToString
 @Entity
 @Table(name = "proformas")
 public class Proforma implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = -7336700857512359689L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idProforma;
     private String noProforma;
     private BigDecimal total;
-
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fechaEmision;
+    private LocalDateTime fechaEmision;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario")
@@ -43,87 +66,6 @@ public class Proforma implements Serializable {
 
     @PrePersist
     public void prepersist(){
-        this.fechaEmision = new Date();
+        this.fechaEmision = LocalDateTime.now();
     }
-
-    public Long getIdProforma() {
-        return idProforma;
-    }
-
-    public void setIdProforma(Long idProforma) {
-        this.idProforma = idProforma;
-    }
-
-    public String getNoProforma() {
-        return noProforma;
-    }
-
-    public void setNoProforma(String noProforma) {
-        this.noProforma = noProforma;
-    }
-
-    public BigDecimal getTotal() {
-        return total;
-    }
-
-    public void setTotal(BigDecimal total) {
-        this.total = total;
-    }
-
-    public Date getFechaEmision() {
-        return fechaEmision;
-    }
-
-    public void setFechaEmision(Date fechaEmision) {
-        this.fechaEmision = fechaEmision;
-    }
-
-    public Usuario getUsuario() {
-        return usuario;
-    }
-
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
-    }
-
-    public Estado getEstado() {
-        return estado;
-    }
-
-    public void setEstado(Estado estado) {
-        this.estado = estado;
-    }
-
-    public Cliente getCliente() {
-        return cliente;
-    }
-
-    public void setCliente(Cliente cliente) {
-        this.cliente = cliente;
-    }
-
-    public List<DetalleProforma> getItemsProforma() {
-        return itemsProforma;
-    }
-
-    public void setItemsProforma(List<DetalleProforma> itemsProforma) {
-        this.itemsProforma = itemsProforma;
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("Proforma{");
-        sb.append("idProforma=").append(idProforma);
-        sb.append(", noProforma='").append(noProforma).append('\'');
-        sb.append(", total=").append(total);
-        sb.append(", fechaEmision=").append(fechaEmision);
-        sb.append(", usuario=").append(usuario);
-        sb.append(", estado=").append(estado);
-        sb.append(", cliente=").append(cliente);
-        sb.append(", itemsProforma=").append(itemsProforma);
-        sb.append('}');
-        return sb.toString();
-    }
-
-    private static final long serialVersionUID = 1L;
 }
