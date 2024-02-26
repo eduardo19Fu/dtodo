@@ -43,7 +43,7 @@ public class ProductoServiceImpl implements IProductoService {
 
 	@Override
 	public List<Producto> findAll() {
-		return repoProducto.findAll(Sort.by(Direction.ASC, "nombre"));
+		return repoProducto.listarPorEstadoSP(0);
 	}
 
 	@Override
@@ -90,7 +90,7 @@ public class ProductoServiceImpl implements IProductoService {
 	
 	@Override
 	public List<Producto> findAllByEstado(Estado estado) {
-		return repoProducto.findByEstado(estado);
+		return repoProducto.listarPorEstadoSP(estado.getIdEstado());
 	}
 
 
