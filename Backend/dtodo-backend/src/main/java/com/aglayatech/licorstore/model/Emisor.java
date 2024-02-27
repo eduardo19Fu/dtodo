@@ -1,13 +1,34 @@
 package com.aglayatech.licorstore.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import java.io.Serial;
 import java.io.Serializable;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@ToString
 @Entity
 @Table(name = "emisores")
 public class Emisor implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = -2672814903805575844L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,86 +46,4 @@ public class Emisor implements Serializable {
     @JoinColumn(name = "id_estado")
     @JsonIgnoreProperties(value = {"hibernateLazyIntializer", "handler"})
     private Estado estado;
-
-    public Integer getIdEmisor() {
-        return idEmisor;
-    }
-
-    public void setIdEmisor(Integer idEmisor) {
-        this.idEmisor = idEmisor;
-    }
-
-    public String getCodigoPostal() {
-        return codigoPostal;
-    }
-
-    public void setCodigoPostal(String codigoPostal) {
-        this.codigoPostal = codigoPostal;
-    }
-
-    public String getCorreoEmisor() {
-        return correoEmisor;
-    }
-
-    public void setCorreoEmisor(String correoEmisor) {
-        this.correoEmisor = correoEmisor;
-    }
-
-    public String getDepartamento() {
-        return departamento;
-    }
-
-    public void setDepartamento(String departamento) {
-        this.departamento = departamento;
-    }
-
-    public String getMunicipio() {
-        return municipio;
-    }
-
-    public void setMunicipio(String municipio) {
-        this.municipio = municipio;
-    }
-
-    public String getDireccion() {
-        return direccion;
-    }
-
-    public void setDireccion(String direccion) {
-        this.direccion = direccion;
-    }
-
-    public String getNit() {
-        return nit;
-    }
-
-    public void setNit(String nit) {
-        this.nit = nit;
-    }
-
-    public String getNombreComercial() {
-        return nombreComercial;
-    }
-
-    public void setNombreComercial(String nombreComercial) {
-        this.nombreComercial = nombreComercial;
-    }
-
-    public String getNombreEmisor() {
-        return nombreEmisor;
-    }
-
-    public void setNombreEmisor(String nombreEmisor) {
-        this.nombreEmisor = nombreEmisor;
-    }
-
-    public Estado getEstado() {
-        return estado;
-    }
-
-    public void setEstado(Estado estado) {
-        this.estado = estado;
-    }
-
-    private static final long serialVersionUID = 1L;
 }

@@ -1,5 +1,6 @@
 package com.aglayatech.licorstore.model;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -17,7 +18,15 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.ToString;
 
+@Data
+@AllArgsConstructor
+@Builder
+@ToString
 @Entity
 @Table(name = "clientes")
 public class Cliente implements Serializable {
@@ -34,72 +43,19 @@ public class Cliente implements Serializable {
 	private Date fechaRegistro;
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "cliente")
-	@JsonIgnoreProperties({ "cliente", "hibernateLazyInitializer", "handler" })
+	@JsonIgnoreProperties({"cliente", "hibernateLazyInitializer", "handler"})
 	private List<Factura> facturas;
 
 	public Cliente() {
 		facturas = new ArrayList<>();
 	}
 
+	@Serial
+	private static final long serialVersionUID = 195366071153481819L;
+
 	@PrePersist
 	public void configFechaRegistro() {
 		fechaRegistro = new Date();
 	}
-
-	public Integer getIdCliente() {
-		return idCliente;
-	}
-
-	public void setIdCliente(Integer idCliente) {
-		this.idCliente = idCliente;
-	}
-
-	public String getNombre() {
-		return nombre;
-	}
-
-	public void setNombre(String nombre) {
-		this.nombre = nombre;
-	}
-
-	public String getNit() {
-		return nit;
-	}
-
-	public void setNit(String nit) {
-		this.nit = nit;
-	}
-
-	public String getDireccion() {
-		return direccion;
-	}
-
-	public void setDireccion(String direccion) {
-		this.direccion = direccion;
-	}
-
-	public Date getFechaRegistro() {
-		return fechaRegistro;
-	}
-
-	public void setFechaRegistro(Date fechaRegistro) {
-		this.fechaRegistro = fechaRegistro;
-	}
-
-	public String getTelefono() {
-		return telefono;
-	}
-
-	public void setTelefono(String telefono) {
-		this.telefono = telefono;
-	}
-
-	@Override
-	public String toString() {
-		return "Cliente [idCliente=" + idCliente + ", nombre=" + nombre + ", nit=" + nit + ", direccion=" + direccion
-				+ ", fechaRegistro=" + fechaRegistro + "]";
-	}
-
-	private static final long serialVersionUID = 1L;
 
 }

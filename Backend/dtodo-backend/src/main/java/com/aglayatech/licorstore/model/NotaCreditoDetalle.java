@@ -13,6 +13,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
@@ -22,6 +24,9 @@ import java.math.BigDecimal;
 @Entity
 @Table(name = "notas_credito_detalle")
 public class NotaCreditoDetalle implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = -5627582366345321356L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

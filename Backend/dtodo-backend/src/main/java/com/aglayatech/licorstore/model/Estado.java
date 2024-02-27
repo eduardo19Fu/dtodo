@@ -8,6 +8,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+/*** ENTIDAD SERA ELIMINADA Y SERÁ REEMPLAZADA POR ENUMERATIONS ***/
 @Entity
 @Table(name = "estados")
 public class Estado implements Serializable {

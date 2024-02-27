@@ -1,8 +1,14 @@
 package com.aglayatech.licorstore.model;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
 import java.io.Serializable;
 
+/**Sustituir clase por Enum class**/
 @Entity
 @Table(name = "tipos_factura")
 public class TipoFactura implements Serializable {

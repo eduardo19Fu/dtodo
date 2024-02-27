@@ -1,6 +1,8 @@
 package com.aglayatech.licorstore.model;
 
+import java.io.Serial;
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -12,93 +14,35 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@ToString
 @Entity
 @Table(name = "facturas_detalle")
 public class DetalleFactura implements Serializable {
+
+	@Serial
+	private static final long serialVersionUID = -5747594945789643683L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long idDetalle;
 	private Integer cantidad;
-	private Double subTotal;
-	private Double descuento;
-	private Double subTotalDescuento;
-
+	private BigDecimal subTotal;
+	private BigDecimal descuento;
+	private BigDecimal subTotalDescuento;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "id_producto")
 	@JsonIgnoreProperties({ "movimientos", "hibernateLazyInitializer", "handler" })
 	private Producto producto;
-
-	public DetalleFactura() {
-		// constructor
-	}
-
-	public Long getIdDetalle() {
-		return idDetalle;
-	}
-
-	public void setIdDetalle(Long idDetalle) {
-		this.idDetalle = idDetalle;
-	}
-
-	public Integer getCantidad() {
-		return cantidad;
-	}
-
-	public void setCantidad(Integer cantidad) {
-		this.cantidad = cantidad;
-	}
-
-	public Double getSubTotal() {
-		return subTotal;
-	}
-
-	public void setSubTotal(Double subTotal) {
-		this.subTotal = subTotal;
-	}
-
-	public Producto getProducto() {
-		return producto;
-	}
-
-	public void setProducto(Producto producto) {
-		this.producto = producto;
-	}
-
-	public Double getDescuento() {
-		return descuento;
-	}
-
-	public void setDescuento(Double descuento) {
-		this.descuento = descuento;
-	}
-
-	public Double getSubTotalDescuento() {
-		return subTotalDescuento;
-	}
-
-	public void setSubTotalDescuento(Double subTotalDescuento) {
-		this.subTotalDescuento = subTotalDescuento;
-	}
-
-	public Double calcularImporte() {
-		/*if(this.descuento == 0)
-			return this.cantidad.doubleValue() * this.producto.getPrecioVenta();
-		else
-			return (this.descuento/100) * (this.cantidad.doubleValue() * this.producto.getPrecioVenta());*/
-
-		return this.descuento <= 0 ? this.cantidad.doubleValue() * this.producto.getPrecioVenta() :
-				(this.cantidad.doubleValue() * this.producto.getPrecioVenta()) - ((this.descuento / 100) * (this.cantidad.doubleValue() * this.producto.getPrecioVenta()));
-	}
-
-	@Override
-	public String toString() {
-		return "DetalleFactura [idDetalle=" + idDetalle + ", cantidad=" + cantidad + ", subTotal=" + subTotal
-				+ ", producto=" + producto + "]";
-	}
-
-	private static final long serialVersionUID = 1L;
 
 }
