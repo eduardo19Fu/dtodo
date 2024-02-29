@@ -7,7 +7,7 @@ export class DetalleProforma {
     subTotal: number;
     descuento: number;
     subTotalDescuento: number;
-    nPrecioVenta: number;
+    nuevoPrecioVenta: number;
 
     producto: Producto;
 

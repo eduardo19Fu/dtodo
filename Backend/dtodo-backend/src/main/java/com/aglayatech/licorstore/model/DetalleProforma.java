@@ -15,7 +15,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
@@ -28,7 +27,6 @@ import java.math.BigDecimal;
 @Table(name = "proformas_detalle")
 public class DetalleProforma implements Serializable {
 
-    @Serial
     private static final long serialVersionUID = -6591842924041622770L;
 
     @Id
@@ -36,7 +34,7 @@ public class DetalleProforma implements Serializable {
     private Long idDetalle;
     private Integer cantidad;
     private Float descuento;
-    private BigDecimal nPrecioVenta;
+    private BigDecimal nuevoPrecioVenta;
     private BigDecimal subTotal;
     private BigDecimal subTotalDescuento;
 
@@ -44,4 +42,6 @@ public class DetalleProforma implements Serializable {
     @JoinColumn(name = "id_producto")
     @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
     private Producto producto;
+
 }
+
