@@ -1,12 +1,7 @@
 package com.aglayatech.licorstore.model;
 
-import java.io.Serial;
 import java.io.Serializable;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -30,7 +25,6 @@ import lombok.ToString;
 @Table(name = "clientes")
 public class Cliente implements Serializable {
 
-	@Serial
 	private static final long serialVersionUID = 195366071153481819L;
 
 	@Id
@@ -45,6 +39,9 @@ public class Cliente implements Serializable {
 	@PrePersist
 	public void configFechaRegistro() {
 		fechaRegistro = LocalDateTime.now();
+		setNombre(nombre.toUpperCase());
+		setNit(nit.toUpperCase());
+		setDireccion(direccion.toUpperCase());
 	}
 
 }
