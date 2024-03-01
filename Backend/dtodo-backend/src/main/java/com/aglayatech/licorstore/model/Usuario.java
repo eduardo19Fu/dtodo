@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,7 +30,6 @@ import javax.persistence.Table;
 @Table(name = "usuarios")
 public class Usuario implements Serializable {
 
-	@Serial
 	private static final long serialVersionUID = 5707538981177384013L;
 
 	@Id

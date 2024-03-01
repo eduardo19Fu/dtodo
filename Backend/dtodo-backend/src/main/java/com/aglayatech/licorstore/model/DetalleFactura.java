@@ -1,6 +1,5 @@
 package com.aglayatech.licorstore.model;
 
-import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
@@ -29,7 +28,6 @@ import lombok.ToString;
 @Table(name = "facturas_detalle")
 public class DetalleFactura implements Serializable {
 
-	@Serial
 	private static final long serialVersionUID = -5747594945789643683L;
 
 	@Id

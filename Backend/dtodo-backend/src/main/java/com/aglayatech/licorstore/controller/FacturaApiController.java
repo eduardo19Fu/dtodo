@@ -234,7 +234,7 @@ public class FacturaApiController {
         Emisor emisor = null;
         Certificador certificador = null;
         MovimientoProducto movimientoProducto = null;
-        Correlativo correlativo = serviceCorrelativo.findByUsuario(factura.getUsuario(), estadoCorr);
+        Correlativo correlativo = serviceCorrelativo.findByUsuario(factura.getUsuario().getIdUsuario());
 
         Map<String, Object> response = new HashMap<>();
 

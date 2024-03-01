@@ -1,15 +1,12 @@
 package com.aglayatech.licorstore.model;
 
-import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -29,7 +26,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @Data
@@ -40,7 +36,6 @@ import lombok.ToString;
 @Table(name = "facturas")
 public class Factura implements Serializable {
 
-	@Serial
 	private static final long serialVersionUID = 2591750760215871716L;
 
 	@Id
@@ -55,7 +50,9 @@ public class Factura implements Serializable {
 	private String serieSat;
 	private String mensajeSat;
 	private String fechaCertificacionSat;
-	private LocalDateTime fecha;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date fecha;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "id_estado")
@@ -88,7 +85,8 @@ public class Factura implements Serializable {
 
 	@PrePersist
 	public void initFecha() {
-		this.fecha = LocalDateTime.now();
+//		this.fecha = LocalDateTime.now();
+		this.fecha = new Date();
 	}
 
 	public Double redondearPrecio(double precio){

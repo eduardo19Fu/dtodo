@@ -1,6 +1,5 @@
 package com.aglayatech.licorstore.model;
 
-import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -30,7 +29,6 @@ import lombok.ToString;
 @Table(name = "tipos_producto")
 public class TipoProducto implements Serializable {
 
-	@Serial
 	private static final long serialVersionUID = -5216314329641594538L;
 
 	@Id

@@ -59,7 +59,7 @@ export class CreateClienteComponent implements OnInit {
     // tslint:disable-next-line: deprecation
     this.serviceCliente.update(this.cliente).subscribe(
       response => {
-        this.router.navigate(['/clientes']);
+        this.router.navigate(['/clientes/index']);
         swal.fire('Cliente Actualizado', `Cliente: ${response.nombre}`, 'success');
       }
     );

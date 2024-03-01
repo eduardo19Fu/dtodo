@@ -30,6 +30,8 @@ import lombok.ToString;
 @Table(name = "marcas_producto")
 public class MarcaProducto implements Serializable {
 
+	private static final long serialVersionUID = 6163462751993275676L;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer idMarcaProducto;

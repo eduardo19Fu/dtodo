@@ -15,7 +15,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import java.io.Serial;
 import java.io.Serializable;
 
 @Data
@@ -27,7 +26,6 @@ import java.io.Serializable;
 @Table(name = "emisores")
 public class Emisor implements Serializable {
 
-    @Serial
     private static final long serialVersionUID = -2672814903805575844L;
 
     @Id

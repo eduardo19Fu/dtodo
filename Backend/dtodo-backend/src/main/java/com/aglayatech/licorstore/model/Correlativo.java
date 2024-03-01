@@ -1,6 +1,5 @@
 package com.aglayatech.licorstore.model;
 
-import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -30,7 +29,6 @@ import lombok.ToString;
 @Table(name = "correlativos")
 public class Correlativo implements Serializable {
 
-	@Serial
 	private static final long serialVersionUID = 6089200377612236893L;
 
 	@Id

@@ -15,7 +15,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import java.io.Serial;
 import java.io.Serializable;
 
 @Data
@@ -43,6 +42,5 @@ public class Certificador implements Serializable {
     @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"})
     private Estado estado;
 
-    @Serial
     private static final long serialVersionUID = -919682858646815016L;
 }

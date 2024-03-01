@@ -14,7 +14,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -26,7 +25,6 @@ import java.time.LocalDate;
 @Table(name = "pagos_parciales")
 public class PagoParcial implements Serializable {
 
-    @Serial
     private static final long serialVersionUID = 2989474446274071732L;
 
     @Id
