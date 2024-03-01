@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -28,14 +28,11 @@ import com.aglayatech.licorstore.service.IClienteService;
 @CrossOrigin(origins = {"http://localhost:4200", "https://dtodojalapa.xyz"})
 @RestController
 @RequestMapping(value = "/api")
+@RequiredArgsConstructor
 @Slf4j
 public class ClienteApiController {
 
 	private final IClienteService serviceCliente;
-
-	public ClienteApiController(IClienteService serviceCliente) {
-		this.serviceCliente = serviceCliente;
-	}
 
 	@GetMapping(value = "/clientes")
 	public ResponseEntity<List<Cliente>> listarClientes () {

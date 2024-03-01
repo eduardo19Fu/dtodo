@@ -6,14 +6,13 @@ import java.util.Optional;
 
 import com.aglayatech.licorstore.error.exceptions.NoContentException;
 import com.aglayatech.licorstore.error.exceptions.NotFoundException;
+
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 
 import com.aglayatech.licorstore.model.Cliente;
@@ -21,11 +20,11 @@ import com.aglayatech.licorstore.repository.IClienteRepository;
 import com.aglayatech.licorstore.service.IClienteService;
 
 @Service
+@RequiredArgsConstructor
 @Slf4j
 public class ClienteServiceImpl implements IClienteService {
 
-	@Autowired
-	private IClienteRepository clienteRepository;
+	private final IClienteRepository clienteRepository;
 
 	@Override
 	public List<Cliente> findAll() {
@@ -107,7 +106,7 @@ public class ClienteServiceImpl implements IClienteService {
 			log.info("Listando Clientes Registrados por Nombre");
 			clientes = clienteRepository.findByNombre(nombre);
 
-			if(clientes != null && clientes.size() > 0) {
+			if(!clientes.isEmpty()) {
 				log.info("Listado de clientes con nombre {} obtenidos: {}", nombre, clientes.size());
 				return clientes;
 			} else {
@@ -134,9 +133,12 @@ public class ClienteServiceImpl implements IClienteService {
 				log.info("Cliente con nit: {}", nit);
 				return cliente.get();
 			} else {
-				log.error("No existen clientes registrados con el nit: {}", nit);
-				throw new NotFoundException("No existe ningún cliente registrado en la base de datos con el nit: " + nit);
+				log.error("Cliente con NIT: {}  no se encuentra registrado", nit);
+				throw new NotFoundException("Cliente con NIT: " + nit +  " no se encuentra registrado");
 			}
+		} catch(DataAccessException e) {
+			log.error("Ha ocurrido un error a nivel de base de datos: {}", e.getMessage());
+			throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Error al acceder a la base de datos", e);
 		} catch (Exception e) {
 			log.error("Un error ha ocurrido => {}", e);
 			throw new RuntimeException("Error => ", e);
@@ -169,12 +171,15 @@ public class ClienteServiceImpl implements IClienteService {
 			log.info("Registrando nuevo cliente");
 
 			if(cliente.getIdCliente() != null) {
-				log.info("Actuliazando registro de cliente con ID: ", cliente.getIdCliente());
-				newCliente.setIdCliente(cliente.getIdCliente());
-				newCliente.setNombre(cliente.getNombre());
-				newCliente.setNit(cliente.getNit());
-				newCliente.setDireccion(cliente.getDireccion());
-				newCliente.setTelefono(cliente.getTelefono());
+				log.info("Actuliazando registro de cliente con ID: {}", cliente.getIdCliente());
+				Cliente clienteActualizado = new Cliente();
+				clienteActualizado.setIdCliente(cliente.getIdCliente());
+				clienteActualizado.setNit(cliente.getNit());
+				clienteActualizado.setNombre(cliente.getNombre());
+				clienteActualizado.setDireccion(cliente.getDireccion());
+				clienteActualizado.setTelefono(cliente.getTelefono());
+
+				newCliente = clienteRepository.save(clienteActualizado);
 			}
 
 			newCliente = clienteRepository.save(cliente);
