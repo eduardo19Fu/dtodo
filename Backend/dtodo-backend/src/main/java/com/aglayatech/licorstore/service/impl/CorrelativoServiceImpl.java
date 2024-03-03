@@ -131,8 +131,8 @@ public class CorrelativoServiceImpl implements ICorrelativoService {
 					log.info("Correlativo activo: {} para el usuario: {}", correlativo.get().getIdCorrelativo(), usuario.getUsuario());
 					return correlativo.get();
 				} else {
-					log.error("No existen correlativos activos para este usuario: {}", usuario.getUsuario());
-					throw new NotFoundException("No existen correlativos activos para este usuario");
+					log.warn("No existen correlativos activos para este usuario: {}", usuario.getUsuario());
+					return null;
 				}
 			} else {
 				log.error("No existe el usuario con ID: {}", idusuario);
@@ -159,7 +159,7 @@ public class CorrelativoServiceImpl implements ICorrelativoService {
 
 		try {
 
-			if(findByUsuario(correlativo.getUsuario().getIdUsuario()) == null) {
+			if(findByUsuario(correlativo.getUsuario().getIdUsuario()) != null) {
 				log.warn("El usuario {} ya cuenta con un correlativo activo", correlativo.getUsuario().getIdUsuario());
 				return null;
 			} else {

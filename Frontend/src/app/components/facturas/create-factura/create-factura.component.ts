@@ -107,7 +107,11 @@ export class CreateFacturaComponent implements OnInit {
     if (this.usuario) {
       this.correlativoService.getCorrelativoPorUsuario(this.usuario.idUsuario).subscribe(
         correlativo => {
-          this.correlativo = correlativo;
+          if (correlativo) {
+            this.correlativo = correlativo; 
+          } else {
+            swal.fire('¡Error al Cargar Correlativo!', 'El usuario no cuenta con un correlativo activo', 'error');
+          }
         },
         error => {
           swal.fire('Error al cargar correlativo', error.error.mensaje, 'error');
