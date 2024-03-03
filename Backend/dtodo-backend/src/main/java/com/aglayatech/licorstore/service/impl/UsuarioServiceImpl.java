@@ -49,7 +49,7 @@ public class UsuarioServiceImpl implements UserDetailsService, IUsuarioService {
 				.peek(authority -> logger.info("Role: " + authority.getAuthority()))
 				.collect(Collectors.toList());
 		
-		return new User(usuario.getUsuario(), usuario.getPassword(), usuario.getEnabled(), true, true, true, authorities);
+		return new User(usuario.getUsuario(), usuario.getPassword(), usuario.isEnabled(), true, true, true, authorities);
 	}
 
 	@Override

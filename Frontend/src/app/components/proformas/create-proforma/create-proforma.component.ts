@@ -209,7 +209,7 @@ export class CreateProformaComponent implements OnInit {
         itemProforma.descuento = descuento;
         itemProforma.subTotal = itemProforma.calcularImporte();
         itemProforma.subTotalDescuento = itemProforma.calcularImporteDescuento();
-        itemProforma.nPrecioVenta = itemProforma.calcularNuevoPrecioVenta();
+        itemProforma.nuevoPrecioVenta = itemProforma.calcularNuevoPrecioVenta();
       }
       
       return itemProforma;

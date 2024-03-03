@@ -17,10 +17,12 @@ public interface ICorrelativoService {
 	
 	public Correlativo findById(Long idcorrelativo);
 	
-	public Correlativo findByUsuario(Usuario usuario, Estado estado);
+	public Correlativo findByUsuario(Integer idusuario);
 	
 	public Correlativo save(Correlativo correlativo);
+
+	public Correlativo update(Correlativo correlativo);
 	
-	public void delete(Long id);
+	public Correlativo anular(Long id);
 
 }

@@ -49,7 +49,7 @@ export class CreateClienteComponent implements OnInit {
     this.serviceCliente.create(this.cliente).subscribe(
       response => {
         this.router.navigate(['/clientes/index']);
-        swal.fire('Cliente Registrado', `${response.mensaje}: ${response.cliente.nombre}`, 'success');
+        swal.fire('Cliente Registrado con Exito', `Cliente: ${response.nombre}`, 'success');
       },
       error => { }
     );
@@ -59,8 +59,8 @@ export class CreateClienteComponent implements OnInit {
     // tslint:disable-next-line: deprecation
     this.serviceCliente.update(this.cliente).subscribe(
       response => {
-        this.router.navigate(['/clientes']);
-        swal.fire('Cliente Actualizado', `${response.mensaje}: ${response.cliente.nombre}`, 'success');
+        this.router.navigate(['/clientes/index']);
+        swal.fire('Cliente Actualizado', `Cliente: ${response.nombre}`, 'success');
       }
     );
   }

@@ -8,6 +8,4 @@ export class Cliente {
     direccion: string;
     fechaRegistro: Date;
     telefono: string;
-
-    facturas: Factura[] = [];
 }

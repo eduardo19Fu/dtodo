@@ -8,6 +8,7 @@ import { AuthService } from '../../services/auth.service';
 
 import { JqueryConfigs } from '../../utils/jquery/jquery-utils';
 import Swal from 'sweetalert2';
+import { Estado } from '../../models/estado';
 
 @Component({
   selector: 'app-correlativos',
@@ -66,9 +67,10 @@ export class CorrelativosComponent implements OnInit {
 
         // aqui va el codigo de confirmación para anular factura
         this.correlativoService.delete(correlativo.idCorrelativo).subscribe(response => {
+          correlativo.estado = response.estado;
           this.swalWithBootstrapButtons.fire(
-            `${response.mensaje}`,
-            `El correlativo No. ${response.correlativo.idCorrelativo} ha sido anulado con éxito`,
+            '¡Anulado!',
+            `El correlativo No. ${correlativo.idCorrelativo} ha sido anulado con éxito`,
             'success'
           );
         });

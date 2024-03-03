@@ -13,6 +13,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -23,6 +24,8 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "pagos_parciales")
 public class PagoParcial implements Serializable {
+
+    private static final long serialVersionUID = 2989474446274071732L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,6 +45,4 @@ public class PagoParcial implements Serializable {
     @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"})
     private Estado estado;
 
-
-    private static final long serialVersionUID = 1L;
 }

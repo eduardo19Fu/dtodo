@@ -2,6 +2,7 @@ package com.aglayatech.licorstore.controller;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigDecimal;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
@@ -233,7 +234,7 @@ public class FacturaApiController {
         Emisor emisor = null;
         Certificador certificador = null;
         MovimientoProducto movimientoProducto = null;
-        Correlativo correlativo = serviceCorrelativo.findByUsuario(factura.getUsuario(), estadoCorr);
+        Correlativo correlativo = serviceCorrelativo.findByUsuario(factura.getUsuario().getIdUsuario());
 
         Map<String, Object> response = new HashMap<>();
 
@@ -320,10 +321,10 @@ public class FacturaApiController {
                     // Descuento siempre debe ir a cero para reflejarlo despues en el precio unitario
                     items.setDescuento(0.0);
 
-                    if (factura.getItemsFactura().get(i).getDescuento() > 0) {
-                        items.setPrecioUnitario(factura.redondearPrecio(producto.getPrecioVenta() - (producto.getPrecioVenta() * (factura.getItemsFactura().get(i).getDescuento() / 100))));
+                    if (factura.getItemsFactura().get(i).getDescuento().compareTo(new BigDecimal(0.0)) == 1) {
+                        items.setPrecioUnitario(factura.redondearPrecio(producto.getPrecioVenta().subtract((producto.getPrecioVenta().multiply((factura.getItemsFactura().get(i).getDescuento().divide(new BigDecimal(100)))))).doubleValue()));
                     } else {
-                        items.setPrecioUnitario((double) producto.getPrecioVenta());
+                        items.setPrecioUnitario(producto.getPrecioVenta().doubleValue());
                     }
 
                     items.setPrecio(items.getPrecioUnitario() * items.getCantidad());
@@ -331,7 +332,7 @@ public class FacturaApiController {
                     items.setTotal(items.getPrecio() - items.getDescuento());
 
                     // IGUALAR SUBTOTAL DE FEL EN LA FACTURA GUARDADA
-                    factura.getItemsFactura().get(i).setSubTotal(items.getPrecio());
+                    factura.getItemsFactura().get(i).setSubTotal(new BigDecimal(items.getPrecio()));
 
                     for (int j = 1; j <= 1; j++) {
                         ImpuestosDetalle impuestos_detalle = new ImpuestosDetalle();
@@ -373,7 +374,7 @@ public class FacturaApiController {
                 documento_fel.setTotales(totales);
 
                 // CONFIGURAR GRAN TOTAL PARA QUE CUADRE CON FACTURA A REGISTRAR EN LA BASE DE DATOS
-                factura.setTotal(totales.getGranTotal());
+                factura.setTotal(new BigDecimal(totales.getGranTotal()));
 
                 // Adendas
                 Adendas adendas = new Adendas();
@@ -466,7 +467,7 @@ public class FacturaApiController {
                             factura.setSerieSat(respuesta_servicio.getSerie());
                             factura.setMensajeSat(respuesta_servicio.getInfo());
                             factura.setFechaCertificacionSat(respuesta_servicio.getFecha());
-                            factura.setIva(totalImpuestos);
+                            factura.setIva(new BigDecimal(totalImpuestos));
                             factura.setTipoFactura(tipoFactura);
 
                             newFactura = serviceFactura.save(factura);

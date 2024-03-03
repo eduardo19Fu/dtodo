@@ -23,6 +23,6 @@ public interface IClienteService {
 	
 	public Cliente save(Cliente cliente);
 	
-	public void delete(Integer idcliente);
+	public void delete(Cliente cliente);
 	
 }

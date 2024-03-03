@@ -1,7 +1,7 @@
 package com.aglayatech.licorstore.model;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -12,15 +12,25 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.validation.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@ToString
 @Entity
 @Table(name = "marcas_producto")
 public class MarcaProducto implements Serializable {
+
+	private static final long serialVersionUID = 6163462751993275676L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,62 +38,16 @@ public class MarcaProducto implements Serializable {
 
 	@NotEmpty
 	private String marca;
-
-	@Temporal(TemporalType.TIMESTAMP)
-	private Date fechaRegistro;
+	private LocalDateTime fechaRegistro;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "id_usuario")
 	@JsonIgnoreProperties({ "password", "roles", "fecha_registro","hibernateLazyInitializer", "handler" })
 	private Usuario usuario;
 
-	public MarcaProducto() {
-		// Constructor;
-	}
-
 	@PrePersist
 	public void configFechaRegistro() {
-		this.fechaRegistro = new Date();
+		this.fechaRegistro = LocalDateTime.now();
 	}
-
-	public Integer getIdMarcaProducto() {
-		return idMarcaProducto;
-	}
-
-	public void setIdMarcaProducto(Integer idMarcaProducto) {
-		this.idMarcaProducto = idMarcaProducto;
-	}
-
-	public String getMarca() {
-		return marca;
-	}
-
-	public void setMarca(String marca) {
-		this.marca = marca;
-	}
-
-	public Date getFechaRegistro() {
-		return fechaRegistro;
-	}
-
-	public void setFechaRegistro(Date fechaRegistro) {
-		this.fechaRegistro = fechaRegistro;
-	}
-
-	public Usuario getUsuario() {
-		return usuario;
-	}
-
-	public void setUsuario(Usuario usuario) {
-		this.usuario = usuario;
-	}
-
-	@Override
-	public String toString() {
-		return "MarcaProducto [idMarcaProducto=" + idMarcaProducto + ", marca=" + marca + ", fechaRegistro="
-				+ fechaRegistro + ", usuario=" + usuario + "]";
-	}
-
-	private static final long serialVersionUID = 1L;
 
 }

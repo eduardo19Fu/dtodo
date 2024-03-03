@@ -1,11 +1,12 @@
 package com.aglayatech.licorstore.controller;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -24,160 +25,103 @@ import org.springframework.web.bind.annotation.RestController;
 import com.aglayatech.licorstore.model.Cliente;
 import com.aglayatech.licorstore.service.IClienteService;
 
-@CrossOrigin(origins = {"http://localhost:4200", "https://dtodojalapa.xyz", "http://dtodojalapa.xyz"})
+@CrossOrigin(origins = {"http://localhost:4200", "https://dtodojalapa.xyz"})
 @RestController
 @RequestMapping(value = "/api")
+@RequiredArgsConstructor
+@Slf4j
 public class ClienteApiController {
 
-	@Autowired
-	private IClienteService serviceCliente;
+	private final IClienteService serviceCliente;
 
 	@GetMapping(value = "/clientes")
-	public List<Cliente> index() {
-		return serviceCliente.findAll();
+	public ResponseEntity<List<Cliente>> listarClientes () {
+		log.info("Listando Clientes");
+
+		List<Cliente> listado = new ArrayList<>();
+		listado = serviceCliente.findAll();
+		return ResponseEntity.ok(listado);
 	}
 	
 	@GetMapping(value = "/clientes/page/{page}")
-	public Page<Cliente> index(@PathVariable("page") Integer page) {
-		return serviceCliente.findAll(PageRequest.of(page, 5));
+	public ResponseEntity<Page<Cliente>> listarClientesPaginados (@PathVariable("page") Integer page) {
+		log.info("Buscando clientes pagina: {}", page);
+
+		Page<Cliente> listadoPaginado = null;
+		listadoPaginado = serviceCliente.findAll(PageRequest.of(page, 5));
+		return ResponseEntity.ok(listadoPaginado);
 	}
 
 	@GetMapping(value = "/clientes/nombre/{name}")
-	public List<Cliente> findByName(@PathVariable("name") String name) {
-		return serviceCliente.findByName(name);
+	public ResponseEntity<List<Cliente>> findByName(@PathVariable("name") String name) {
+		log.info("Buscando clientes con nombre: {}", name);
+
+		List<Cliente> listadoClientes = new ArrayList<>();
+		listadoClientes = serviceCliente.findByName(name);
+		return ResponseEntity.ok(listadoClientes);
 	}
 	
 	@GetMapping(value = "/clientes/nit/{nit}")
 	public ResponseEntity<?> findByNit(@PathVariable("nit") String nit){
-		
+		log.info("Buscando cliente con nit: {}", nit);
+
 		Cliente cliente = null;
-		Map<String, Object> response = new HashMap<>();
-		
-		try {
-			cliente = serviceCliente.findByNit(nit);
-		} catch (DataAccessException e) {
-			response.put("mensaje", "¡Error en la base de datos!");
-			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-		
-		if(cliente == null) {
-			response.put("mensaje", "¡El cliente no se encuentra registrado en la base de datos!");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
-		}
-		
-		return new ResponseEntity<Cliente>(cliente, HttpStatus.OK);
+		cliente = serviceCliente.findByNit(nit);
+		return ResponseEntity.ok(cliente);
 	}
 
-	// @Secured(value = {"ROLE_COBRADOR","ROLE_ADMIN"})
 	@GetMapping(value = "/clientes/{id}")
 	public ResponseEntity<?> findById(@PathVariable("id") Integer id) {
+		log.info("Buscando cliente con ID: {}", id);
 
 		Cliente cliente = null;
-		Map<String, Object> response = new HashMap<>();
-
-		try {
-			cliente = serviceCliente.findById(id);
-		} catch (DataAccessException e) {
-			response.put("mensaje", "¡Ha ocurrido un error en la base de datos!");
-			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-
-		if (cliente == null) {
-			response.put("mensaje", "¡El cliente con ID: ".concat(id.toString()).concat(" no se encuentra registrado en la base de datos!"));
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
-		}
-
-		return new ResponseEntity<Cliente>(cliente, HttpStatus.OK);
+		cliente = serviceCliente.findById(id);
+		return ResponseEntity.ok(cliente);
 	}
 
 	@GetMapping(value = "/clientes/cantidad-clientes")
-	public ResponseEntity<?> getTotalClientes(){
-		Integer total = 0;
-		Map<String, Object> response = new HashMap<>();
+	public ResponseEntity<Integer> getTotalClientes(){
+		log.info("Obteniendo cantidad de clientes");
 
-		try {
-			total = this.serviceCliente.totalClientes();
-		} catch(DataAccessException e){
-			response.put("mensaje", "¡Ha ocurrido un error en la base de datos!");
-			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-
-		return new ResponseEntity<Integer>(total, HttpStatus.OK);
+		Integer totalClientes = 0;
+		totalClientes = serviceCliente.totalClientes();
+		return ResponseEntity.ok(totalClientes);
 	}
 
 	@Secured(value = {"ROLE_COBRADOR","ROLE_ADMIN"})
 	@PostMapping(value = "/clientes")
-	public ResponseEntity<?> create(@RequestBody Cliente cliente) {
-		
+	public ResponseEntity<Cliente> create(@RequestBody Cliente cliente) {
+		log.info("Registrando cliente con NIT: {}", cliente.getNit());
+
 		Cliente newCliente = null;
-		Map<String, Object> response = new HashMap<>();
-		
-		try {
-			newCliente = serviceCliente.save(cliente);
-		} catch (DataAccessException e) {
-			response.put("mensaje", "¡Ha ocurrido un error en la base de datos!");
-			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-		
-		if(newCliente == null) {
-			response.put("mensaje", "¡No se ha podido registrar el nuevo cliente!");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-		
-		response.put("mensaje", "¡Cliente registrado con éxito!");
-		response.put("cliente", newCliente);
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
+		newCliente = serviceCliente.save(cliente);
+		return new ResponseEntity<>(newCliente, HttpStatus.CREATED);
 	}
 	
 	@Secured(value = {"ROLE_ADMIN"})
 	@SuppressWarnings("null")
-	@PutMapping(value = "/clientes")
-	public ResponseEntity<?> update(@RequestBody Cliente cliente) {
-		
+	@PutMapping(value = {"/clientes", "/clientes/update/{id}"})
+	public ResponseEntity<Cliente> update(@RequestBody Cliente cliente, @PathVariable(value = "id", required = false) Integer idcliente) {
+		log.info("Actualizando cliente: ", cliente.getIdCliente());
+
 		Cliente clienteUpdated = null;
-		Map<String, Object> response = new HashMap<>();
-		
-		if(cliente == null) {
-			response.put("mensaje", "¡El cliente con ID: ".concat(cliente.getIdCliente().toString())
-					.concat(" no existe en la base de datos!"));
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
-		}
-		
-		try {
-			clienteUpdated = serviceCliente.save(cliente);
-		} catch (DataAccessException e) {
-			response.put("mensaje", "¡Ha ocurrido un error en la base de datos!");
-			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-		
-		response.put("mensaje", "¡El cliente ha sido actualizado con éxito!");
-		response.put("cliente", clienteUpdated);
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
+		clienteUpdated = serviceCliente.save(cliente);
+		return new ResponseEntity<>(clienteUpdated, HttpStatus.CREATED);
 	}
 	
 	@Secured(value = {"ROLE_ADMIN"})
 	@DeleteMapping(value = "/clientes/{id}")
 	public ResponseEntity<?> delete(@PathVariable("id") Integer idcliente) {
-		
+		log.info("Eliminado cliente ID: ", idcliente);
+
 		Map<String, Object> response = new HashMap<>();
-		
-		try {
-			serviceCliente.delete(idcliente);
-		} catch (DataAccessException e) {
-			response.put("mensaje", "¡Ha ocurrido un error en la base de datos!");
-			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-		
-		response.put("mensaje", "¡El cliente ha sido eliminado con éxito!");
-		
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
-		
+		Cliente clienteEliminar = null;
+		clienteEliminar = serviceCliente.findById(idcliente);
+		serviceCliente.delete(clienteEliminar);
+
+		response.put("mensaje", "Cliente eliminado con éxito");
+		response.put("idcliente", idcliente);
+		return ResponseEntity.ok(response);
 	}
 
 }
