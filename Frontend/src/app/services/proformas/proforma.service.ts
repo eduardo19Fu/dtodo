@@ -51,6 +51,15 @@ export class ProformaService {
     );
   }
 
+  update(profroma: Proforma): Observable<any> {
+    return this.httpClient.put<any>(`${this.url}/proformas`, profroma).pipe(
+      catchError(e => {
+        Swal.fire(e.error.mensaje, e.error.error, 'error');
+        return throwError(e);
+      })
+    );
+  }
+
   delete(id: number): Observable<any> {
     return this.httpClient.delete<any>(`${this.url}/proformas/${id}`).pipe(
       catchError(e => {

@@ -327,7 +327,6 @@ export class CreateFacturaComponent implements OnInit {
           item.descuento = itemProforma.descuento;
           
           this.factura.itemsFactura.push(item);
-          console.log(this.factura.itemsFactura);
         });
       }
     );

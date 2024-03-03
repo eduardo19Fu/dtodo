@@ -42,7 +42,8 @@
                         <div class="col">
                             <div class="form-group">
                                 <label for="correlativo">No. de Proforma</label>
-                                <input type="text" class="form-control" name="correlativo" value="{{noProforma}}" disabled>
+                                <input type="text" class="form-control" name="correlativo" 
+                                    value="{{proforma ? proforma.noProforma : proforma.generarNoProforma()}}" disabled>
                             </div>
                         </div>
 
@@ -200,8 +201,14 @@
             </div>
 
             <div class="card-footer">
-                <input type="submit" role="button" class="btn btn-danger margin" value="Guardar"
-                [disabled]="!cliente.idCliente || (proforma.itemsProforma.length <= 0)" (click)="createProforma()">
+                <input *ngIf="!proforma.idProforma; else elseBlock" type="submit" 
+                    role="button" class="btn btn-danger margin" value="Guardar"
+                    [disabled]="!cliente.idCliente || (proforma.itemsProforma.length <= 0)" (click)="createProforma()">
+
+                    <ng-template #elseBlock>
+                        <input type="submit" role="button" class="btn btn-warning margin" value="Actualizar" 
+                            (click)="update()">
+                    </ng-template>
             </div>
         </div>
     </div>
