@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { Producto } from '../../../models/producto';
 import { Cliente } from '../../../models/cliente';
@@ -6,14 +7,14 @@ import { Proforma } from '../../../models/proforma';
 import { UsuarioAuxiliar } from '../../../models/auxiliar/usuario-auxiliar';
 import { DetalleProforma } from '../../../models/detalle-proforma';
 
+import { AuthService } from 'src/app/services/auth.service';
 import { ProductoService } from '../../../services/producto.service';
 import { ClienteService } from '../../../services/cliente.service';
 import { ClienteCreateService } from '../../../services/facturas/cliente-create.service';
+import { UsuarioService } from 'src/app/services/usuarios/usuario.service';
+import { ProformaService } from 'src/app/services/proformas/proforma.service';
 
 import swal from 'sweetalert2';
-import { UsuarioService } from 'src/app/services/usuarios/usuario.service';
-import { AuthService } from 'src/app/services/auth.service';
-import { ProformaService } from 'src/app/services/proformas/proforma.service';
 
 @Component({
   selector: 'app-create-proforma',
@@ -30,6 +31,7 @@ export class CreateProformaComponent implements OnInit {
   cliente: Cliente;
   usuario: UsuarioAuxiliar;
   proforma: Proforma;
+  proformaCargada: Proforma;
 
   constructor(
     private proformaService: ProformaService,
@@ -37,18 +39,25 @@ export class CreateProformaComponent implements OnInit {
     private clienteService: ClienteService,
     private clienteCreateService: ClienteCreateService,
     private usuarioService: UsuarioService,
-    public authService: AuthService
+    public authService: AuthService,
+    private activatedRoute: ActivatedRoute,
+    private router: Router
   ) {
     this.title = 'Crear Proforma';
     this.producto = new Producto();
     this.cliente = new Cliente();
     this.usuario = new UsuarioAuxiliar();
     this.proforma = new Proforma();
-    this.noProforma = this.proforma.generarNoProforma();
+    this.proformaCargada = new Proforma();
   }
 
   ngOnInit(): void {
     this.loadUsuario();
+    this.cargarProforma();
+
+    if(!this.proforma.noProforma){
+      this.proforma.noProforma = this.proforma.generarNoProforma();
+    }
   }
 
   loadUsuario(): void {
@@ -227,7 +236,51 @@ export class CreateProformaComponent implements OnInit {
         this.generarProformaPdf(response.proforma.idProforma);
       }
     });
+  }
 
+  cargarProforma(): void {
+    this.activatedRoute.params.subscribe(params => {
+      const id = params['proformaId'];
+
+      if(id) {
+        this.buscarProformaPorId(id);
+      }
+    });
+  }
+
+  buscarProformaPorId(id: number): void {
+    this.proformaService.getProforma(id).subscribe(
+      response => {
+        if (!response.mensaje) {
+          this.proformaCargada = response;
+          
+          this.cliente = response.cliente;
+
+          this.proforma.noProforma = response.noProforma;
+          this.proforma.cliente = this.cliente;
+          this.proforma.fechaEmision = response.fechaEmision;
+          this.proforma.estado = response.estado;
+          this.proforma.idProforma = response.idProforma;
+          this.proforma.noProforma = response.noProforma;
+          this.proforma.usuario = response.usuario;
+          this.proforma.total = response.total;
+
+
+          response.itemsProforma.forEach((itemProforma: DetalleProforma) => {
+            let item = new DetalleProforma();
+
+            item.cantidad = itemProforma.cantidad;
+            item.subTotal = itemProforma.subTotal;
+            item.subTotalDescuento = itemProforma.subTotalDescuento;
+            item.producto = itemProforma.producto;
+            item.descuento = itemProforma.descuento;
+            item.nuevoPrecioVenta = itemProforma.nuevoPrecioVenta;
+
+            this.proforma.itemsProforma.push(item);
+          });
+        }
+      }
+    );
   }
 
   generarProformaPdf(id: number): void {
@@ -250,5 +303,13 @@ export class CreateProformaComponent implements OnInit {
       error => {
         console.log(error);
       });
+  }
+
+  update(): void {
+    this.proformaService.update(this.proforma).subscribe(response => {
+      this.generarProformaPdf(response.proforma.idProforma);
+      this.router.navigate(['/proformas/index']);
+      swal.fire(response.mensaje, `Proforma ${response.proforma.idProforma} ha sido actualizada`, 'info');
+    });
   }
 }

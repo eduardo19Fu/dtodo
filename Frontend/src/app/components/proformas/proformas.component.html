@@ -54,7 +54,7 @@
 
 <div class="card">
     <div class="card-header">
-        Listado de Tipos de Proformas
+        Listado de Proformas
     </div>
     <div class="card-body table-responsive">
 
@@ -107,6 +107,11 @@
                         <button class="btn bg-gradient-warning margin" name="print" type="button"
                             (click)="printProforma(proforma)" [disabled]="proforma.estado.idEstado === 4">
                             <i class="fas fa-print"></i>
+                        </button>
+
+                        <button class="btn bg-gradient-info margin" name="edit" type="button" *ngIf="auth.hasRole('ROLE_ADMIN')"
+                            [routerLink]="['/proformas/create', proforma.idProforma]">
+                            <i class="fas fa-edit"></i>
                         </button>
 
                         <!-- Aquí va el botón de eliminar -->

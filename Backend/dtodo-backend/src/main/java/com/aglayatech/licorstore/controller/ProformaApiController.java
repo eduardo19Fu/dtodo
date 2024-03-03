@@ -95,6 +95,30 @@ public class ProformaApiController {
         return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
     }
 
+    @Secured(value = {"ROLE_ADMIN", "ROLE_ADMIN"})
+    @PutMapping(value = "/proformas")
+    public ResponseEntity<?> udpate(@RequestBody Proforma proforma) {
+        Proforma proformaUpdated = null;
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            proformaUpdated = proformaService.save(proforma);
+        } catch (DataAccessException e) {
+            response.put("mensaje", "¡Ha ocurrido un error en la Base de Datos!");
+            response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
+            return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        if(proformaUpdated == null) {
+            response.put("mensaje", "No fué posible actualizar la proforma");
+            return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
+        }
+
+        response.put("mensaje", "Actualización se ha llevado a cabo con éxito");
+        response.put("proforma", proformaUpdated);
+        return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
+    }
+
     @Secured(value = "ROLE_ADMIN")
     @DeleteMapping(value = "/proformas/{id}")
     public ResponseEntity<?> delete(@PathVariable("id") Long id) {
