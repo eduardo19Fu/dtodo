@@ -42,8 +42,9 @@
                         <div class="col">
                             <div class="form-group">
                                 <label for="correlativo">No. de Proforma</label>
-                                <input type="text" class="form-control" name="correlativo" 
-                                    value="{{proforma ? proforma.noProforma : proforma.generarNoProforma()}}" disabled>
+                                <input type="text" class="form-control" name="correlativo" id="correlativo"
+                                    value="{{proforma ? proforma.noProforma : proforma.generarNoProforma()}}" disabled> 
+                                    <!-- value="{{noProforma}}" disabled> -->
                             </div>
                         </div>
 

@@ -1,14 +1,15 @@
 package com.aglayatech.licorstore.controller;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -28,148 +29,76 @@ import org.springframework.web.bind.annotation.RestController;
 import com.aglayatech.licorstore.model.MarcaProducto;
 import com.aglayatech.licorstore.service.IMarcaProductoService;
 
-@CrossOrigin(origins = { "http://localhost:4200", "https://dtodojalapa.xyz", "http://dtodojalapa.xyz" })
+@CrossOrigin(origins = { "http://localhost:4200", "https://dtodojalapa.xyz" })
 @RestController
 @RequestMapping(value = "/api")
+@RequiredArgsConstructor
+@Slf4j
 public class MarcaProductoApiController {
 
-	@Autowired
-	private IMarcaProductoService serviceMarca;
+	private final IMarcaProductoService serviceMarca;
 
 	@GetMapping(value = "/marcas")
-	public List<MarcaProducto> index() {
-		List<MarcaProducto> list = serviceMarca.findAll();
-		return list;
+	public ResponseEntity<List<MarcaProducto>> index() {
+		log.info("Listando marcas de producto registradas");
+
+		List<MarcaProducto> marcasProducto = new ArrayList<>();
+		marcasProducto = serviceMarca.findAll();
+		return ResponseEntity.ok(marcasProducto);
 	}
 	
 	@GetMapping(value = "/marcas/page/{page}")
-	public Page<MarcaProducto> index(@PathVariable("page") Integer page) {
-		return serviceMarca.findAll(PageRequest.of(page, 5));
+	public ResponseEntity<Page<MarcaProducto>> index(@PathVariable("page") Integer page) {
+		log.info("Listando marcas por páginas: {}");
+
+		Page<MarcaProducto> marcasPaginadas = null;
+		marcasPaginadas = serviceMarca.findAll(PageRequest.of(page, 5));
+		return ResponseEntity.ok(marcasPaginadas);
 	}
 
 	@Secured(value = {"ROLE_COBRADOR","ROLE_ADMIN", "ROLE_INVENTARIO"})
 	@GetMapping(value = "/marcas/{id}")
-	public ResponseEntity<?> getById(@PathVariable("id") Integer id) {
+	public ResponseEntity<MarcaProducto> getById(@PathVariable("id") Integer id) {
+		log.info("Buscando marca de Producto con ID: {}", id);
 
 		MarcaProducto marca = null;
-		Map<String, Object> response = new HashMap<>();
-
-		try {
-			marca = serviceMarca.findById(id);
-		} catch (DataAccessException e) {
-			response.put("mensaje", "La busqueda en la base de datos no pudo llevarse a cabo!");
-			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-
-		if (marca == null) {
-			response.put("mensaje", "¡La marca buscada no se encuentra registrada en la base de datos!");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
-		}
-
-		return new ResponseEntity<MarcaProducto>(marca, HttpStatus.OK);
+		marca = serviceMarca.findById(id);
+		return ResponseEntity.ok(marca);
 	}
 
 	@Secured(value = {"ROLE_ADMIN", "ROLE_INVENTARIO"})
 	@PostMapping(value = "/marcas")
-	public ResponseEntity<?> create(@Valid @RequestBody MarcaProducto marca, BindingResult result) {
+	public ResponseEntity<MarcaProducto> create(@Valid @RequestBody MarcaProducto marca, BindingResult result) {
+		log.info("Registrando marca: {}", marca.getMarca());
 
 		MarcaProducto newMarca = null;
-		Map<String, Object> response = new HashMap<>();
-
-		// manejador de errores desde el backend
-		if (result.hasErrors()) {
-
-			/* Primera forma:
-			 * 
-			 * List<String> errors = new ArrayList<>();
-			 * 
-			 * for(FieldError err : result.getFieldErrors()) {
-			 * errors.add("El campo '".concat(err.getField().concat("' ")).concat(err.
-			 * getDefaultMessage())); }
-			 */
-
-			List<String> errors = result.getFieldErrors().stream()
-					.map(err -> "El campo '".concat(err.getField().concat("' ")).concat(err.getDefaultMessage()))
-					.collect(Collectors.toList());
-
-			response.put("errors", errors);
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
-		}
-
-		try {
-			newMarca = serviceMarca.save(marca);
-		} catch (DataAccessException ex) {
-			response.put("mensaje", "Ha ocurrido un error en la base de datos!");
-			response.put("error", ex.getMessage().concat(": ").concat(ex.getMostSpecificCause().getMessage()));
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-
-		response.put("mensaje", "El Regimen ha sido registrado con éxito!");
-		response.put("marca", newMarca);
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
+		newMarca = serviceMarca.save(marca);
+		return new ResponseEntity<>(newMarca, HttpStatus.CREATED);
 	}
 
-	// Controlador que permite actualizar el registro enviado por protocolo Http PUT
 	@Secured(value = {"ROLE_ADMIN", "ROLE_INVENTARIO"})
 	@PutMapping(value = "/marcas")
-	public ResponseEntity<?> update(@Valid @RequestBody MarcaProducto marca, BindingResult result) {
+	public ResponseEntity<MarcaProducto> update(@Valid @RequestBody MarcaProducto marca, BindingResult result) {
+		log.info("Actualizando marca: {}", marca.getMarca());
 
-		Map<String, Object> response = new HashMap<>();
-
-		if (result.hasErrors()) {
-
-			/*
-			 * List<String> errors = new ArrayList<>();
-			 * 
-			 * for(FieldError err : result.getFieldErrors()) {
-			 * errors.add("El campo '".concat(err.getField().concat("' ")).concat(err.
-			 * getDefaultMessage())); }
-			 */
-
-			List<String> errors = result.getFieldErrors().stream()
-					.map(err -> "El campo '".concat(err.getField().concat("' ")).concat(err.getDefaultMessage()))
-					.collect(Collectors.toList());
-
-			response.put("errors", errors);
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
-		}
-
-		try {
-			serviceMarca.save(marca);
-		} catch (DataAccessException e) {
-			response.put("mensaje", "Ha ocurrido un error en la base de datos!");
-			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-
-		if (marca.getIdMarcaProducto() == null) {
-			response.put("mensaje", "¡La marca que desea acutualizar no se encuentra registrada en la base de datos!");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
-		}
-
-		response.put("mensaje", "El Regimen ha sido registrado con éxito!");
-		response.put("marca", marca);
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
+		MarcaProducto marcaUpdated = new MarcaProducto();
+		marcaUpdated = serviceMarca.save(marca);
+		return new ResponseEntity<>(marcaUpdated, HttpStatus.CREATED);
 	}
 
 	@Secured(value = {"ROLE_ADMIN", "ROLE_INVENTARIO"})
 	@DeleteMapping(value = "/marcas/{id}")
-	public ResponseEntity<?> delete(@PathVariable("id") int id) {
+	public ResponseEntity<Map<String, Object>> delete(@PathVariable("id") int id) {
+		log.info("Eliminando marca de producto: {}", id);
 
 		Map<String, Object> response = new HashMap<>();
+		MarcaProducto marcaProducto = null;
+		marcaProducto = serviceMarca.findById(id);
+		serviceMarca.deleteMarca(marcaProducto);
 
-		try {
-			serviceMarca.deleteMarca(id);
-		} catch (DataAccessException e) {
-			response.put("mensaje", "Ha ocurrido un error en la base de datos!");
-			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-
-		response.put("mensaje", "¡Marca eliminada con éxito!");
-
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+		response.put("mensaje", "Marca ha sido eliminado con éxito");
+		response.put("idmarca", id);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 
 	}
 

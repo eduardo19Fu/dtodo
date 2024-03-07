@@ -55,7 +55,7 @@ export class CreateProformaComponent implements OnInit {
     this.loadUsuario();
     this.cargarProforma();
 
-    if(!this.proforma.noProforma){
+    if(!this.proforma.noProforma) {
       this.proforma.noProforma = this.proforma.generarNoProforma();
     }
   }
@@ -230,6 +230,8 @@ export class CreateProformaComponent implements OnInit {
     this.proforma.cliente = this.cliente;
     this.proforma.usuario = this.usuario;
     this.proforma.total = this.proforma.calcularTotal();
+    
+    this.proforma.noProforma = ((document.getElementById("correlativo") as HTMLInputElement).value);
 
     this.proformaService.create(this.proforma).subscribe(response => {
       if (response.proforma) {

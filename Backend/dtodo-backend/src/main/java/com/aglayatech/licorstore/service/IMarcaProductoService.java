@@ -25,6 +25,6 @@ public interface IMarcaProductoService {
 	public MarcaProducto save(MarcaProducto marca);
 	
 	// Eliminar registro de la base de datos
-	public void deleteMarca(Integer idMarca);
+	public void deleteMarca(MarcaProducto marcaProducto);
 
 }

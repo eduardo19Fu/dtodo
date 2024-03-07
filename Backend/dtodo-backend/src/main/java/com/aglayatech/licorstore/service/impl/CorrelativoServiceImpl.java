@@ -48,7 +48,7 @@ public class CorrelativoServiceImpl implements ICorrelativoService {
 			log.info("Listando correlativos registrados");
 			correlativos = correlativoRepository.findAll(Sort.by(Direction.ASC, "idCorrelativo"));
 
-			if(correlativos != null && correlativos.size() > 0) {
+			if(!correlativos.isEmpty()) {
 				log.info("Listando correlativos creados: ", correlativos.size());
 				return correlativos;
 			} else {
@@ -71,7 +71,8 @@ public class CorrelativoServiceImpl implements ICorrelativoService {
 		try {
 			Page<Correlativo> correlativos = correlativoRepository.findAll(pageable);
 
-			if(correlativos != null && correlativos.hasContent()) {
+			if(!correlativos.isEmpty()) {
+				log.info("Devolviendo correlativos paginados: {}", correlativos);
 				return correlativos;
 			} else {
 				log.error("No hay contenido disponible para listar los correlativos");
