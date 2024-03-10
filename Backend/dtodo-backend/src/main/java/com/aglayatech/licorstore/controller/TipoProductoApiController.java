@@ -1,11 +1,13 @@
 package com.aglayatech.licorstore.controller;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -24,121 +26,74 @@ import org.springframework.web.bind.annotation.RestController;
 import com.aglayatech.licorstore.model.TipoProducto;
 import com.aglayatech.licorstore.service.ITipoProductoService;
 
-@CrossOrigin(origins = {"http://localhost:4200", "https://dtodojalapa.xyz", "http://dtodojalapa.xyz"})
+@CrossOrigin(origins = {"http://localhost:4200", "https://dtodojalapa.xyz"})
 @RestController
 @RequestMapping(value = "/api")
+@RequiredArgsConstructor
+@Slf4j
 public class TipoProductoApiController {
-	
-	@Autowired
-	private ITipoProductoService serviceTipo;
+
+	private final ITipoProductoService serviceTipo;
 	
 	@GetMapping(value = "/tipos-producto")
-	public List<TipoProducto> index(){
-		return serviceTipo.findAll();
+	public ResponseEntity<List<TipoProducto>> index(){
+		log.info("Listando Categorías de productos");
+
+		List<TipoProducto> tipos = new ArrayList<>();
+		tipos = serviceTipo.findAll();
+		return ResponseEntity.ok(tipos);
 	}
 	
 	@GetMapping(value = "/tipos-producto/page/{page}")
-	public Page<TipoProducto> index(@PathVariable("page") Integer page) {
-		return serviceTipo.findAll(PageRequest.of(page, 5));
+	public ResponseEntity<Page<TipoProducto>> index(@PathVariable("page") Integer page) {
+		log.info("Listado de categorías paginadas");
+
+		Page<TipoProducto> tiposPaginados = serviceTipo.findAll(PageRequest.of(page, 5));
+		return ResponseEntity.ok(tiposPaginados);
 	}
 	
 	@Secured(value = {"ROLE_COBRADOR","ROLE_ADMIN", "ROLE_INVENTARIO"})
 	@GetMapping(value = "/tipos-producto/{id}")
-	public ResponseEntity<?> findById(@PathVariable("id") int id){
-		
+	public ResponseEntity<TipoProducto> findById(@PathVariable("id") int id){
+		log.info("Buscar categoría de producto con ID: {}", id);
+
 		TipoProducto tipo = null;
-		Map<String, Object> response = new HashMap<>();
-		
-		try {
-			tipo = serviceTipo.findById(id);
-		} catch(DataAccessException e) {
-			response.put("mensaje", "¡La busqueda en la base de datos no pudo llevarse a cabo!");
-			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-		
-		if(tipo == null) {
-			response.put("mensaje", "¡El valor de la busqueda no se encuentra registrado en la base de datos!");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
-		}
-		
-		return new ResponseEntity<TipoProducto>(tipo, HttpStatus.OK);
+		tipo = serviceTipo.findById(id);
+		return ResponseEntity.ok(tipo);
 	}
 	
 	@Secured(value = {"ROLE_ADMIN", "ROLE_INVENTARIO"})
 	@PostMapping(value = "/tipos-producto")
-	public ResponseEntity<?> create(@RequestBody TipoProducto tipoProducto){
-		
+	public ResponseEntity<TipoProducto> create(@RequestBody TipoProducto tipoProducto){
+		log.info("Creando nueva categoría de producto: {}", tipoProducto.getTipoProducto());
+
 		TipoProducto newTipo = null;
-		Map<String, Object> response = new HashMap<>();
-		
-		try {
-			newTipo = serviceTipo.save(tipoProducto); // recibe un objeto de TipoProducto, como respuesta por el registro llevado a cabo por jpa
-		} catch (DataAccessException e) {
-			response.put("mensaje", "¡Ha ocurrido un error en la base de datos!");
-			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-			return null;
-		}
-		
-		if(newTipo == null) {
-			response.put("mensaje", "¡No se pudo llevar a cabo el registro del Tipo de Producto!");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-		
-		response.put("mensaje", "¡El registro se llevó a cabo con éxito!");
-		response.put("tipoProducto", newTipo);
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
+		newTipo = serviceTipo.save(tipoProducto);
+		return new ResponseEntity<>(newTipo, HttpStatus.CREATED);
 	}
-	
-	@SuppressWarnings("null")
+
 	@Secured(value = {"ROLE_ADMIN", "ROLE_INVENTARIO"})
 	@PutMapping(value = "/tipos-producto")
 	public ResponseEntity<?> update(@RequestBody TipoProducto tipoProducto){
-		
+		log.info("Actualizando Categoría de Producto: {}", tipoProducto.getTipoProducto());
+
 		TipoProducto tipoUpdated = null;
-		Map<String, Object> response = new HashMap<>();
-		
-		if(tipoProducto == null) {
-			response.put("mensaje", "El tipo de producto con ID: ".concat(tipoProducto.getIdTipoProducto().toString())
-					.concat(" no existe en la base de datos."));
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
-		}
-		
-		try {
-			tipoUpdated = serviceTipo.save(tipoProducto);
-		} catch (DataAccessException e) {
-			response.put("mensaje", "¡Ha ocurrido un error en la base de datos!");
-			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-		
-		if(tipoUpdated == null) {
-			response.put("mensaje", "¡No se pudo llevar a cabo la actualización!");
-			return new ResponseEntity<Map<String, Object>>(response, null);
-		}
-		
-		response.put("mensaje", "¡La actualización se llevó a cabo con éxito!");
-		response.put("tipoUpdated", tipoUpdated);
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
+		tipoUpdated = serviceTipo.save(tipoProducto);
+		return new ResponseEntity<>(tipoUpdated, HttpStatus.CREATED);
 	}
 	
 	@Secured(value = {"ROLE_ADMIN", "ROLE_INVENTARIO"})
 	@DeleteMapping(value = "/tipos-producto/{id}")
-	public ResponseEntity<?> delete(@PathVariable("id") Integer idtipo) {
+	public ResponseEntity<Map<String, Object>> delete(@PathVariable("id") Integer idtipo) {
 		
 		Map<String, Object> response = new HashMap<>();
-		
-		try {
-			serviceTipo.delete(idtipo);
-		} catch (DataAccessException e) {
-			response.put("mensaje", "¡Ha ocurrido un error en la base de datos!");
-			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		TipoProducto tipoProducto = null;
+		tipoProducto = serviceTipo.findById(idtipo);
+		serviceTipo.delete(tipoProducto);
 		
 		response.put("mensaje", "¡El registro ha sido eliminado con éxito!");
-		
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+		response.put("idtipo", idtipo);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 		
 	}
 }

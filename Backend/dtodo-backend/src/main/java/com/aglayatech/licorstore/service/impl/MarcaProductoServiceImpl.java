@@ -28,6 +28,7 @@ public class MarcaProductoServiceImpl implements IMarcaProductoService {
 
 	private final IMarcaProductoRepository marcaProductoRepo;
 
+	@Transactional(readOnly = true)
 	@Override
 	public List<MarcaProducto> findAll() {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
@@ -56,7 +57,8 @@ public class MarcaProductoServiceImpl implements IMarcaProductoService {
 			log.debug("{} Exit", __method);
 		}
 	}
-	
+
+	@Transactional(readOnly = true)
 	@Override
 	public Page<MarcaProducto> findAll(Pageable pageable) {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
@@ -84,6 +86,7 @@ public class MarcaProductoServiceImpl implements IMarcaProductoService {
 		}
 	}
 
+	@Transactional(readOnly = true)
 	@Override
 	public MarcaProducto findById(Integer idMarca) {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
@@ -112,6 +115,7 @@ public class MarcaProductoServiceImpl implements IMarcaProductoService {
 		}
 	}
 
+	@Transactional(readOnly = true)
 	@Override
 	public List<MarcaProducto> findByMarca(String marca) {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();

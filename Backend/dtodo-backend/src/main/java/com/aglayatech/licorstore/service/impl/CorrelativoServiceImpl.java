@@ -36,7 +36,8 @@ public class CorrelativoServiceImpl implements ICorrelativoService {
 	private final IUsuarioService usuarioService;
 
 	private final IEstadoService estadoService;
-	
+
+	@Transactional(readOnly = true)
 	@Override
 	public List<Correlativo> findAll() {
 
@@ -63,6 +64,7 @@ public class CorrelativoServiceImpl implements ICorrelativoService {
 
 	}
 
+	@Transactional(readOnly = true)
 	@Override
 	public Page<Correlativo> findAll(Pageable pageable) {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
@@ -86,6 +88,7 @@ public class CorrelativoServiceImpl implements ICorrelativoService {
 		}
 	}
 
+	@Transactional(readOnly = true)
 	@Override
 	public Correlativo findById(Long idcorrelativo) {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();

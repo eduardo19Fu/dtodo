@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import com.aglayatech.licorstore.model.Cliente;
 import com.aglayatech.licorstore.repository.IClienteRepository;
 import com.aglayatech.licorstore.service.IClienteService;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +27,7 @@ public class ClienteServiceImpl implements IClienteService {
 
 	private final IClienteRepository clienteRepository;
 
+	@Transactional(readOnly = true)
 	@Override
 	public List<Cliente> findAll() {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
@@ -49,6 +51,7 @@ public class ClienteServiceImpl implements IClienteService {
 		}
 	}
 
+	@Transactional(readOnly = true)
 	@Override
 	public Page<Cliente> findAll(Pageable pageable) {
 
@@ -73,6 +76,7 @@ public class ClienteServiceImpl implements IClienteService {
 		}
 	}
 
+	@Transactional(readOnly = true)
 	@Override
 	public Cliente findById(Integer idcliente) {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
@@ -96,6 +100,7 @@ public class ClienteServiceImpl implements IClienteService {
 		}
 	}
 
+	@Transactional(readOnly = true)
 	@Override
 	public List<Cliente> findByName(String nombre) {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
@@ -119,6 +124,7 @@ public class ClienteServiceImpl implements IClienteService {
 		}
 	}
 
+	@Transactional(readOnly = true)
 	@Override
 	public Cliente findByNit(String nit) {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
@@ -145,6 +151,7 @@ public class ClienteServiceImpl implements IClienteService {
 		}
 	}
 
+	@Transactional(readOnly = true)
 	@Override
 	public Integer totalClientes() {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
@@ -161,6 +168,7 @@ public class ClienteServiceImpl implements IClienteService {
 		}
 	}
 
+	@Transactional
 	@Override
 	public Cliente save(Cliente cliente) {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
@@ -190,6 +198,7 @@ public class ClienteServiceImpl implements IClienteService {
 		return newCliente;
 	}
 
+	@Transactional
 	@Override
 	public void delete(Cliente cliente) {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();

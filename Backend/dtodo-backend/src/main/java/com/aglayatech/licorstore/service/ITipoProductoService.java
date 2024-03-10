@@ -19,6 +19,6 @@ public interface ITipoProductoService {
 	
 	public TipoProducto save(TipoProducto tipo);
 	
-	public void delete(Integer idtipo);
+	public void delete(TipoProducto tipo);
 
 }

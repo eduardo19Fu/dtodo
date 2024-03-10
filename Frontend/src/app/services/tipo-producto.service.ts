@@ -47,7 +47,7 @@ export class TipoProductoService {
   getTipoProducto(id: number): Observable<TipoProducto> {
     return this.http.get<TipoProducto>(`${this.url}/tipos-producto/${id}`).pipe(
       catchError(e => {
-        swal.fire('Error al consultar el tipo deseado', e.error.mensaje, 'error');
+        swal.fire('Error al consultar el tipo deseado', e.error.message, 'error');
         return throwError(e);
       })
     );
@@ -56,7 +56,7 @@ export class TipoProductoService {
   create(tipoProducto: TipoProducto): Observable<any> {
     return this.http.post<any>(`${this.url}/tipos-producto`, tipoProducto).pipe(
       catchError(e => {
-        swal.fire(e.error.mensaje, e.error.error, 'error');
+        swal.fire(e.error.status, e.error.message, 'error');
         return throwError(e);
       })
     );
@@ -65,7 +65,7 @@ export class TipoProductoService {
   update(tipoProducto: TipoProducto): Observable<any> {
     return this.http.put<any>(`${this.url}/tipos-producto`, tipoProducto).pipe(
       catchError(e => {
-        swal.fire(e.error.mensaje, e.error.error, 'error');
+        swal.fire(e.error.status, e.error.message, 'error');
         return throwError(e);
       })
     );
@@ -74,7 +74,7 @@ export class TipoProductoService {
   delete(id: number): Observable<TipoProducto> {
     return this.http.delete<TipoProducto>(`${this.url}/tipos-producto/${id}`).pipe(
       catchError(e => {
-        swal.fire(e.error.mensaje, e.error.error, 'error');
+        swal.fire(e.error.status, e.error.message, 'error');
         return throwError(e);
       })
     );

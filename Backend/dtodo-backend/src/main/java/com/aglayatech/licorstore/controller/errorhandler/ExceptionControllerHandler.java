@@ -1,7 +1,6 @@
 package com.aglayatech.licorstore.controller.errorhandler;
 
 import com.aglayatech.licorstore.error.ErrorDTO;
-import com.aglayatech.licorstore.error.exceptions.BadRequestException;
 import com.aglayatech.licorstore.error.exceptions.DataAccessException;
 import com.aglayatech.licorstore.error.exceptions.MethodArgumentTypeMismatchException;
 import com.aglayatech.licorstore.error.exceptions.NoContentException;
@@ -103,5 +102,15 @@ public class ExceptionControllerHandler extends ResponseEntityExceptionHandler {
         errorDTO.setStatus(HttpStatus.BAD_REQUEST);
         errorDTO.setInstant(Instant.now());
         return new ResponseEntity<ErrorDTO>(errorDTO, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ErrorDTO> handlerException(Exception exception) {
+        ErrorDTO errorDTO = new ErrorDTO();
+        errorDTO.setMessage(exception.getMessage());
+        errorDTO.setCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        errorDTO.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+        errorDTO.setInstant(Instant.now());
+        return new ResponseEntity<ErrorDTO>(errorDTO, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
