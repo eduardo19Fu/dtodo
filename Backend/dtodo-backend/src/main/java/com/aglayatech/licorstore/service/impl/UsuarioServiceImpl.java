@@ -3,8 +3,9 @@ package com.aglayatech.licorstore.service.impl;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,12 +26,11 @@ import com.aglayatech.licorstore.repository.IUsuarioRepository;
 import com.aglayatech.licorstore.service.IUsuarioService;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class UsuarioServiceImpl implements UserDetailsService, IUsuarioService {
-	
-	private Logger logger = LoggerFactory.getLogger(UsuarioServiceImpl.class);
-	
-	@Autowired
-	private IUsuarioRepository repoUsuario;
+
+	private final IUsuarioRepository repoUsuario;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -39,14 +39,14 @@ public class UsuarioServiceImpl implements UserDetailsService, IUsuarioService {
 		Usuario usuario = repoUsuario.findByUsuario(username);
 		
 		if(usuario == null) {
-			logger.error("Error: no existe el usuario en el sistema.");
+			log.error("Error: no existe el usuario en el sistema.");
 			throw new UsernameNotFoundException("Error: no existe el usuario en el sistema.");
 		}
 		
 		List<GrantedAuthority> authorities = usuario.getRoles()
 				.stream()
 				.map(role -> new SimpleGrantedAuthority(role.getRole()))
-				.peek(authority -> logger.info("Role: " + authority.getAuthority()))
+				.peek(authority -> log.info("Role: " + authority.getAuthority()))
 				.collect(Collectors.toList());
 		
 		return new User(usuario.getUsuario(), usuario.getPassword(), usuario.isEnabled(), true, true, true, authorities);

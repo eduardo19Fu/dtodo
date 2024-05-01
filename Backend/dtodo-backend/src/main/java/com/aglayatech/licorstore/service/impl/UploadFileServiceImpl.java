@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
@@ -18,9 +19,8 @@ import org.springframework.web.multipart.MultipartFile;
 import com.aglayatech.licorstore.service.IUploadFileService;
 
 @Service
+@Slf4j
 public class UploadFileServiceImpl implements IUploadFileService {
-	
-	private final Logger log = LoggerFactory.getLogger(UploadFileServiceImpl.class);
 	
 	private final static String DIRECTORIO_UPLOAD = "uploads";
 

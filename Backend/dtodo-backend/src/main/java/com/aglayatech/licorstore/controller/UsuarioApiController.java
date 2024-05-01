@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
@@ -32,13 +34,13 @@ import com.aglayatech.licorstore.service.IUsuarioService;
 @CrossOrigin(origins = { "http://localhost:4200",  "https://dtodojalapa.xyz", "http://dtodojalapa.xyz" })
 @RestController
 @RequestMapping(value = "/api")
+@RequiredArgsConstructor
+@Slf4j
 public class UsuarioApiController {
-	
-	@Autowired
-	private IUsuarioService serviceUsuario;
-	
-	@Autowired
-	private BCryptPasswordEncoder passwordEncoder;
+
+	private final IUsuarioService serviceUsuario;
+
+	private final BCryptPasswordEncoder passwordEncoder;
 
 	@Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
 	@GetMapping(value = "/usuarios")

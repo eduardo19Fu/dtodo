@@ -159,7 +159,7 @@ public class ClienteServiceImpl implements IClienteService {
 
 		try {
 			log.info("Consultado cantidad de clientes");
-			return this.clienteRepository.getCantClientes() == null ? 0 : this.clienteRepository.getCantClientes();
+			return clienteRepository.getCantClientes() == null ? 0 : clienteRepository.getCantClientes();
 		} catch(Exception e) {
 			log.error("Error Inesperado => {}", e);
 			throw new RuntimeException("Error => ", e);

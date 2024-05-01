@@ -7,13 +7,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @SpringBootApplication
-public class LicorstoreApplication implements CommandLineRunner {
+public class DtodoApplication implements CommandLineRunner {
 
 	@Autowired
 	private BCryptPasswordEncoder passwordEncoder;
 	
 	public static void main(String[] args) {
-		SpringApplication.run(LicorstoreApplication.class, args);
+		SpringApplication.run(DtodoApplication.class, args);
 	}
 
 	@Override

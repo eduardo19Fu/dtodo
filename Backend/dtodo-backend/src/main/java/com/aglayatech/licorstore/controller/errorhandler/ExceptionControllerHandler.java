@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.io.IOException;
 import java.time.Instant;
 
 @RestControllerAdvice
@@ -102,6 +103,18 @@ public class ExceptionControllerHandler extends ResponseEntityExceptionHandler {
         errorDTO.setStatus(HttpStatus.BAD_REQUEST);
         errorDTO.setInstant(Instant.now());
         return new ResponseEntity<ErrorDTO>(errorDTO, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = IOException.class)
+    public ResponseEntity<ErrorDTO> ioExceptionHandler(IOException exception) {
+        log.error("An error has ocurred while the app was trying to get access to a file.");
+        ErrorDTO errorDTO = new ErrorDTO();
+        errorDTO.setMessage(exception.getMessage());
+        errorDTO.setCause(exception.getCause());
+        errorDTO.setCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        errorDTO.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+        errorDTO.setInstant(Instant.now());
+        return new ResponseEntity<ErrorDTO>(errorDTO, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler
