@@ -166,14 +166,18 @@ public class ProductoServiceImpl implements IProductoService {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
 		log.debug("Enter {}", __method);
 
-		Producto producto = null;
+		Optional<Producto> producto;
 
 		try {
-			producto = repoProducto.findByCodigo(codigo).orElseThrow(() -> {
-				log.error("Producto con codigo: {} no se encuentra registrado", codigo);
-				new NotFoundException("Producto con codigo" + codigo + " no se encuentra registrado");
-				return null;
-			});
+			producto = repoProducto.findByCodigo(codigo);
+
+			if(producto.isPresent()) {
+				log.info("Devolviendo Producto: {}", producto.get());
+				return producto.get();
+			} else {
+				log.warn("Producto con codigo {}, no se encuentra registrado", codigo);
+				throw new NotFoundException("Producto con codigo " + codigo + " no se encuentra registrado en la base de datos");
+			}
 		} catch (DataAccessException e) {
 			log.error("Ha ocurrido un error a nivel de base de datos: {}", e);
 			throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos => ", e);
@@ -182,7 +186,6 @@ public class ProductoServiceImpl implements IProductoService {
 			throw new RuntimeException("Ha ocurrido un error inesperado: ", e);
 		} finally {
 			log.debug("{} Exit", __method);
-			return producto;
 		}
 	}
 
@@ -293,8 +296,7 @@ public class ProductoServiceImpl implements IProductoService {
 		try {
 			if(producto.getIdProducto() != null) {
 				log.info("Actualizando Producto con ID: {}", producto.getIdProducto());
-				Producto oldProducto = producto;
-				productoSaved = repoProducto.save(oldProducto);
+                productoSaved = repoProducto.save(producto);
 			} else {
 				log.info("Registrando nuevo producto: {}", producto);
 				Estado estado = estadoService.findById(1);

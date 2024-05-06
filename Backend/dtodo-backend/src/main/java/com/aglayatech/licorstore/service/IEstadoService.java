@@ -14,6 +14,6 @@ public interface IEstadoService {
 	
 	public Estado save(Estado estado);
 	
-	public void delete(Integer idestado);
+	public void delete(Estado estado);
 
 }
