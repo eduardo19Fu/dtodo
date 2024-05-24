@@ -20,14 +20,14 @@ public interface IProformaService {
 
     public Proforma save(Proforma proforma);
 
-    public void delete(Long id);
+    public void delete(Proforma proforma);
 
-    public List<Proforma> proformasPorFecha(Date iniDate, Date endDate);
+    public List<Proforma> proformasPorFecha(String iniDate, String endDate);
 
     // REPORTES PARA PROFORMAS
 
     public byte[] resportDailyProforms(Integer usuario, Date fecha) throws JRException, FileNotFoundException, SQLException;
 
-    public byte[] showProforma(Long idfactura) throws JRException, FileNotFoundException, SQLException;
+    public byte[] showProforma(Long idfactura);
 
 }

@@ -15,11 +15,11 @@ import { UsuarioService } from 'src/app/services/usuarios/usuario.service';
 import { ProformaService } from 'src/app/services/proformas/proforma.service';
 
 import swal from 'sweetalert2';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-create-proforma',
-  templateUrl: './create-proforma.component.html',
-  styleUrls: ['./create-proforma.component.css']
+  templateUrl: './create-proforma.component.html'
 })
 export class CreateProformaComponent implements OnInit {
 
@@ -234,9 +234,11 @@ export class CreateProformaComponent implements OnInit {
     this.proforma.noProforma = ((document.getElementById("correlativo") as HTMLInputElement).value);
 
     this.proformaService.create(this.proforma).subscribe(response => {
-      if (response.proforma) {
-        this.generarProformaPdf(response.proforma.idProforma);
+      if (response) {
+        this.generarProformaPdf(response.idProforma);
       }
+    }, error => {
+      console.log(error);
     });
   }
 
@@ -309,9 +311,12 @@ export class CreateProformaComponent implements OnInit {
 
   update(): void {
     this.proformaService.update(this.proforma).subscribe(response => {
-      this.generarProformaPdf(response.proforma.idProforma);
+      this.generarProformaPdf(response.idProforma);
       this.router.navigate(['/proformas/index']);
-      swal.fire(response.mensaje, `Proforma ${response.proforma.idProforma} ha sido actualizada`, 'info');
+      swal.fire(response.mensaje, `Proforma ${response.noProforma} ha sido actualizada`, 'info');
+    }, error => {
+      console.log(error);
+      Swal.fire('error', ``, 'error')
     });
   }
 }

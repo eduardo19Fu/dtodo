@@ -124,6 +124,7 @@ public class ProductoApiController {
 		log.info("Eliminando producto con ID: {}", idproducto);
 
 		Producto producto = serviceProducto.findById(idproducto);
+		serviceProducto.delete(producto);
 		Map<String, Object> response = new HashMap<>();
 
 		response.put("mensaje", "¡El producto ha sido eliminado con éxito!");
