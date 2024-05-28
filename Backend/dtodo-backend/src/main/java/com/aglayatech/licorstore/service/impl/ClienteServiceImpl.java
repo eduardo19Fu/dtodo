@@ -145,9 +145,6 @@ public class ClienteServiceImpl implements IClienteService {
 		} catch(DataAccessException e) {
 			log.error("Ha ocurrido un error a nivel de base de datos: {}", e.getMessage());
 			throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Error al acceder a la base de datos", e);
-		} catch (Exception e) {
-			log.error("Un error ha ocurrido => {}", e);
-			throw new RuntimeException("Error => ", e);
 		}
 	}
 
