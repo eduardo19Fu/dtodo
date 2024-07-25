@@ -1,7 +1,6 @@
 package com.aglayatech.licorstore.service.impl;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -13,11 +12,17 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import com.aglayatech.licorstore.error.exceptions.DataAccessException;
+import com.aglayatech.licorstore.error.exceptions.NoContentException;
+import com.aglayatech.licorstore.model.Estado;
+import com.aglayatech.licorstore.service.IEstadoService;
+import com.aglayatech.licorstore.service.IProductoService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ResourceUtils;
 
 import com.aglayatech.licorstore.model.MovimientoProducto;
 import com.aglayatech.licorstore.model.Producto;
@@ -32,37 +37,179 @@ import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class MovimientoProductoServiceImpl implements IMovimientoProductoService {
 
-	@Autowired
-	private IMovimientoProductoRepository repoMovimiento;
-	
-	@Autowired
-	private DataSource localDateSource;
+	private final IMovimientoProductoRepository repoMovimiento;
+	private final IEstadoService estadoService;
+	private final IProductoService productoService;
+
+	private final DataSource localDateSource;
 	
 	@Override
 	public List<MovimientoProducto> findAll() {
-		return repoMovimiento.findAll();
+		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
+		log.debug("Enter {}", __method);
+
+		try {
+			List<MovimientoProducto> movimientoProductos = repoMovimiento.findAll();
+			if(!movimientoProductos.isEmpty()) {
+				log.info("Devolviendo listado de movimientos");
+				return movimientoProductos;
+			} else {
+				log.warn("No existen movimientos registrados");
+				throw new NoContentException("No existen movimientos registrados");
+			}
+		} catch (DataAccessException e) {
+			log.error("Ha ocurrido un error a nivel de base de datos: {}", e);
+			throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos => ", e);
+		} catch (Exception e) {
+			log.error("Ha ocurrido un error inesperado: {}", e);
+			throw new RuntimeException("Ha ocurrido un error inesperado: ", e);
+		} finally {
+			log.debug("{} Exit", __method);
+		}
 	}
 
 	@Override
-	public Page<MovimientoProducto> findAll(Pageable pageble) {
-		return repoMovimiento.findAll(pageble);
+	public Page<MovimientoProducto> findAll(Pageable pageable) {
+		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
+		log.debug("Enter {}", __method);
+
+		try {
+			Page<MovimientoProducto> movimientoProductos = repoMovimiento.findAll(pageable);
+			if(!movimientoProductos.isEmpty()) {
+				log.info("Devolviendo listado de movimientos");
+				return movimientoProductos;
+			} else {
+				log.warn("No existen movimientos registrados");
+				throw new NoContentException("No existen movimientos registrados");
+			}
+		} catch (DataAccessException e) {
+			log.error("Ha ocurrido un error a nivel de base de datos: {}", e);
+			throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos => ", e);
+		} catch (Exception e) {
+			log.error("Ha ocurrido un error inesperado: {}", e);
+			throw new RuntimeException("Ha ocurrido un error inesperado: ", e);
+		} finally {
+			log.debug("{} Exit", __method);
+		}
 	}
 
 	@Override
 	public Page<MovimientoProducto> findProductoMoves(Producto producto, Pageable pageable) {
-		return repoMovimiento.findByProducto(producto, pageable);
+		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
+		log.debug("Enter {}", __method);
+
+		try {
+			Page<MovimientoProducto> movimientoProductos = repoMovimiento.findByProducto(producto, pageable);
+			if(!movimientoProductos.isEmpty()) {
+				log.info("Devolviendo listado de movimientos para el producto: {}", producto.getCodProducto());
+				return movimientoProductos;
+			} else {
+				log.warn("No existen movimientos registrados para el producto: {}", producto.getCodProducto());
+				throw new NoContentException("No existen movimientos registrados");
+			}
+		} catch (DataAccessException e) {
+			log.error("Ha ocurrido un error a nivel de base de datos: {}", e);
+			throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos => ", e);
+		} catch (Exception e) {
+			log.error("Ha ocurrido un error inesperado: {}", e);
+			throw new RuntimeException("Ha ocurrido un error inesperado: ", e);
+		} finally {
+			log.debug("{} Exit", __method);
+		}
 	}
 
 	@Override
 	public MovimientoProducto save(MovimientoProducto movimientoProducto) {
-		return repoMovimiento.save(movimientoProducto);
+		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
+		log.debug("Enter {}", __method);
+
+		try {
+			if(calcularStock(movimientoProducto)) {
+				MovimientoProducto movimientoProductoSaved = null;
+				movimientoProductoSaved = repoMovimiento.save(movimientoProducto);
+				return movimientoProductoSaved;
+			} else {
+				log.warn("No se ha podido llevar a cabo el registro del movimiento");
+				throw new RuntimeException("No se ha podido llevar a cabo el registro");
+			}
+		} catch (DataAccessException e) {
+			log.error("Ha ocurrido un error a nivel de base de datos: {}", e);
+			throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos => ", e);
+		} catch (Exception e) {
+			log.error("Ha ocurrido un error inesperado: {}", e);
+			throw new RuntimeException("Ha ocurrido un error inesperado: ", e);
+		}
 	}
 
 	@Override
 	public List<MovimientoProducto> findByFecha(Date fechaIni, Date fechaFin) {
 		return repoMovimiento.findByFechaMovimientoBetween(fechaIni, fechaFin);
+	}
+
+	/**
+	 * Método encargado de llevar a cabo la suma o resta de existencias dependiendo del tipo de movimiento que se
+	 * esté llevando a cabo.
+	 * @param movimientoProducto Objeto de tipo MovimientoProducto que guarda los datos a operar
+	 * @return boolean Devuelve un valor verdadero si el procedimiento de guardado de las nuevas existencias del producto se ha
+	 *         llevado a cabo con éxito.
+	 *
+	 * */
+	public boolean calcularStock(MovimientoProducto movimientoProducto) {
+		int tmpStock = 0;
+		Producto producto = null;
+		Producto productoSaved = null;
+		Estado estado = null;
+
+		try {
+			tmpStock = movimientoProducto.getProducto().getStock();
+			producto = movimientoProducto.getProducto();
+			movimientoProducto.setStockInicial(tmpStock);
+
+			switch (movimientoProducto.getTipoMovimiento()) {
+				case VENTA:
+				case SALIDA:
+				case ELIMINAR_COMPRA:
+				case NOTA_CREDITO:
+					log.debug("Operando salidas al stock por operaciones de tipo VENTA, SALIDA");
+					producto.setStock(tmpStock - movimientoProducto.getCantidad());
+
+//					if(producto.getStock() <= 12 && producto.getStock() > 0)
+//						estado = estadoService.findByEstado("POR AGOTARSE");
+//					else if(producto.getStock() == 0)
+//						estado = estadoService.findByEstado("AGOTADO");
+//					else
+//						estado = estadoService.findByEstado("ACTIVO");
+
+//					producto.setEstado(estado);
+					break;
+				case COMPRA:
+				case ENTRADA:
+				case ANULACION_FACTURA:
+				case ANULACION_NOTA:
+					log.debug("Operando suma al stock por operaciones de tipo COMPRA, ENTRADA");
+					producto.setStock(tmpStock + movimientoProducto.getCantidad());
+
+//					if(producto.getStock() > 12)
+//						estado = estadoService.findByEstado("ACTIVO");
+//					else if(producto.getStock() > 0)
+//						estado = estadoService.findByEstado("POR AGOTARSE");
+
+//					producto.setEstado(estado);
+					break;
+				default:
+					log.debug("No existe la operación deseada");
+					break;
+			}
+
+			productoSaved = productoService.save(producto);
+		} catch (Exception ex) {
+			log.error("Error: {}", ex.getMessage());
+		}
+		return (productoSaved != null);
 	}
 
 	/********* PDF REPORTS SERVICES ***********/

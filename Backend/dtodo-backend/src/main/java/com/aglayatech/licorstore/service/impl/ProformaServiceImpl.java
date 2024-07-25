@@ -4,8 +4,10 @@ import com.aglayatech.licorstore.error.exceptions.DataAccessException;
 import com.aglayatech.licorstore.error.exceptions.NoContentException;
 import com.aglayatech.licorstore.error.exceptions.NotFoundException;
 import com.aglayatech.licorstore.error.exceptions.ReportGenerationException;
+import com.aglayatech.licorstore.model.Estado;
 import com.aglayatech.licorstore.model.Proforma;
 import com.aglayatech.licorstore.repository.IProformaRepository;
+import com.aglayatech.licorstore.service.IEstadoService;
 import com.aglayatech.licorstore.service.IProformaService;
 import com.aglayatech.licorstore.util.Utils;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +42,8 @@ import java.util.Map;
 public class ProformaServiceImpl implements IProformaService {
 
     private final IProformaRepository proformaRepository;
+
+    private final IEstadoService estadoService;
 
     private final DataSource dataSource;
 
@@ -136,6 +140,8 @@ public class ProformaServiceImpl implements IProformaService {
         try {
             if(proforma.getIdProforma() == null) {
                 log.info("Registrando proforma: {}", proforma);
+                Estado estado = estadoService.findById(1);
+                proforma.setEstado(estado);
                 newProforma = proformaRepository.save(proforma);
             } else {
                 log.info("Actualizando proforma con ID: {}", proforma.getIdProforma());

@@ -42,6 +42,16 @@ public class Utils {
         return sdf.format(date);
     }
 
+    public static String fechaCertificacionTransformada(String fechaCertificacionSat) {
+        return fechaCertificacionSat.trim().replace("T", "'T'").replace("-06:00", "'-06:00'");
+    }
+
+    public static SimpleDateFormat getDateFormat(String dateString) {
+        SimpleDateFormat format = new SimpleDateFormat(dateString);
+        format.setTimeZone(TimeZone.getTimeZone("America/Guatemala"));
+        return format;
+    }
+
     /**
      *
      * */

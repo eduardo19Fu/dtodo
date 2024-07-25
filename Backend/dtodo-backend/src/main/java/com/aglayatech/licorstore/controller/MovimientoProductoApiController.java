@@ -15,6 +15,8 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
@@ -42,60 +44,35 @@ import net.sf.jasperreports.engine.JRException;
 @CrossOrigin({ "http://localhost:4200", "https://dtodojalapa.xyz", "http://dtodojalapa.xyz" })
 @RestController
 @RequestMapping(value = "/api")
+@RequiredArgsConstructor
+@Slf4j
 public class MovimientoProductoApiController {
 
-	@Autowired
-	private IMovimientoProductoService serviceMove;
-	
-	@Autowired
-	private IProductoService serviceProducto;
+	private final IMovimientoProductoService serviceMove;
+
+	private final IProductoService serviceProducto;
 
 	@GetMapping(value = "/movimientos")
-	public List<MovimientoProducto> index() {
-		return this.serviceMove.findAll();
+	public ResponseEntity<List<MovimientoProducto>> index() {
+		log.info("Listando movimientos de productos realizados.");
+		return ResponseEntity.ok(serviceMove.findAll());
 	}
 	
 	@Secured({"ROLE_ADMIN", "ROLE_INVENTARIO"})
 	@GetMapping(value = "/movimientos/{idproducto}/{page}")
-	public Page<MovimientoProducto> getByProducto(@PathVariable("idproducto") Integer idProducto, @PathVariable("page") Integer page){
+	public ResponseEntity<Page<MovimientoProducto>> getByProducto(@PathVariable("idproducto") Integer idProducto, @PathVariable("page") Integer page){
+		log.info("Devolviendo movimientos de página: {}", page);
 		Producto producto = serviceProducto.findById(idProducto);
-		return serviceMove.findProductoMoves(producto, PageRequest.of(page, 4));
+		return ResponseEntity.ok(serviceMove.findProductoMoves(producto, PageRequest.of(page, 4)));
 	}
 
 	@Secured({"ROLE_ADMIN", "ROLE_INVENTARIO"})
 	@PostMapping(value = "/movimientos")
 	public ResponseEntity<?> create(@RequestBody MovimientoProducto movimientoProducto, BindingResult result) {
-		
+		log.info("Creando nuevo movimiento para el producto: {}", movimientoProducto.getProducto().getCodProducto());
 		MovimientoProducto newMovimiento = null;
-		// Producto producto = null;
-		Map<String, Object> response = new HashMap<>();
-		
-		if(result.hasErrors()) {
-			// tratamiento de errores
-			List<String> errors = result.getFieldErrors().stream()
-					.map(err -> "El campo '".concat(err.getField().concat("' ")).concat(err.getDefaultMessage()))
-					.collect(Collectors.toList());
-	
-			response.put("errors", errors);
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
-		}
-		
-		try {
-			newMovimiento = serviceMove.save(movimientoProducto);
-			// producto = serviceProducto.findById(newMovimiento.getProducto().getIdProducto());
-			
-			newMovimiento.calcularStock();
-			serviceProducto.save(newMovimiento.getProducto());
-		} catch (DataAccessException e) {
-			response.put("mensaje", "¡Error en la Base de Datos!");
-			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-		
-		response.put("mensaje", "¡El movimiento ha sido creado con éxito!");
-		response.put("movimientoProducto", newMovimiento);
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
-		
+		newMovimiento = serviceMove.save(movimientoProducto);
+		return ResponseEntity.status(HttpStatus.CREATED).body(newMovimiento);
 	}
 
 	/************ REPORTS CONTROLLERS 

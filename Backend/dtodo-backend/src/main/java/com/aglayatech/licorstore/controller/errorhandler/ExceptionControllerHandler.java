@@ -10,6 +10,7 @@ import com.aglayatech.licorstore.error.exceptions.ParseException;
 import com.aglayatech.licorstore.error.exceptions.ReportGenerationException;
 import com.aglayatech.licorstore.error.exceptions.SQLException;
 
+import com.aglayatech.licorstore.error.exceptions.SigningDocumentFelException;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.HttpStatus;
@@ -40,7 +41,7 @@ public class ExceptionControllerHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = {NotFoundException.class})
     public ResponseEntity<ErrorDTO> notFoundExceptionHandler(RuntimeException exception) {
-        log.error("The element was not found", exception);
+        log.error("The element was not found: {}", exception.getMessage());
         ErrorDTO errorDTO = new ErrorDTO();
         errorDTO.setMessage(exception.getMessage());
         errorDTO.setCause(exception.getCause());
@@ -52,7 +53,7 @@ public class ExceptionControllerHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = {DataAccessException.class})
     public ResponseEntity<ErrorDTO> dataAccessExceptionHandler(DataAccessException exception) {
-        log.error("The data was not accessible for the application", exception);
+        log.error("The data was not accessible for the application: {}", exception.getMessage());
         ErrorDTO errorDTO = new ErrorDTO();
         errorDTO.setMessage(exception.getMessage());
         errorDTO.setCause(exception.getCause());
@@ -64,7 +65,7 @@ public class ExceptionControllerHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = {SQLException.class})
     public ResponseEntity<ErrorDTO> sQLExceptionHandler(SQLException exception) {
-        log.error("An SQLException has occurred", exception);
+        log.error("An SQLException has occurred: {}", exception.getMessage());
         ErrorDTO errorDTO = new ErrorDTO();
         errorDTO.setMessage(exception.getMessage());
         errorDTO.setCause(exception.getCause());
@@ -98,9 +99,9 @@ public class ExceptionControllerHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<ErrorDTO>(errorDTO, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(value = IOException.class)
-    public ResponseEntity<ErrorDTO> ioExceptionHandler(IOException exception) {
-        log.error("An error has ocurred while the app was trying to get access to a file.");
+    @ExceptionHandler(value = ParseException.class)
+    public ResponseEntity<ErrorDTO> parseExceptionHandler(ParseException exception) {
+        log.error("An error has ocurred trying to parse a value");
         ErrorDTO errorDTO = new ErrorDTO();
         errorDTO.setMessage(exception.getMessage());
         errorDTO.setCause(exception.getCause());
@@ -110,9 +111,8 @@ public class ExceptionControllerHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<ErrorDTO>(errorDTO, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ExceptionHandler(value = ParseException.class)
-    public ResponseEntity<ErrorDTO> parseExceptionHandler(ParseException exception) {
-        log.error("An error has ocurred trying to parse a value");
+    @ExceptionHandler(value = SigningDocumentFelException.class)
+    public ResponseEntity<ErrorDTO> parseExceptionHandler(SigningDocumentFelException exception) {
         ErrorDTO errorDTO = new ErrorDTO();
         errorDTO.setMessage(exception.getMessage());
         errorDTO.setCause(exception.getCause());

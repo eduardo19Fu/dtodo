@@ -24,8 +24,12 @@ public interface IFacturaService {
 	public Factura findFactura(Long idfactura);
 
 	public Factura findFacturaCorrelativo(Long correlativo);
-	
+
 	public Factura save(Factura factura);
+	
+	public Factura facturaFel(Factura factura);
+
+	Factura anularFacturaFel(Long idfactura, Integer idusuario);
 
 	public TipoFactura findTipoFactura(Integer idTipoFactura);
 
