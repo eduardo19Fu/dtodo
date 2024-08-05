@@ -53,7 +53,7 @@ public class MovimientoProductoServiceImpl implements IMovimientoProductoService
 		log.debug("Enter {}", __method);
 
 		try {
-			List<MovimientoProducto> movimientoProductos = repoMovimiento.findAll();
+			List<MovimientoProducto> movimientoProductos = repoMovimiento.findAllMovimientosProducto();
 			if(!movimientoProductos.isEmpty()) {
 				log.info("Devolviendo listado de movimientos");
 				return movimientoProductos;
@@ -62,11 +62,11 @@ public class MovimientoProductoServiceImpl implements IMovimientoProductoService
 				throw new NoContentException("No existen movimientos registrados");
 			}
 		} catch (DataAccessException e) {
-			log.error("Ha ocurrido un error a nivel de base de datos: {}", e);
-			throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos => ", e);
+			log.error("Ha ocurrido un error a nivel de base de datos: {}", e.getMessage());
+			throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos => " + e.getMessage(), e.getCause());
 		} catch (Exception e) {
-			log.error("Ha ocurrido un error inesperado: {}", e);
-			throw new RuntimeException("Ha ocurrido un error inesperado: ", e);
+			log.error("Ha ocurrido un error inesperado: {}", e.getMessage());
+			throw new RuntimeException("Ha ocurrido un error inesperado: " + e.getMessage());
 		} finally {
 			log.debug("{} Exit", __method);
 		}
@@ -91,7 +91,7 @@ public class MovimientoProductoServiceImpl implements IMovimientoProductoService
 			throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos => ", e);
 		} catch (Exception e) {
 			log.error("Ha ocurrido un error inesperado: {}", e);
-			throw new RuntimeException("Ha ocurrido un error inesperado: ", e);
+			throw new RuntimeException("Ha ocurrido un error inesperado: " + e.getMessage());
 		} finally {
 			log.debug("{} Exit", __method);
 		}
@@ -140,8 +140,8 @@ public class MovimientoProductoServiceImpl implements IMovimientoProductoService
 			log.error("Ha ocurrido un error a nivel de base de datos: {}", e);
 			throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos => ", e);
 		} catch (Exception e) {
-			log.error("Ha ocurrido un error inesperado: {}", e);
-			throw new RuntimeException("Ha ocurrido un error inesperado: ", e);
+			log.error("Ha ocurrido un error inesperado: {}", e.getMessage());
+			throw new RuntimeException("Ha ocurrido un error inesperado: " + e.getMessage());
 		}
 	}
 
@@ -173,7 +173,7 @@ public class MovimientoProductoServiceImpl implements IMovimientoProductoService
 				case VENTA:
 				case SALIDA:
 				case ELIMINAR_COMPRA:
-				case NOTA_CREDITO:
+				case ENTREGA_PRODUCTO_NOTA:
 					log.debug("Operando salidas al stock por operaciones de tipo VENTA, SALIDA");
 					producto.setStock(tmpStock - movimientoProducto.getCantidad());
 

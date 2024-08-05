@@ -35,6 +35,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -58,50 +59,23 @@ public class FacturaApiController {
 
     private final IFacturaService serviceFactura;
 
-    private final IProductoService serviceProducto;
-
-    private final IEstadoService serviceEstado;
-
-    private final ICorrelativoService serviceCorrelativo;
-
-    private final IMovimientoProductoService serviceMovimiento;
-
-    private final IUsuarioService serviceUsuario;
-
-    // Inyeccion para capturar el Emisor del Regimen FEL
-    private final IEmisorService serviceEmisor;
-
-    // Inyeccion para capturar el Certificador del Regimen FEL
-    private final ICertificadorService serviceCertificador;
-
-    private final ITipoFacturaService serviceTipoFactura;
-
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
     @GetMapping(value = "/facturas")
-    public List<Factura> index() {
-        return this.serviceFactura.findAll();
+    public ResponseEntity<List<Factura>> index() {
+        log.info("********** Buscando listado de facturas **********");
+        return ResponseEntity.ok(serviceFactura.findAll());
     }
 
     @GetMapping(value = "/facturas/page/{page}")
-    public Page<Factura> index(@PathVariable("page") Integer page) {
-        return this.serviceFactura.findAll(PageRequest.of(page, 5));
+    public ResponseEntity<Page<Factura>> index(@PathVariable("page") Integer page) {
+        log.info("********** Buscando listado de facturas de pagina {} **********", page);
+        return ResponseEntity.ok(serviceFactura.findAll(PageRequest.of(page, 5)));
     }
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
     @GetMapping(value = "/facturas/cantidad-ventas")
-    public ResponseEntity<?> cantidadVentas() {
-        Integer cantidadVentas = 0;
-        Map<String, Object> response = new HashMap<>();
-
-        try {
-            cantidadVentas = this.serviceFactura.totalVentas();
-        } catch (DataAccessException e) {
-            response.put("mensaje", "¡Error en la base de datos!");
-            response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-            return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        return new ResponseEntity<Integer>(cantidadVentas, HttpStatus.OK);
+    public ResponseEntity<Integer> cantidadVentas() {
+        return ResponseEntity.ok(serviceFactura.totalVentas());
     }
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
@@ -269,30 +243,8 @@ public class FacturaApiController {
 
     // CONTROLADOR VENTAS DIARIAS
     @GetMapping(value = "/facturas/daily-sales")
-    public void dailySales(@RequestParam("usuario") String usuario, @RequestParam("fecha") String fecha, HttpServletResponse httpServletResponse)
-            throws FileNotFoundException, JRException, SQLException, ParseException {
-
-        Date fechaBusqueda;
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-        fechaBusqueda = format.parse(fecha);
-        Integer idusuario = Integer.parseInt(usuario);
-
-        byte[] bytesDailySalesReport = serviceFactura.resportDailySales(idusuario, fechaBusqueda);
-        ByteArrayOutputStream out = new ByteArrayOutputStream(bytesDailySalesReport.length);
-        out.write(bytesDailySalesReport, 0, bytesDailySalesReport.length);
-
-        httpServletResponse.setContentType("application/pdf");
-        httpServletResponse.addHeader("Content-Disposition", "inline; filename=daily-sales.pdf");
-
-        OutputStream os;
-        try {
-            os = httpServletResponse.getOutputStream();
-            out.writeTo(os);
-            os.flush();
-            os.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+    public ResponseEntity<byte[]> dailySales(@RequestParam("usuario") Integer usuario, @RequestParam("fecha") String fecha) {
+        byte[] bytesDailySalesReport = serviceFactura.resportDailySales(usuario, fecha);
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_PDF).body(bytesDailySalesReport);
     }
 }

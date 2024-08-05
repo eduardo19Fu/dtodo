@@ -276,11 +276,11 @@ public class ProductoServiceImpl implements IProductoService {
 			log.info("Obteniendo cantidad de productos registrados");
 			return repoProducto.getCantProductos() == null ? 0 : repoProducto.getCantProductos();
 		} catch (DataAccessException e) {
-			log.error("Ha ocurrido un error a nivel de base de datos: {}", e);
-			throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos => ", e);
+			log.error("Ha ocurrido un error a nivel de base de datos: {}", e.getMessage());
+			throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos => " + e.getMessage(), e.getCause());
 		} catch (Exception e) {
 			log.error("Ha ocurrido un error inesperado: {}", e);
-			throw new RuntimeException("Ha ocurrido un error inesperado: ", e);
+			throw new RuntimeException("Ha ocurrido un error inesperado: " + e.getMessage());
 		} finally {
 			log.debug("{} Exit", __method);
 		}
@@ -309,8 +309,8 @@ public class ProductoServiceImpl implements IProductoService {
 			log.error("Ha ocurrido un error a nivel de base de datos: {}", e);
 			throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos => ", e);
 		} catch (Exception e) {
-			log.error("Ha ocurrido un error inesperado: {}", e);
-			throw new RuntimeException("Ha ocurrido un error inesperado: ", e);
+			log.error("Ha ocurrido un error inesperado: {}", e.getMessage());
+			throw new RuntimeException("Ha ocurrido un error inesperado: " + e.getMessage());
 		}
 	}
 

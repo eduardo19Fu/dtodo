@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 
 import { Proforma } from '../../models/proforma';
-import { ProformaService } from '../../services/proformas/proforma.service';
 
-import { JqueryConfigs } from 'src/app/utils/jquery/jquery-utils';
+import { ProformaService } from '../../services/proformas/proforma.service';
+import { AuthService } from '../../services/auth.service';
+import { DetailService } from '../../services/facturas/detail.service';
+
+import { JqueryConfigs } from '../../utils/jquery/jquery-utils';
 import Swal from 'sweetalert2';
-import { AuthService } from 'src/app/services/auth.service';
-import { DetailService } from 'src/app/services/facturas/detail.service';
 
 @Component({
   selector: 'app-proformas',
@@ -54,7 +55,9 @@ export class ProformasComponent implements OnInit {
       this.proformas = response;
       this.jQueryConfigs.configDataTable('proformas');
       this.jQueryConfigs = new JqueryConfigs();
-    })
+    }, error => {
+      Swal.fire('Error al Cargar Proformas', `${error.error.message}`, 'error');
+    });
   }
 
 

@@ -7,15 +7,14 @@ import { Proforma } from '../../../models/proforma';
 import { UsuarioAuxiliar } from '../../../models/auxiliar/usuario-auxiliar';
 import { DetalleProforma } from '../../../models/detalle-proforma';
 
-import { AuthService } from 'src/app/services/auth.service';
+import { AuthService } from '../../../services/auth.service';
 import { ProductoService } from '../../../services/producto.service';
 import { ClienteService } from '../../../services/cliente.service';
 import { ClienteCreateService } from '../../../services/facturas/cliente-create.service';
-import { UsuarioService } from 'src/app/services/usuarios/usuario.service';
-import { ProformaService } from 'src/app/services/proformas/proforma.service';
+import { UsuarioService } from '../../../services/usuarios/usuario.service';
+import { ProformaService } from '../../../services/proformas/proforma.service';
 
 import swal from 'sweetalert2';
-import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-create-proforma',
@@ -64,6 +63,8 @@ export class CreateProformaComponent implements OnInit {
     this.usuarioService.getUsuario(this.authService.usuario.idUsuario).subscribe(
       usuario => {
         this.usuario = usuario;
+      }, error => {
+        swal.fire('Error al Cargar Usuario', `${error.error.message}`, 'error');
       }
     );
   }
@@ -92,11 +93,11 @@ export class CreateProformaComponent implements OnInit {
         },
         error => {
           if (error.status === 400) {
-            swal.fire(`Error: ${error.status}`, 'Petición no se puede llevar a cabo.', 'error');
+            swal.fire(`Error: ${error.error.status}`, 'Petición no se puede llevar a cabo.', 'error');
           }
 
           if (error.status === 404) {
-            swal.fire(`Error: ${error.status}`, error.error.mensaje, 'error');
+            swal.fire(`Error: ${error.error.status}`, error.error.message, 'error');
           }
         }
       );
@@ -116,7 +117,7 @@ export class CreateProformaComponent implements OnInit {
         },
         error => {
           if (error.status === 400) {
-            swal.fire(`Error: ${error.status}`, 'Petición Equivocada', 'error');
+            swal.fire(`Error: ${error.error.status}`, 'Petición Equivocada', 'error');
           }
           if (error.status === 404) {
             this.nitIngresado = nit;
@@ -238,7 +239,7 @@ export class CreateProformaComponent implements OnInit {
         this.generarProformaPdf(response.idProforma);
       }
     }, error => {
-      console.log(error);
+      swal.fire(`Error: ${error.error.status}`, `${error.error.message}`, 'error');
     });
   }
 
@@ -283,6 +284,8 @@ export class CreateProformaComponent implements OnInit {
             this.proforma.itemsProforma.push(item);
           });
         }
+      }, error => {
+        swal.fire(`Error: ${error.error.status}`, `${error.error.message}`, 'error');
       }
     );
   }
@@ -305,7 +308,7 @@ export class CreateProformaComponent implements OnInit {
       location.reload();
     },
       error => {
-        console.log(error);
+        swal.fire(`Error: ${error.error.status}`, `${error.error.message}`, error);
       });
   }
 
@@ -316,7 +319,7 @@ export class CreateProformaComponent implements OnInit {
       swal.fire(response.mensaje, `Proforma ${response.noProforma} ha sido actualizada`, 'info');
     }, error => {
       console.log(error);
-      Swal.fire('error', ``, 'error')
+      swal.fire('Error', `${error.error.message}`, 'error');
     });
   }
 }

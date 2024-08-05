@@ -10,6 +10,7 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -19,6 +20,9 @@ import java.util.NoSuchElementException;
 
 import javax.sql.DataSource;
 
+import com.aglayatech.licorstore.error.exceptions.NoContentException;
+import com.aglayatech.licorstore.error.exceptions.NotFoundException;
+import com.aglayatech.licorstore.error.exceptions.ReportGenerationException;
 import com.aglayatech.licorstore.error.exceptions.SigningDocumentFelException;
 import com.aglayatech.licorstore.model.Certificador;
 import com.aglayatech.licorstore.model.Cliente;
@@ -99,7 +103,22 @@ public class FacturaServiceImpl implements IFacturaService {
 
 	@Override
 	public List<Factura> findAll() {
-		return repoFactura.findAll(Sort.by(Direction.DESC, "fecha"));
+		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
+		log.debug("Enter {}", __method);
+
+		try {
+			List<Factura> facturas = repoFactura.findAll(Sort.by(Direction.DESC, "fecha"));
+			if(!facturas.isEmpty()) {
+				log.info("Devolviendo listado de facturas");
+				return facturas;
+			} else {
+				log.warn("No existen facturas registradas en la base de datos");
+				throw new NoContentException("No existen facturas registradas en la base de datos");
+			}
+		} catch (DataAccessException e) {
+			log.error("Ha ocurrido un error a nivel de Base de Datos: {}", e.getMessage());
+			throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos: " + e.getMessage(), e.getCause());
+		}
 	}
 
 	@Override
@@ -267,12 +286,34 @@ public class FacturaServiceImpl implements IFacturaService {
 
 	@Override
 	public Integer totalVentas() {
-		return this.repoFactura.getCantidadVentas();
+		try {
+			return repoFactura.getCantidadVentas();
+		} catch (DataAccessException e) {
+			log.error("Ha ocurrido un error a nivel de Base de Datos: {}", e.getMessage());
+			throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos: " + e.getMessage(), e.getCause());
+		}
 	}
 
 	@Override
 	public List<Factura> facturasPorFecha(Date iniDate, Date endDate) {
-		return this.repoFactura.findByFechaBetween(iniDate, endDate);
+		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
+		log.debug("Enter {}", __method);
+
+		try {
+			List<Factura> facturas = repoFactura.findByFechaBetween(iniDate, endDate);
+			if(!facturas.isEmpty()) {
+				log.info("Devolviendo listado de Facturas en el rango de fechas: {} y {}", iniDate, endDate);
+				return facturas;
+			} else {
+				log.warn("No existen facturas registradas en el rango de fechas comprendidas entre: {} y {}", iniDate, endDate);
+				throw new NoContentException("No existen facturas registradas en el rango de fechas comprendidas entre: " + iniDate + " y " + endDate);
+			}
+		} catch (DataAccessException e) {
+			log.error("Ha ocurrido un error a nivel de Base de datos: {}", e.getMessage());
+			throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de Base de Datos", e.getCause());
+		} finally {
+			log.debug("{} Exit", __method);
+		}
 	}
 
 	/**
@@ -626,22 +667,35 @@ public class FacturaServiceImpl implements IFacturaService {
 
 	// REPORTE DE VENTAS DIARIAS
 	@Override
-	public byte[] resportDailySales(Integer usuario, Date fecha)
-			throws JRException, FileNotFoundException, SQLException {
+	public byte[] resportDailySales(Integer usuario, String fecha) {
 
-		Connection con = localDataSource.getConnection(); // Obtiene la conexión actual a la base de datos
-		Map<String, Object> params = new HashMap<>();
-		InputStream file = getClass().getResourceAsStream("/reports/poliza.jrxml");
-		params.put("usuario", usuario);
-		params.put("fecha", fecha);
+		try(Connection con = localDataSource.getConnection()) { // Obtiene la conexión actual a la base de datos
+			Date fechaBusqueda;
+			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+			fechaBusqueda = format.parse(fecha);
+			Map<String, Object> params = new HashMap<>();
+			InputStream file = getClass().getResourceAsStream("/reports/poliza.jrxml");
 
-		JasperReport jasperReport = JasperCompileManager.compileReport(file);
-		JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, params, con);
+			if(file == null) {
+				throw new NotFoundException("Archivo no encontrado");
+			}
+			params.put("usuario", usuario);
+			params.put("fecha", fecha);
 
-		ByteArrayOutputStream byteArrayOutputStream = getByteArrayOutputStream(jasperPrint);
+			JasperReport jasperReport = JasperCompileManager.compileReport(file);
+			JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, params, con);
 
-		con.close();
-		return byteArrayOutputStream.toByteArray();
+			return JasperExportManager.exportReportToPdf(jasperPrint);
+		} catch (JRException e) {
+			log.error("Ha ocurrido un error durante la generación de la proforma: {}", e.getMessage());
+			throw new ReportGenerationException(e.getMessage(), e.getCause());
+		} catch (SQLException e) {
+			log.error("Ha ocurrido un error al intentar ejecutar una instrucción SQL: {}", e.getMessage());
+			throw new com.aglayatech.licorstore.error.exceptions.SQLException(e.getMessage(), e.getCause());
+		} catch (Exception e) {
+			log.error("Ha ocurrido un error inesperado: {}", e.getMessage());
+			throw new RuntimeException("Ha ocurrido un error inesperado: {}", e);
+		}
 	}
 
 	// GENERADOR DE REPORTE DE FACTURA

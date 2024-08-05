@@ -67,7 +67,17 @@ export class FacturaService {
   cancel(id: number, idusuario: number): Observable<any> {
     return this.http.delete<any>(`${this.url}/facturas/cancel/${id}/${idusuario}`).pipe(
       catchError(e => {
-        swal.fire(e.error.mensaje, e.error.error, 'error');
+        swal.fire(e.message, e.code, 'error');
+        return throwError(e);
+      })
+    );
+  }
+
+  cancelV2(idusuario: number, factura: Factura): Observable<any> {
+    return this.http.put<any>(`${this.url}/facturas/cancelV2/${idusuario}`, factura).pipe(
+      catchError(e => {
+        swal.fire(e.message, e.code, 'error');
+        console.log(e);
         return throwError(e);
       })
     );
@@ -75,6 +85,15 @@ export class FacturaService {
 
   create(factura: Factura): Observable<any> {
     return this.http.post<any>(`${this.url}/facturas`, factura).pipe(
+      catchError(e => {
+        swal.fire(e.error.mensaje, e.error.error, 'error');
+        return throwError(e);
+      })
+    );
+  }
+
+  createV2(factura: Factura): Observable<any> {
+    return this.http.post<any>(`${this.url}/facturas/createV2`, factura).pipe(
       catchError(e => {
         swal.fire(e.error.mensaje, e.error.error, 'error');
         return throwError(e);
@@ -109,6 +128,10 @@ export class FacturaService {
           filename: 'poliza.pdf',
           data: new Blob([response], { type: 'application/pdf' })
         };
+      }),
+      catchError(e => {
+        console.log(e);
+        return throwError(e);
       })
     );
   }

@@ -10,26 +10,35 @@ import com.aglayatech.licorstore.repository.IProformaRepository;
 import com.aglayatech.licorstore.service.IEstadoService;
 import com.aglayatech.licorstore.service.IProformaService;
 import com.aglayatech.licorstore.util.Utils;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.sf.jasperreports.engine.*;
-import net.sf.jasperreports.engine.util.JRLoader;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperCompileManager;
+import net.sf.jasperreports.engine.JasperExportManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.TransactionManagementConfigurationSelector;
+
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
-import java.io.ByteArrayOutputStream;
+
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+
 import java.sql.Connection;
 import java.sql.SQLException;
+
 import java.text.ParseException;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -42,9 +51,7 @@ import java.util.Map;
 public class ProformaServiceImpl implements IProformaService {
 
     private final IProformaRepository proformaRepository;
-
     private final IEstadoService estadoService;
-
     private final DataSource dataSource;
 
     @Transactional(readOnly = true)
@@ -149,11 +156,11 @@ public class ProformaServiceImpl implements IProformaService {
             }
             return newProforma;
         } catch (DataAccessException e) {
-            log.error("Ha ocurrido un error a nivel de base de datos: {}", e);
-            throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos => ", e);
+            log.error("Ha ocurrido un error a nivel de base de datos: {}", e.getMessage());
+            throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos => " + e.getMessage(), e.getCause());
         } catch (Exception e) {
-            log.error("Ha ocurrido un error inesperado: {}", e);
-            throw new RuntimeException("Ha ocurrido un error inesperado: ", e);
+            log.error("Ha ocurrido un error inesperado: {}", e.getMessage());
+            throw new RuntimeException("Ha ocurrido un error inesperado: " + e.getMessage());
         } finally {
             log.debug("{} Exit", __method);
         }
@@ -174,10 +181,10 @@ public class ProformaServiceImpl implements IProformaService {
             }
         } catch (DataAccessException e) {
             log.error("Ha ocurrido un error a nivel de base de datos: {}", e);
-            throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos => ", e);
+            throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos => " + e.getMessage(), e.getCause());
         } catch (Exception e) {
             log.error("Ha ocurrido un error inesperado: {}", e);
-            throw new RuntimeException("Ha ocurrido un error inesperado: ", e);
+            throw new RuntimeException("Ha ocurrido un error inesperado: " + e.getMessage());
         }
     }
 
@@ -212,7 +219,7 @@ public class ProformaServiceImpl implements IProformaService {
             throw new com.aglayatech.licorstore.error.exceptions.ParseException("Ha ocurrido un error al tratar de convertir las fechas especificadas", e.getCause());
         } catch (Exception e) {
             log.error("Ha ocurrido un error inesperado: {}", e);
-            throw new RuntimeException("Ha ocurrido un error inesperado: ", e);
+            throw new RuntimeException("Ha ocurrido un error inesperado: " + e.getMessage());
         } finally {
             log.debug("{} Exit", __method);
         }
@@ -248,7 +255,7 @@ public class ProformaServiceImpl implements IProformaService {
             throw new com.aglayatech.licorstore.error.exceptions.SQLException(e.getMessage(), e.getCause());
         } catch (Exception e) {
             log.error("Ha ocurrido un error inesperado: {}", e);
-            throw new RuntimeException("Ha ocurrido un error inesperado: ", e);
+            throw new RuntimeException("Ha ocurrido un error inesperado: " + e.getMessage());
         }
     }
 

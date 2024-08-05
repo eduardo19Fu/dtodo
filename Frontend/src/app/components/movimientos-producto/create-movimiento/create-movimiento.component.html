@@ -67,11 +67,13 @@
 
                         <div class="form-group col">
                             <label for="tipo-movimiento">Tipo Movimiento</label>
-                            <select name="tipo-movimiento" class="form-control" style="width: 100%;"
-                                [(ngModel)]="movimientoProducto.tipoMovimiento" required #tipo="ngModel">
+                            <select name="tipo-movimiento" class="form-control" style="width: 100%;" [(ngModel)]="movimientoProducto.tipoMovimiento" 
+                                required #tipo="ngModel">
 
-                                <option selected="selected" value="ENTRADA">Entrada</option>
-                                <option value="SALIDA">Salida</option>
+                                <option selected="selected" [ngValue]="undefined">Elija tipo de movimiento</option>
+                                <option *ngFor="let movimiento of movimientos">
+                                    {{movimiento}}
+                                </option>
                             </select>
 
                             <div *ngIf="tipo.invalid && (tipo.touched || tipo.dirty)">

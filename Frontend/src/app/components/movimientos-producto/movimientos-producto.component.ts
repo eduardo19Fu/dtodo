@@ -39,7 +39,9 @@ export class MovimientosProductoComponent implements OnInit {
         this.movimientosProducto = movimientosProducto;
         this.jQueryConfigs.configDataTable('movimientos');
       }
-    );
+    ), error => {
+      Swal.fire('Ha ocurrido un error', `Codigo: ${error.error.code} : ${error.error.message}`, 'error');
+    };
   }
 
 }

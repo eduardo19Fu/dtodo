@@ -7,7 +7,7 @@ public enum TipoMovimientoEnum {
     COMPRA,
     ANULACION_FACTURA,
     ELIMINAR_COMPRA,
-    NOTA_CREDITO,
-    ANULACION_NOTA;
+    ANULACION_NOTA,
+    ENTREGA_PRODUCTO_NOTA;
 
 }

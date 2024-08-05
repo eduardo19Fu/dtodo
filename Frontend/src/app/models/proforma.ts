@@ -28,7 +28,7 @@ export class Proforma {
 
     generarNoProforma(): string {
         let min = 0;
-        let max = 100000;
+        let max = 10000000000;
         let noProforma = Math.floor(Math.random() * (max - min + 1) + min) + 'P';
         return noProforma;
     }
