@@ -35,7 +35,7 @@ public interface IFacturaService {
 
 	public Integer totalVentas();
 
-	public List<Factura> facturasPorFecha(Date iniDate, Date endDate);
+	public List<Factura> facturasPorFecha(String iniDate, String endDate);
 	
 	/********* PDF REPORTS SERVICES ***********/
 	

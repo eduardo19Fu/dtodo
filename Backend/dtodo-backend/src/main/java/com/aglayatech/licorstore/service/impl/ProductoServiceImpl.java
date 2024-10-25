@@ -92,11 +92,11 @@ public class ProductoServiceImpl implements IProductoService {
 			log.info("Devolviendo productos paginados: {}", productosPaginados.getTotalPages());
 			return productosPaginados;
 		} catch (DataAccessException e) {
-			log.error("Ha ocurrido un error a nivel de base de datos: {}", e);
-			throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos => ", e);
+			log.error("Ha ocurrido un error a nivel de base de datos: {}", e.getMessage());
+			throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos => " + e.getMessage(), e.getCause());
 		} catch (Exception e) {
-			log.error("Ha ocurrido un error inesperado: {}", e);
-			throw new RuntimeException("Ha ocurrido un error inesperado: ", e);
+			log.error("Ha ocurrido un error inesperado: {}", e.getMessage());
+			throw new RuntimeException("Ha ocurrido un error inesperado: " + e.getMessage(), e.getCause());
 		} finally {
 			log.debug("{} Exit", __method);
 		}

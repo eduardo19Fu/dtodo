@@ -3,20 +3,29 @@ package com.aglayatech.licorstore.service.impl;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+
 import java.io.UnsupportedEncodingException;
+
 import java.lang.reflect.InvocationTargetException;
+
 import java.math.BigDecimal;
+
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+
 import java.sql.Connection;
 import java.sql.SQLException;
+
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import javax.sql.DataSource;
 
@@ -45,6 +54,7 @@ import com.aglayatech.licorstore.service.IProductoService;
 import com.aglayatech.licorstore.service.ITipoFacturaService;
 import com.aglayatech.licorstore.service.IUsuarioService;
 import com.aglayatech.licorstore.util.Utils;
+
 import com.fel.firma.emisor.FirmaEmisor;
 import com.fel.firma.emisor.RespuestaServicioFirma;
 import com.fel.validaciones.documento.Adendas;
@@ -63,14 +73,17 @@ import com.fel.validaciones.documento.RespuestaServicioFel;
 import com.fel.validaciones.documento.ServicioFel;
 import com.fel.validaciones.documento.TotalImpuestos;
 import com.fel.validaciones.documento.Totales;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.aglayatech.licorstore.model.Factura;
 import com.aglayatech.licorstore.repository.IFacturaRepository;
@@ -82,7 +95,6 @@ import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -96,7 +108,6 @@ public class FacturaServiceImpl implements IFacturaService {
 	private final ITipoFacturaService tipoFacturaService;
 	private final ICorrelativoService correlativoService;
 	private final ICertificadorService certificadorService;
-	private final IProductoService productoService;
 	private final IMovimientoProductoService movimientoProductoService;
 	private final IUsuarioService usuarioService;
 	protected final DataSource localDataSource;
@@ -133,12 +144,49 @@ public class FacturaServiceImpl implements IFacturaService {
 
 	@Override
 	public Factura findFactura(Long idfactura) {
-		return repoFactura.findById(idfactura).orElse(null);
+		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
+		log.debug("Enter {}", __method);
+
+		try {
+			Optional<Factura> factura = repoFactura.findById(idfactura);
+			if(factura.isPresent()) {
+				log.info("Devolviendo factura no.: {}", factura.get().getCertificacionSat());
+				return factura.get();
+			} else {
+				log.warn("La Factura no existe en la base de datos");
+				throw new NotFoundException("La Factura ".concat(idfactura.toString()).concat(" No existe en la base de datos"));
+			}
+		} catch (DataAccessException e) {
+			log.error("Ha ocurrido un error a ivel de Base de Datos: {}", e.getMessage());
+			throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos: " + e.getMessage(), e.getCause());
+		} catch (Exception e) {
+			log.error("Ha ocurrido un error inesperado: {}", e.getMessage());
+			throw new RuntimeException("Ha ocurrido un error inesperado: " + e.getMessage(), e.getCause());
+		} finally {
+			log.debug("{} Exit", __method);
+		}
 	}
 
 	@Override
 	public Factura findFacturaCorrelativo(Long correlativo) {
-		return (this.repoFactura.findFacturaByNoFactura(correlativo).isPresent() ? this.repoFactura.findFacturaByNoFactura(correlativo).get() : null);
+		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
+		log.debug("Enter {}", __method);
+
+		try {
+			Optional<Factura> factura = repoFactura.findFacturaByNoFactura(correlativo);
+			if(factura.isPresent()) {
+				log.info("Devolviendo factura con correlativo interno: {}", correlativo.toString());
+				return factura.get();
+			} else {
+				log.warn("No existe una factura con correlativo interno de: {}", correlativo.toString());
+				throw new NotFoundException("No existe una factura con correlativo interno de: " + correlativo);
+			}
+		} catch (DataAccessException e) {
+			log.error("Ha ocurrido un error a ivel de Base de Datos: {}", e.getMessage());
+			throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos: " + e.getMessage(), e.getCause());
+		} finally {
+			log.debug("{} Exit", __method);
+		}
 	}
 
 	@Override
@@ -295,12 +343,20 @@ public class FacturaServiceImpl implements IFacturaService {
 	}
 
 	@Override
-	public List<Factura> facturasPorFecha(Date iniDate, Date endDate) {
+	public List<Factura> facturasPorFecha(String iniDate, String endDate) {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
 		log.debug("Enter {}", __method);
 
 		try {
-			List<Factura> facturas = repoFactura.findByFechaBetween(iniDate, endDate);
+
+			Date date1;
+			Date date2;
+			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+
+			date1 = format.parse(iniDate);
+			date2 = format.parse(endDate);
+			List<Factura> facturas = repoFactura.findByFechaBetween(date1, date2);
+
 			if(!facturas.isEmpty()) {
 				log.info("Devolviendo listado de Facturas en el rango de fechas: {} y {}", iniDate, endDate);
 				return facturas;
@@ -311,6 +367,9 @@ public class FacturaServiceImpl implements IFacturaService {
 		} catch (DataAccessException e) {
 			log.error("Ha ocurrido un error a nivel de Base de datos: {}", e.getMessage());
 			throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de Base de Datos", e.getCause());
+		} catch (ParseException e) {
+			log.error("No se puede llevar a cabo la conversión de fechas");
+			throw new com.aglayatech.licorstore.error.exceptions.ParseException("No se puede llevar a cabo la conversión de fechas", e.getCause());
 		} finally {
 			log.debug("{} Exit", __method);
 		}
@@ -702,43 +761,15 @@ public class FacturaServiceImpl implements IFacturaService {
 	@Override
 	public byte[] showBill(Long idfactura)
 			throws JRException, FileNotFoundException, SQLException {
-
-		Connection con = localDataSource.getConnection();
-		Map<String, Object> params = new HashMap<>();
-		params.put("idfactura", idfactura);
-		InputStream file = getClass().getResourceAsStream("/reports/factura.jrxml");
-
-		JasperReport jasperReport = JasperCompileManager.compileReport(file);
-		JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, params, con);
-
-		ByteArrayOutputStream byteArrayOutputStream = getByteArrayOutputStream(jasperPrint);
-
-		con.close();
-		return byteArrayOutputStream.toByteArray();
+		// TODO: Implementar en caso de necesitarse
+		return null;
 	}
 
 	@Override
 	public byte[] showBill2(Long idfactura)
 			throws JRException, FileNotFoundException, SQLException {
 
-		Connection con = localDataSource.getConnection();
-		Map<String, Object> params = new HashMap<>();
-		params.put("idfactura", idfactura);
-		InputStream file = getClass().getResourceAsStream("/reports/factura_2.jrxml");
-
-		JasperReport jasperReport = JasperCompileManager.compileReport(file);
-		JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, params, con);
-
-		ByteArrayOutputStream byteArrayOutputStream = getByteArrayOutputStream(jasperPrint);
-
-		con.close();
-		return byteArrayOutputStream.toByteArray();
+		// TODO: Implementar en caso de necesitarse formato sin FEL
+		return null;
 	}
-
-	protected ByteArrayOutputStream getByteArrayOutputStream(JasperPrint jasperPrint) throws JRException {
-	    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-	    JasperExportManager.exportReportToPdfStream(jasperPrint, byteArrayOutputStream);
-	    return byteArrayOutputStream;
-	}
-
 }
