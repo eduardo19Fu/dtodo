@@ -1,12 +1,16 @@
 package com.aglayatech.licorstore.model;
 
+import com.aglayatech.licorstore.model.enums.EstadoNotaCreditoEnum;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -35,22 +39,21 @@ public class NotaCredito implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idNotaCredito;
 
-    private BigDecimal abono;
+    private String correlativoFacturaSat;
+    private String serieFacturaSat;
     private BigDecimal total;
-    private BigDecimal restante;
+    private String observaciones;
 
     private LocalDateTime fechaCreacion;
-    private LocalDate fechaPagoLimite;
+    private LocalDate fechaEntregaEstimada;
+
+    @Enumerated(EnumType.STRING)
+    private EstadoNotaCreditoEnum estado;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "id_nota_credito")
     @JsonIgnoreProperties({ "notaCredito", "hibernateLazyInitializer", "handler" })
     private List<NotaCreditoDetalle> items;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_estado")
-    @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"})
-    private Estado estado;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_cliente")

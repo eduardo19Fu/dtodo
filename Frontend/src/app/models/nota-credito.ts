@@ -5,14 +5,15 @@ import { NotaCreditoDetalle } from "./nota-credito-detalle";
 
 export class NotaCredito {
     idNotaCredito: number;
-    abono: number;
+    correlativoFacturaSat: String;
+    serieFacturaSat: String;
     total: number;
-    restante: number;
     fechaCreacion: Date;
-    fechaPagoLimite: Date;
+    fechaEntregaEstimada: Date;
+    estado: String;
+    observaciones: String;
 
     usuario: UsuarioAuxiliar;
-    estado: Estado;
     cliente: Cliente;
     items: NotaCreditoDetalle[] = [];
 

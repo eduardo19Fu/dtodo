@@ -2,6 +2,7 @@ package com.aglayatech.licorstore.service;
 
 import com.aglayatech.licorstore.model.Estado;
 import com.aglayatech.licorstore.model.NotaCredito;
+import com.aglayatech.licorstore.model.enums.EstadoNotaCreditoEnum;
 
 import java.util.List;
 
@@ -13,7 +14,7 @@ public interface INotaCreditoService {
 
     public NotaCredito findNota(Integer idNota);
 
-    public NotaCredito save(NotaCredito notaCredito);
+    public NotaCredito save(NotaCredito notaCredito, EstadoNotaCreditoEnum estado);
 
     public void delete(Integer idNota);
 }

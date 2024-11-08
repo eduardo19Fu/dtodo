@@ -16,12 +16,18 @@ export class LoginComponent implements OnInit {
 
   title: string;
   usuario: Usuario;
+  usuarioTitle: string;
+  passwordTitle: string;
+  headerTitle: string;
 
   constructor(
     private router: Router,
     private authService: AuthService
   ) {
     this.title = 'Iniciar Sesión';
+    this.headerTitle = 'Sistema de Gestión de Inventario y Ventas'
+    this.usuarioTitle = 'Usuario';
+    this.passwordTitle = 'Password';
     this.usuario = new Usuario();
   }
 

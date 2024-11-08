@@ -28,6 +28,7 @@ export class CreateNotaComponent implements OnInit {
   @ViewChild('myButtonXChild') myButtonXRef: ElementRef;
   @ViewChild('myButton2XChild') myButton2XRef: ElementRef;
   @ViewChild('mySaldoChild') mySaldoRef: ElementRef;
+  @ViewChild('myCorrelativoFactura') myCorrelativo: ElementRef;
 
   nitIngresado: string;
   title: string;
@@ -182,7 +183,7 @@ export class CreateNotaComponent implements OnInit {
       this.clienteService.getClienteByNit(nit).subscribe(
         cliente => {
           this.cliente = cliente;
-          this.myCodProdRef.nativeElement.focus();
+          this.myCorrelativo.nativeElement.focus();
         },
         error => {
           if (error.status === 400) {
@@ -206,8 +207,6 @@ export class CreateNotaComponent implements OnInit {
   create(): void {
     this.notaCredito.cliente = this.cliente;
     this.notaCredito.usuario = this.usuario;
-    this.notaCredito.abono = this.abono;
-    this.notaCredito.restante = this.saldoRestante;
     this.notaCredito.total = this.notaCredito.calcularTotal();
 
     this.notaService.create(this.notaCredito).subscribe(
@@ -216,7 +215,7 @@ export class CreateNotaComponent implements OnInit {
         this.notaCredito = new NotaCredito();
         this.myBuscarTexto.nativeElement.value = '';
         this.router.navigate(['/notas-credito/index']);
-        swal.fire('Pedido Realizado', `Nota No. ${response.notaCredito.idNotaCredito} creada satisfactoriamente.`, 'success');
+        swal.fire('Pedido Realizado', `Nota No. ${response.idNotaCredito} creada satisfactoriamente.`, 'success');
         this.myBuscarTexto.nativeElement.focus();
 
       // AQÍ VA EL CÓDIGO PARA GENERAR EL PDF

@@ -1,5 +1,5 @@
 <!-- MODAL DETALLE NOTA CREDITO -->
-<app-detail-nota *ngIf="notaSeleccionada" [factura]="notaSeleccionada"></app-detail-nota>
+<app-detail-nota *ngIf="notaSeleccionada" [notaCredito]="notaSeleccionada"></app-detail-nota>
 
 <!-- Content Header (Page header) -->
 <section class="content-header">
@@ -37,12 +37,12 @@
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Abono</th>
                     <th>Total</th>
-                    <th>Restante</th>
                     <th>Emisor</th>
+                    <th>Correlativo SAT</th>
+                    <th>Serie SAT</th>
                     <th>Fecha Creaci&oacute;n</th>
-                    <th>Fecha L&iacute;mite de Pago</th>
+                    <th>Fecha Estimada de Entrega</th>
                     <th>Estado</th>
                     <th *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR')">Opciones</th>
                 </tr>
@@ -51,16 +51,23 @@
             <tbody>
                 <tr *ngFor="let nota of notasCredito">
                     <td>{{nota.idNotaCredito}}</td>
-                    <td>{{nota.abono}}</td>
                     <td>{{nota.total}}</td>
-                    <td>{{nota.restante}}</td>
                     <td>{{nota.usuario.usuario}}</td>
+                    <td>{{nota.correlativoFacturaSat}}</td>
+                    <td>{{nota.serieFacturaSat}}</td>
                     <td>{{nota.fechaCreacion | date: 'dd/MM/yyyy - hh:mm'}}</td>
-                    <td>{{nota.fechaPagoLimite | date: 'dd/MM/yyyy'}}</td>
+                    <td>{{nota.fechaEntregaEstimada | date: 'dd/MM/yyyy'}}</td>
                     <td>
                         <span class="badge"
-                            [ngClass]="{'badge-success': nota.estado.idEstado === 3, 'badge-danger': nota.estado.idEstado === 4}">
-                            {{nota.estado.estado}}
+                            [ngClass]="{'badge-warning': nota.estado === 'ENTREGA_PENDIENTE', 
+                                        'badge-danger': nota.estado === 'ANULADO', 
+                                        'badge-info': nota.estado === 'ENTREGADO'}"
+                                        
+                            [ngSwitch]="nota.estado">
+                            
+                            <h8 *ngSwitchCase="'ENTREGA_PENDIENTE'">Entrega Pendiente</h8>
+                            <h8 *ngSwitchCase="'ANULADO'">Anulado</h8>
+                            <h8 *ngSwitchCase="'ENTREGADO'">Entregado</h8>
                         </span>
                     </td>
                     <td class="center-options" *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR')">
@@ -88,12 +95,10 @@
             <tfoot>
                 <tr>
                     <th>ID</th>
-                    <th>Abono</th>
                     <th>Total</th>
-                    <th>Restante</th>
                     <th>Emisor</th>
                     <th>Fecha Creaci&oacute;n</th>
-                    <th>Fecha L&iacute;mite de Pago</th>
+                    <th>Fecha Estimada de Entrega</th>
                     <th>Estado</th>
                     <th *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR')">Opciones</th>
                 </tr>
