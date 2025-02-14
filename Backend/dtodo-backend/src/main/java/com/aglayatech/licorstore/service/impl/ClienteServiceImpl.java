@@ -1,9 +1,11 @@
 package com.aglayatech.licorstore.service.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import com.aglayatech.licorstore.dto.ClienteDto;
 import com.aglayatech.licorstore.error.exceptions.NoContentException;
 import com.aglayatech.licorstore.error.exceptions.NotFoundException;
 
@@ -48,6 +50,26 @@ public class ClienteServiceImpl implements IClienteService {
 		} catch (Exception e) {
 			log.error("Un error ha ocurrido => {}", e);
 			throw new RuntimeException("Error => ", e);
+		}
+	}
+
+	@Override
+	public List<ClienteDto> findAllDto() {
+		List<ClienteDto> clientes = new ArrayList<>();
+		try {
+			log.info("Devolviendo listado de clientes...");
+			clientes = clienteRepository.consultarClientesDto();
+
+			if (clientes != null && clientes.size() > 0) {
+				log.info("Listado de clientes obtenidos: ", clientes.size());
+				return clientes;
+			} else {
+				log.warn("No existen clientes registrados");
+				throw new NoContentException("No existe ningún cliente registrado en la base de datos");
+			}
+		} catch (DataAccessException e) {
+			log.error("Ha ocurrido un error a nivel de base de datos: {}", e.getMessage());
+			throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos", e);
 		}
 	}
 

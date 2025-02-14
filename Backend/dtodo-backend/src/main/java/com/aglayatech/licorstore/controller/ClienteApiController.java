@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.aglayatech.licorstore.dto.ClienteDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,12 +37,9 @@ public class ClienteApiController {
 	private final IClienteService serviceCliente;
 
 	@GetMapping(value = "/clientes")
-	public ResponseEntity<List<Cliente>> listarClientes () {
+	public ResponseEntity<List<ClienteDto>> listarClientes () {
 		log.info("Listando Clientes");
-
-		List<Cliente> listado = new ArrayList<>();
-		listado = serviceCliente.findAll();
-		return ResponseEntity.ok(listado);
+		return ResponseEntity.ok(serviceCliente.findAllDto());
 	}
 	
 	@GetMapping(value = "/clientes/page/{page}")
