@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.aglayatech.licorstore.dto.ProductoDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -62,6 +63,12 @@ public class ProductoApiController {
 		return ResponseEntity.ok(productos);
 	}
 
+	@GetMapping(value = "/productos/dto")
+	public ResponseEntity<List<ProductoDto>> getAllDto() {
+		log.info("Listando productos registrados con dtos");
+		return ResponseEntity.ok(serviceProducto.findAllDto());
+	}
+
 	@GetMapping(value = "/productos/page/{page}")
 	public ResponseEntity<Page<Producto>> index(@PathVariable("page") Integer page) {
 		log.info("Listando productos paginados:");
@@ -71,11 +78,11 @@ public class ProductoApiController {
 	}
 	
 	@GetMapping(value = "/productos-activos")
-	public ResponseEntity<List<Producto>> findAll() {
+	public ResponseEntity<List<ProductoDto>> findAll() {
 		log.info("Listando productos activos");
 
 		Estado estado = serviceEstado.findById(1);
-		List<Producto> productosActivos = serviceProducto.findAllByEstado(estado);
+		List<ProductoDto> productosActivos = serviceProducto.findAllByEstado(estado);
 		return ResponseEntity.ok(productosActivos);
 	}
 

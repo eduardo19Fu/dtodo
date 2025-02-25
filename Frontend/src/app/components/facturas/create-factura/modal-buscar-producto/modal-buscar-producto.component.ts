@@ -2,6 +2,7 @@ import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { ProductoService } from '../../../../services/producto.service';
 import { Producto } from '../../../../models/producto';
 import { JqueryConfigs } from '../../../../utils/jquery/jquery-utils';
+import { ProductoDto } from 'src/app/dtos/productoDto';
 
 @Component({
   selector: 'app-modal-buscar-producto',
@@ -14,7 +15,7 @@ export class ModalBuscarProductoComponent implements OnInit {
   @Output() producto = new EventEmitter<Producto>();
 
   title: string;
-  productos: Producto[];
+  productos: ProductoDto[];
 
   jqueryConfigs: JqueryConfigs = new JqueryConfigs();
 

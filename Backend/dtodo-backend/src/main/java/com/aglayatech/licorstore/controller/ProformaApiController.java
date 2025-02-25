@@ -45,21 +45,21 @@ public class ProformaApiController {
 
     private final IEstadoService estadoService;
 
-    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @GetMapping("/proformas")
     public ResponseEntity<List<Proforma>> index(){
         log.info("Retornando listado de Proformas registradas");
         return ResponseEntity.ok(proformaService.findAll());
     }
 
-    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @GetMapping("/proformas/{id}")
     public ResponseEntity<Proforma> findProforma(@PathVariable("id") Long id){
         log.info("Retornando Proforma registrada con ID: {}", id);
         return ResponseEntity.ok(proformaService.findProforma(id));
     }
 
-    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @PostMapping(value = "/proformas")
     public ResponseEntity<Proforma> create(@RequestBody Proforma proforma) {
         log.info("Registrando nueva proforma: {}", proforma.toString());
@@ -67,7 +67,7 @@ public class ProformaApiController {
         return ResponseEntity.status(HttpStatus.CREATED).body(newProforma);
     }
 
-    @Secured(value = {"ROLE_ADMIN", "ROLE_ADMIN"})
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @PutMapping(value = "/proformas")
     public ResponseEntity<Proforma> udpate(@RequestBody Proforma proforma) {
         log.info("Actualizando proforma: {}", proforma.toString());

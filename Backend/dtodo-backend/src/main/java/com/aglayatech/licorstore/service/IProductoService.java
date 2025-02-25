@@ -1,10 +1,8 @@
 package com.aglayatech.licorstore.service;
 
-import java.io.FileNotFoundException;
-import java.sql.SQLException;
-import java.util.Date;
 import java.util.List;
 
+import com.aglayatech.licorstore.dto.ProductoDto;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,14 +10,15 @@ import org.springframework.data.domain.Pageable;
 import com.aglayatech.licorstore.model.Estado;
 import com.aglayatech.licorstore.model.Producto;
 
-import net.sf.jasperreports.engine.JRException;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface IProductoService {
 	
 	public List<Producto> findAll();
+
+	public List<ProductoDto> findAllDto();
 	
-	public List<Producto> findAllByEstado(Estado estado);
+	public List<ProductoDto> findAllByEstado(Estado estado);
 	
 	public Page<Producto> findAll(Pageable pageable);
 	

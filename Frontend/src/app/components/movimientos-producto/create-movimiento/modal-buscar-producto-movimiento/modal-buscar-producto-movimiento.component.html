@@ -32,7 +32,7 @@
                                 <td>{{ producto.nombre }}</td>
                                 <td>{{ producto.precioVenta | currency: "Q" : "symbol" }}</td>
                                 <td>{{ producto.stock }}</td>
-                                <td>{{ producto.marcaProducto.marca }}</td>
+                                <td>{{ producto.marcaProducto }}</td>
                                 <td class="center-options">
                                     <button class="btn bg-gradient-cyan" (click)="chooseProducto(producto)">
                                         Elegir

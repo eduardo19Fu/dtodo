@@ -1,7 +1,5 @@
 package com.aglayatech.licorstore.service.impl;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.sql.Connection;
@@ -14,6 +12,7 @@ import java.util.Optional;
 
 import javax.sql.DataSource;
 
+import com.aglayatech.licorstore.dto.ProductoDto;
 import com.aglayatech.licorstore.service.IEstadoService;
 import com.aglayatech.licorstore.service.IUploadFileService;
 import com.aglayatech.licorstore.util.Utils;
@@ -24,10 +23,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ResourceUtils;
 
 import com.aglayatech.licorstore.error.exceptions.NotFoundException;
 import com.aglayatech.licorstore.model.Estado;
@@ -35,12 +32,6 @@ import com.aglayatech.licorstore.model.Producto;
 import com.aglayatech.licorstore.repository.IProductoRepository;
 import com.aglayatech.licorstore.service.IProductoService;
 
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JasperCompileManager;
-import net.sf.jasperreports.engine.JasperExportManager;
-import net.sf.jasperreports.engine.JasperFillManager;
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.JasperReport;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -69,13 +60,27 @@ public class ProductoServiceImpl implements IProductoService {
 			log.info("Devolviendo listado de productos disponibles");
 			return productos;
 		} catch (DataAccessException e) {
-			log.error("Ha ocurrido un error a nivel de base de datos: {}", e);
+			log.error("Ha ocurrido un error a nivel de base de datos: {}", e.getMessage());
 			throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos => ", e);
 		} catch (Exception e) {
 			log.error("Ha ocurrido un error inesperado: {}", e);
 			throw new RuntimeException("Ha ocurrido un error inesperado: ", e);
 		} finally {
 			log.debug("{} Exit", __method);
+		}
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public List<ProductoDto> findAllDto() {
+		List<ProductoDto> productos = new ArrayList<>();
+		try {
+			log.info("Devolviendo productos con dtos");
+			productos = repoProducto.listarPorEstadoSPDto(0);
+			return productos;
+		} catch (DataAccessException e) {
+			log.error("Ha ocurrido un error a nivel de base de datos al consultar productos desde procedimiento almacenado: {}", e.getMessage());
+			throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos => ", e);
 		}
 	}
 
@@ -246,14 +251,14 @@ public class ProductoServiceImpl implements IProductoService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public List<Producto> findAllByEstado(Estado estado) {
+	public List<ProductoDto> findAllByEstado(Estado estado) {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
 		log.debug("Enter {}", __method);
 
-		List<Producto> productos = new ArrayList<>();
+		List<ProductoDto> productos = new ArrayList<>();
 
 		try {
-			productos = repoProducto.listarPorEstadoSP(estado.getIdEstado());
+			productos = repoProducto.listarPorEstadoSPDto(estado.getIdEstado());
 
 			log.info("Listando productos con estado Activo");
 			return productos;

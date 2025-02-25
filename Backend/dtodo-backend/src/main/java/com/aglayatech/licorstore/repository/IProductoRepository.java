@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import com.aglayatech.licorstore.dto.ProductoDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,6 +19,9 @@ public interface IProductoRepository extends JpaRepository<Producto, Integer> {
 
 	@Query(value = "{call sp_consultar_productos(:idestado)}", nativeQuery = true)
 	List<Producto> listarPorEstadoSP(Integer idestado);
+
+	@Query(value = "{call sp_consultar_productos_dto(:idestado)}", nativeQuery = true)
+	List<ProductoDto> listarPorEstadoSPDto(Integer idestado);
 
 	// Filtra los productos por nombre y devuelve un listado con las coincidencias
 	// select * from Producto where nombre = /*valor ingresado por usuario*/
