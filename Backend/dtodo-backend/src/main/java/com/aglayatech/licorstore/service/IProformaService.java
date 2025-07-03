@@ -1,5 +1,6 @@
 package com.aglayatech.licorstore.service;
 
+import com.aglayatech.licorstore.dto.ProformaDto;
 import com.aglayatech.licorstore.model.Proforma;
 import net.sf.jasperreports.engine.JRException;
 import org.springframework.data.domain.Page;
@@ -18,11 +19,13 @@ public interface IProformaService {
 
     public Proforma findProforma(Long idproforma);
 
-    public Proforma save(Proforma proforma);
+    public Proforma save(Proforma proforma, Long idproforma);
 
     public void delete(Proforma proforma);
 
     public List<Proforma> proformasPorFecha(String iniDate, String endDate);
+
+    public List<ProformaDto> proformasPorFechaSp(String iniDate, String endDate);
 
     // REPORTES PARA PROFORMAS
 

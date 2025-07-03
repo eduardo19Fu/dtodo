@@ -1,5 +1,6 @@
 package com.aglayatech.licorstore.controller;
 
+import com.aglayatech.licorstore.dto.ProformaDto;
 import com.aglayatech.licorstore.model.Proforma;
 import com.aglayatech.licorstore.service.IEstadoService;
 import com.aglayatech.licorstore.service.IProformaService;
@@ -7,7 +8,6 @@ import com.aglayatech.licorstore.service.IProformaService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import net.sf.jasperreports.engine.JRException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -23,12 +23,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -63,15 +57,15 @@ public class ProformaApiController {
     @PostMapping(value = "/proformas")
     public ResponseEntity<Proforma> create(@RequestBody Proforma proforma) {
         log.info("Registrando nueva proforma: {}", proforma.toString());
-        Proforma newProforma = proformaService.save(proforma);
+        Proforma newProforma = proformaService.save(proforma, null);
         return ResponseEntity.status(HttpStatus.CREATED).body(newProforma);
     }
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
-    @PutMapping(value = "/proformas")
-    public ResponseEntity<Proforma> udpate(@RequestBody Proforma proforma) {
+    @PutMapping(value = "/proformas/{id}")
+    public ResponseEntity<Proforma> udpate(@RequestBody Proforma proforma, @PathVariable Long id) {
         log.info("Actualizando proforma: {}", proforma.toString());
-        Proforma proformaUpdated = proformaService.save(proforma);
+        Proforma proformaUpdated = proformaService.save(proforma, id);
         return ResponseEntity.status(HttpStatus.CREATED).body(proformaUpdated);
     }
 
@@ -94,6 +88,16 @@ public class ProformaApiController {
     {
         List<Proforma> proformas = new ArrayList<>();
         proformas = proformaService.proformasPorFecha(fechaIni, fechaFin);
+        return ResponseEntity.ok(proformas);
+    }
+
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
+    @GetMapping("/proformas/get-listado-dto/get")
+    public ResponseEntity<List<ProformaDto>> getProformasPorFechaSp(@RequestParam(value = "date1", required = false) String fechaIni,
+                                                                    @RequestParam(value = "date2", required = false) String fechaFin)
+    {
+        List<ProformaDto> proformas = new ArrayList<>();
+        proformas = proformaService.proformasPorFechaSp(fechaIni, fechaFin);
         return ResponseEntity.ok(proformas);
     }
 

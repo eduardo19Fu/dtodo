@@ -64,4 +64,14 @@ public class Utils {
             return (nit.trim());
         }
     }
+
+    /**
+     * Método que lleva a cabo la generación del numero de Proforma
+     * */
+    public static String generarNoProforma() {
+        String noProforma = "";
+        Long numerico = (long) (Math.random()*1000000000+1);
+        noProforma = numerico + "P";
+        return noProforma;
+    }
 }

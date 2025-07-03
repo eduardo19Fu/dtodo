@@ -53,10 +53,6 @@ export class CreateProformaComponent implements OnInit {
   ngOnInit(): void {
     this.loadUsuario();
     this.cargarProforma();
-
-    if(!this.proforma.noProforma) {
-      this.proforma.noProforma = this.proforma.generarNoProforma();
-    }
   }
 
   loadUsuario(): void {
@@ -83,27 +79,25 @@ export class CreateProformaComponent implements OnInit {
   }
 
   buscarProducto(): void {
-    const codigo = ((document.getElementById('codigo') as HTMLInputElement)).value;
-
-    if (codigo) {
-      this.productoService.getProductoByCode(codigo).subscribe(
-        producto => {
-          this.producto = producto;
-          (document.getElementById('cantidad') as HTMLInputElement).focus();
-        },
-        error => {
-          if (error.status === 400) {
-            swal.fire(`Error: ${error.error.status}`, 'Petición no se puede llevar a cabo.', 'error');
-          }
-
-          if (error.status === 404) {
-            swal.fire(`Error: ${error.error.status}`, error.error.message, 'error');
-          }
-        }
-      );
-    } else {
+    const codigo = (document.getElementById('codigo') as HTMLInputElement).value;
+    if (!codigo) {
       swal.fire('Código Inválido', 'Ingrese un código de producto válido para realizar la búsqueda.', 'warning');
+      return;
     }
+
+    this.productoService.getProductoByCode(codigo).subscribe(
+      producto => {
+        this.producto = producto;
+        (document.getElementById('cantidad') as HTMLInputElement).focus();
+      },
+      error => {
+        const status = error.status;
+        const message = status === 400
+          ? 'Petición no se puede llevar a cabo.'
+        : error.error?.message || 'Error desconocido';
+        swal.fire(`Error: ${error.error?.status || status}`, message, 'error');
+      }
+    );
   }
 
   buscarCliente(): void {
@@ -261,12 +255,11 @@ export class CreateProformaComponent implements OnInit {
           
           this.cliente = response.cliente;
 
+          this.proforma.idProforma = response.idProforma;
           this.proforma.noProforma = response.noProforma;
           this.proforma.cliente = this.cliente;
           this.proforma.fechaEmision = response.fechaEmision;
           this.proforma.estado = response.estado;
-          this.proforma.idProforma = response.idProforma;
-          this.proforma.noProforma = response.noProforma;
           this.proforma.usuario = response.usuario;
           this.proforma.total = response.total;
 

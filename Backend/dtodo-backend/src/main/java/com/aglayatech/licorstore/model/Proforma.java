@@ -31,7 +31,7 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 @ToString
 @Entity
 @Table(name = "proformas")

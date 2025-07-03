@@ -1,5 +1,5 @@
 <!-- MODAL PARA MOSTRAR EL DETALLE DE LA PROFORMA -->
-<app-detail-proforma *ngIf="proformaSeleccionada" [proforma]="proformaSeleccionada"></app-detail-proforma>
+<app-detail-proforma *ngIf="proformaSeleccionada" [proformadto]="proformaSeleccionada" (closeModal)="cerrarDetalle()"></app-detail-proforma>
 
 <section class="content-header">
     <div class="container-fluid">
@@ -39,7 +39,7 @@
         </div>
 
         <div class="card-footer">
-            <button type="submit" class="btn bg-gradient-info" (click)="getProformasSp()" [disabled]="proformas.length > 0">
+            <button type="submit" class="btn bg-gradient-info" (click)="getProformasDto()" [disabled]="proformasDto.length > 0">
                 <i class="fas fa-search"></i>
                 Búscar
             </button>
@@ -55,7 +55,7 @@
 <div class="card">
     <div class="card-body table-responsive">
 
-        <div *ngIf="proformas?.length == 0" class="alert alert-info alert-dismissible">
+        <div *ngIf="proformasDto?.length == 0" class="alert alert-info alert-dismissible">
             <h5>
                 <i class="icon fas fa-info"></i>
                 Atención!
@@ -65,7 +65,7 @@
         </div>
 
         <table id="proformas" class="table table-hover table-striped table-bordered dataTable dtr-inline table-sm"
-            role="grid" *ngIf="proformas?.length > 0">
+            role="grid" *ngIf="proformasDto?.length > 0">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -80,19 +80,19 @@
             </thead>
 
             <tbody>
-                <tr *ngFor="let proforma of proformas">
+                <tr *ngFor="let proforma of proformasDto">
                     <td>{{proforma.idProforma}}</td>
                     <td>{{proforma.noProforma}}</td>
                     <td>{{proforma.fechaEmision | date: 'dd/MM/yyyy - hh:mm'}}</td>
                     <td>{{proforma.total | currency: 'Q' : 'symbol'}}</td>
                     <td>
                         <span class="badge"
-                            [ngClass]="{'badge-success': proforma.estado.idEstado === 1, 'badge-danger': proforma.estado.idEstado === 4}">
-                            {{proforma.estado.estado}}
+                            [ngClass]="{'badge-success': proforma.estado === 'ACTIVO', 'badge-danger': proforma.estado === 'ANULADO'}">
+                            {{proforma.estado}}
                         </span>
                     </td>
-                    <td>{{proforma.usuario.usuario}}</td>
-                    <td>{{proforma.cliente.nombre}}</td>
+                    <td>{{proforma.usuario}}</td>
+                    <td>{{proforma.cliente}}</td>
                     
                     <td class="center-options" *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR')">
 
@@ -106,7 +106,7 @@
                             <i class="fas fa-print"></i>
                         </button>
 
-                        <button class="btn bg-gradient-info margin" name="edit" type="button" *ngIf="auth.hasRole('ROLE_ADMIN')"
+                        <button class="btn bg-gradient-info margin" name="edit" type="button" *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_INVENTARIO')"
                             [routerLink]="['/proformas/create', proforma.idProforma]">
                             <i class="fas fa-edit"></i>
                         </button>

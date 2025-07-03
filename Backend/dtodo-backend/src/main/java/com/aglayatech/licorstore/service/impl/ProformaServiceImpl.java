@@ -1,5 +1,6 @@
 package com.aglayatech.licorstore.service.impl;
 
+import com.aglayatech.licorstore.dto.ProformaDto;
 import com.aglayatech.licorstore.error.exceptions.DataAccessException;
 import com.aglayatech.licorstore.error.exceptions.NoContentException;
 import com.aglayatech.licorstore.error.exceptions.NotFoundException;
@@ -128,9 +129,6 @@ public class ProformaServiceImpl implements IProformaService {
         } catch (DataAccessException e) {
             log.error("Ha ocurrido un error a nivel de base de datos: {}", e);
             throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos => ", e);
-        } catch (Exception e) {
-            log.error("Ha ocurrido un error inesperado: {}", e);
-            throw new RuntimeException("Ha ocurrido un error inesperado: ", e);
         } finally {
             log.debug("{} Exit", __method);
         }
@@ -138,29 +136,48 @@ public class ProformaServiceImpl implements IProformaService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public Proforma save(Proforma proforma) {
+    public Proforma save(Proforma proforma, Long idproforma) {
         String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
         log.debug("Enter {}", __method);
 
         Proforma newProforma = null;
+        Proforma proformaExist = null;
+        String noProforma = "";
 
         try {
-            if(proforma.getIdProforma() == null) {
-                log.info("Registrando proforma: {}", proforma);
-                Estado estado = estadoService.findById(1);
-                proforma.setEstado(estado);
-                newProforma = proformaRepository.save(proforma);
-            } else {
-                log.info("Actualizando proforma con ID: {}", proforma.getIdProforma());
-                newProforma = proformaRepository.save(proforma);
+            if (idproforma != null) {
+                proformaExist = findProforma(idproforma);
             }
+
+            if (proformaExist != null) {
+                Proforma proformaUpdated = proformaExist.toBuilder()
+                        .idProforma(proforma.getIdProforma())
+                        .noProforma(proforma.getNoProforma())
+                        .cliente(proforma.getCliente())
+                        .total(proforma.getTotal())
+                        .usuario(proforma.getUsuario())
+                        .itemsProforma(proforma.getItemsProforma())
+                        .estado(proforma.getEstado())
+                        .fechaEmision(proforma.getFechaEmision())
+                        .build();
+                return proformaRepository.save(proformaUpdated);
+            }
+
+            do {
+                noProforma = Utils.generarNoProforma();
+            } while (proformaExists(noProforma));
+
+            Estado estado = estadoService.findById(1);
+            proforma.setEstado(estado);
+            proforma.setNoProforma(noProforma);
+
+            log.info("Registrando proforma: {}", proforma);
+            newProforma = proformaRepository.save(proforma);
+
             return newProforma;
         } catch (DataAccessException e) {
             log.error("Ha ocurrido un error a nivel de base de datos: {}", e.getMessage());
             throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos => " + e.getMessage(), e.getCause());
-        } catch (Exception e) {
-            log.error("Ha ocurrido un error inesperado: {}", e.getMessage());
-            throw new RuntimeException("Ha ocurrido un error inesperado: " + e.getMessage());
         } finally {
             log.debug("{} Exit", __method);
         }
@@ -194,7 +211,7 @@ public class ProformaServiceImpl implements IProformaService {
         log.debug("Enter {}", __method);
 
         try {
-            if(!iniDate.isEmpty() && !endDate.isEmpty()) {
+            if((!iniDate.isEmpty() && !endDate.isEmpty()) || (iniDate != null && endDate != null)) {
                 Date fechaIni = Utils.stringToDate(iniDate);
                 Date fechaFin = Utils.stringToDate(endDate);
                 // List<Proforma> proformas = proformaRepository.findAllProformas(fechaIni, fechaFin);
@@ -220,6 +237,40 @@ public class ProformaServiceImpl implements IProformaService {
         } catch (Exception e) {
             log.error("Ha ocurrido un error inesperado: {}", e);
             throw new RuntimeException("Ha ocurrido un error inesperado: " + e.getMessage());
+        } finally {
+            log.debug("{} Exit", __method);
+        }
+    }
+
+    @Override
+    public List<ProformaDto> proformasPorFechaSp(String iniDate, String endDate) {
+        String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
+        log.debug("Enter {}", __method);
+
+        try {
+            if((!iniDate.isEmpty() && !endDate.isEmpty()) || (iniDate != null && endDate != null)) {
+                Date fechaIni = Utils.stringToDate(iniDate);
+                Date fechaFin = Utils.stringToDate(endDate);
+
+                List<ProformaDto> proformas = proformaRepository.findAllProformasDto(fechaIni, fechaFin);
+
+                if (!proformas.isEmpty()) {
+                    log.info("Obteniendo listado de proformas registradas entre {} y {}", iniDate, endDate);
+                    return proformas;
+                } else {
+                    log.warn("No se encuentra registrado ninguna proforma en el rango de fechas {} y {} indicado", iniDate, endDate);
+                    throw new NoContentException("No existe ninguna proforma registrada en el rango de fechas indicado");
+                }
+            } else {
+                log.warn("Parámetros de fecha fueron enviados vacío y no puedes ser convertidos.");
+                throw new NoContentException("Parametros de fecha fueron enviados vacios");
+            }
+        } catch (DataAccessException e) {
+            log.error("Ha ocurrido un error a nivel de base de datos: {}", e);
+            throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos => ", e);
+        } catch (ParseException e) {
+            log.error("Ha ocurrido un error al tratar de convertir las fechas especificadas");
+            throw new com.aglayatech.licorstore.error.exceptions.ParseException("Ha ocurrido un error al tratar de convertir las fechas especificadas", e.getCause());
         } finally {
             log.debug("{} Exit", __method);
         }
@@ -257,6 +308,15 @@ public class ProformaServiceImpl implements IProformaService {
             log.error("Ha ocurrido un error inesperado: {}", e);
             throw new RuntimeException("Ha ocurrido un error inesperado: " + e.getMessage());
         }
+    }
+
+    /**
+     * Valida si existe una proforma registrada con el mismo numero
+     * @param noProforma String que representa el numero de proforma
+     * @return boolean
+     * */
+    protected boolean proformaExists(String noProforma) throws NotFoundException {
+        return (proformaRepository.findProformaByNoProforma(noProforma).isPresent());
     }
 
 }

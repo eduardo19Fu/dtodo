@@ -42,6 +42,15 @@ export class ProformaService {
     );
   }
 
+  getProformasDto(date1: Date, date2: Date): Observable<any> {
+    return this.httpClient.get<any>(`${this.url}/proformas/get-listado-dto/get?date1=${date1.toString()}&date2=${date2.toString()}`).pipe(
+      catchError(e => {
+        Swal.fire(e.error.mensaje, e.error.error, 'error');
+        return throwError(e);
+      })
+    );
+  }
+
   create(proforma: Proforma): Observable<any> {
     return this.httpClient.post<any>(`${this.url}/proformas`, proforma).pipe(
       catchError(e => {
@@ -52,7 +61,7 @@ export class ProformaService {
   }
 
   update(profroma: Proforma): Observable<any> {
-    return this.httpClient.put<any>(`${this.url}/proformas`, profroma).pipe(
+    return this.httpClient.put<any>(`${this.url}/proformas/${profroma.idProforma}`, profroma).pipe(
       catchError(e => {
         Swal.fire(e.error.mensaje, e.error.error, 'error');
         return throwError(e);
