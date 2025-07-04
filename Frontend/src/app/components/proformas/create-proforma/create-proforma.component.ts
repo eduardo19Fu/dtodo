@@ -25,6 +25,7 @@ export class CreateProformaComponent implements OnInit {
   title: string;
   nitIngresado: string;
   noProforma: string;
+  isSaving: boolean = false;
 
   producto: Producto;
   cliente: Cliente;
@@ -221,6 +222,7 @@ export class CreateProformaComponent implements OnInit {
   }
 
   createProforma(): void {
+    this.isSaving = true;
     this.proforma.noProforma = this.noProforma;
     this.proforma.cliente = this.cliente;
     this.proforma.usuario = this.usuario;
@@ -306,13 +308,16 @@ export class CreateProformaComponent implements OnInit {
   }
 
   update(): void {
-    this.proformaService.update(this.proforma).subscribe(response => {
-      this.generarProformaPdf(response.idProforma);
-      this.router.navigate(['/proformas/index']);
-      swal.fire(response.mensaje, `Proforma ${response.noProforma} ha sido actualizada`, 'info');
-    }, error => {
-      console.log(error);
-      swal.fire('Error', `${error.error.message}`, 'error');
-    });
+    this.isSaving = true;
+    if (this.isSaving) {
+      this.proformaService.update(this.proforma).subscribe(response => {
+        this.generarProformaPdf(response.idProforma);
+        this.router.navigate(['/proformas/index']);
+        swal.fire(response.mensaje, `Proforma ${response.noProforma} ha sido actualizada`, 'info');
+      }, error => {
+        console.log(error);
+        swal.fire('Error', `${error.error.message}`, 'error');
+      });
+    }
   }
 }
