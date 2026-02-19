@@ -410,10 +410,10 @@ public class FacturaServiceImpl implements IFacturaService {
 		DatosReceptor datosReceptor = new DatosReceptor();
 		datosReceptor.setCodigoPostal("01001");
 		datosReceptor.setCorreoReceptor(""); // Quien recibe el pdf por correo, pueden ir varios separados por ;
-		datosReceptor.setDepartamento("JALAPA");
+		datosReceptor.setDepartamento(".");
 		datosReceptor.setDireccion(cliente.getDireccion().trim());
 		datosReceptor.setIDReceptor(Utils.formatearNitParaCertificacion(cliente.getNit()));
-		datosReceptor.setMunicipio("JALAPA");
+		datosReceptor.setMunicipio(".");
 		datosReceptor.setNombreReceptor(cliente.getNombre().trim());
 		datosReceptor.setPais("GT");
 		return datosReceptor;
