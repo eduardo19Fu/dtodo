@@ -33,11 +33,11 @@
                                     </li>
                                     <li class="list-group-item">
                                         <strong>CLIENTE: </strong>
-                                        {{proforma.cliente.nombre}}
+                                        {{proforma.cliente ? proforma.cliente.nombre : ''}}
                                     </li>
                                     <li class="list-group-item">
                                         <strong>VENDEDOR: </strong>
-                                        {{proforma.usuario.usuario}}
+                                        {{proforma.usuario ? proforma.usuario.usuario : ''}}
                                     </li>
                                 </ul>
 

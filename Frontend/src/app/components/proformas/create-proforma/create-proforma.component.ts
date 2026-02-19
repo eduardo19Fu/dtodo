@@ -223,20 +223,21 @@ export class CreateProformaComponent implements OnInit {
 
   createProforma(): void {
     this.isSaving = true;
-    this.proforma.noProforma = this.noProforma;
-    this.proforma.cliente = this.cliente;
-    this.proforma.usuario = this.usuario;
-    this.proforma.total = this.proforma.calcularTotal();
-    
-    this.proforma.noProforma = ((document.getElementById("correlativo") as HTMLInputElement).value);
 
-    this.proformaService.create(this.proforma).subscribe(response => {
-      if (response) {
-        this.generarProformaPdf(response.idProforma);
-      }
-    }, error => {
-      swal.fire(`Error: ${error.error.status}`, `${error.error.message}`, 'error');
-    });
+    if (this.isSaving) {
+      this.proforma.noProforma = this.noProforma;
+      this.proforma.cliente = this.cliente;
+      this.proforma.usuario = this.usuario;
+      this.proforma.total = this.proforma.calcularTotal();
+
+      this.proformaService.create(this.proforma).subscribe(response => {
+        if (response) {
+          this.generarProformaPdf(response.idProforma);
+        }
+      }, error => {
+        swal.fire(`Error: ${error.error.status}`, `${error.error.message}`, 'error');
+      });
+    }
   }
 
   cargarProforma(): void {

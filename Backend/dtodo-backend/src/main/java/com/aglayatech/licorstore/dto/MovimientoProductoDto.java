@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class MovimientoProductoDTO {
+public class MovimientoProductoDto {
     private Long idMovimiento;
     private LocalDateTime fechaMovimiento;
     private Integer stockInicial;
