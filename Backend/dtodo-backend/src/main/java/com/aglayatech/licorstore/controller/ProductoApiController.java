@@ -10,12 +10,14 @@ import java.util.List;
 import java.util.Map;
 
 import com.aglayatech.licorstore.dto.ProductoDto;
+import com.aglayatech.licorstore.dto.ProductoDtoMejorado;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -67,6 +69,22 @@ public class ProductoApiController {
 	public ResponseEntity<List<ProductoDto>> getAllDto() {
 		log.info("Listando productos registrados con dtos");
 		return ResponseEntity.ok(serviceProducto.findAllDto());
+	}
+
+	@GetMapping(value = "/productos-dto/page/{page}")
+	public ResponseEntity<Page<ProductoDtoMejorado>> getPageDto(@PathVariable("page") Integer page,
+																@RequestParam(value = "size", defaultValue = "5") Integer size)
+	{
+		return ResponseEntity.ok(serviceProducto.findAllDtoMejorado(PageRequest.of(page, size)));
+	}
+
+	@GetMapping(value = "/productos-dto/search/{page}")
+	public ResponseEntity<Page<ProductoDtoMejorado>> searchProductosDto(
+																@PathVariable("page") Integer page,
+																@RequestParam(required = false) String filtro,
+																@RequestParam(value = "size", defaultValue = "5") Integer size)
+	{
+		return ResponseEntity.ok(serviceProducto.searchProductoDtoMejorado(filtro, PageRequest.of(page, size)));
 	}
 
 	@GetMapping(value = "/productos/page/{page}")

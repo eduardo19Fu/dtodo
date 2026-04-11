@@ -1,32 +1,34 @@
-import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
-import { ProductoService } from '../../../../services/producto.service';
-import { Producto } from '../../../../models/producto';
-import { ProductoDto } from '../../../../dtos/productoDto';
+import { Producto } from '../../../models/producto';
+import { ProductoDto } from '../../../dtos/productoDto';
+
+import { AuthService } from '../../../services/auth.service';
+import { ProductoService } from '../../../services/producto.service';
+import { ModalService } from '../../../services/productos/modal.service';
 
 import Swal from 'sweetalert2';
 
 @Component({
-  selector: 'app-modal-buscar-producto',
-  templateUrl: './modal-buscar-producto.component.html',
-  styles: [
-  ]
+  selector: 'app-listado-productos-mejorado',
+  templateUrl: './listado-productos-mejorado.component.html',
+  styleUrls: ['./listado-productos-mejorado.component.css']
 })
-export class ModalBuscarProductoComponent implements OnInit, OnDestroy {
-
-  @Output() producto = new EventEmitter<Producto>();
+export class ListadoProductosMejoradoComponent implements OnInit, OnDestroy {
 
   title: string;
-  productosDto: ProductoDto[] = [];
+  productosDto: ProductoDto[];
+
+  public productoSeleccionado: Producto;
 
   // Paginación
   paginaActual: number = 0;
   totalPaginas: number = 0;
   totalElementos: number = 0;
   pageSize: number = 5;
-  pageSizeOptions: number[] = [5, 10, 15, 25];
+  pageSizeOptions: number[] = [5, 10, 15, 25, 50];
   isFirst: boolean = true;
   isLast: boolean = false;
 
@@ -38,13 +40,18 @@ export class ModalBuscarProductoComponent implements OnInit, OnDestroy {
   cargando: boolean = false;
 
   constructor(
-    private productoService: ProductoService
+    public modalService: ModalService,
+    private productoService: ProductoService,
+    public auth: AuthService
   ) {
-    this.title = 'Búsqueda de Productos';
+    this.title = 'Listado de Productos';
   }
 
   ngOnInit(): void {
     this.cargarProductos(0);
+    this.modalService.notificarUpload.subscribe(producto => {
+      this.cargarProductos(this.paginaActual);
+    });
 
     this.busquedaSubscription = this.busquedaSubject.pipe(
       debounceTime(300),
@@ -90,11 +97,6 @@ export class ModalBuscarProductoComponent implements OnInit, OnDestroy {
     );
   }
 
-  cambiarPageSize(nuevoSize: number): void {
-    this.pageSize = nuevoSize;
-    this.cargarProductos(0);
-  }
-
   irPrimeraPagina(): void {
     this.cargarProductos(0);
   }
@@ -119,6 +121,11 @@ export class ModalBuscarProductoComponent implements OnInit, OnDestroy {
     this.cargarProductos(pagina);
   }
 
+  cambiarPageSize(nuevoSize: number): void {
+    this.pageSize = nuevoSize;
+    this.cargarProductos(0);
+  }
+
   get paginasVisibles(): number[] {
     const paginas: number[] = [];
     const rango = 2;
@@ -138,8 +145,9 @@ export class ModalBuscarProductoComponent implements OnInit, OnDestroy {
     return paginas;
   }
 
-  chooseProducto(producto: ProductoDto): void {
-    this.producto.emit(producto as any);
+  abrirModal(producto: any): void {
+    this.productoSeleccionado = producto;
+    this.modalService.abrirModal();
   }
 
 }

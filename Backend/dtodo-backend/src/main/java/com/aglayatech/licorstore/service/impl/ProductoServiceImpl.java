@@ -1,10 +1,13 @@
 package com.aglayatech.licorstore.service.impl;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -13,6 +16,8 @@ import java.util.Optional;
 import javax.sql.DataSource;
 
 import com.aglayatech.licorstore.dto.ProductoDto;
+import com.aglayatech.licorstore.dto.ProductoDtoMejorado;
+import com.aglayatech.licorstore.error.exceptions.NoContentException;
 import com.aglayatech.licorstore.service.IEstadoService;
 import com.aglayatech.licorstore.service.IUploadFileService;
 import com.aglayatech.licorstore.util.Utils;
@@ -81,6 +86,50 @@ public class ProductoServiceImpl implements IProductoService {
 		} catch (DataAccessException e) {
 			log.error("Ha ocurrido un error a nivel de base de datos al consultar productos desde procedimiento almacenado: {}", e.getMessage());
 			throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos => ", e);
+		}
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public Page<ProductoDtoMejorado> findAllDtoMejorado(Pageable pageable) {
+		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
+		log.debug("Enter {}", __method);
+
+		try {
+			log.debug("Consultando productos desde la base de datos...");
+			Page<Object[]> results = repoProducto.findAllProductosDto(pageable);
+
+			if (results.isEmpty()) {
+				log.warn("No existen productos registrados");
+				throw new NoContentException("No existen productos registrados");
+			}
+
+			return mapPageToProductoDtoMejorado(results);
+		} catch (DataAccessException dax) {
+			log.error("Ha ocurrido un error al intentar consultar los productos: {}", dax.getMessage());
+			throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error al consultar los productos => ", dax);
+		} finally {
+			log.debug("{} Exit", __method);
+		}
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public Page<ProductoDtoMejorado> searchProductoDtoMejorado(String filtro, Pageable pageable) {
+		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
+		log.debug("Enter {}", __method);
+
+		try {
+			log.debug("Consultando productos desde la base de datos que conicidan con la busqueda...");
+			String filtroAdaptado = filtro.trim().replaceAll("\\s+", "%");
+			Page<Object[]> results = repoProducto.searchProductosDto(filtroAdaptado, pageable);
+
+			return mapPageToProductoDtoMejorado(results);
+		} catch (DataAccessException dax) {
+			log.error("Ha ocurrido un error al intentar consultar los productos con busqueda {}: {}", filtro, dax.getMessage());
+			throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error al consultar los productos => ", dax);
+		} finally {
+			log.debug("{} Exit", __method);
 		}
 	}
 
@@ -360,6 +409,27 @@ public class ProductoServiceImpl implements IProductoService {
 			Connection connection = localDataSource.getConnection();
 		} catch (ParseException e) {} catch (SQLException e) {}
 		return new byte[0];
+	}
+
+	protected Page<ProductoDtoMejorado> mapPageToProductoDtoMejorado(Page<Object[]> results) {
+		return results.map(result -> ProductoDtoMejorado.builder()
+				.idProducto((int) result[0])
+				.codProducto((String) result[1])
+				.nombre((String) result[2])
+				.precioCompra((BigDecimal) result[3])
+				.precioVenta((BigDecimal) result[4])
+				.porcentajeGanancia((float) result[5])
+				.descripcion((String) result[6])
+				.fechaVencimiento(result[7] == null ? null : ((java.sql.Date) result[7]).toLocalDate())
+				.fechaIngreso(result[8] == null ? null : ((java.sql.Date) result[8]).toLocalDate())
+				.fechaRegistro(result[9] == null ? null : ((java.sql.Timestamp) result[9]).toLocalDateTime())
+				.stock((int) result[10])
+				.imagen((String) result[11])
+				.idestado((int) result[12])
+				.marcaProducto((String) result[13])
+				.tipoProducto((String) result[14])
+				.estado((String) result[15])
+				.build());
 	}
 
 }

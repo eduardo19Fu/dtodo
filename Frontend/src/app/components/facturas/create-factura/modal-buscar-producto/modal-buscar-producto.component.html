@@ -10,9 +10,52 @@
 
             <div class="card-body">
                 <div class="modal-body table-responsive">
-                    <table id="productos"
-                        class="table table-hover table-striped table-bordered dataTable dtr-inline table-sm" role="grid"
-                        *ngIf="productos?.length > 0">
+
+                    <!-- Controles superiores: selector de registros y búsqueda -->
+                    <div class="row mb-2 align-items-center">
+                        <div class="col-sm-4">
+                            <div class="d-inline-flex align-items-center">
+                                <label class="mb-0 mr-2">Mostrar</label>
+                                <select class="form-control form-control-sm page-size-select"
+                                        [ngModel]="pageSize"
+                                        (ngModelChange)="cambiarPageSize($event)">
+                                    <option *ngFor="let opt of pageSizeOptions" [ngValue]="opt">{{opt}}</option>
+                                </select>
+                                <label class="mb-0 ml-2">registros</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-4 text-center">
+                            <span *ngIf="productosDto?.length > 0" class="info-paginacion">
+                                Mostrando <strong>{{paginaActual * pageSize + 1}}</strong>
+                                al <strong>{{paginaActual * pageSize + productosDto.length}}</strong>
+                                de <strong>{{totalElementos}}</strong>
+                            </span>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="d-inline-flex align-items-center float-right">
+                                <label class="mb-0 mr-2">Búsqueda:</label>
+                                <input type="text" class="form-control form-control-sm"
+                                       [value]="filtro"
+                                       (input)="onBuscar($event.target.value)"
+                                       placeholder="">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Spinner de carga -->
+                    <div *ngIf="cargando" class="text-center p-3">
+                        <div class="spinner-border text-primary spinner-border-sm" role="status">
+                            <span class="sr-only">Cargando...</span>
+                        </div>
+                    </div>
+
+                    <div *ngIf="!cargando && productosDto?.length == 0" class="alert alert-info mt-2">
+                        <i class="icon fas fa-info"></i>
+                        No se encontraron productos.
+                    </div>
+
+                    <table class="table table-hover table-striped table-bordered table-sm mt-0"
+                        *ngIf="!cargando && productosDto?.length > 0">
                         <thead>
                             <tr>
                                 <th>ID</th>
@@ -21,38 +64,59 @@
                                 <th>Precio</th>
                                 <th>Stock</th>
                                 <th>Marca</th>
-                                <th>Opciones</th>
+                                <th></th>
                             </tr>
                         </thead>
 
                         <tbody>
-                            <tr *ngFor="let producto of productos">
+                            <tr *ngFor="let producto of productosDto">
                                 <td>{{ producto.idProducto }}</td>
-                                <td>{{ producto.codProducto }}</td> 
+                                <td>{{ producto.codProducto }}</td>
                                 <td>{{ producto.nombre }}</td>
                                 <td>{{ producto.precioVenta | currency: "Q" : "symbol" }}</td>
                                 <td>{{ producto.stock }}</td>
-                                <td>{{ producto.marcaProducto }}</td>
+                                <td>{{ producto.marcaProducto ? producto.marcaProducto : '' }}</td>
                                 <td class="center-options">
-                                    <button class="btn bg-gradient-cyan" (click)="chooseProducto(producto)">
+                                    <button class="btn bg-gradient-cyan btn-sm" (click)="chooseProducto(producto)">
                                         Elegir
                                     </button>
                                 </td>
                             </tr>
                         </tbody>
-
-                        <tfoot>
-                            <tr>
-                                <th>ID</th>
-                                <th>Codigo</th>
-                                <th>Nombre</th>
-                                <th>Precio</th>
-                                <th>Stock</th>
-                                <th>Marca</th>
-                                <th>Opciones</th>
-                            </tr>
-                        </tfoot>
                     </table>
+
+                    <!-- Paginación -->
+                    <nav *ngIf="!cargando && totalPaginas > 1" aria-label="Paginación de productos">
+                        <ul class="pagination pagination-sm justify-content-center mt-2 mb-0">
+                            <li class="page-item" [ngClass]="{'disabled': isFirst}">
+                                <a class="page-link" (click)="irPrimeraPagina()" href="javascript:void(0)">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item" [ngClass]="{'disabled': isFirst}">
+                                <a class="page-link" (click)="irPaginaAnterior()" href="javascript:void(0)">
+                                    <i class="fas fa-angle-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item" *ngFor="let pagina of paginasVisibles"
+                                [ngClass]="{'active': pagina === paginaActual}">
+                                <a class="page-link" (click)="irAPagina(pagina)" href="javascript:void(0)">
+                                    {{pagina + 1}}
+                                </a>
+                            </li>
+                            <li class="page-item" [ngClass]="{'disabled': isLast}">
+                                <a class="page-link" (click)="irPaginaSiguiente()" href="javascript:void(0)">
+                                    <i class="fas fa-angle-right"></i>
+                                </a>
+                            </li>
+                            <li class="page-item" [ngClass]="{'disabled': isLast}">
+                                <a class="page-link" (click)="irUltimaPagina()" href="javascript:void(0)">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+
                 </div>
             </div>
         </div>

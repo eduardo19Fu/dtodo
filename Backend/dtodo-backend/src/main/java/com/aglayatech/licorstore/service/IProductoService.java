@@ -3,6 +3,7 @@ package com.aglayatech.licorstore.service;
 import java.util.List;
 
 import com.aglayatech.licorstore.dto.ProductoDto;
+import com.aglayatech.licorstore.dto.ProductoDtoMejorado;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +18,10 @@ public interface IProductoService {
 	public List<Producto> findAll();
 
 	public List<ProductoDto> findAllDto();
+
+	public Page<ProductoDtoMejorado> findAllDtoMejorado(Pageable pageable);
+
+	public Page<ProductoDtoMejorado> searchProductoDtoMejorado(String filtro, Pageable pageable);
 	
 	public List<ProductoDto> findAllByEstado(Estado estado);
 	
