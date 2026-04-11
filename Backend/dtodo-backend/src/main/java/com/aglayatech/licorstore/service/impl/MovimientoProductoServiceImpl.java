@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -12,17 +13,19 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import com.aglayatech.licorstore.dto.MovimientoProductoDto;
 import com.aglayatech.licorstore.error.exceptions.DataAccessException;
 import com.aglayatech.licorstore.error.exceptions.NoContentException;
 import com.aglayatech.licorstore.model.Estado;
+import com.aglayatech.licorstore.model.enums.TipoMovimientoEnum;
 import com.aglayatech.licorstore.service.IEstadoService;
 import com.aglayatech.licorstore.service.IProductoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.aglayatech.licorstore.model.MovimientoProducto;
 import com.aglayatech.licorstore.model.Producto;
@@ -92,6 +95,49 @@ public class MovimientoProductoServiceImpl implements IMovimientoProductoService
 		} catch (Exception e) {
 			log.error("Ha ocurrido un error inesperado: {}", e);
 			throw new RuntimeException("Ha ocurrido un error inesperado: " + e.getMessage());
+		} finally {
+			log.debug("{} Exit", __method);
+		}
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public Page<MovimientoProductoDto> findAllDtoMejorado(Pageable pageable) {
+		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
+		log.debug("Enter {}", __method);
+
+		try {
+			log.debug("Consultando movimientos desde la base de datos...");
+			Page<Object[]> results = repoMovimiento.findAllMovimientosDto(pageable);
+
+			if (results.isEmpty()) {
+				log.warn("No existen movimientos registrados");
+				throw new NoContentException("No existen movimientos registrados");
+			}
+
+			return mapPageToMovimientoProductoDto(results);
+		} catch (DataAccessException dax) {
+			log.error("Ha ocurrido un error al intentar consultar los movimientos: {}", dax.getMessage());
+			throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error al consultar los movimientos => ", dax);
+		} finally {
+			log.debug("{} Exit", __method);
+		}
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public Page<MovimientoProductoDto> searchMovimientoDtoMejorado(String filtro, Pageable pageable) {
+		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
+		log.debug("Enter {}", __method);
+
+		try {
+			log.debug("Consultando movimientos desde la base de datos que coincidan con la busqueda...");
+			Page<Object[]> results = repoMovimiento.searchMovimientosDto(filtro, pageable);
+
+			return mapPageToMovimientoProductoDto(results);
+		} catch (DataAccessException dax) {
+			log.error("Ha ocurrido un error al intentar consultar los movimientos con busqueda {}: {}", filtro, dax.getMessage());
+			throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error al consultar los movimientos => ", dax);
 		} finally {
 			log.debug("{} Exit", __method);
 		}
@@ -238,6 +284,18 @@ public class MovimientoProductoServiceImpl implements IMovimientoProductoService
 	    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 	    JasperExportManager.exportReportToPdfStream(jasperPrint, byteArrayOutputStream);
 	    return byteArrayOutputStream;
+	}
+
+	protected Page<MovimientoProductoDto> mapPageToMovimientoProductoDto(Page<Object[]> results) {
+		return results.map(result -> MovimientoProductoDto.builder()
+				.idMovimiento(((Number) result[0]).longValue())
+				.fechaMovimiento(result[1] == null ? null : ((java.sql.Timestamp) result[1]).toLocalDateTime())
+				.stockInicial(result[2] == null ? null : ((Number) result[2]).intValue())
+				.tipoMovimiento(result[3] == null ? null : TipoMovimientoEnum.valueOf((String) result[3]))
+				.cantidad(result[4] == null ? null : ((Number) result[4]).intValue())
+				.productoNombre((String) result[5])
+				.usuarioNombre((String) result[6])
+				.build());
 	}
 
 }

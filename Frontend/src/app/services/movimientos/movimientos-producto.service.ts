@@ -27,6 +27,24 @@ export class MovimientosProductoService {
     return this.http.get<MovimientoProducto[]>(`${this.url}/movimientos`);
   }
 
+  getMovimientosDtoPaginados(page: number, size: number = 5): Observable<any> {
+    return this.http.get<any>(`${this.url}/movimientos-dto/page/${page}?size=${size}`).pipe(
+      catchError(e => {
+        console.error(e);
+        return throwError(e);
+      })
+    );
+  }
+
+  buscarMovimientosDto(page: number, filtro: string, size: number = 5): Observable<any> {
+    return this.http.get<any>(`${this.url}/movimientos-dto/search/${page}?filtro=${filtro}&size=${size}`).pipe(
+      catchError(e => {
+        console.error(e);
+        return throwError(e);
+      })
+    );
+  }
+
   getMovimientosProductoPage(idproducto: number, page: number): Observable<any> {
     return this.http.get<any>(`${this.url}/movimientos/${idproducto}/${page}`).pipe(
       map((response: any) => {

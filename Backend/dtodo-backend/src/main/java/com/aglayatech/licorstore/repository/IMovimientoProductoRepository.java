@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.aglayatech.licorstore.model.MovimientoProducto;
 import com.aglayatech.licorstore.model.Producto;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface IMovimientoProductoRepository extends JpaRepository<MovimientoProducto, Long> {
 	
@@ -33,5 +34,44 @@ public interface IMovimientoProductoRepository extends JpaRepository<MovimientoP
 			"order by mp.fecha_movimiento desc " +
 			"limit 1000 ", nativeQuery = true)
 	List<MovimientoProducto> findAllMovimientosProducto();
+
+	@Query(value = "SELECT mp.id_movimiento, " +
+				"mp.fecha_movimiento, " +
+				"mp.stock_inicial, " +
+				"mp.tipo_movimiento, " +
+				"mp.cantidad, " +
+				"p.nombre, " +
+				"u.usuario " +
+				"FROM movimientos_producto AS mp " +
+				"INNER JOIN productos AS p ON p.id_producto = mp.id_producto " +
+				"INNER JOIN usuarios AS u ON u.id_usuario = mp.id_usuario " +
+				"ORDER BY mp.fecha_movimiento DESC",
+			countQuery = "SELECT COUNT(*) FROM movimientos_producto",
+			nativeQuery = true)
+	Page<Object[]> findAllMovimientosDto(Pageable pageable);
+
+	@Query(value = "SELECT mp.id_movimiento, " +
+				"mp.fecha_movimiento, " +
+				"mp.stock_inicial, " +
+				"mp.tipo_movimiento, " +
+				"mp.cantidad, " +
+				"p.nombre, " +
+				"u.usuario " +
+				"FROM movimientos_producto AS mp " +
+				"INNER JOIN productos AS p ON p.id_producto = mp.id_producto " +
+				"INNER JOIN usuarios AS u ON u.id_usuario = mp.id_usuario " +
+				"WHERE p.nombre LIKE %:filtro% " +
+				"OR u.usuario LIKE %:filtro% " +
+				"OR mp.tipo_movimiento LIKE %:filtro% " +
+				"ORDER BY mp.fecha_movimiento DESC",
+			countQuery = "SELECT COUNT(*) " +
+				"FROM movimientos_producto AS mp " +
+				"INNER JOIN productos AS p ON p.id_producto = mp.id_producto " +
+				"INNER JOIN usuarios AS u ON u.id_usuario = mp.id_usuario " +
+				"WHERE p.nombre LIKE %:filtro% " +
+				"OR u.usuario LIKE %:filtro% " +
+				"OR mp.tipo_movimiento LIKE %:filtro%",
+			nativeQuery = true)
+	Page<Object[]> searchMovimientosDto(@Param("filtro") String filtro, Pageable pageable);
 
 }

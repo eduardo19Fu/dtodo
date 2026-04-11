@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.aglayatech.licorstore.dto.MovimientoProductoDto;
 import com.aglayatech.licorstore.model.MovimientoProducto;
 import com.aglayatech.licorstore.model.Producto;
 import com.aglayatech.licorstore.service.IMovimientoProductoService;
@@ -57,7 +58,23 @@ public class MovimientoProductoApiController {
 		log.info("Listando movimientos de productos realizados.");
 		return ResponseEntity.ok(serviceMove.findAll());
 	}
-	
+
+	@GetMapping(value = "/movimientos-dto/page/{page}")
+	public ResponseEntity<Page<MovimientoProductoDto>> getPageDto(@PathVariable("page") Integer page,
+																  @RequestParam(value = "size", defaultValue = "5") Integer size)
+	{
+		return ResponseEntity.ok(serviceMove.findAllDtoMejorado(PageRequest.of(page, size)));
+	}
+
+	@GetMapping(value = "/movimientos-dto/search/{page}")
+	public ResponseEntity<Page<MovimientoProductoDto>> searchMovimientosDto(
+																  @PathVariable("page") Integer page,
+																  @RequestParam(required = false) String filtro,
+																  @RequestParam(value = "size", defaultValue = "5") Integer size)
+	{
+		return ResponseEntity.ok(serviceMove.searchMovimientoDtoMejorado(filtro, PageRequest.of(page, size)));
+	}
+
 	@Secured({"ROLE_ADMIN", "ROLE_INVENTARIO"})
 	@GetMapping(value = "/movimientos/{idproducto}/{page}")
 	public ResponseEntity<Page<MovimientoProducto>> getByProducto(@PathVariable("idproducto") Integer idProducto, @PathVariable("page") Integer page){
