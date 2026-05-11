@@ -190,6 +190,28 @@ public class FacturaServiceImpl implements IFacturaService {
 	}
 
 	@Override
+	public Factura findFacturaByCorrelativoSatAndSerieSat(String correlativoSat, String serieSat) {
+		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
+		log.debug("Enter {}", __method);
+
+		try {
+			Optional<Factura> factura = repoFactura.findFacturaByCorrelativoSatAndSerieSat(correlativoSat, serieSat);
+			if(factura.isPresent()) {
+				log.info("Devolviendo factura con correlativo SAT: {} y serie SAT: {}", correlativoSat, serieSat);
+				return factura.get();
+			} else {
+				log.warn("No existe una factura con correlativo SAT: {} y serie SAT: {}", correlativoSat, serieSat);
+				throw new NotFoundException("No existe una factura con correlativo SAT: " + correlativoSat + " y serie SAT: " + serieSat);
+			}
+		} catch (DataAccessException e) {
+			log.error("Ha ocurrido un error a nivel de Base de Datos: {}", e.getMessage());
+			throw new com.aglayatech.licorstore.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos: " + e.getMessage(), e.getCause());
+		} finally {
+			log.debug("{} Exit", __method);
+		}
+	}
+
+	@Override
 	public Factura save(Factura factura) {
 		return repoFactura.save(factura);
 	}

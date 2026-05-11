@@ -2,17 +2,19 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { UsuarioAuxiliar } from 'src/app/models/auxiliar/usuario-auxiliar';
 import { Cliente } from 'src/app/models/cliente';
+import { DetalleFactura } from 'src/app/models/detalle-factura';
+import { Factura } from 'src/app/models/factura';
 import { NotaCredito } from 'src/app/models/nota-credito';
 import { NotaCreditoDetalle } from 'src/app/models/nota-credito-detalle';
-import { Producto } from 'src/app/models/producto';
 import { AuthService } from 'src/app/services/auth.service';
 import { ClienteService } from 'src/app/services/cliente.service';
 import { ClienteCreateService } from 'src/app/services/facturas/cliente-create.service';
+import { FacturaService } from 'src/app/services/facturas/factura.service';
 import { NotasCreditoService } from 'src/app/services/notas-credito.service';
-import { ProductoService } from 'src/app/services/producto.service';
-import { UsuarioService } from 'src/app/services/usuarios/usuario.service';
 
 import swal from 'sweetalert2';
+
+declare var $: any;
 
 @Component({
   selector: 'app-create-nota',
@@ -22,36 +24,35 @@ import swal from 'sweetalert2';
 export class CreateNotaComponent implements OnInit {
 
   @ViewChild('mybuscar') myBuscarTexto: ElementRef;
-  @ViewChild('myAbono') myAbonoRef: ElementRef;
-  @ViewChild('myCodProductoChild') myCodProdRef: ElementRef;
-  @ViewChild('myCantidadChild') myCantidadRef: ElementRef;
-  @ViewChild('myButtonXChild') myButtonXRef: ElementRef;
-  @ViewChild('myButton2XChild') myButton2XRef: ElementRef;
-  @ViewChild('mySaldoChild') mySaldoRef: ElementRef;
   @ViewChild('myCorrelativoFactura') myCorrelativo: ElementRef;
 
   nitIngresado: string;
   title: string;
-  abono: number;
-  saldoRestante: number;
-  fechaLimite: Date;
 
   notaCredito: NotaCredito;
   cliente: Cliente;
-  producto: Producto;
   usuario: UsuarioAuxiliar;
+
+  // Modal de selección de productos de factura
+  facturaCargada: Factura;
+  itemsFactura: { item: DetalleFactura, cantidad: number, seleccionado: boolean }[] = [];
+  mostrarModalProductos: boolean = false;
+
+  // Paginación del modal
+  paginaActual: number = 0;
+  pageSize: number = 5;
+  pageSizeOptions: number[] = [5, 10, 15, 25];
+  filtroModal: string = '';
 
   constructor(
     private notaService: NotasCreditoService,
-    private productoService: ProductoService,
+    private facturaService: FacturaService,
     private clienteService: ClienteService,
     private clienteCreateService: ClienteCreateService,
-    private usuarioService: UsuarioService,
     private authService: AuthService,
     private router: Router
   ) {
     this.title = 'Creación de Notas de Crédito';
-    this.producto = new Producto();
     this.cliente = new Cliente();
     this.usuario = new UsuarioAuxiliar();
     this.notaCredito = new NotaCredito();
@@ -72,109 +73,10 @@ export class CreateNotaComponent implements OnInit {
     this.cliente = event;
   }
 
-  loadProducto(event): void {
-    this.myCodProdRef.nativeElement.value = event.codProducto;
-    (document.getElementById ('button-x')).click(); // No se utilizó el nativeElement ya que no reconocia el botón para cerrar el modal
-    this.buscarProducto();
-    this.myCantidadRef.nativeElement.focus();
-  }
-
   loadCliente(event): void {
     this.myBuscarTexto.nativeElement.value = event.nit;
-    (document.getElementById('button-2x')).click(); // No se utilizó el nativeElement ya que no reconocia el botón para cerrar el modal
+    (document.getElementById('button-2x')).click();
     this.buscarCliente();
-  }
-
-  calcularSaldo(event): void {
-    if (this.abono) {
-      this.saldoRestante = this.notaCredito.calcularTotal() - this.abono;
-    } else {
-      this.saldoRestante = 0.00
-    }
-  }
-
-  buscarProducto(): void {
-    const codigo = this.myCodProdRef.nativeElement.value;
-
-    if (codigo) {
-      this.productoService.getProductoByCode(codigo).subscribe(
-        producto => {
-          this.producto = producto;
-          this.myCantidadRef.nativeElement.focus();
-        },
-        error => {
-          if (error.status === 400) {
-            swal.fire(`Error: ${error.status}`, 'Petición no se puede llevar a cabo.', 'error');
-          }
-
-          if (error.status === 404) {
-            swal.fire(`Error: ${error.status}`, error.error.mensaje, 'error');
-          }
-        }
-      );
-    } else {
-      swal.fire('Código Inválido', 'Ingrese un código de producto válido para realizar la búsqueda.', 'warning');
-    }
-  }
-
-  agregarLinea(): void {
-    if (!this.cliente) { // Comprueba que el cliente exista
-      swal.fire('Ha ocurrido un Problema', 'Por favor, elija un cliente antes de llevar a cabo el envío.', 'error');
-    } else {
-      if (this.producto) { // comprueba que el producto exista
-        const item = new NotaCreditoDetalle();
-        item.cantidad = +(this.myCantidadRef.nativeElement).value;
-        item.descuento = 0;
-
-        if (item.cantidad > this.producto.stock) {
-          swal.fire('Stock Insuficiente', 'No existen las suficientes existencias de este producto.', 'warning');
-          return;
-        } else {
-          if (item.cantidad && item.cantidad !== 0) {
-            if (this.existeItem(this.producto.idProducto)) {
-              this.incrementaCantidad(this.producto.idProducto, item.cantidad);
-              this.producto = new Producto();
-              this.myCantidadRef.nativeElement.value = '';
-            } else {
-              item.producto = this.producto;
-              item.subTotalDescuento = item.calcularImporte();
-              item.subTotal = item.calcularImporte();
-              this.notaCredito.items.push(item);
-              this.producto = new Producto();
-
-              this.myCantidadRef.nativeElement.value = '';
-            }
-
-          } else if (item.cantidad === 0) {
-            swal.fire('Cantidad Erronéa', 'La cantidad a agregar debe ser mayor a 0.', 'warning');
-          } else if (!item.cantidad) {
-            swal.fire('Valor Inválido', 'La cantidad no puede estar vacía.  Ingrese un valor válido.', 'warning');
-          }
-        }
-      }
-    }
-  }
-
-  existeItem(id: number): boolean {
-    let existe = false;
-    this.notaCredito.items.forEach((item: NotaCreditoDetalle) => {
-      if (id === item.producto.idProducto) {
-        existe = true;
-      }
-    });
-    return existe;
-  }
-
-  incrementaCantidad(idProducto: number, cantidad: number): void {
-    this.notaCredito.items = this.notaCredito.items.map((item: NotaCreditoDetalle) => {
-      if (idProducto === item.producto.idProducto) {
-        item.cantidad = item.cantidad + cantidad;
-        item.subTotal = item.calcularImporte();
-        item.subTotalDescuento = item.calcularImporteDescuento();
-      }
-
-      return item;
-    });
   }
 
   buscarCliente(): void {
@@ -200,11 +102,174 @@ export class CreateNotaComponent implements OnInit {
     }
   }
 
-  eliminarItem(index: number): void {
-    this.notaCredito.items.splice(index, 1);
+  // --- Flujo de selección de productos desde factura ---
+
+  abrirSeleccionProductos(): void {
+    const correlativo = this.notaCredito.correlativoFacturaSat;
+
+    if (!this.cliente || !this.cliente.idCliente) {
+      swal.fire('Cliente Requerido', 'Por favor, seleccione un cliente antes de continuar.', 'warning');
+      return;
+    }
+
+    if (!correlativo) {
+      swal.fire('Correlativo Requerido', 'Por favor, ingrese el correlativo de la factura asociada.', 'warning');
+      return;
+    }
+
+    const serie = this.notaCredito.serieFacturaSat;
+    if (!serie) {
+      swal.fire('Serie Requerida', 'Por favor, ingrese la serie de la factura asociada.', 'warning');
+      return;
+    }
+
+    this.facturaService.getFacturaByCorrelativoSat(correlativo, serie).subscribe(
+      factura => {
+        // Validar que el cliente de la factura coincida con el cliente seleccionado
+        if (factura.cliente.idCliente !== this.cliente.idCliente) {
+          swal.fire('Cliente No Coincide',
+            `La factura con correlativo ${correlativo} y serie ${serie} pertenece al cliente "${factura.cliente.nombre}", pero el cliente seleccionado es "${this.cliente.nombre}".`,
+            'error');
+          return;
+        }
+
+        this.facturaCargada = factura;
+        this.itemsFactura = factura.itemsFactura.map((item: DetalleFactura) => ({
+          item: item,
+          cantidad: item.cantidad,
+          seleccionado: false
+        }));
+        this.paginaActual = 0;
+        this.filtroModal = '';
+        this.mostrarModalProductos = true;
+      },
+      error => {
+        // El servicio ya muestra el Swal de error
+      }
+    );
   }
 
-  create(): void {
+  cerrarModalProductos(): void {
+    this.mostrarModalProductos = false;
+  }
+
+  toggleProducto(index: number): void {
+    this.itemsFactura[index].seleccionado = !this.itemsFactura[index].seleccionado;
+    if (!this.itemsFactura[index].seleccionado) {
+      this.itemsFactura[index].cantidad = 0;
+    } else {
+      this.itemsFactura[index].cantidad = this.itemsFactura[index].item.cantidad;
+    }
+  }
+
+  actualizarCantidadSeleccion(index: number, event): void {
+    const cantidad = +event.target.value;
+    const maxCantidad = this.itemsFactura[index].item.cantidad;
+
+    if (cantidad < 0) {
+      event.target.value = 0;
+      this.itemsFactura[index].cantidad = 0;
+      return;
+    }
+
+    if (cantidad > maxCantidad) {
+      swal.fire('Cantidad Excedida', `La cantidad máxima para este producto es ${maxCantidad}.`, 'warning');
+      event.target.value = maxCantidad;
+      this.itemsFactura[index].cantidad = maxCantidad;
+      return;
+    }
+
+    this.itemsFactura[index].cantidad = cantidad;
+  }
+
+  hayProductosSeleccionados(): boolean {
+    return this.itemsFactura.some(i => i.seleccionado && i.cantidad > 0);
+  }
+
+  // --- Paginación y filtro del modal ---
+
+  get itemsFiltrados(): { item: DetalleFactura, cantidad: number, seleccionado: boolean }[] {
+    if (!this.filtroModal) {
+      return this.itemsFactura;
+    }
+    const filtro = this.filtroModal.toLowerCase();
+    return this.itemsFactura.filter(reg =>
+      reg.item.producto.nombre.toLowerCase().includes(filtro) ||
+      reg.item.producto.codProducto?.toLowerCase().includes(filtro)
+    );
+  }
+
+  get itemsPaginados(): { item: DetalleFactura, cantidad: number, seleccionado: boolean }[] {
+    const inicio = this.paginaActual * this.pageSize;
+    return this.itemsFiltrados.slice(inicio, inicio + this.pageSize);
+  }
+
+  get totalPaginasModal(): number {
+    return Math.ceil(this.itemsFiltrados.length / this.pageSize);
+  }
+
+  get paginasVisiblesModal(): number[] {
+    const paginas: number[] = [];
+    const rango = 2;
+    let inicio = Math.max(0, this.paginaActual - rango);
+    let fin = Math.min(this.totalPaginasModal - 1, this.paginaActual + rango);
+
+    if (this.paginaActual - rango < 0) {
+      fin = Math.min(this.totalPaginasModal - 1, fin + (rango - this.paginaActual));
+    }
+    if (this.paginaActual + rango > this.totalPaginasModal - 1) {
+      inicio = Math.max(0, inicio - (this.paginaActual + rango - (this.totalPaginasModal - 1)));
+    }
+
+    for (let i = inicio; i <= fin; i++) {
+      paginas.push(i);
+    }
+    return paginas;
+  }
+
+  onFiltrarModal(valor: string): void {
+    this.filtroModal = valor;
+    this.paginaActual = 0;
+  }
+
+  cambiarPageSizeModal(nuevoSize: number): void {
+    this.pageSize = nuevoSize;
+    this.paginaActual = 0;
+  }
+
+  irPaginaModal(pagina: number): void {
+    this.paginaActual = pagina;
+  }
+
+  getIndiceReal(indicePaginado: number): number {
+    const item = this.itemsPaginados[indicePaginado];
+    return this.itemsFactura.indexOf(item);
+  }
+
+  confirmarSeleccion(): void {
+    const seleccionados = this.itemsFactura.filter(i => i.seleccionado && i.cantidad > 0);
+
+    if (seleccionados.length === 0) {
+      swal.fire('Sin Productos', 'Seleccione al menos un producto pendiente de entrega.', 'warning');
+      return;
+    }
+
+    // Convertir los items de factura seleccionados a items de nota de crédito
+    this.notaCredito.items = seleccionados.map(sel => {
+      const item = new NotaCreditoDetalle();
+      item.producto = sel.item.producto;
+      item.cantidad = sel.cantidad;
+      item.descuento = 0;
+      item.subTotal = sel.item.producto.precioVenta * sel.cantidad;
+      item.subTotalDescuento = sel.item.producto.precioVenta * sel.cantidad;
+      return item;
+    });
+
+    this.cerrarModalProductos();
+    this.crearNota();
+  }
+
+  crearNota(): void {
     this.notaCredito.cliente = this.cliente;
     this.notaCredito.usuario = this.usuario;
     this.notaCredito.total = this.notaCredito.calcularTotal();
@@ -215,17 +280,20 @@ export class CreateNotaComponent implements OnInit {
         this.notaCredito = new NotaCredito();
         this.myBuscarTexto.nativeElement.value = '';
         this.router.navigate(['/notas-credito/index']);
-        swal.fire('Pedido Realizado', `Nota No. ${response.idNotaCredito} creada satisfactoriamente.`, 'success');
-        this.myBuscarTexto.nativeElement.focus();
-
-      // AQÍ VA EL CÓDIGO PARA GENERAR EL PDF
-      this.print(response.notaCredito);
+        swal.fire('Nota Creada', `Nota de Crédito No. ${response.idNotaCredito} creada satisfactoriamente.`, 'success');
+        this.printNote(response.idNotaCredito);
       }
     );
   }
 
-  print(nota: NotaCredito): void {
-    console.log("imprimiendo");
+  printNote(nota: NotaCredito): void {
+    this.notaService.getNotaCreditoPDF(nota.idNotaCredito).subscribe(
+      response => {
+        const file = new Blob([response.data], { type: 'application/pdf' });
+        const fileURL = URL.createObjectURL(file);
+        window.open(fileURL);
+      }
+    );
   }
 
 }

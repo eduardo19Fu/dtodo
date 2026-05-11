@@ -19,6 +19,8 @@ public interface IFacturaRepository extends JpaRepository<Factura, Long> {
 
     Optional<Factura> findFacturaByNoFactura(Long noFactura);
 
+    Optional<Factura> findFacturaByCorrelativoSatAndSerieSat(String correlativoSat, String serieSat);
+
     @Query(value = "{call sp_get_facturas(:date1, :date2);}", nativeQuery = true)
     List<Factura> findAllFacturas(@Param("date1") Date date1, @Param("date2") Date date2);
 }

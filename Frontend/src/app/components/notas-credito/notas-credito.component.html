@@ -1,6 +1,120 @@
 <!-- MODAL DETALLE NOTA CREDITO -->
 <app-detail-nota *ngIf="notaSeleccionada" [notaCredito]="notaSeleccionada"></app-detail-nota>
 
+<!-- MODAL DE DESPACHO DE PRODUCTOS -->
+<div *ngIf="mostrarModalDespacho" class="abrir-modal animacion fadeIn">
+    <div class="modal" tabindex="-1" style="display: block; overflow-y: auto;">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-info">
+                    <h5 class="modal-title">
+                        <i class="fas fa-truck mr-2"></i>
+                        Despacho de Nota de Cr&eacute;dito No. {{notaDespacho?.idNotaCredito}}
+                    </h5>
+                    <button (click)="cerrarModalDespacho()" type="button" class="close">
+                        <span aria-hidden="true" style="color: white;">&times;</span>
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="modal-body">
+                        <!-- Info de la nota -->
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <strong>Cliente:</strong> {{notaDespacho?.cliente?.nombre}}
+                            </div>
+                            <div class="col-md-4">
+                                <strong>Correlativo SAT:</strong> {{notaDespacho?.correlativoFacturaSat}}
+                            </div>
+                            <div class="col-md-4">
+                                <strong>Total:</strong> {{notaDespacho?.total | currency: "Q" : "symbol"}}
+                            </div>
+                        </div>
+
+                        <p class="text-muted mb-3">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Seleccione los productos a despachar e indique la cantidad. Solo se muestran productos con unidades pendientes.
+                        </p>
+
+                        <!-- Spinner de carga -->
+                        <div *ngIf="cargandoDespacho" class="text-center p-3">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="sr-only">Cargando...</span>
+                            </div>
+                        </div>
+
+                        <table class="table table-hover table-striped table-bordered table-sm"
+                            *ngIf="!cargandoDespacho && itemsDespacho?.length > 0">
+                            <thead>
+                                <tr>
+                                    <th class="text-center" style="width: 50px;">
+                                        <i class="fas fa-check-square"></i>
+                                    </th>
+                                    <th>C&oacute;digo</th>
+                                    <th>Producto</th>
+                                    <th class="text-center">Total Nota</th>
+                                    <th class="text-center">Despachado</th>
+                                    <th class="text-center">Pendiente</th>
+                                    <th class="text-center" style="width: 150px;">Cant. a Despachar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let registro of itemsDespacho; let i = index"
+                                    [ngClass]="{'table-success': registro.seleccionado, 'text-muted': getPendiente(registro) === 0}">
+                                    <td class="text-center align-middle">
+                                        <div class="custom-control custom-checkbox" *ngIf="getPendiente(registro) > 0">
+                                            <input type="checkbox" class="custom-control-input"
+                                                [id]="'chk-desp-' + i"
+                                                [checked]="registro.seleccionado"
+                                                (change)="toggleDespacho(i)">
+                                            <label class="custom-control-label" [for]="'chk-desp-' + i"></label>
+                                        </div>
+                                        <i *ngIf="getPendiente(registro) === 0" class="fas fa-check text-success"></i>
+                                    </td>
+                                    <td class="align-middle">{{registro.item.producto.codProducto}}</td>
+                                    <td class="align-middle">{{registro.item.producto.nombre}}</td>
+                                    <td class="text-center align-middle">
+                                        <span class="badge badge-primary">{{registro.item.cantidad}}</span>
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        <span class="badge badge-info">{{registro.despachado}}</span>
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        <span class="badge" [ngClass]="{'badge-warning': getPendiente(registro) > 0, 'badge-success': getPendiente(registro) === 0}">
+                                            {{getPendiente(registro)}}
+                                        </span>
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        <input *ngIf="getPendiente(registro) > 0" type="number"
+                                            class="form-control form-control-sm text-center"
+                                            style="width: 80px; margin: 0 auto;"
+                                            [disabled]="!registro.seleccionado"
+                                            [value]="registro.cantidadDespachar"
+                                            [max]="getPendiente(registro)"
+                                            min="1"
+                                            (change)="actualizarCantidadDespacho(i, $event)">
+                                        <span *ngIf="getPendiente(registro) === 0" class="text-success">
+                                            <i class="fas fa-check-circle"></i> Completo
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button (click)="cerrarModalDespacho()" type="button" class="btn btn-secondary">
+                        <i class="fas fa-times mr-1"></i> Cancelar
+                    </button>
+                    <button (click)="confirmarDespacho()" type="button" class="btn btn-info"
+                        [disabled]="!hayItemsParaDespachar()">
+                        <i class="fas fa-truck mr-1"></i> Registrar Despacho
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Content Header (Page header) -->
 <section class="content-header">
     <div class="container-fluid">
@@ -51,20 +165,20 @@
             <tbody>
                 <tr *ngFor="let nota of notasCredito">
                     <td>{{nota.idNotaCredito}}</td>
-                    <td>{{nota.total}}</td>
-                    <td>{{nota.usuario.usuario}}</td>
+                    <td>{{nota.total | currency: "Q" : "symbol"}}</td>
+                    <td>{{nota.usuario}}</td>
                     <td>{{nota.correlativoFacturaSat}}</td>
                     <td>{{nota.serieFacturaSat}}</td>
                     <td>{{nota.fechaCreacion | date: 'dd/MM/yyyy - hh:mm'}}</td>
                     <td>{{nota.fechaEntregaEstimada | date: 'dd/MM/yyyy'}}</td>
                     <td>
                         <span class="badge"
-                            [ngClass]="{'badge-warning': nota.estado === 'ENTREGA_PENDIENTE', 
-                                        'badge-danger': nota.estado === 'ANULADO', 
+                            [ngClass]="{'badge-warning': nota.estado === 'ENTREGA_PENDIENTE',
+                                        'badge-danger': nota.estado === 'ANULADO',
                                         'badge-info': nota.estado === 'ENTREGADO'}"
-                                        
+
                             [ngSwitch]="nota.estado">
-                            
+
                             <h8 *ngSwitchCase="'ENTREGA_PENDIENTE'">Entrega Pendiente</h8>
                             <h8 *ngSwitchCase="'ANULADO'">Anulado</h8>
                             <h8 *ngSwitchCase="'ENTREGADO'">Entregado</h8>
@@ -77,15 +191,21 @@
                             <i class="fas fa-asterisk"></i>
                         </button>
 
-                        <!-- <button class="btn bg-gradient-warning margin" name="print" type="button" placement="top" ngbTooltip="Imprimir Comprobante"
-                            (click)="printBill(nota)" [disabled]="nota.estado.idEstado === 4">
-                            <i class="fas fa-print"></i>
-                        </button> -->
+                        <button class="btn bg-gradient-info margin" name="despachar" type="button" placement="top" ngbTooltip="Despachar Productos"
+                            (click)="despacharProductos(nota)"
+                            [disabled]="nota.estado === 'ANULADO' || nota.estado === 'ENTREGADO'">
+                            <i class="fas fa-truck"></i>
+                        </button>
 
-                        <!-- Aquí va el botón de eliminar -->
-                        <button class="btn bg-gradient-danger margin" name="cancel" type="button" placement="top" ngbTooltip="Anular Factura"
+                        <button class="btn bg-gradient-warning margin" name="print" type="button" placement="top" ngbTooltip="Imprimir Comprobante"
+                            (click)="printNote(nota)" [disabled]="nota.estado === 'ANULADO'">
+                            <i class="fas fa-print"></i>
+                        </button>
+
+                        <!-- Aquí va el botón de anular -->
+                        <button class="btn bg-gradient-danger margin" name="cancel" type="button" placement="top" ngbTooltip="Anular Nota"
                             (click)="cancel(nota)" *ngIf="auth.hasRole('ROLE_ADMIN')"
-                            [disabled]="nota.estado.idEstado === 4">
+                            [disabled]="nota.estado === 'ANULADO'">
                             <i class="fas fa-ban"></i>
                         </button>
                     </td>
@@ -97,6 +217,8 @@
                     <th>ID</th>
                     <th>Total</th>
                     <th>Emisor</th>
+                    <th>Correlativo SAT</th>
+                    <th>Serie SAT</th>
                     <th>Fecha Creaci&oacute;n</th>
                     <th>Fecha Estimada de Entrega</th>
                     <th>Estado</th>
@@ -106,4 +228,3 @@
         </table>
     </div>
 </div>
-

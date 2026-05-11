@@ -283,8 +283,7 @@ public class ProformaServiceImpl implements IProformaService {
 
     @Override
     public byte[] showProforma(Long idproforma) {
-        try {
-            Connection con = dataSource.getConnection();
+        try (Connection con = dataSource.getConnection()) {
             Map<String, Object> params = new HashMap<>();
             params.put("proformaId", idproforma);
 

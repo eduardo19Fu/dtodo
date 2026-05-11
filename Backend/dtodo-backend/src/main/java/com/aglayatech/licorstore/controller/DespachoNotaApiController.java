@@ -1,0 +1,53 @@
+package com.aglayatech.licorstore.controller;
+
+import com.aglayatech.licorstore.dto.DespachoNotaDto;
+import com.aglayatech.licorstore.model.DespachoNota;
+import com.aglayatech.licorstore.service.IDespachoNotaService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+@RequestMapping(value = "/api")
+@RequiredArgsConstructor
+@Slf4j
+public class DespachoNotaApiController {
+
+    private final IDespachoNotaService despachoNotaService;
+
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
+    @GetMapping(value = "/despachos-nota/{idNota}")
+    public ResponseEntity<List<DespachoNotaDto>> getDespachos(@PathVariable("idNota") Long idNota) {
+        log.info("Buscando despachos de nota de credito: {}", idNota);
+        return ResponseEntity.ok(despachoNotaService.findByNotaCredito(idNota));
+    }
+
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
+    @PostMapping(value = "/despachos-nota/{idNota}")
+    public ResponseEntity<List<DespachoNotaDto>> registrarDespacho(
+            @PathVariable("idNota") Long idNota,
+            @RequestBody List<DespachoNota> despachos) {
+        log.info("Registrando despacho para nota de credito: {}", idNota);
+        List<DespachoNotaDto> despachosRegistrados = despachoNotaService.registrarDespacho(idNota, despachos);
+        return ResponseEntity.status(HttpStatus.CREATED).body(despachosRegistrados);
+    }
+
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
+    @GetMapping(value = "/despachos-nota/comprobante/{idEvento}")
+    public ResponseEntity<byte[]> generateComprobante(@PathVariable("idEvento") String idEvento) {
+        log.info("Generando comprobante PDF de despacho: {}", idEvento);
+        byte[] bytesReport = despachoNotaService.generateComprobanteDespacho(idEvento);
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_PDF).body(bytesReport);
+    }
+}

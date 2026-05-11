@@ -1,17 +1,18 @@
 export interface ProductoDto {
     idProducto: number;
-    coProducto: string;
+    codProducto: string;
     nombre: string;
     precioCompra: number;
     precioVenta: number;
     porcentajeGanancia: number;
     descripcion: number;
     fechaVencimiento: Date;
-    fechaRegistro: Date;
     fechaIngreso: Date;
+    fechaRegistro: Date;
     stock: number;
+    imagen: string;
+    idestado: number;
     marcaProducto: string;
     tipoProducto: string;
-    imagen: string;
     estado: string;
 }

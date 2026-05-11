@@ -27,6 +27,7 @@ import { ProformasComponent } from './components/proformas/proformas.component';
 import { CreateProformaComponent } from './components/proformas/create-proforma/create-proforma.component';
 import { NotasCreditoComponent } from './components/notas-credito/notas-credito.component';
 import { CreateNotaComponent } from './components/notas-credito/create-nota/create-nota.component';
+import { ListadoProductosMejoradoComponent } from './components/productos/listado-productos-mejorado/listado-productos-mejorado.component';
 
 const appRoutes: Routes = [
     { path: '', component: LoginComponent },
@@ -34,7 +35,7 @@ const appRoutes: Routes = [
     { path: 'home', component: HomeComponent, canActivate: [AuthGuard] },
 
     /****** MENUS DE PRODUCTOS ******/
-    { path: 'productos/index', component: ProductosComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_INVENTARIO', 'ROLE_COBRADOR'] } },
+    { path: 'productos/index', component: ListadoProductosMejoradoComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_INVENTARIO', 'ROLE_COBRADOR'] } },
     { path: 'productos/create', component: CreateProductoComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_INVENTARIO'] } },
     { path: 'productos/create/:id', component: CreateProductoComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_INVENTARIO'] } },
     { path: 'productos/marcas/index', component: MarcasProductoComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_INVENTARIO'] } },

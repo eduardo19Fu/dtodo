@@ -1,17 +1,16 @@
 import { UsuarioAuxiliar } from "./auxiliar/usuario-auxiliar";
 import { Cliente } from "./cliente";
-import { Estado } from "./estado";
 import { NotaCreditoDetalle } from "./nota-credito-detalle";
 
 export class NotaCredito {
     idNotaCredito: number;
-    correlativoFacturaSat: String;
-    serieFacturaSat: String;
+    correlativoFacturaSat: string;
+    serieFacturaSat: string;
     total: number;
     fechaCreacion: Date;
     fechaEntregaEstimada: Date;
-    estado: String;
-    observaciones: String;
+    estado: string;
+    observaciones: string;
 
     usuario: UsuarioAuxiliar;
     cliente: Cliente;
@@ -24,11 +23,5 @@ export class NotaCredito {
         });
 
         return total;
-    }
-
-    calcularSaldoRestante(abono: number, totalEnvio: number): number {
-        let saldoRestante = 0;
-        saldoRestante = totalEnvio - abono;
-        return saldoRestante;
     }
 }

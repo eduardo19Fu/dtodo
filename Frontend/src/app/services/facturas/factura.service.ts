@@ -55,6 +55,15 @@ export class FacturaService {
     );
   }
 
+  getFacturaByCorrelativoSat(correlativo: string, serie: string): Observable<Factura> {
+    return this.http.get<Factura>(`${this.url}/facturas/get-by-correlativo-sat?correlativo=${correlativo}&serie=${serie}`).pipe(
+      catchError(e => {
+        swal.fire('Factura no encontrada', 'No se encontró una factura con el correlativo y serie ingresados.', 'warning');
+        return throwError(e);
+      })
+    );
+  }
+
   getTotalVentas(): Observable<any> {
     return this.http.get<any>(`${this.url}/facturas/cantidad-ventas`).pipe(
       catchError(e => {

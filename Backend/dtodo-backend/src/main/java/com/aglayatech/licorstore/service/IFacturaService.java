@@ -25,6 +25,8 @@ public interface IFacturaService {
 
 	public Factura findFacturaCorrelativo(Long correlativo);
 
+	public Factura findFacturaByCorrelativoSatAndSerieSat(String correlativoSat, String serieSat);
+
 	public Factura save(Factura factura);
 	
 	public Factura facturaFel(Factura factura);

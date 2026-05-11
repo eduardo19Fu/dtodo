@@ -79,6 +79,15 @@ public class FacturaApiController {
         return ResponseEntity.ok(serviceFactura.findFacturaCorrelativo(correlativo));
     }
 
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
+    @GetMapping("/facturas/get-by-correlativo-sat")
+    public ResponseEntity<Factura> buscarPorCorrelativoSat(
+            @RequestParam("correlativo") String correlativo,
+            @RequestParam("serie") String serie) {
+        log.info("Buscando factura por correlativo SAT: {} y serie SAT: {}", correlativo, serie);
+        return ResponseEntity.ok(serviceFactura.findFacturaByCorrelativoSatAndSerieSat(correlativo, serie));
+    }
+
     /**** Nuevas Implementaciones de creación de factura y anulación *****/
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
     @PostMapping(value = "/facturas/createV2")

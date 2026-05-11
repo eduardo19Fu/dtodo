@@ -49,6 +49,8 @@ import { NotasCreditoComponent } from './components/notas-credito/notas-credito.
 import { CreateNotaComponent } from './components/notas-credito/create-nota/create-nota.component';
 import { DetailNotaComponent } from './components/notas-credito/detail-nota/detail-nota.component';
 import { ModalNotasCreditoComponent } from './components/notas-credito/modal-notas-credito/modal-notas-credito.component';
+import { DespacharNotaComponent } from './components/notas-credito/despachar-nota/despachar-nota.component';
+import { ListadoProductosMejoradoComponent } from './components/productos/listado-productos-mejorado/listado-productos-mejorado.component';
 
 @NgModule({
   declarations: [
@@ -93,7 +95,9 @@ import { ModalNotasCreditoComponent } from './components/notas-credito/modal-not
     NotasCreditoComponent,
     CreateNotaComponent,
     DetailNotaComponent,
-    ModalNotasCreditoComponent
+    ModalNotasCreditoComponent,
+    DespacharNotaComponent,
+    ListadoProductosMejoradoComponent
   ],
   imports: [
     BrowserModule,

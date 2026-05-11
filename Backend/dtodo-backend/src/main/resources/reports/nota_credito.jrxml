@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.19.1.final using JasperReports Library version 6.19.1-867c00bf88cd4d784d404379d6c05e1b419e8a4c  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="proforma" pageWidth="612" pageHeight="792" whenNoDataType="NoPages" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="43b882bf-ba62-4b95-bdc4-89df88a8570a">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="nota_credito" pageWidth="612" pageHeight="792" whenNoDataType="NoPages" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="43b882bf-ba62-4b95-bdc4-89df88a8570a">
 	<property name="ireport.zoom" value="1.3310000000000006"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
@@ -114,45 +114,45 @@ ORDER BY p.nombre ASC]]>
 			<staticText>
 				<reportElement x="2" y="83" width="43" height="10" uuid="230cc5fa-9213-45c1-b967-d9be10aaebe6"/>
 				<textElement>
-					<font fontName="SansSerif" size="8" isBold="true"/>
+					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Cliente:]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="384" y="113" width="43" height="12" uuid="a6c708b7-131e-4c59-8f03-7d78320a1c47"/>
 				<textElement>
-					<font fontName="SansSerif" size="8" isBold="true"/>
+					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Nit:]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="2" y="95" width="60" height="10" uuid="0d6837cc-8cfc-4bbe-a3be-53c4cf328527"/>
 				<textElement>
-					<font fontName="SansSerif" size="8" isBold="true"/>
+					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Dirección:]]></text>
 			</staticText>
 			<rectangle radius="10">
-				<reportElement mode="Opaque" x="371" y="2" width="201" height="64" backcolor="#0D45B5" uuid="b05df3a3-c8c4-4997-8924-e3a87241c1e7"/>
+				<reportElement mode="Opaque" x="371" y="2" width="201" height="64" backcolor="#009999" uuid="b05df3a3-c8c4-4997-8924-e3a87241c1e7"/>
 			</rectangle>
 			<staticText>
 				<reportElement x="371" y="8" width="84" height="24" forecolor="#FFFFFF" uuid="1de57a36-b7df-4ca9-ac19-3ddbc3103d66"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
-					<font fontName="SansSerif" size="12" isBold="true"/>
+					<font fontName="Arial" size="12" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Proforma No.:]]></text>
+				<text><![CDATA[Nota No.:]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="371" y="32" width="84" height="15" forecolor="#FFFFFF" uuid="6d9efdf6-6984-43a7-b0ba-8bc1822cc404"/>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="10" isBold="true"/>
+					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Fecha:]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="162" y="8" width="206" height="55" uuid="eaf74af2-04d1-4dbd-adc4-00a0f2de813d"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font fontName="SansSerif" size="10" isBold="true"/>
+					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<text><![CDATA[1a. Calle 4-32 Zona 2, Barrio San Francisco
  Jalapa, Jalapa
@@ -166,21 +166,21 @@ Teléfonos: 4582-1048/5728-2246]]></text>
 			<staticText>
 				<reportElement x="371" y="48" width="84" height="15" forecolor="#FFFFFF" uuid="4a3e956a-a361-472f-84c3-57e3f09cec1d"/>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="10" isBold="true"/>
+					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Página:]]></text>
 			</staticText>
 			<textField>
 				<reportElement x="464" y="47" width="23" height="16" forecolor="#FFFFFF" uuid="d3d697ef-b6f4-41a5-8213-f3fb5940ca58"/>
 				<textElement>
-					<font fontName="SansSerif" isBold="true"/>
+					<font fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}+" de"]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report">
 				<reportElement x="488" y="47" width="39" height="16" forecolor="#FFFFFF" uuid="b407f755-45a9-4ac1-a964-0e99efa6ce06"/>
 				<textElement>
-					<font fontName="SansSerif" isBold="true"/>
+					<font fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
@@ -208,7 +208,7 @@ Teléfonos: 4582-1048/5728-2246]]></text>
 			<textField textAdjust="StretchHeight">
 				<reportElement x="464" y="8" width="95" height="24" forecolor="#FFFFFF" uuid="bbaf5fef-eb00-4f11-80fc-e6d3f6db44fb"/>
 				<textElement verticalAlignment="Middle">
-					<font fontName="SansSerif" size="12" isBold="true"/>
+					<font fontName="Arial" size="12" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{no_proforma}]]></textFieldExpression>
 			</textField>
@@ -229,35 +229,35 @@ Teléfonos: 4582-1048/5728-2246]]></text>
 			<staticText>
 				<reportElement x="57" y="2" width="54" height="20" uuid="d5b36e2d-be82-4c50-914b-d03c9d36cd1c"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font fontName="SansSerif" isBold="true" isUnderline="false" isStrikeThrough="false"/>
+					<font fontName="Arial" isBold="true" isUnderline="false" isStrikeThrough="false"/>
 				</textElement>
 				<text><![CDATA[Cantidad]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="113" y="2" width="294" height="20" uuid="21bce50e-31d7-41bf-8d1d-e4c13c0ab3dd"/>
 				<textElement verticalAlignment="Middle">
-					<font fontName="SansSerif" isBold="true"/>
+					<font fontName="Arial" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Producto]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="409" y="2" width="79" height="20" uuid="1fa43a20-aac0-40e0-afb3-7285ba0dfa31"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font fontName="SansSerif" isBold="true"/>
+					<font fontName="Arial" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Precio/Unidad]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="490" y="2" width="69" height="20" uuid="2852ca76-4859-426b-b637-84f1696f7611"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font fontName="SansSerif" isBold="true"/>
+					<font fontName="Arial" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Subtotal]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="9" y="2" width="45" height="20" uuid="f535a270-cf3e-4d65-995a-5543709ca4c5"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font fontName="SansSerif" isBold="true" isUnderline="false" isStrikeThrough="false"/>
+					<font fontName="Arial" isBold="true" isUnderline="false" isStrikeThrough="false"/>
 				</textElement>
 				<text><![CDATA[No.]]></text>
 			</staticText>
@@ -268,7 +268,7 @@ Teléfonos: 4582-1048/5728-2246]]></text>
 			<textField>
 				<reportElement x="11" y="1" width="42" height="18" uuid="cf520b5f-6384-43e9-bd3b-33cfa7c62d70"/>
 				<textElement textAlignment="Center" verticalAlignment="Top">
-					<font fontName="SansSerif" size="8"/>
+					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
 			</textField>
@@ -277,7 +277,7 @@ Teléfonos: 4582-1048/5728-2246]]></text>
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="277f77a5-09d5-4450-9c56-e56b26a1fba0"/>
 				</reportElement>
 				<textElement textAlignment="Center">
-					<font fontName="SansSerif" size="8"/>
+					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{cantidad}]]></textFieldExpression>
 			</textField>
@@ -286,7 +286,7 @@ Teléfonos: 4582-1048/5728-2246]]></text>
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="2e9566b4-3ca0-472f-a9ed-1fbc51bd799a"/>
 				</reportElement>
 				<textElement>
-					<font fontName="SansSerif" size="6"/>
+					<font fontName="Arial" size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{producto}]]></textFieldExpression>
 			</textField>
@@ -295,7 +295,7 @@ Teléfonos: 4582-1048/5728-2246]]></text>
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="3f67dabd-d54e-4d23-bfe3-9fa5aa240f2b"/>
 				</reportElement>
 				<textElement textAlignment="Center">
-					<font fontName="SansSerif" size="8"/>
+					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{sub_total_descuento}]]></textFieldExpression>
 			</textField>
@@ -304,7 +304,7 @@ Teléfonos: 4582-1048/5728-2246]]></text>
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7cc09a8f-a48f-4f50-93f0-1b9c26a49c9d"/>
 				</reportElement>
 				<textElement>
-					<font fontName="SansSerif" size="8"/>
+					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{precio_venta}]]></textFieldExpression>
 			</textField>
@@ -318,14 +318,14 @@ Teléfonos: 4582-1048/5728-2246]]></text>
 			<staticText>
 				<reportElement x="391" y="5" width="56" height="20" uuid="e1e6627f-7872-49f8-8663-fc03791b3410"/>
 				<textElement textAlignment="Center">
-					<font fontName="SansSerif" size="12" isBold="true"/>
+					<font fontName="Arial" size="12" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Total:]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="9" y="6" width="102" height="19" uuid="1e5084c7-2ab8-4a1c-8fce-ebc073d78e08"/>
 				<textElement>
-					<font fontName="SansSerif" size="10" isBold="true"/>
+					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Cantidad en Letras:]]></text>
 			</staticText>
@@ -340,28 +340,28 @@ Firma]]></text>
 			<staticText>
 				<reportElement x="6" y="33" width="53" height="15" uuid="38d80e7c-26ac-4f9c-a53b-b731f7a0b400"/>
 				<textElement textAlignment="Center">
-					<font fontName="SansSerif" isBold="true"/>
+					<font fontName="Arial" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Vendedor:]]></text>
 			</staticText>
 			<textField textAdjust="StretchHeight" pattern="Q#,##0.00;¤-#,##0.00">
 				<reportElement x="447" y="5" width="112" height="20" uuid="1775217c-70a8-47f6-a857-28b6e2ee5a83"/>
 				<textElement textAlignment="Center">
-					<font fontName="SansSerif" isBold="true"/>
+					<font fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{suma_columna}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="ScaleFont">
 				<reportElement x="113" y="6" width="258" height="19" uuid="c7d3f111-ab6e-423e-b95c-cd335be69709"/>
 				<textElement>
-					<font fontName="SansSerif"/>
+					<font fontName="Arial"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{total_letras}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight">
 				<reportElement x="62" y="33" width="218" height="15" uuid="44b65577-ee9e-42f3-920a-6de709720ca7"/>
 				<textElement>
-					<font fontName="SansSerif"/>
+					<font fontName="Arial"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{vendedor}]]></textFieldExpression>
 			</textField>
