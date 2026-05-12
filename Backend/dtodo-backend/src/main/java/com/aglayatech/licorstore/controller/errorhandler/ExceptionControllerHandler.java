@@ -2,6 +2,7 @@ package com.aglayatech.licorstore.controller.errorhandler;
 
 import com.aglayatech.licorstore.error.ErrorDTO;
 import com.aglayatech.licorstore.error.exceptions.DataAccessException;
+import com.aglayatech.licorstore.error.exceptions.DuplicateNotaCreditoException;
 import com.aglayatech.licorstore.error.exceptions.MethodArgumentTypeMismatchException;
 import com.aglayatech.licorstore.error.exceptions.NoContentException;
 import com.aglayatech.licorstore.error.exceptions.NotFoundException;
@@ -126,6 +127,18 @@ public class ExceptionControllerHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> reportGenerationException(ReportGenerationException ex, WebRequest request) {
         log.error("An exception ocurred while generating the report in path: {}, Exception: {}", request.getContextPath(), ex.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al generar reporte".concat(ex.getMessage()));
+    }
+
+    @ExceptionHandler(value = {DuplicateNotaCreditoException.class})
+    public ResponseEntity<ErrorDTO> duplicateNotaCreditoExceptionHandler(DuplicateNotaCreditoException exception) {
+        log.error("Intento de crear una nota de credito duplicada: {}", exception.getMessage());
+        ErrorDTO errorDTO = new ErrorDTO();
+        errorDTO.setMessage(exception.getMessage());
+        errorDTO.setCause(exception.getCause());
+        errorDTO.setCode(HttpStatus.CONFLICT.value());
+        errorDTO.setStatus(HttpStatus.CONFLICT);
+        errorDTO.setInstant(Instant.now());
+        return new ResponseEntity<>(errorDTO, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler

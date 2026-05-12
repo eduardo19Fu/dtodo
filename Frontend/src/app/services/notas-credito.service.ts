@@ -63,6 +63,13 @@ export class NotasCreditoService {
   create(notaCredito: NotaCredito): Observable<any> {
     return this.httpClient.post<any>(`${this.url}/notas-credito`, notaCredito).pipe(
       catchError(e => {
+        // 409 Conflict: ya existe una nota de credito para el mismo documento origen
+        if (e.status === 409) {
+          const mensajeDuplicado = e.error?.message || e.error?.mensaje
+            || 'Ya existe una Nota de Crédito para el documento indicado.';
+          Swal.fire('Nota de Crédito Duplicada', mensajeDuplicado, 'warning');
+          return throwError(e);
+        }
         const mensaje = e.error?.mensaje || e.error?.message || 'Error al crear nota de crédito';
         const detalle = e.error?.error || e.error?.status || '';
         Swal.fire(mensaje, `${detalle}`, 'error');

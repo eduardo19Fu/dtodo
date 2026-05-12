@@ -12,7 +12,7 @@
                 <div class="modal-header bg-orange">
                     <h5 class="modal-title">
                         <i class="fas fa-file-invoice mr-2"></i>
-                        Productos de Factura No. {{facturaCargada?.noFactura}}
+                        {{tituloModal}}
                     </h5>
                     <button (click)="cerrarModalProductos()" type="button" class="close">
                         <span aria-hidden="true" style="color: white;">&times;</span>
@@ -71,7 +71,7 @@
                                     </th>
                                     <th>C&oacute;digo</th>
                                     <th>Producto</th>
-                                    <th class="text-center">Cant. Facturada</th>
+                                    <th class="text-center">Cant. Original</th>
                                     <th class="text-right">Precio Unitario</th>
                                     <th class="text-right">SubTotal</th>
                                     <th class="text-center" style="width: 150px;">Cant. Pendiente</th>
@@ -89,19 +89,19 @@
                                             <label class="custom-control-label" [for]="'chk-prod-' + i"></label>
                                         </div>
                                     </td>
-                                    <td class="align-middle">{{registro.item.producto.codProducto}}</td>
-                                    <td class="align-middle">{{registro.item.producto.nombre}}</td>
+                                    <td class="align-middle">{{registro.codProducto}}</td>
+                                    <td class="align-middle">{{registro.nombreProducto}}</td>
                                     <td class="text-center align-middle">
-                                        <span class="badge badge-primary">{{registro.item.cantidad}}</span>
+                                        <span class="badge badge-primary">{{registro.cantidadOriginal}}</span>
                                     </td>
-                                    <td class="text-right align-middle">{{registro.item.producto.precioVenta | currency: "Q" : "symbol"}}</td>
-                                    <td class="text-right align-middle">{{registro.item.subTotalDescuento | currency: "Q" : "symbol"}}</td>
+                                    <td class="text-right align-middle">{{registro.precioVenta | currency: "Q" : "symbol"}}</td>
+                                    <td class="text-right align-middle">{{registro.subTotalOriginal | currency: "Q" : "symbol"}}</td>
                                     <td class="text-center align-middle">
                                         <input type="number" class="form-control form-control-sm text-center"
                                             style="width: 80px; margin: 0 auto;"
                                             [disabled]="!registro.seleccionado"
-                                            [value]="registro.cantidad"
-                                            [max]="registro.item.cantidad"
+                                            [value]="registro.cantidadSeleccionada"
+                                            [max]="registro.cantidadOriginal"
                                             min="1"
                                             (change)="actualizarCantidadSeleccion(getIndiceReal(i), $event)">
                                     </td>
@@ -228,7 +228,30 @@
                     </div>
                     <hr>
 
+                    <!-- Selector de documento origen -->
                     <div class="row">
+                        <div class="col">
+                            <label class="d-block">Documento Origen</label>
+                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                <label class="btn btn-outline-orange"
+                                    [ngClass]="{'active': tipoOrigen === 'FACTURA'}"
+                                    (click)="cambiarTipoOrigen('FACTURA')">
+                                    <input type="radio" name="tipoOrigen" [checked]="tipoOrigen === 'FACTURA'">
+                                    <i class="fas fa-file-invoice mr-1"></i> Factura
+                                </label>
+                                <label class="btn btn-outline-fuchsia"
+                                    [ngClass]="{'active': tipoOrigen === 'PROFORMA'}"
+                                    (click)="cambiarTipoOrigen('PROFORMA')">
+                                    <input type="radio" name="tipoOrigen" [checked]="tipoOrigen === 'PROFORMA'">
+                                    <i class="fas fa-file-alt mr-1"></i> Proforma
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <br>
+
+                    <!-- Campos específicos por tipo de origen -->
+                    <div class="row" *ngIf="tipoOrigen === 'FACTURA'">
                         <div class="col">
                             <div class="form-group">
                                 <label for="correlativo-factura">No. Correlativo Factura</label>
@@ -246,6 +269,22 @@
                         <div class="col">
                             <label for="fecha-entrega-estimada">Fecha de Entrega Estimada</label>
                             <input type="date" name="fecha-entrega-estimada" id="fecha-entrega-estimada" class="form-control"
+                                [(ngModel)]="notaCredito.fechaEntregaEstimada">
+                        </div>
+                    </div>
+
+                    <div class="row" *ngIf="tipoOrigen === 'PROFORMA'">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="no-proforma">No. Proforma</label>
+                                <input type="text" name="no-proforma" id="no-proforma" class="form-control"
+                                    [(ngModel)]="notaCredito.noProforma" placeholder="Ej: 123456789P">
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <label for="fecha-entrega-estimada-p">Fecha de Entrega Estimada</label>
+                            <input type="date" name="fecha-entrega-estimada-p" id="fecha-entrega-estimada-p" class="form-control"
                                 [(ngModel)]="notaCredito.fechaEntregaEstimada">
                         </div>
                     </div>
@@ -276,7 +315,7 @@
 
             <div class="card-footer">
                 <button type="button" class="btn btn-primary btn-block"
-                    [disabled]="!cliente?.idCliente || !notaCredito.correlativoFacturaSat"
+                    [disabled]="!puedeGuardar"
                     (click)="abrirSeleccionProductos()">
                     <i class="fas fa-save"></i> Guardar
                 </button>

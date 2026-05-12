@@ -53,6 +53,20 @@ public class ProformaApiController {
         return ResponseEntity.ok(proformaService.findProforma(id));
     }
 
+    /**
+     * Busca una Proforma por su número único.
+     * Usado por el módulo de Notas de Crédito para localizar la proforma origen.
+     *
+     * @param noProforma número único asignado a la proforma
+     * @return la Proforma encontrada o 404 si no existe
+     */
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
+    @GetMapping("/proformas/by-no-proforma/{noProforma}")
+    public ResponseEntity<Proforma> findByNoProforma(@PathVariable("noProforma") String noProforma) {
+        log.info("Retornando Proforma con número: {}", noProforma);
+        return ResponseEntity.ok(proformaService.findByNoProforma(noProforma));
+    }
+
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @PostMapping(value = "/proformas")
     public ResponseEntity<Proforma> create(@RequestBody Proforma proforma) {

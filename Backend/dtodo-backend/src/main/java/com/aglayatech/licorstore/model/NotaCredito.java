@@ -1,6 +1,7 @@
 package com.aglayatech.licorstore.model;
 
 import com.aglayatech.licorstore.model.enums.EstadoNotaCreditoEnum;
+import com.aglayatech.licorstore.model.enums.TipoDocumentoOrigenEnum;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.AllArgsConstructor;
@@ -41,6 +42,12 @@ public class NotaCredito implements Serializable {
 
     private String correlativoFacturaSat;
     private String serieFacturaSat;
+
+    @Enumerated(EnumType.STRING)
+    private TipoDocumentoOrigenEnum tipoDocumentoOrigen;
+
+    private String noProforma;
+
     private BigDecimal total;
     private String observaciones;
 

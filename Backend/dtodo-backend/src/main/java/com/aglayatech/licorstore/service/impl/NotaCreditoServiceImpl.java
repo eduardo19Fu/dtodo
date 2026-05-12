@@ -1,6 +1,8 @@
 package com.aglayatech.licorstore.service.impl;
 
 import com.aglayatech.licorstore.dto.NotaCreditoListDto;
+import com.aglayatech.licorstore.error.exceptions.BadRequestException;
+import com.aglayatech.licorstore.error.exceptions.DuplicateNotaCreditoException;
 import com.aglayatech.licorstore.error.exceptions.NotFoundException;
 import com.aglayatech.licorstore.error.exceptions.ReportGenerationException;
 import com.aglayatech.licorstore.model.MovimientoProducto;
@@ -9,6 +11,7 @@ import com.aglayatech.licorstore.model.NotaCreditoDetalle;
 import com.aglayatech.licorstore.model.Producto;
 import com.aglayatech.licorstore.model.Usuario;
 import com.aglayatech.licorstore.model.enums.EstadoNotaCreditoEnum;
+import com.aglayatech.licorstore.model.enums.TipoDocumentoOrigenEnum;
 import com.aglayatech.licorstore.model.enums.TipoMovimientoEnum;
 import com.aglayatech.licorstore.repository.INotaCreditoRepository;
 import com.aglayatech.licorstore.service.IMovimientoProductoService;
@@ -102,6 +105,7 @@ public class NotaCreditoServiceImpl implements INotaCreditoService {
         }
     }
 
+    @Transactional
     @Override
     public NotaCredito save(NotaCredito notaCredito, EstadoNotaCreditoEnum estado) {
         String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
@@ -114,6 +118,7 @@ public class NotaCreditoServiceImpl implements INotaCreditoService {
             switch(notaCredito.getEstado()) {
                 case ENTREGA_PENDIENTE:
                     log.info("------> Registrando nota de Credito");
+                    validarOrigenUnico(notaCredito);
                     notaCreditoSaved = notaCreditoRepository.save(notaCredito);
                     break;
                 case ANULADO:
@@ -174,6 +179,70 @@ public class NotaCreditoServiceImpl implements INotaCreditoService {
         } catch (Exception e) {
             log.error("Ha ocurrido un error inesperado: {}", e.getMessage());
             throw new RuntimeException("Ha ocurrido un error inesperado", e);
+        }
+    }
+
+    /**
+     * Valida que el documento origen (Factura o Proforma) sobre el que se está
+     * emitiendo la Nota de Crédito no tenga ya una nota previamente registrada,
+     * sin importar el estado en que se encuentre (incluso despachada o anulada).
+     *
+     * <p>Este check aplica únicamente para notas nuevas; por eso solo se invoca
+     * en la transición a {@link EstadoNotaCreditoEnum#ENTREGA_PENDIENTE} cuando
+     * la nota aún no posee {@code idNotaCredito}.</p>
+     *
+     * @param notaCredito nota de crédito recibida desde el controlador
+     * @throws DuplicateNotaCreditoException si ya existe una nota para el mismo documento origen
+     * @throws BadRequestException           si los datos del origen son inválidos
+     */
+    private void validarOrigenUnico(NotaCredito notaCredito) {
+        // Solo validar al crear (no al actualizar / cambiar estado de una existente)
+        if (notaCredito.getIdNotaCredito() != null) {
+            return;
+        }
+
+        // Por compatibilidad con datos legacy, si no viene el tipo origen se asume FACTURA
+        TipoDocumentoOrigenEnum tipoOrigen = notaCredito.getTipoDocumentoOrigen();
+        if (tipoOrigen == null) {
+            tipoOrigen = TipoDocumentoOrigenEnum.FACTURA;
+            notaCredito.setTipoDocumentoOrigen(tipoOrigen);
+        }
+
+        switch (tipoOrigen) {
+            case FACTURA:
+                final String correlativo = notaCredito.getCorrelativoFacturaSat();
+                final String serie = notaCredito.getSerieFacturaSat();
+                if (correlativo == null || correlativo.isEmpty() || serie == null || serie.isEmpty()) {
+                    throw new BadRequestException(
+                            "Para crear una Nota de Crédito de tipo FACTURA se requieren correlativo y serie SAT.",
+                            null);
+                }
+                if (notaCreditoRepository.existsByCorrelativoFacturaSatAndSerieFacturaSat(correlativo, serie)) {
+                    log.warn("Ya existe una Nota de Credito para la Factura SAT {}-{}", serie, correlativo);
+                    throw new DuplicateNotaCreditoException(
+                            String.format("Ya existe una Nota de Crédito registrada para la factura %s-%s.", serie, correlativo));
+                }
+                // Limpiar campos de Proforma para evitar inconsistencias
+                notaCredito.setNoProforma(null);
+                break;
+            case PROFORMA:
+                final String noProforma = notaCredito.getNoProforma();
+                if (noProforma == null || noProforma.isEmpty()) {
+                    throw new BadRequestException(
+                            "Para crear una Nota de Crédito de tipo PROFORMA se requiere el número de proforma.",
+                            null);
+                }
+                if (notaCreditoRepository.existsByNoProforma(noProforma)) {
+                    log.warn("Ya existe una Nota de Credito para la Proforma {}", noProforma);
+                    throw new DuplicateNotaCreditoException(
+                            String.format("Ya existe una Nota de Crédito registrada para la proforma %s.", noProforma));
+                }
+                // Limpiar campos de Factura para evitar inconsistencias
+                notaCredito.setCorrelativoFacturaSat(null);
+                notaCredito.setSerieFacturaSat(null);
+                break;
+            default:
+                throw new BadRequestException("Tipo de documento origen no soportado: " + tipoOrigen, null);
         }
     }
 

@@ -33,6 +33,28 @@ export class ProformaService {
     );
   }
 
+  /**
+   * Busca una proforma por su número único.
+   * Usado por el flujo de creación de Notas de Crédito basadas en Proforma.
+   *
+   * @param noProforma número único de la proforma
+   */
+  getProformaByNoProforma(noProforma: string): Observable<Proforma> {
+    return this.httpClient.get<Proforma>(`${this.url}/proformas/by-no-proforma/${encodeURIComponent(noProforma)}`).pipe(
+      catchError(e => {
+        if (e.status === 404) {
+          Swal.fire('Proforma no encontrada',
+            `No existe una proforma con el número "${noProforma}".`,
+            'warning');
+        } else {
+          const mensaje = e.error?.message || e.error?.mensaje || 'Error al cargar proforma';
+          Swal.fire(mensaje, e.error?.error || '', 'error');
+        }
+        return throwError(e);
+      })
+    );
+  }
+
   getProformasSP(date1: Date, date2: Date): Observable<any> {
     return this.httpClient.get<any>(`${this.url}/proformas/get-listado-sp/get?date1=${date1.toString()}&date2=${date2.toString()}`).pipe(
       catchError(e => {

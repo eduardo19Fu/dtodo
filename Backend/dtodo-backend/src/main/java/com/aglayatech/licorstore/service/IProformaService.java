@@ -19,6 +19,14 @@ public interface IProformaService {
 
     public Proforma findProforma(Long idproforma);
 
+    /**
+     * Localiza una Proforma por su número único de proforma.
+     *
+     * @param noProforma número único asignado a la proforma
+     * @return la Proforma encontrada
+     */
+    Proforma findByNoProforma(String noProforma);
+
     public Proforma save(Proforma proforma, Long idproforma);
 
     public void delete(Proforma proforma);

@@ -3,18 +3,38 @@ import { Router } from '@angular/router';
 import { UsuarioAuxiliar } from 'src/app/models/auxiliar/usuario-auxiliar';
 import { Cliente } from 'src/app/models/cliente';
 import { DetalleFactura } from 'src/app/models/detalle-factura';
+import { DetalleProforma } from 'src/app/models/detalle-proforma';
 import { Factura } from 'src/app/models/factura';
-import { NotaCredito } from 'src/app/models/nota-credito';
+import { NotaCredito, TipoDocumentoOrigen } from 'src/app/models/nota-credito';
 import { NotaCreditoDetalle } from 'src/app/models/nota-credito-detalle';
+import { Proforma } from 'src/app/models/proforma';
 import { AuthService } from 'src/app/services/auth.service';
 import { ClienteService } from 'src/app/services/cliente.service';
 import { ClienteCreateService } from 'src/app/services/facturas/cliente-create.service';
 import { FacturaService } from 'src/app/services/facturas/factura.service';
 import { NotasCreditoService } from 'src/app/services/notas-credito.service';
+import { ProformaService } from 'src/app/services/proformas/proforma.service';
 
 import swal from 'sweetalert2';
 
 declare var $: any;
+
+/**
+ * Item genérico utilizado por el modal de selección, independiente del
+ * documento origen (Factura o Proforma).
+ */
+interface ItemSeleccionable {
+  codProducto: string;
+  nombreProducto: string;
+  cantidadOriginal: number;
+  precioVenta: number;
+  subTotalOriginal: number;
+  cantidadSeleccionada: number;
+  seleccionado: boolean;
+  // Referencias opcionales al item origen
+  refDetalleFactura?: DetalleFactura;
+  refDetalleProforma?: DetalleProforma;
+}
 
 @Component({
   selector: 'app-create-nota',
@@ -33,9 +53,13 @@ export class CreateNotaComponent implements OnInit {
   cliente: Cliente;
   usuario: UsuarioAuxiliar;
 
-  // Modal de selección de productos de factura
+  // Origen del documento: Factura o Proforma
+  tipoOrigen: TipoDocumentoOrigen = 'FACTURA';
+
+  // Modal de selección de productos
   facturaCargada: Factura;
-  itemsFactura: { item: DetalleFactura, cantidad: number, seleccionado: boolean }[] = [];
+  proformaCargada: Proforma;
+  itemsSeleccionables: ItemSeleccionable[] = [];
   mostrarModalProductos: boolean = false;
 
   // Paginación del modal
@@ -47,6 +71,7 @@ export class CreateNotaComponent implements OnInit {
   constructor(
     private notaService: NotasCreditoService,
     private facturaService: FacturaService,
+    private proformaService: ProformaService,
     private clienteService: ClienteService,
     private clienteCreateService: ClienteCreateService,
     private authService: AuthService,
@@ -56,6 +81,7 @@ export class CreateNotaComponent implements OnInit {
     this.cliente = new Cliente();
     this.usuario = new UsuarioAuxiliar();
     this.notaCredito = new NotaCredito();
+    this.notaCredito.tipoDocumentoOrigen = 'FACTURA';
   }
 
   ngOnInit(): void {
@@ -67,6 +93,27 @@ export class CreateNotaComponent implements OnInit {
     this.usuario.primerNombre = this.authService.usuario.primerNombre;
     this.usuario.apellido = this.authService.usuario.apellido;
     this.usuario.usuario = this.authService.usuario.usuario;
+  }
+
+  /**
+   * Cambia el documento origen (FACTURA / PROFORMA) limpiando los campos
+   * incompatibles para evitar inconsistencias.
+   */
+  cambiarTipoOrigen(nuevoTipo: TipoDocumentoOrigen): void {
+    if (this.tipoOrigen === nuevoTipo) {
+      return;
+    }
+    this.tipoOrigen = nuevoTipo;
+    this.notaCredito.tipoDocumentoOrigen = nuevoTipo;
+
+    if (nuevoTipo === 'FACTURA') {
+      this.notaCredito.noProforma = null;
+      this.proformaCargada = null;
+    } else {
+      this.notaCredito.correlativoFacturaSat = null;
+      this.notaCredito.serieFacturaSat = null;
+      this.facturaCargada = null;
+    }
   }
 
   cargarCliente(event): void {
@@ -85,7 +132,9 @@ export class CreateNotaComponent implements OnInit {
       this.clienteService.getClienteByNit(nit).subscribe(
         cliente => {
           this.cliente = cliente;
-          this.myCorrelativo.nativeElement.focus();
+          if (this.myCorrelativo) {
+            this.myCorrelativo.nativeElement.focus();
+          }
         },
         error => {
           if (error.status === 400) {
@@ -102,22 +151,29 @@ export class CreateNotaComponent implements OnInit {
     }
   }
 
-  // --- Flujo de selección de productos desde factura ---
+  // --- Flujo de selección de productos ---
 
   abrirSeleccionProductos(): void {
-    const correlativo = this.notaCredito.correlativoFacturaSat;
-
     if (!this.cliente || !this.cliente.idCliente) {
       swal.fire('Cliente Requerido', 'Por favor, seleccione un cliente antes de continuar.', 'warning');
       return;
     }
 
+    if (this.tipoOrigen === 'FACTURA') {
+      this.cargarProductosDesdeFactura();
+    } else {
+      this.cargarProductosDesdeProforma();
+    }
+  }
+
+  private cargarProductosDesdeFactura(): void {
+    const correlativo = this.notaCredito.correlativoFacturaSat;
+    const serie = this.notaCredito.serieFacturaSat;
+
     if (!correlativo) {
       swal.fire('Correlativo Requerido', 'Por favor, ingrese el correlativo de la factura asociada.', 'warning');
       return;
     }
-
-    const serie = this.notaCredito.serieFacturaSat;
     if (!serie) {
       swal.fire('Serie Requerida', 'Por favor, ingrese la serie de la factura asociada.', 'warning');
       return;
@@ -125,7 +181,6 @@ export class CreateNotaComponent implements OnInit {
 
     this.facturaService.getFacturaByCorrelativoSat(correlativo, serie).subscribe(
       factura => {
-        // Validar que el cliente de la factura coincida con el cliente seleccionado
         if (factura.cliente.idCliente !== this.cliente.idCliente) {
           swal.fire('Cliente No Coincide',
             `La factura con correlativo ${correlativo} y serie ${serie} pertenece al cliente "${factura.cliente.nombre}", pero el cliente seleccionado es "${this.cliente.nombre}".`,
@@ -134,19 +189,68 @@ export class CreateNotaComponent implements OnInit {
         }
 
         this.facturaCargada = factura;
-        this.itemsFactura = factura.itemsFactura.map((item: DetalleFactura) => ({
-          item: item,
-          cantidad: item.cantidad,
-          seleccionado: false
+        this.proformaCargada = null;
+        this.itemsSeleccionables = factura.itemsFactura.map((item: DetalleFactura) => ({
+          codProducto: item.producto.codProducto,
+          nombreProducto: item.producto.nombre,
+          cantidadOriginal: item.cantidad,
+          precioVenta: item.producto.precioVenta,
+          subTotalOriginal: item.subTotalDescuento,
+          cantidadSeleccionada: item.cantidad,
+          seleccionado: false,
+          refDetalleFactura: item
         }));
-        this.paginaActual = 0;
-        this.filtroModal = '';
+        this.resetEstadoModal();
         this.mostrarModalProductos = true;
       },
-      error => {
-        // El servicio ya muestra el Swal de error
+      () => {
+        // FacturaService ya muestra el Swal de error
       }
     );
+  }
+
+  private cargarProductosDesdeProforma(): void {
+    const noProforma = this.notaCredito.noProforma;
+
+    if (!noProforma) {
+      swal.fire('No. Proforma Requerido', 'Por favor, ingrese el número de la proforma asociada.', 'warning');
+      return;
+    }
+
+    this.proformaService.getProformaByNoProforma(noProforma).subscribe(
+      proforma => {
+        if (!proforma.cliente || proforma.cliente.idCliente !== this.cliente.idCliente) {
+          const nombreCte = proforma.cliente ? proforma.cliente.nombre : 'N/A';
+          swal.fire('Cliente No Coincide',
+            `La proforma ${noProforma} pertenece al cliente "${nombreCte}", pero el cliente seleccionado es "${this.cliente.nombre}".`,
+            'error');
+          return;
+        }
+
+        this.proformaCargada = proforma;
+        this.facturaCargada = null;
+        this.itemsSeleccionables = (proforma.itemsProforma || []).map((item: DetalleProforma) => ({
+          codProducto: item.producto.codProducto,
+          nombreProducto: item.producto.nombre,
+          cantidadOriginal: item.cantidad,
+          precioVenta: item.producto.precioVenta,
+          subTotalOriginal: item.subTotalDescuento,
+          cantidadSeleccionada: item.cantidad,
+          seleccionado: false,
+          refDetalleProforma: item
+        }));
+        this.resetEstadoModal();
+        this.mostrarModalProductos = true;
+      },
+      () => {
+        // ProformaService ya muestra el Swal de error
+      }
+    );
+  }
+
+  private resetEstadoModal(): void {
+    this.paginaActual = 0;
+    this.filtroModal = '';
   }
 
   cerrarModalProductos(): void {
@@ -154,52 +258,52 @@ export class CreateNotaComponent implements OnInit {
   }
 
   toggleProducto(index: number): void {
-    this.itemsFactura[index].seleccionado = !this.itemsFactura[index].seleccionado;
-    if (!this.itemsFactura[index].seleccionado) {
-      this.itemsFactura[index].cantidad = 0;
+    this.itemsSeleccionables[index].seleccionado = !this.itemsSeleccionables[index].seleccionado;
+    if (!this.itemsSeleccionables[index].seleccionado) {
+      this.itemsSeleccionables[index].cantidadSeleccionada = 0;
     } else {
-      this.itemsFactura[index].cantidad = this.itemsFactura[index].item.cantidad;
+      this.itemsSeleccionables[index].cantidadSeleccionada = this.itemsSeleccionables[index].cantidadOriginal;
     }
   }
 
   actualizarCantidadSeleccion(index: number, event): void {
     const cantidad = +event.target.value;
-    const maxCantidad = this.itemsFactura[index].item.cantidad;
+    const maxCantidad = this.itemsSeleccionables[index].cantidadOriginal;
 
     if (cantidad < 0) {
       event.target.value = 0;
-      this.itemsFactura[index].cantidad = 0;
+      this.itemsSeleccionables[index].cantidadSeleccionada = 0;
       return;
     }
 
     if (cantidad > maxCantidad) {
       swal.fire('Cantidad Excedida', `La cantidad máxima para este producto es ${maxCantidad}.`, 'warning');
       event.target.value = maxCantidad;
-      this.itemsFactura[index].cantidad = maxCantidad;
+      this.itemsSeleccionables[index].cantidadSeleccionada = maxCantidad;
       return;
     }
 
-    this.itemsFactura[index].cantidad = cantidad;
+    this.itemsSeleccionables[index].cantidadSeleccionada = cantidad;
   }
 
   hayProductosSeleccionados(): boolean {
-    return this.itemsFactura.some(i => i.seleccionado && i.cantidad > 0);
+    return this.itemsSeleccionables.some(i => i.seleccionado && i.cantidadSeleccionada > 0);
   }
 
   // --- Paginación y filtro del modal ---
 
-  get itemsFiltrados(): { item: DetalleFactura, cantidad: number, seleccionado: boolean }[] {
+  get itemsFiltrados(): ItemSeleccionable[] {
     if (!this.filtroModal) {
-      return this.itemsFactura;
+      return this.itemsSeleccionables;
     }
     const filtro = this.filtroModal.toLowerCase();
-    return this.itemsFactura.filter(reg =>
-      reg.item.producto.nombre.toLowerCase().includes(filtro) ||
-      reg.item.producto.codProducto?.toLowerCase().includes(filtro)
+    return this.itemsSeleccionables.filter(reg =>
+      reg.nombreProducto.toLowerCase().includes(filtro) ||
+      (reg.codProducto && reg.codProducto.toLowerCase().includes(filtro))
     );
   }
 
-  get itemsPaginados(): { item: DetalleFactura, cantidad: number, seleccionado: boolean }[] {
+  get itemsPaginados(): ItemSeleccionable[] {
     const inicio = this.paginaActual * this.pageSize;
     return this.itemsFiltrados.slice(inicio, inicio + this.pageSize);
   }
@@ -243,25 +347,30 @@ export class CreateNotaComponent implements OnInit {
 
   getIndiceReal(indicePaginado: number): number {
     const item = this.itemsPaginados[indicePaginado];
-    return this.itemsFactura.indexOf(item);
+    return this.itemsSeleccionables.indexOf(item);
   }
 
+  // --- Confirmación y creación ---
+
   confirmarSeleccion(): void {
-    const seleccionados = this.itemsFactura.filter(i => i.seleccionado && i.cantidad > 0);
+    const seleccionados = this.itemsSeleccionables.filter(i => i.seleccionado && i.cantidadSeleccionada > 0);
 
     if (seleccionados.length === 0) {
       swal.fire('Sin Productos', 'Seleccione al menos un producto pendiente de entrega.', 'warning');
       return;
     }
 
-    // Convertir los items de factura seleccionados a items de nota de crédito
     this.notaCredito.items = seleccionados.map(sel => {
       const item = new NotaCreditoDetalle();
-      item.producto = sel.item.producto;
-      item.cantidad = sel.cantidad;
+      // Resolver el producto desde la referencia origen disponible
+      const producto = sel.refDetalleFactura
+        ? sel.refDetalleFactura.producto
+        : sel.refDetalleProforma.producto;
+      item.producto = producto;
+      item.cantidad = sel.cantidadSeleccionada;
       item.descuento = 0;
-      item.subTotal = sel.item.producto.precioVenta * sel.cantidad;
-      item.subTotalDescuento = sel.item.producto.precioVenta * sel.cantidad;
+      item.subTotal = sel.precioVenta * sel.cantidadSeleccionada;
+      item.subTotalDescuento = sel.precioVenta * sel.cantidadSeleccionada;
       return item;
     });
 
@@ -272,13 +381,17 @@ export class CreateNotaComponent implements OnInit {
   crearNota(): void {
     this.notaCredito.cliente = this.cliente;
     this.notaCredito.usuario = this.usuario;
+    this.notaCredito.tipoDocumentoOrigen = this.tipoOrigen;
     this.notaCredito.total = this.notaCredito.calcularTotal();
 
     this.notaService.create(this.notaCredito).subscribe(
       response => {
         this.cliente = new Cliente();
         this.notaCredito = new NotaCredito();
-        this.myBuscarTexto.nativeElement.value = '';
+        this.notaCredito.tipoDocumentoOrigen = this.tipoOrigen;
+        if (this.myBuscarTexto) {
+          this.myBuscarTexto.nativeElement.value = '';
+        }
         this.router.navigate(['/notas-credito/index']);
         swal.fire('Nota Creada', `Nota de Crédito No. ${response.idNotaCredito} creada satisfactoriamente.`, 'success');
         this.printNote(response.idNotaCredito);
@@ -286,14 +399,41 @@ export class CreateNotaComponent implements OnInit {
     );
   }
 
-  printNote(nota: NotaCredito): void {
-    this.notaService.getNotaCreditoPDF(nota.idNotaCredito).subscribe(
+  printNote(idNota: number): void {
+    this.notaService.getNotaCreditoPDF(idNota).subscribe(
       response => {
         const file = new Blob([response.data], { type: 'application/pdf' });
         const fileURL = URL.createObjectURL(file);
         window.open(fileURL);
       }
     );
+  }
+
+  // --- Helpers de UI ---
+
+  /**
+   * Indica si el botón "Guardar" puede habilitarse según el tipo de origen
+   * y el cliente seleccionado.
+   */
+  get puedeGuardar(): boolean {
+    if (!this.cliente?.idCliente) {
+      return false;
+    }
+    if (this.tipoOrigen === 'FACTURA') {
+      return !!(this.notaCredito.correlativoFacturaSat && this.notaCredito.serieFacturaSat);
+    }
+    return !!this.notaCredito.noProforma;
+  }
+
+  /** Etiqueta a mostrar en el header del modal según el origen. */
+  get tituloModal(): string {
+    if (this.tipoOrigen === 'FACTURA' && this.facturaCargada) {
+      return `Productos de Factura No. ${this.facturaCargada.noFactura}`;
+    }
+    if (this.tipoOrigen === 'PROFORMA' && this.proformaCargada) {
+      return `Productos de Proforma No. ${this.proformaCargada.noProforma}`;
+    }
+    return 'Productos del Documento Origen';
   }
 
 }

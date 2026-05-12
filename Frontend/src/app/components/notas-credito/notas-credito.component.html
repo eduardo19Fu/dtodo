@@ -23,7 +23,13 @@
                                 <strong>Cliente:</strong> {{notaDespacho?.cliente?.nombre}}
                             </div>
                             <div class="col-md-4">
-                                <strong>Correlativo SAT:</strong> {{notaDespacho?.correlativoFacturaSat}}
+                                <ng-container *ngIf="(notaDespacho?.tipoDocumentoOrigen || 'FACTURA') === 'FACTURA'">
+                                    <strong>Factura SAT:</strong>
+                                    {{notaDespacho?.serieFacturaSat}}-{{notaDespacho?.correlativoFacturaSat}}
+                                </ng-container>
+                                <ng-container *ngIf="notaDespacho?.tipoDocumentoOrigen === 'PROFORMA'">
+                                    <strong>Proforma:</strong> {{notaDespacho?.noProforma}}
+                                </ng-container>
                             </div>
                             <div class="col-md-4">
                                 <strong>Total:</strong> {{notaDespacho?.total | currency: "Q" : "symbol"}}
@@ -153,8 +159,8 @@
                     <th>ID</th>
                     <th>Total</th>
                     <th>Emisor</th>
-                    <th>Correlativo SAT</th>
-                    <th>Serie SAT</th>
+                    <th>Origen</th>
+                    <th>Referencia</th>
                     <th>Fecha Creaci&oacute;n</th>
                     <th>Fecha Estimada de Entrega</th>
                     <th>Estado</th>
@@ -167,8 +173,21 @@
                     <td>{{nota.idNotaCredito}}</td>
                     <td>{{nota.total | currency: "Q" : "symbol"}}</td>
                     <td>{{nota.usuario}}</td>
-                    <td>{{nota.correlativoFacturaSat}}</td>
-                    <td>{{nota.serieFacturaSat}}</td>
+                    <td>
+                        <span class="badge"
+                            [ngClass]="{'badge-warning': (nota.tipoDocumentoOrigen || 'FACTURA') === 'FACTURA',
+                                        'badge-primary': nota.tipoDocumentoOrigen === 'PROFORMA'}">
+                            {{nota.tipoDocumentoOrigen || 'FACTURA'}}
+                        </span>
+                    </td>
+                    <td>
+                        <ng-container *ngIf="(nota.tipoDocumentoOrigen || 'FACTURA') === 'FACTURA'">
+                            {{nota.serieFacturaSat}}-{{nota.correlativoFacturaSat}}
+                        </ng-container>
+                        <ng-container *ngIf="nota.tipoDocumentoOrigen === 'PROFORMA'">
+                            {{nota.noProforma}}
+                        </ng-container>
+                    </td>
                     <td>{{nota.fechaCreacion | date: 'dd/MM/yyyy - hh:mm'}}</td>
                     <td>{{nota.fechaEntregaEstimada | date: 'dd/MM/yyyy'}}</td>
                     <td>
@@ -217,8 +236,8 @@
                     <th>ID</th>
                     <th>Total</th>
                     <th>Emisor</th>
-                    <th>Correlativo SAT</th>
-                    <th>Serie SAT</th>
+                    <th>Origen</th>
+                    <th>Referencia</th>
                     <th>Fecha Creaci&oacute;n</th>
                     <th>Fecha Estimada de Entrega</th>
                     <th>Estado</th>

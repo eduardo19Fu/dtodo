@@ -134,6 +134,14 @@ public class ProformaServiceImpl implements IProformaService {
         }
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public Proforma findByNoProforma(String noProforma) {
+        log.debug("Buscando proforma por noProforma: {}", noProforma);
+        return proformaRepository.findProformaByNoProforma(noProforma)
+                .orElseThrow(() -> new NotFoundException("No existe proforma con el número: " + noProforma));
+    }
+
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Proforma save(Proforma proforma, Long idproforma) {
