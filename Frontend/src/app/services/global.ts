@@ -1,4 +1,10 @@
 export const global = {
-    url: 'http://localhost:8382/api'
-    // url: 'https://dtodojalapa.xyz:8382/api'
+    /** Local **/
+    // url: 'http://localhost:8383/api'
+    
+    /** Producción **/
+    url: 'https://dtodojalapa.xyz:8382/api'
+
+    /** Desarrollo **/
+    // url: 'https://dtodojalapa.xyz:8383/api'
 };

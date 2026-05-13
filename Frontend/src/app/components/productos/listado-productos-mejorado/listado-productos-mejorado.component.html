@@ -70,7 +70,7 @@
                 <tr>
                     <th>Codigo</th>
                     <th>Nombre</th>
-                    <th>Precio Compra</th>
+                    <th *ngIf="auth.hasRole('ROLE_ADMIN')">Precio Compra</th>
                     <th>Precio Venta</th>
                     <th>Stock</th>
                     <th>Tipo</th>
@@ -84,7 +84,7 @@
                 <tr *ngFor="let producto of productosDto">
                     <td>{{producto.codProducto}}</td>
                     <td>{{producto.nombre}}</td>
-                    <td>{{producto.precioCompra | currency: "Q" : "symbol"}}</td>
+                    <td *ngIf="auth.hasRole('ROLE_ADMIN')">{{producto.precioCompra | currency: "Q" : "symbol"}}</td>
                     <td>{{producto.precioVenta | currency: "Q" : "symbol"}}</td>
                     <td>{{producto.stock}}</td>
                     <td>{{producto.tipoProducto ? producto.tipoProducto : ''}}</td>
