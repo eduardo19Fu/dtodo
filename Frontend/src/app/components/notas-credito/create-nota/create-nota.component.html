@@ -232,19 +232,28 @@
                     <div class="row">
                         <div class="col">
                             <label class="d-block">Documento Origen</label>
-                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                                <label class="btn btn-outline-orange"
-                                    [ngClass]="{'active': tipoOrigen === 'FACTURA'}"
+                            <div class="origen-toggle" role="group" aria-label="Seleccionar tipo de documento origen">
+                                <button type="button"
+                                    class="origen-option origen-factura"
+                                    [ngClass]="{'is-active': tipoOrigen === 'FACTURA'}"
+                                    [attr.aria-pressed]="tipoOrigen === 'FACTURA'"
                                     (click)="cambiarTipoOrigen('FACTURA')">
-                                    <input type="radio" name="tipoOrigen" [checked]="tipoOrigen === 'FACTURA'">
-                                    <i class="fas fa-file-invoice mr-1"></i> Factura
-                                </label>
-                                <label class="btn btn-outline-fuchsia"
-                                    [ngClass]="{'active': tipoOrigen === 'PROFORMA'}"
+                                    <i class="fas fa-file-invoice"></i>
+                                    <span>Factura</span>
+                                    <i *ngIf="tipoOrigen === 'FACTURA'" class="fas fa-check-circle ml-1"></i>
+                                </button>
+                                <button type="button"
+                                    class="origen-option origen-proforma"
+                                    [ngClass]="{'is-active': tipoOrigen === 'PROFORMA'}"
+                                    [attr.aria-pressed]="tipoOrigen === 'PROFORMA'"
                                     (click)="cambiarTipoOrigen('PROFORMA')">
-                                    <input type="radio" name="tipoOrigen" [checked]="tipoOrigen === 'PROFORMA'">
-                                    <i class="fas fa-file-alt mr-1"></i> Proforma
-                                </label>
+                                    <i class="fas fa-file-alt"></i>
+                                    <span>Proforma</span>
+                                    <i *ngIf="tipoOrigen === 'PROFORMA'" class="fas fa-check-circle ml-1"></i>
+                                </button>
+                            </div>
+                            <div class="origen-indicator">
+                                Origen seleccionado: <strong>{{ tipoOrigen === 'FACTURA' ? 'Factura' : 'Proforma' }}</strong>
                             </div>
                         </div>
                     </div>
