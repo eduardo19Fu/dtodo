@@ -48,14 +48,14 @@ const appRoutes: Routes = [
     { path: 'productos/inventario/create', component: CreateMovimientoComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_INVENTARIO'] } },
 
     /****** MENUS DE PROFORMAS ******/
-    { path: 'proformas/index', component: ProformasComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_COBRADOR'] } },
-    { path: 'proformas/create', component: CreateProformaComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_COBRADOR'] } },
-    { path: 'proformas/create/:proformaId', component: CreateProformaComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_COBRADOR'] } },
+    { path: 'proformas/index', component: ProformasComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_COBRADOR', 'ROLE_INVENTARIO'] } },
+    { path: 'proformas/create', component: CreateProformaComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_COBRADOR', 'ROLE_INVENTARIO'] } },
+    { path: 'proformas/create/:proformaId', component: CreateProformaComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_COBRADOR', 'ROLE_INVENTARIO'] } },
     
     /****** MENUS DE FACTURAS ******/
     { path: 'facturas/index', component: FacturasComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_COBRADOR'] } },
     { path: 'facturas/create', component: CreateFacturaComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_COBRADOR'] } },
-    { path: 'facturas/create/:proformaId', component: CreateFacturaComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_COBRADOR'] } },
+    { path: 'facturas/create/:proformaId', component: CreateFacturaComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_COBRADOR', 'ROLE_INVENTARIO'] } },
     
     // {
     //     path: 'facturas/create/:id',

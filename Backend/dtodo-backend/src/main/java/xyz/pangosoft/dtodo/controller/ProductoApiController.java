@@ -116,7 +116,7 @@ public class ProductoApiController {
 		return ResponseEntity.ok(total);
 	}
 
-	@Secured(value = { "ROLE_ADMIN", "ROLE_INVENTARIO"})
+	@Secured(value = { "ROLE_ADMIN" })
 	@PostMapping(value = "/productos")
 	public ResponseEntity<Producto> create(@RequestBody Producto producto, BindingResult result) {
 		log.info("Registrando nuevo producto con codigo: {}", producto.getCodProducto());
@@ -126,7 +126,7 @@ public class ProductoApiController {
 		return new ResponseEntity<>(newProducto, HttpStatus.CREATED);
 	}
 
-	@Secured(value = { "ROLE_ADMIN", "ROLE_INVENTARIO" })
+	@Secured(value = { "ROLE_ADMIN" })
 	@PutMapping(value = "/productos")
 	public ResponseEntity<Producto> update(@RequestBody Producto producto, BindingResult result) {
 		log.info("Actualizando producto con ID: {}", producto.getIdProducto());

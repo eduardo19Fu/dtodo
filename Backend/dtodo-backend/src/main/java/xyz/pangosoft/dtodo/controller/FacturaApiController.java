@@ -89,7 +89,7 @@ public class FacturaApiController {
     }
 
     /**** Nuevas Implementaciones de creación de factura y anulación *****/
-    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @PostMapping(value = "/facturas/createV2")
     public ResponseEntity<Factura> createV2(@RequestBody Factura factura) {
         log.info("********** Registrar Factura Versión 2 **********");

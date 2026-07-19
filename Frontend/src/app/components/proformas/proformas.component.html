@@ -75,7 +75,7 @@
                     <th>Estado</th>
                     <th>Emisor</th>
                     <th>Cliente</th>
-                    <th *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR')">Opciones</th>
+                    <th *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR') || auth.hasRole('ROLE_INVENTARIO')">Opciones</th>
                 </tr>
             </thead>
 
@@ -94,7 +94,7 @@
                     <td>{{proforma.usuario}}</td>
                     <td>{{proforma.cliente}}</td>
                     
-                    <td class="center-options" *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR')">
+                    <td class="center-options" *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR') || auth.hasRole('ROLE_INVENTARIO')">
 
                         <button class="btn bg-gradient-success margin" name="detail" type="button"
                             (click)="abrirDetalle(proforma)">
@@ -112,7 +112,7 @@
                         </button>
 
                         <!-- Aquí va el botón de eliminar -->
-                        <button class="btn bg-gradient-secondary margin" name="facturar" type="button" *ngIf="auth.hasRole('ROLE_ADMIN')"
+                        <button class="btn bg-gradient-secondary margin" name="facturar" type="button" *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_INVENTARIO')"
                             [disabled]="proforma.estado.idEstado === 4" [routerLink]="['/facturas/create', proforma.idProforma]" >
                             <i class="fas fa-share-square"></i>
                         </button>
@@ -129,7 +129,7 @@
                     <th>Estado</th>
                     <th>Emisor</th>
                     <th>Cliente</th>
-                    <th *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR')">Opciones</th>
+                    <th *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR') || auth.hasRole('ROLE_INVENTARIO')">Opciones</th>
                 </tr>
             </tfoot>
         </table>

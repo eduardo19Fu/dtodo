@@ -83,9 +83,9 @@
                 </li>
 
                 <!-- MENUS DE FACTURAS -->
-                <li class="nav-header" *ngIf="authService.hasRole('ROLE_COBRADOR') || authService.hasRole('ROLE_ADMIN')">Ventas</li>
+                <li class="nav-header" *ngIf="authService.hasRole('ROLE_COBRADOR') || authService.hasRole('ROLE_ADMIN') || authService.hasRole('ROLE_INVENTARIO')">Ventas</li>
 
-                <li class="nav-item" *ngIf="authService.hasRole('ROLE_COBRADOR') || authService.hasRole('ROLE_ADMIN')">
+                <li class="nav-item" *ngIf="authService.hasRole('ROLE_COBRADOR') || authService.hasRole('ROLE_ADMIN') || authService.hasRole('ROLE_INVENTARIO')">
                     <a [routerLink]="['/proformas/index']" class="nav-link" [ngClass]="{'active' : router.url.startsWith('/proformas')}">
                         <i class="nav-icon fas fa-street-view"></i>
                         <p>Proformas</p>
@@ -120,8 +120,8 @@
                 </li><!-- MENU DE FACTURAS FINAL -->
 
                 <!-- MENU DE NOTAS DE CREDITO -->
-                <li class="nav-header" *ngIf="authService.hasRole('ROLE_ADMIN') || authService.hasRole('ROLE_INVENTARIO')">Notas de Cr&eacute;dito</li>
-                <li class="nav-item" *ngIf="authService.hasRole('ROLE_ADMIN') || authService.hasRole('ROLE_INVENTARIO')"
+                <li class="nav-header" *ngIf="authService.hasRole('ROLE_ADMIN')">Notas de Cr&eacute;dito</li>
+                <li class="nav-item" *ngIf="authService.hasRole('ROLE_ADMIN')"
                     [ngClass]="{'menu-open': router.url.startsWith('/notas-credito')}">
 
                     <a href="" class="nav-link" [ngClass]="{'active': router.url.startsWith('/notas-credito')}">

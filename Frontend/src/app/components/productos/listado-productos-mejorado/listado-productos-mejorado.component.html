@@ -6,7 +6,7 @@
             <div class="col-sm-6">
                 <h1>{{title}}</h1>
                 <br>
-                <a [routerLink]="['/productos/create']" class="btn bg-gradient-success">
+                <a [routerLink]="['/productos/create']" class="btn bg-gradient-success" *ngIf="auth.hasRole('ROLE_ADMIN')">
                     <i class="fas fa-plus-circle"></i>
                     Nuevo
                 </a>
@@ -106,7 +106,7 @@
 
                         <button class="btn bg-gradient-info btn-sm margin" placement="top" ngbTooltip="Editar Producto"
                             [routerLink]="['/productos/create', producto.idProducto]"
-                            *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_INVENTARIO')">
+                            *ngIf="auth.hasRole('ROLE_ADMIN')">
                             <i class="fas fa-edit"></i>
                         </button>
 

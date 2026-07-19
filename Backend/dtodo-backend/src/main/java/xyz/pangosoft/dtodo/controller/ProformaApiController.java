@@ -95,7 +95,7 @@ public class ProformaApiController {
         return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
     }
 
-    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @GetMapping("/proformas/get-listado-sp/get")
     public ResponseEntity<List<Proforma>> getProformasPorFecha(@RequestParam(value = "date1", required = false) String fechaIni,
                                                                @RequestParam(value = "date2", required = false) String fechaFin)
@@ -105,7 +105,7 @@ public class ProformaApiController {
         return ResponseEntity.ok(proformas);
     }
 
-    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @GetMapping("/proformas/get-listado-dto/get")
     public ResponseEntity<List<ProformaDto>> getProformasPorFechaSp(@RequestParam(value = "date1", required = false) String fechaIni,
                                                                     @RequestParam(value = "date2", required = false) String fechaFin)
