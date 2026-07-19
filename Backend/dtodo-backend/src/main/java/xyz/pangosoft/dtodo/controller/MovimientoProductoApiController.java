@@ -117,7 +117,7 @@ public class MovimientoProductoApiController {
 	        os.flush();
 	        os.close();
 	    } catch (IOException e) {
-	        e.printStackTrace();
+	        log.error("Error al escribir el reporte de inventario en la respuesta: {}", e.getMessage());
 	    }
 	}
 }

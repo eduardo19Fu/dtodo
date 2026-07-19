@@ -690,7 +690,7 @@ public class FacturaServiceImpl implements IFacturaService {
 		if(correlativo.getCorrelativoActual() >= correlativo.getCorrelativoFinal()) {
 			correlativo.setEstado(estado);
 		}
-		correlativoService.save(correlativo);
+		correlativoService.update(correlativo);
 	}
 
 	/**

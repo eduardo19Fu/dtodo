@@ -9,24 +9,26 @@ import xyz.pangosoft.dtodo.model.Role;
 import xyz.pangosoft.dtodo.model.Usuario;
 
 public interface IUsuarioService {
-	
-	public List<Usuario> findAll();
-	
-	public Page<Usuario> findAll(Pageable pageable);
-	
-	public Usuario findById(Integer idusaurio);
 
-	public Integer totalUsuarios();
-	
-	public Usuario save(Usuario usuario);
-	
-	public Usuario findByUsuario(String usuario);
-	
-	public void delete(Integer id);
-	
-	public List<Usuario> cajeros();
-	
-	// método encargado de recolectar los roles de la BD
-	public List<Role> findRoles();
+	List<Usuario> findAll();
+
+	Page<Usuario> findAll(Pageable pageable);
+
+	Usuario findById(Integer idUsuario);
+
+	Usuario findByUsuario(String usuario);
+
+	Integer totalUsuarios();
+
+	List<Usuario> cajeros();
+
+	Usuario save(Usuario usuario);
+
+	Usuario update(Usuario usuario, Integer idUsuario);
+
+	void delete(Integer idUsuario);
+
+	// Método encargado de recolectar los roles de la BD
+	List<Role> findRoles();
 
 }

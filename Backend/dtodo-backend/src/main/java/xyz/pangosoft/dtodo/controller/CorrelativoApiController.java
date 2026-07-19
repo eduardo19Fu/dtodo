@@ -1,9 +1,7 @@
 package xyz.pangosoft.dtodo.controller;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import xyz.pangosoft.dtodo.error.exceptions.MethodArgumentTypeMismatchException;
 import lombok.RequiredArgsConstructor;
@@ -65,7 +63,7 @@ public class CorrelativoApiController {
 		return ResponseEntity.ok(correlativo);
 	}
 	
-	@Secured(value = {"ROLE_COBRADOR", "ROLE_COBRADOR"})
+	@Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
 	@GetMapping(value = "/correlativos/usuario/{id}")
 	public ResponseEntity<Correlativo> findByUsuario(@PathVariable("id") Integer idusuario){
 		log.info("Correlativo Activo para el usuario: {}", idusuario);
@@ -77,22 +75,9 @@ public class CorrelativoApiController {
 
 	@Secured(value = {"ROLE_ADMIN"})
 	@PostMapping(value = "/correlativos")
-	public ResponseEntity<Map<String, Object>> create(@RequestBody Correlativo correlativo, BindingResult result) {
+	public ResponseEntity<Correlativo> create(@RequestBody Correlativo correlativo) {
 		log.info("Registrando nuevo Correlativo");
-
-		Map<String, Object> response = new HashMap<>();
-		Correlativo newCorrelativo = null;
-
-		newCorrelativo = serviceCorrelativo.save(correlativo);
-
-		if(newCorrelativo == null) {
-			response.put("mensaje", "El usuario ya cuenta con un correlativo activo");
-			return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-		}
-
-		response.put("mensaje", "¡Correlativo creado con éxito!");
-		response.put("correlativo", newCorrelativo);
-		return new ResponseEntity<>(response, HttpStatus.CREATED);
+		return new ResponseEntity<>(serviceCorrelativo.save(correlativo), HttpStatus.CREATED);
 	}
 
 	@Secured(value = {"ROLE_ADMIN"})

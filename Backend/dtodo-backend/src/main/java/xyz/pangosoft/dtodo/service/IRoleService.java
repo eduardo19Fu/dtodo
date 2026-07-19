@@ -8,16 +8,16 @@ import org.springframework.data.domain.Pageable;
 import xyz.pangosoft.dtodo.model.Role;
 
 public interface IRoleService {
-	
-	public List<Role> findAll();
-	
-	public Page<Role> findAll(Pageable pageable);
-	
-	// Metodo que devuelve un listado de roles cuyo nombre sea igual al parametro otorgado
-	public Role findByName(String role);
-	
-	public Role findById(Integer id);
-	
-	public Role save(Role role);
+
+	List<Role> findAll();
+
+	Page<Role> findAll(Pageable pageable);
+
+	// Devuelve el rol cuyo nombre coincide con el parámetro otorgado
+	Role findByName(String role);
+
+	Role findById(Integer idRole);
+
+	Role save(Role role);
 
 }

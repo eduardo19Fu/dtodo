@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import xyz.pangosoft.dtodo.error.exceptions.DuplicateCorrelativoException;
 import xyz.pangosoft.dtodo.error.exceptions.NoContentException;
 import xyz.pangosoft.dtodo.error.exceptions.NotFoundException;
 import xyz.pangosoft.dtodo.service.IEstadoService;
@@ -165,7 +166,7 @@ public class CorrelativoServiceImpl implements ICorrelativoService {
 
 			if(findByUsuario(correlativo.getUsuario().getIdUsuario()) != null) {
 				log.warn("El usuario {} ya cuenta con un correlativo activo", correlativo.getUsuario().getIdUsuario());
-				return null;
+				throw new DuplicateCorrelativoException("El usuario ya cuenta con un correlativo activo");
 			} else {
 				correlativo.setCorrelativoActual(correlativo.getCorrelativoInicial());
 				correlativo.setEstado(estadoService.findById(1));
@@ -173,6 +174,9 @@ public class CorrelativoServiceImpl implements ICorrelativoService {
 				newCorrelativo = correlativoRepository.save(correlativo);
 				return newCorrelativo;
 			}
+		} catch (DuplicateCorrelativoException e) {
+			// Se relanza para que el handler global la mapee a 409 Conflict
+			throw e;
 		} catch(DataAccessException e) {
 			log.error("Ha ocurrido un error a nivel de base de datos: {}", e);
 			throw new xyz.pangosoft.dtodo.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos", e);

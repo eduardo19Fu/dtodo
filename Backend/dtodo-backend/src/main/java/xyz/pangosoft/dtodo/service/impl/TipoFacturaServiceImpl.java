@@ -1,19 +1,26 @@
 package xyz.pangosoft.dtodo.service.impl;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import xyz.pangosoft.dtodo.model.TipoFactura;
 import xyz.pangosoft.dtodo.repository.ITipoFacturaRepository;
 import xyz.pangosoft.dtodo.service.ITipoFacturaService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class TipoFacturaServiceImpl implements ITipoFacturaService {
 
-    @Autowired
-    private ITipoFacturaRepository tipoFacturaRepository;
+    private final ITipoFacturaRepository tipoFacturaRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public TipoFactura getTipoFactura(Integer id) {
-        return this.tipoFacturaRepository.findById(id).orElse(null);
+        log.info("Buscando tipo de factura con ID: {}", id);
+        return tipoFacturaRepository.findById(id).orElse(null);
     }
 }

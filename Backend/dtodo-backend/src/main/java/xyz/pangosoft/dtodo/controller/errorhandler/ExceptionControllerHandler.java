@@ -2,6 +2,7 @@ package xyz.pangosoft.dtodo.controller.errorhandler;
 
 import xyz.pangosoft.dtodo.error.ErrorDTO;
 import xyz.pangosoft.dtodo.error.exceptions.DataAccessException;
+import xyz.pangosoft.dtodo.error.exceptions.DuplicateCorrelativoException;
 import xyz.pangosoft.dtodo.error.exceptions.DuplicateNotaCreditoException;
 import xyz.pangosoft.dtodo.error.exceptions.MethodArgumentTypeMismatchException;
 import xyz.pangosoft.dtodo.error.exceptions.NoContentException;
@@ -131,6 +132,18 @@ public class ExceptionControllerHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(value = {DuplicateNotaCreditoException.class})
     public ResponseEntity<ErrorDTO> duplicateNotaCreditoExceptionHandler(DuplicateNotaCreditoException exception) {
         log.error("Intento de crear una nota de credito duplicada: {}", exception.getMessage());
+        ErrorDTO errorDTO = new ErrorDTO();
+        errorDTO.setMessage(exception.getMessage());
+        errorDTO.setCause(exception.getCause());
+        errorDTO.setCode(HttpStatus.CONFLICT.value());
+        errorDTO.setStatus(HttpStatus.CONFLICT);
+        errorDTO.setInstant(Instant.now());
+        return new ResponseEntity<>(errorDTO, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(value = {DuplicateCorrelativoException.class})
+    public ResponseEntity<ErrorDTO> duplicateCorrelativoExceptionHandler(DuplicateCorrelativoException exception) {
+        log.error("Intento de crear un correlativo duplicado: {}", exception.getMessage());
         ErrorDTO errorDTO = new ErrorDTO();
         errorDTO.setMessage(exception.getMessage());
         errorDTO.setCause(exception.getCause());
