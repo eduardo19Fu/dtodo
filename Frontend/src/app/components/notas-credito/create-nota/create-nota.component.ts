@@ -28,6 +28,7 @@ interface ItemSeleccionable {
   nombreProducto: string;
   cantidadOriginal: number;
   precioVenta: number;
+  descuento: number;
   subTotalOriginal: number;
   cantidadSeleccionada: number;
   seleccionado: boolean;
@@ -194,7 +195,9 @@ export class CreateNotaComponent implements OnInit {
           codProducto: item.producto.codProducto,
           nombreProducto: item.producto.nombre,
           cantidadOriginal: item.cantidad,
-          precioVenta: item.producto.precioVenta,
+          // Unitario HISTÓRICO antes de descuento, no el precio de catálogo vigente.
+          precioVenta: this.unitarioHistorico(item),
+          descuento: item.descuento,
           subTotalOriginal: item.subTotalDescuento,
           cantidadSeleccionada: item.cantidad,
           seleccionado: false,
@@ -233,7 +236,9 @@ export class CreateNotaComponent implements OnInit {
           codProducto: item.producto.codProducto,
           nombreProducto: item.producto.nombre,
           cantidadOriginal: item.cantidad,
-          precioVenta: item.producto.precioVenta,
+          // Unitario HISTÓRICO antes de descuento, no el precio de catálogo vigente.
+          precioVenta: this.unitarioHistorico(item),
+          descuento: item.descuento,
           subTotalOriginal: item.subTotalDescuento,
           cantidadSeleccionada: item.cantidad,
           seleccionado: false,
@@ -246,6 +251,33 @@ export class CreateNotaComponent implements OnInit {
         // ProformaService ya muestra el Swal de error
       }
     );
+  }
+
+  /**
+   * Recupera el precio unitario HISTÓRICO (antes de descuento) de una línea
+   * origen. Las dos tablas de detalle usan convenciones distintas para
+   * `subTotal`, así que hay que decidir cuál aplica línea por línea:
+   *
+   * - `proformas_detalle` guarda el bruto (100% de las líneas con descuento).
+   * - `facturas_detalle` guarda el neto en el 94% de las líneas, es decir
+   *   `subTotal == subTotalDescuento`; ahí hay que despejar el bruto.
+   *
+   * Usar el bruto cuando existe no es solo más preciso (evita el redondeo del
+   * despeje): es lo único que funciona con descuento del 100%, donde el
+   * despeje dividiría entre cero.
+   */
+  private unitarioHistorico(detalle: DetalleFactura | DetalleProforma): number {
+    const cantidad = detalle.cantidad || 1;
+    const subTotal = detalle.subTotal || 0;
+    const subTotalDescuento = detalle.subTotalDescuento || 0;
+
+    if (subTotal > subTotalDescuento) {
+      return subTotal / cantidad;
+    }
+
+    const factor = 1 - (detalle.descuento || 0) / 100;
+    const unitarioConDescuento = subTotalDescuento / cantidad;
+    return factor > 0 ? unitarioConDescuento / factor : unitarioConDescuento;
   }
 
   private resetEstadoModal(): void {
@@ -362,15 +394,21 @@ export class CreateNotaComponent implements OnInit {
 
     this.notaCredito.items = seleccionados.map(sel => {
       const item = new NotaCreditoDetalle();
-      // Resolver el producto desde la referencia origen disponible
-      const producto = sel.refDetalleFactura
-        ? sel.refDetalleFactura.producto
-        : sel.refDetalleProforma.producto;
-      item.producto = producto;
+      // Resolver el detalle origen (Factura o Proforma) como única fuente de
+      // verdad: conserva el descuento y el precio HISTÓRICO facturado, no el
+      // precio de catálogo vigente (que puede cambiar con el tiempo).
+      const detalleOrigen = sel.refDetalleFactura ?? sel.refDetalleProforma;
+      const cantidadOrigen = detalleOrigen.cantidad || 1;
+      // Unitarios históricos derivados del detalle guardado. El "sin descuento"
+      // se despeja (no se lee de subTotal, que en BD ya viene descontado).
+      const unitarioSinDescuento = this.unitarioHistorico(detalleOrigen);
+      const unitarioConDescuento = detalleOrigen.subTotalDescuento / cantidadOrigen;
+
+      item.producto = detalleOrigen.producto;
       item.cantidad = sel.cantidadSeleccionada;
-      item.descuento = 0;
-      item.subTotal = sel.precioVenta * sel.cantidadSeleccionada;
-      item.subTotalDescuento = sel.precioVenta * sel.cantidadSeleccionada;
+      item.descuento = detalleOrigen.descuento;
+      item.subTotal = unitarioSinDescuento * sel.cantidadSeleccionada;
+      item.subTotalDescuento = unitarioConDescuento * sel.cantidadSeleccionada;
       return item;
     });
 

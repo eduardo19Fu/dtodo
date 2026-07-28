@@ -23,7 +23,10 @@ export class NotaCredito {
     calcularTotal(): number {
         let total = 0;
         this.items.forEach((item: NotaCreditoDetalle) => {
-            total += item.calcularImporteDescuento();
+            // Usar el subtotal ya resuelto desde el detalle origen (precio
+            // histórico + descuento). calcularImporteDescuento() recae en
+            // producto.precioVenta (catálogo vigente) y desviaría el total.
+            total += item.subTotalDescuento;
         });
 
         return total;

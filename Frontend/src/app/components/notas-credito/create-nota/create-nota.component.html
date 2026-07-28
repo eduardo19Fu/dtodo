@@ -73,6 +73,7 @@
                                     <th>Producto</th>
                                     <th class="text-center">Cant. Original</th>
                                     <th class="text-right">Precio Unitario</th>
+                                    <th class="text-center">Descuento</th>
                                     <th class="text-right">SubTotal</th>
                                     <th class="text-center" style="width: 150px;">Cant. Pendiente</th>
                                 </tr>
@@ -95,6 +96,7 @@
                                         <span class="badge badge-primary">{{registro.cantidadOriginal}}</span>
                                     </td>
                                     <td class="text-right align-middle">{{registro.precioVenta | currency: "Q" : "symbol"}}</td>
+                                    <td class="text-center align-middle">{{registro.descuento | number: "1.0-2"}}%</td>
                                     <td class="text-right align-middle">{{registro.subTotalOriginal | currency: "Q" : "symbol"}}</td>
                                     <td class="text-center align-middle">
                                         <input type="number" class="form-control form-control-sm text-center"
