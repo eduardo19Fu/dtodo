@@ -8,6 +8,12 @@
     z-index: 1050 !important;
 }
 
+/* El modal de autorizacion se abre encima del modal de despacho, que ya usa
+   z-index 1050; sin esto quedaria detras del backdrop. */
+.modal-autorizacion{
+    z-index: 1060 !important;
+}
+
 .animacion{
     animation-duration: 0.5s;
     animation-fill-mode: both;

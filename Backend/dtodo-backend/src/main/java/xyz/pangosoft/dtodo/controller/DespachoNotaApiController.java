@@ -1,7 +1,7 @@
 package xyz.pangosoft.dtodo.controller;
 
 import xyz.pangosoft.dtodo.dto.DespachoNotaDto;
-import xyz.pangosoft.dtodo.model.DespachoNota;
+import xyz.pangosoft.dtodo.dto.DespachoRequest;
 import xyz.pangosoft.dtodo.service.IDespachoNotaService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -26,24 +27,33 @@ public class DespachoNotaApiController {
 
     private final IDespachoNotaService despachoNotaService;
 
-    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @GetMapping(value = "/despachos-nota/{idNota}")
     public ResponseEntity<List<DespachoNotaDto>> getDespachos(@PathVariable("idNota") Long idNota) {
         log.info("Buscando despachos de nota de credito: {}", idNota);
         return ResponseEntity.ok(despachoNotaService.findByNotaCredito(idNota));
     }
 
-    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
+    /**
+     * Registra un despacho. El cuerpo encapsula las líneas a despachar y la
+     * contraseña del usuario en sesión, que el servicio valida antes de
+     * persistir; si no coincide se responde 422 y no se escribe nada.
+     * El usuario responsable se toma del {@link Principal} del token, no del
+     * cuerpo de la petición.
+     */
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @PostMapping(value = "/despachos-nota/{idNota}")
     public ResponseEntity<List<DespachoNotaDto>> registrarDespacho(
             @PathVariable("idNota") Long idNota,
-            @RequestBody List<DespachoNota> despachos) {
-        log.info("Registrando despacho para nota de credito: {}", idNota);
-        List<DespachoNotaDto> despachosRegistrados = despachoNotaService.registrarDespacho(idNota, despachos);
+            @RequestBody DespachoRequest request,
+            Principal principal) {
+        log.info("Registrando despacho para nota de credito: {} por el usuario: {}", idNota, principal.getName());
+        List<DespachoNotaDto> despachosRegistrados =
+                despachoNotaService.registrarDespacho(idNota, request, principal.getName());
         return ResponseEntity.status(HttpStatus.CREATED).body(despachosRegistrados);
     }
 
-    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @GetMapping(value = "/despachos-nota/comprobante/{idEvento}")
     public ResponseEntity<byte[]> generateComprobante(@PathVariable("idEvento") String idEvento) {
         log.info("Generando comprobante PDF de despacho: {}", idEvento);

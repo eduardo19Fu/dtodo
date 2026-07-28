@@ -111,6 +111,23 @@ public class UsuarioServiceImpl implements UserDetailsService, IUsuarioService {
 
 	@Override
 	@Transactional(readOnly = true)
+	public boolean matchesPassword(String usuario, String rawPassword) {
+		if (usuario == null || rawPassword == null || rawPassword.isEmpty()) {
+			return false;
+		}
+
+		Usuario usuarioActual = repoUsuario.findByUsuario(usuario);
+
+		if (usuarioActual == null) {
+			log.warn("Verificación de contraseña para un usuario inexistente: '{}'", usuario);
+			return false;
+		}
+
+		return passwordEncoder.matches(rawPassword, usuarioActual.getPassword());
+	}
+
+	@Override
+	@Transactional(readOnly = true)
 	public Integer totalUsuarios() {
 		try {
 			log.info("Consultando cantidad de usuarios");

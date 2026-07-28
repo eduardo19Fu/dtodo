@@ -36,21 +36,21 @@ public class NotaCreditoApiController {
         return ResponseEntity.ok(notaCreditoService.findNotas());
     }
 
-    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @GetMapping(value = "/notas-credito/activas")
     public ResponseEntity<List<NotaCreditoListDto>> getNotasCreditoActivas() {
         log.info("Buscando listado de Notas de Credito con estado ENTREGA_PENDIENTE");
         return ResponseEntity.ok(notaCreditoService.findNotasActivas(EstadoNotaCreditoEnum.ENTREGA_PENDIENTE));
     }
 
-    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @GetMapping(value = "/notas-credito/{id}")
     public ResponseEntity<NotaCredito> getNotaCredito(@PathVariable("id") Long idnota) {
         log.info("Buscando Nota de Credito con ID: {}", idnota);
         return ResponseEntity.ok(notaCreditoService.findNota(idnota));
     }
 
-    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @PostMapping(value = "/notas-credito")
     public ResponseEntity<NotaCredito> create(@RequestBody NotaCredito notaCredito) {
         log.info("********** Registrando nueva nota de credito **********");
@@ -65,7 +65,7 @@ public class NotaCreditoApiController {
         return ResponseEntity.ok(notaCreditoService.save(notaCredito, EstadoNotaCreditoEnum.ANULADO));
     }
 
-    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @PutMapping(value = "/notas-credito/entregar/{id}")
     public ResponseEntity<NotaCredito> despacharNota(@PathVariable("id") Long idnota) {
         log.info("Entregando producto de Nota de Credito: {}", idnota);
@@ -73,7 +73,7 @@ public class NotaCreditoApiController {
         return ResponseEntity.ok(notaCreditoService.save(notaCredito, EstadoNotaCreditoEnum.ENTREGADO));
     }
 
-    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @GetMapping(value = "/notas-credito/generate/{id}")
     public ResponseEntity<byte[]> generateReport(@PathVariable("id") Long idnota) {
         log.info("Generando reporte PDF de Nota de Credito: {}", idnota);

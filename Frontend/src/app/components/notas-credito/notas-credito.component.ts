@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { NotaCredito } from 'src/app/models/nota-credito';
 import { NotaCreditoDetalle } from 'src/app/models/nota-credito-detalle';
@@ -19,6 +19,8 @@ import swal from 'sweetalert2';
 })
 export class NotasCreditoComponent implements OnInit {
 
+  @ViewChild('passwordInput') passwordInput: ElementRef;
+
   title: string;
   jQueryConfigs: JqueryConfigs;
 
@@ -30,6 +32,14 @@ export class NotasCreditoComponent implements OnInit {
   notaDespacho: NotaCredito;
   itemsDespacho: { item: NotaCreditoDetalle, cantidadDespachar: number, despachado: number, seleccionado: boolean }[] = [];
   cargandoDespacho: boolean = false;
+
+  // Modal de autorización por contraseña
+  mostrarModalPassword: boolean = false;
+  passwordAutorizacion: string = '';
+  passwordVisible: boolean = false;
+  errorPassword: string = '';
+  autorizando: boolean = false;
+  private despachosPendientes: DespachoNota[] = [];
 
   swalWithBootstrapButtons = swal.mixin({
     customClass: {
@@ -51,6 +61,17 @@ export class NotasCreditoComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadNotasCredito();
+  }
+
+  /**
+   * Roles habilitados para operar notas de crédito. Desde el requerimiento del
+   * cliente el módulo está disponible para todos los roles del sistema; la
+   * anulación sigue restringida a ROLE_ADMIN en su propio *ngIf.
+   */
+  get puedeOperar(): boolean {
+    return this.auth.hasRole('ROLE_ADMIN')
+      || this.auth.hasRole('ROLE_COBRADOR')
+      || this.auth.hasRole('ROLE_INVENTARIO');
   }
 
   loadNotasCredito(): void {
@@ -133,6 +154,7 @@ export class NotasCreditoComponent implements OnInit {
 
   cerrarModalDespacho(): void {
     this.mostrarModalDespacho = false;
+    this.despachosPendientes = [];
   }
 
   toggleDespacho(index: number): void {
@@ -170,6 +192,11 @@ export class NotasCreditoComponent implements OnInit {
     return registro.item.cantidad - registro.despachado;
   }
 
+  /**
+   * Valida la selección, la confirma con el usuario y deja el despacho armado
+   * a la espera de la autorización por contraseña. No se envía nada al backend
+   * hasta que el modal de autorización se resuelva.
+   */
   confirmarDespacho(): void {
     const itemsValidos = this.itemsDespacho.filter(i => i.seleccionado && i.cantidadDespachar > 0);
 
@@ -191,43 +218,103 @@ export class NotasCreditoComponent implements OnInit {
       cancelButtonText: 'Cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
-        const usuarioSesion = this.auth.usuario;
-        const despachos: DespachoNota[] = itemsValidos.map(i => {
+        this.despachosPendientes = itemsValidos.map(i => {
           const despacho = new DespachoNota();
           despacho.producto = i.item.producto;
           despacho.codProducto = i.item.producto.codProducto;
           despacho.cantidad = i.cantidadDespachar;
           despacho.totalDespacho = i.item.producto.precioVenta * i.cantidadDespachar;
-          despacho.usuario = usuarioSesion;
           return despacho;
         });
 
-        this.notasService.registrarDespacho(this.notaDespacho.idNotaCredito, despachos).subscribe(
-          (despachosResponse) => {
-            const idNotaActual = this.notaDespacho.idNotaCredito;
-            const idEvento = despachosResponse?.[0]?.idEvento;
-
-            this.cerrarModalDespacho();
-
-            if (idEvento) {
-              this.notasService.getComprobanteDespachoPDF(idEvento).subscribe(
-                pdfResponse => {
-                  const fileURL = URL.createObjectURL(pdfResponse.data);
-                  window.open(fileURL);
-                }
-              );
-            }
-
-            swal.fire('Despacho Registrado', `El despacho de la nota No. ${idNotaActual} fue registrado exitosamente.`, 'success')
-              .then(() => {
-                this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
-                  this.router.navigate(['/notas-credito/index']);
-                });
-              });
-          }
-        );
+        this.abrirModalPassword();
       }
     });
+  }
+
+  // --- Modal de autorización por contraseña ---
+
+  abrirModalPassword(): void {
+    this.passwordAutorizacion = '';
+    this.passwordVisible = false;
+    this.errorPassword = '';
+    this.autorizando = false;
+    this.mostrarModalPassword = true;
+    // El input existe hasta que Angular resuelve el *ngIf del modal.
+    setTimeout(() => this.passwordInput?.nativeElement.focus());
+  }
+
+  /**
+   * Cierra el modal descartando la contraseña. La selección de productos se
+   * conserva para que el usuario pueda reintentar sin rearmar el despacho.
+   */
+  cerrarModalPassword(): void {
+    this.mostrarModalPassword = false;
+    this.passwordAutorizacion = '';
+    this.passwordVisible = false;
+    this.errorPassword = '';
+    this.autorizando = false;
+  }
+
+  togglePasswordVisible(): void {
+    this.passwordVisible = !this.passwordVisible;
+  }
+
+  /**
+   * Envía el despacho junto con la contraseña en un único POST. El backend es
+   * quien compara la contraseña contra el hash del usuario en sesión: si no
+   * coincide responde 422 y no persiste ninguna línea.
+   */
+  autorizarDespacho(): void {
+    if (!this.passwordAutorizacion) {
+      this.errorPassword = 'Ingrese su contraseña para autorizar el despacho.';
+      return;
+    }
+
+    this.autorizando = true;
+    this.errorPassword = '';
+
+    const idNotaActual = this.notaDespacho.idNotaCredito;
+
+    this.notasService.registrarDespacho(idNotaActual, this.despachosPendientes, this.passwordAutorizacion).subscribe(
+      (despachosResponse) => {
+        const idEvento = despachosResponse?.[0]?.idEvento;
+
+        this.despachosPendientes = [];
+        this.cerrarModalPassword();
+        this.cerrarModalDespacho();
+
+        if (idEvento) {
+          this.notasService.getComprobanteDespachoPDF(idEvento).subscribe(
+            pdfResponse => {
+              const fileURL = URL.createObjectURL(pdfResponse.data);
+              window.open(fileURL);
+            }
+          );
+        }
+
+        swal.fire('Despacho Registrado', `El despacho de la nota No. ${idNotaActual} fue registrado exitosamente.`, 'success')
+          .then(() => {
+            this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
+              this.router.navigate(['/notas-credito/index']);
+            });
+          });
+      },
+      error => {
+        this.autorizando = false;
+        this.passwordAutorizacion = '';
+
+        if (error.status === 422) {
+          // Contraseña incorrecta: el modal permanece abierto para reintentar.
+          this.errorPassword = error.error?.message
+            || 'La contraseña no coincide con la del usuario en sesión. El despacho no fue registrado.';
+          return;
+        }
+
+        // Cualquier otro error ya fue notificado por el servicio.
+        this.cerrarModalPassword();
+      }
+    );
   }
 
   // --- Otras acciones ---

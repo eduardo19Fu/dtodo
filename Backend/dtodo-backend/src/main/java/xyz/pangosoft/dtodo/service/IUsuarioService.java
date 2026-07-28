@@ -18,6 +18,17 @@ public interface IUsuarioService {
 
 	Usuario findByUsuario(String usuario);
 
+	/**
+	 * Verifica la contraseña en claro de un usuario contra el hash almacenado.
+	 * Se usa para reautenticar operaciones sensibles (p. ej. el despacho de una
+	 * Nota de Crédito) sin emitir un token nuevo.
+	 *
+	 * @param usuario     nombre de usuario, normalmente el del token en sesión
+	 * @param rawPassword contraseña en claro a validar
+	 * @return {@code true} solo si el usuario existe y la contraseña coincide
+	 */
+	boolean matchesPassword(String usuario, String rawPassword);
+
 	Integer totalUsuarios();
 
 	List<Usuario> cajeros();

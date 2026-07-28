@@ -4,6 +4,7 @@ import xyz.pangosoft.dtodo.error.ErrorDTO;
 import xyz.pangosoft.dtodo.error.exceptions.DataAccessException;
 import xyz.pangosoft.dtodo.error.exceptions.DuplicateCorrelativoException;
 import xyz.pangosoft.dtodo.error.exceptions.DuplicateNotaCreditoException;
+import xyz.pangosoft.dtodo.error.exceptions.InvalidPasswordException;
 import xyz.pangosoft.dtodo.error.exceptions.MethodArgumentTypeMismatchException;
 import xyz.pangosoft.dtodo.error.exceptions.NoContentException;
 import xyz.pangosoft.dtodo.error.exceptions.NotFoundException;
@@ -151,6 +152,17 @@ public class ExceptionControllerHandler extends ResponseEntityExceptionHandler {
         errorDTO.setStatus(HttpStatus.CONFLICT);
         errorDTO.setInstant(Instant.now());
         return new ResponseEntity<>(errorDTO, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(value = {InvalidPasswordException.class})
+    public ResponseEntity<ErrorDTO> invalidPasswordExceptionHandler(InvalidPasswordException exception) {
+        log.warn("Autorización rechazada por contraseña incorrecta: {}", exception.getMessage());
+        ErrorDTO errorDTO = new ErrorDTO();
+        errorDTO.setMessage(exception.getMessage());
+        errorDTO.setCode(HttpStatus.UNPROCESSABLE_ENTITY.value());
+        errorDTO.setStatus(HttpStatus.UNPROCESSABLE_ENTITY);
+        errorDTO.setInstant(Instant.now());
+        return new ResponseEntity<>(errorDTO, HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     @ExceptionHandler

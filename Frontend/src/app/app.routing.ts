@@ -94,8 +94,8 @@ const appRoutes: Routes = [
     { path: 'usuarios/create/:id', component: CreateUsuarioComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN'] } },
 
     /****** MENUS DE USUARIOS ******/
-    {path: 'notas-credito/index', component: NotasCreditoComponent, canActivate: [AuthGuard, RoleGuard], data: {role: ['ROLE_ADMIN', 'ROLE_COBRADOR']}},
-    {path: 'notas-credito/create', component: CreateNotaComponent, canActivate: [AuthGuard, RoleGuard], data: {role: ['ROLE_ADMIN', 'ROLE_COBRADOR']}},
+    {path: 'notas-credito/index', component: NotasCreditoComponent, canActivate: [AuthGuard, RoleGuard], data: {role: ['ROLE_ADMIN', 'ROLE_COBRADOR', 'ROLE_INVENTARIO']}},
+    {path: 'notas-credito/create', component: CreateNotaComponent, canActivate: [AuthGuard, RoleGuard], data: {role: ['ROLE_ADMIN', 'ROLE_COBRADOR', 'ROLE_INVENTARIO']}},
 
     { path: '**', component: ErrorComponent }
 ];

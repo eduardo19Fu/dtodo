@@ -6,6 +6,7 @@ import { global } from './global';
 import { NotaCredito } from '../models/nota-credito';
 import { DespachoNota } from '../models/despacho-nota';
 import { DespachoNotaDto } from '../dtos/despacho-nota-dto';
+import { DespachoRequest } from '../dtos/despacho-request';
 import { NotaCreditoListDto } from '../dtos/nota-credito-list-dto';
 
 import Swal from 'sweetalert2';
@@ -116,9 +117,22 @@ export class NotasCreditoService {
     );
   }
 
-  registrarDespacho(idNota: number, despachos: DespachoNota[]): Observable<DespachoNotaDto[]> {
-    return this.httpClient.post<DespachoNotaDto[]>(`${this.url}/despachos-nota/${idNota}`, despachos).pipe(
+  /**
+   * Registra un despacho enviando las líneas y la contraseña de autorización
+   * en un único payload.
+   *
+   * El 422 (contraseña incorrecta) se propaga sin Swal: lo maneja el modal de
+   * autorización mostrando el error en línea, sin cerrarse ni perder la
+   * selección de productos.
+   */
+  registrarDespacho(idNota: number, despachos: DespachoNota[], password: string): Observable<DespachoNotaDto[]> {
+    const request = new DespachoRequest(password, despachos);
+
+    return this.httpClient.post<DespachoNotaDto[]>(`${this.url}/despachos-nota/${idNota}`, request).pipe(
       catchError(e => {
+        if (e.status === 422) {
+          return throwError(e);
+        }
         const mensaje = e.error?.mensaje || e.error?.message || 'Error al registrar despacho';
         const detalle = e.error?.error || e.error?.status || '';
         Swal.fire(mensaje, `${detalle}`, 'error');

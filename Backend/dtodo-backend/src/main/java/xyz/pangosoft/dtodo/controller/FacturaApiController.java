@@ -79,7 +79,9 @@ public class FacturaApiController {
         return ResponseEntity.ok(serviceFactura.findFacturaCorrelativo(correlativo));
     }
 
-    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
+    // Consumido por el flujo de creación de Notas de Crédito con origen FACTURA,
+    // disponible para todos los roles operativos.
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @GetMapping("/facturas/get-by-correlativo-sat")
     public ResponseEntity<Factura> buscarPorCorrelativoSat(
             @RequestParam("correlativo") String correlativo,
