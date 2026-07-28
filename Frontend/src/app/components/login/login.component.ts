@@ -19,6 +19,7 @@ export class LoginComponent implements OnInit {
   usuarioTitle: string;
   passwordTitle: string;
   headerTitle: string;
+  passwordVisible: boolean = false;
 
   constructor(
     private router: Router,
@@ -33,6 +34,10 @@ export class LoginComponent implements OnInit {
 
   ngOnInit(): void {
     this.authService.logout();
+  }
+
+  togglePasswordVisible(): void {
+    this.passwordVisible = !this.passwordVisible;
   }
 
   login(): void {

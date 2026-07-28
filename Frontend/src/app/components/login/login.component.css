@@ -8343,3 +8343,24 @@ h1, h2, h3, h4, h5,
         border: 1px solid transparent;
         background: #283695;
         color: #fff; }
+
+/* Boton de mostrar/ocultar contraseña. El tema fija .form-control en 48px de
+   alto, asi que el boton del input-group debe igualarlo para no desalinearse.
+   El borde va en los cuatro lados: Bootstrap desplaza el .input-group-append
+   -1px y lo pinta con z-index 2, de modo que el borde izquierdo del boton se
+   superpone exactamente al derecho del input y ambos se leen como una sola
+   linea. Sin ese borde el fondo blanco tapa el del input y la caja del ojo
+   queda abierta. El radio derecho es de 5px para igualar al del input. */
+.toggle-password {
+  height: 48px;
+  padding: 0 16px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 0 5px 5px 0;
+  background: #fff;
+  color: rgba(0, 0, 0, 0.45); }
+  .toggle-password:hover {
+    background: #f8f9fa;
+    color: #283695; }
+  .toggle-password:focus {
+    outline: none;
+    box-shadow: none; }
