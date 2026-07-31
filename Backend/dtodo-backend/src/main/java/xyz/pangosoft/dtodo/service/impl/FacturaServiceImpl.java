@@ -3,14 +3,7 @@ package xyz.pangosoft.dtodo.service.impl;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-import java.io.UnsupportedEncodingException;
-
-import java.lang.reflect.InvocationTargetException;
-
 import java.math.BigDecimal;
-
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -23,7 +16,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import javax.sql.DataSource;
@@ -31,7 +23,6 @@ import javax.sql.DataSource;
 import xyz.pangosoft.dtodo.error.exceptions.NoContentException;
 import xyz.pangosoft.dtodo.error.exceptions.NotFoundException;
 import xyz.pangosoft.dtodo.error.exceptions.ReportGenerationException;
-import xyz.pangosoft.dtodo.error.exceptions.SigningDocumentFelException;
 import xyz.pangosoft.dtodo.model.Certificador;
 import xyz.pangosoft.dtodo.model.Cliente;
 import xyz.pangosoft.dtodo.model.Correlativo;
@@ -53,24 +44,20 @@ import xyz.pangosoft.dtodo.service.ITipoFacturaService;
 import xyz.pangosoft.dtodo.service.IUsuarioService;
 import xyz.pangosoft.dtodo.util.Utils;
 
-import com.fel.firma.emisor.FirmaEmisor;
-import com.fel.firma.emisor.RespuestaServicioFirma;
-import com.fel.validaciones.documento.Adendas;
-import com.fel.validaciones.documento.AnulacionFel;
-import com.fel.validaciones.documento.ConexionServicioFel;
-import com.fel.validaciones.documento.DatosEmisor;
-import com.fel.validaciones.documento.DatosGenerales;
-import com.fel.validaciones.documento.DatosReceptor;
-import com.fel.validaciones.documento.DocumentoFel;
-import com.fel.validaciones.documento.Frases;
-import com.fel.validaciones.documento.GenerarXml;
-import com.fel.validaciones.documento.ImpuestosDetalle;
-import com.fel.validaciones.documento.Items;
-import com.fel.validaciones.documento.Respuesta;
-import com.fel.validaciones.documento.RespuestaServicioFel;
-import com.fel.validaciones.documento.ServicioFel;
-import com.fel.validaciones.documento.TotalImpuestos;
-import com.fel.validaciones.documento.Totales;
+import xyz.pangosoft.dtodo.fel.IFelService;
+import xyz.pangosoft.dtodo.fel.dto.RespuestaCertificacion;
+import xyz.pangosoft.dtodo.fel.dto.RespuestaFirma;
+import xyz.pangosoft.dtodo.fel.model.Adendas;
+import xyz.pangosoft.dtodo.fel.model.AnulacionFel;
+import xyz.pangosoft.dtodo.fel.model.DatosEmisor;
+import xyz.pangosoft.dtodo.fel.model.DatosGenerales;
+import xyz.pangosoft.dtodo.fel.model.DatosReceptor;
+import xyz.pangosoft.dtodo.fel.model.DocumentoFel;
+import xyz.pangosoft.dtodo.fel.model.Frases;
+import xyz.pangosoft.dtodo.fel.model.ImpuestosDetalle;
+import xyz.pangosoft.dtodo.fel.model.Items;
+import xyz.pangosoft.dtodo.fel.model.TotalImpuestos;
+import xyz.pangosoft.dtodo.fel.model.Totales;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -108,6 +95,7 @@ public class FacturaServiceImpl implements IFacturaService {
 	private final ICertificadorService certificadorService;
 	private final IMovimientoProductoService movimientoProductoService;
 	private final IUsuarioService usuarioService;
+	private final IFelService felService;
 	protected final DataSource localDataSource;
 
 	@Override
@@ -250,8 +238,8 @@ public class FacturaServiceImpl implements IFacturaService {
 
 				documentoFel.setAdenda(configurarAdendas(factura.getUsuario(), factura.getNoFactura().toString()));
 
-				RespuestaServicioFirma respuestaFirmaEmisor = procesoFirma(documentoFel, certificador);
-				RespuestaServicioFel respuestaServicioFel = new RespuestaServicioFel();
+				RespuestaFirma respuestaFirmaEmisor = procesoFirma(documentoFel, certificador);
+				RespuestaCertificacion respuestaServicioFel = new RespuestaCertificacion();
 
 
 				log.info("--> Resultado: " + respuestaFirmaEmisor.isResultado());
@@ -276,9 +264,6 @@ public class FacturaServiceImpl implements IFacturaService {
 		} catch (DataAccessException e) {
 			log.error("Ha ocurrido un error a nivel de base de datos: {}", e.getMessage());
 			throw new xyz.pangosoft.dtodo.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos => ", e);
-		} catch (NoSuchAlgorithmException | UnsupportedEncodingException | KeyManagementException e) {
-			log.error("Error relacionado con la firma del documento: {}", e.getMessage());
-			throw new SigningDocumentFelException("Error relacionado con la firma del documento", e);
 		} catch (Exception e) {
 			log.error("Ha ocurrido un error inesperado: {}", e);
 			throw new RuntimeException("Ha ocurrido un error inesperado: ", e);
@@ -306,8 +291,8 @@ public class FacturaServiceImpl implements IFacturaService {
 
 				log.info("-----------> Iniciando Proceso de Anulación FEL");
 				AnulacionFel anulacionFel = initAnulacionFel(emisor.getNit(), cancelFactura);
-				RespuestaServicioFirma respuestaFirmaEmisor = procesoFirma(anulacionFel, certificador);
-				RespuestaServicioFel respuestaServicioFel = new RespuestaServicioFel();
+				RespuestaFirma respuestaFirmaEmisor = procesoFirma(anulacionFel, certificador);
+				RespuestaCertificacion respuestaServicioFel = new RespuestaCertificacion();
 
 				log.info("--> Resultado: " + respuestaFirmaEmisor.isResultado());
 				log.info("--> Descripcion: " + respuestaFirmaEmisor.getDescripcion());
@@ -338,10 +323,7 @@ public class FacturaServiceImpl implements IFacturaService {
 		} catch (DataAccessException e) {
 			log.error("Ha ocurrido un error a nivel de Base de datos: {}", e.getMessage());
 			throw new xyz.pangosoft.dtodo.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de Base de Datos", e.getCause());
-		} catch (NoSuchAlgorithmException | UnsupportedEncodingException | KeyManagementException e) {
-			log.error("Error relacionado con la firma del documento: {}", e.getMessage());
-			throw new SigningDocumentFelException("Error relacionado con la firma del documento", e);
-		}  catch (Exception e) {
+		} catch (Exception e) {
 			log.error("Ha ocurrido un error inesperado: {}", e.getMessage());
 			throw new RuntimeException("Ha ocurrido un error inesperado: " + e.getMessage(), e.getCause());
 		}
@@ -537,38 +519,10 @@ public class FacturaServiceImpl implements IFacturaService {
 	/**
 	 * Método encargado de llevar a cabo la formación del archivo XML que será enviado
 	 * al servicio FEL del certificador para su firma.
-	 * @param objetoFel Objeto de tipo DocumentoFel para la creación del XML
+	 * @param objetoFel Objeto de tipo DocumentoFel o AnulacionFel para la creación del XML
 	 * */
-	private RespuestaServicioFirma procesoFirma(Object objetoFel, Certificador certificador)
-            	throws InvocationTargetException, IllegalAccessException, NoSuchElementException, UnsupportedOperationException,
-						KeyManagementException, UnsupportedEncodingException, NoSuchAlgorithmException
-	{
-		log.info("********** Proceso de Firma por parte del certificador Iniciado ***********");
-		// Variable para capturar la respuesta recibida del proceso de formacion del XML.
-		Respuesta respuesta;
-
-		// Objeto para enviar los datos para generacion del XML
-		GenerarXml generar_xml = new GenerarXml();
-		respuesta = generar_xml.ToXml(objetoFel);
-
-		FirmaEmisor firmaEmisor = new FirmaEmisor();
-		RespuestaServicioFirma respuestaServicioFirma = new RespuestaServicioFirma();
-
-		if(respuesta.getResultado()) {
-				log.info("Generacion de archivo XML se llevo a cabo con éxito!");
-
-				log.info("--> FIRMA POR PARTE DEL EMISOR ");
-
-				log.info("--> Resultado: " + respuestaServicioFirma.isResultado());
-				log.info("--> Descripcion: " + respuestaServicioFirma.getDescripcion());
-
-				log.info("--> Enviando Documento al Servicio de Firma del Emisor...");
-
-				respuestaServicioFirma = firmaEmisor.Firmar(respuesta.getXml(), certificador.getPrefijo(), certificador.getTokenSigner());
-
-		}
-		log.info("********** Proceso de Firma por parte del certificador Finalizado ***********");
-		return respuestaServicioFirma;
+	private RespuestaFirma procesoFirma(Object objetoFel, Certificador certificador) {
+		return felService.firmarDocumento(objetoFel, certificador);
 	}
 
 	/**
@@ -576,32 +530,25 @@ public class FacturaServiceImpl implements IFacturaService {
 	 * del certificador.
 	 * @param certificador Objeto de tipo certificador que contiene los datos del mismo
 	 * @param factura Objeto de tipo Factura que contiene los datos para llevar a cabo la facturación
-	 * @param respuestaServicioFirma Objeto de tipo RespuestaServicioFirma que contiene los datos correspondientes a la firma del certificador
+	 * @param respuestaFirma Objeto que contiene los datos correspondientes a la firma del emisor
 	 * @param emisor Objeto de tipo Emisor que contiene los datos del emisor de la factura
-	 * @return RespuestaServicioFel
-	 * @throws NoSuchAlgorithmException
-	 * @throws KeyManagementException
+	 * @return RespuestaCertificacion
 	 * */
-	private RespuestaServicioFel enviarAlCertificador(Certificador certificador, Factura factura, RespuestaServicioFirma respuestaServicioFirma,
+	private RespuestaCertificacion enviarAlCertificador(Certificador certificador, Factura factura, RespuestaFirma respuestaFirma,
 													  Emisor emisor, String tipoTransaccion)
-			throws NoSuchAlgorithmException, KeyManagementException
 	{
 		log.info("--> Enviando Documento al Servicio FEL...");
-		ServicioFel servicioFel = new ServicioFel();
-		String correoCopia = "";
 		String identificador = "";
 
 		if(tipoTransaccion.equals("CERTIFICACION")) {
 			identificador = factura.getNoFactura().toString() + factura.getSerie() + factura.getUsuario().getUsuario();
-			correoCopia = certificador.getCorreoCopia();
 		}
 		else if(tipoTransaccion.equals("ANULACION")) {
 			identificador = "ANULACION_" + factura.getNoFactura();
-			correoCopia = "N/A";
 		}
 
-		RespuestaServicioFel respuestaServicioFel = servicioFel.Certificar(obtenerConexionServicioFel(certificador, factura, identificador), respuestaServicioFirma.getArchivo(),
-				emisor.getNit(), correoCopia, tipoTransaccion.toUpperCase());
+		RespuestaCertificacion respuestaServicioFel = felService.certificar(certificador, respuestaFirma.getArchivo(),
+				identificador, tipoTransaccion.toUpperCase());
 
 		if(respuestaServicioFel.getResultado()) {
 			log.info("--> Resultado: " + respuestaServicioFel.getResultado());
@@ -634,25 +581,9 @@ public class FacturaServiceImpl implements IFacturaService {
 	}
 
 	/**
-	 * */
-	private ConexionServicioFel obtenerConexionServicioFel(Certificador certificador, Factura factura, String identificador) {
-		log.info("--> ENVIO AL API DE INFILE");
-		ConexionServicioFel conexionServicioFel = new ConexionServicioFel();
-		conexionServicioFel.setUrl("");
-		conexionServicioFel.setMetodo("POST");
-		conexionServicioFel.setContent_type("application/json");
-		conexionServicioFel.setUsuario(certificador.getPrefijo());
-		conexionServicioFel.setLlave(certificador.getLlaveWs());
-
-		// DEBE VARIAR SIENDO IDENTIFICADOR UNICO
-		conexionServicioFel.setIdentificador(identificador);
-		return conexionServicioFel;
-	}
-
-	/**
 	 *
 	 * */
-	private Factura crearFactura(RespuestaServicioFel respuesta, Factura factura, Estado estado, double totalImpuestos, TipoFactura tipoFactura)
+	private Factura crearFactura(RespuestaCertificacion respuesta, Factura factura, Estado estado, double totalImpuestos, TipoFactura tipoFactura)
 		throws DataAccessException
 	{
 

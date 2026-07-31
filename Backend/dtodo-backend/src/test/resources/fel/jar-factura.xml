@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<dte:GTDocumento xmlns:dte="http://www.sat.gob.gt/dte/fel/0.2.0" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Version="0.1" xsi:schemaLocation="http://www.sat.gob.gt/dte/fel/0.2.0">
+  <dte:SAT ClaseDocumento="dte">
+    <dte:DTE ID="DatosCertificados">
+      <dte:DatosEmision ID="DatosEmision">
+        <dte:DatosGenerales CodigoMoneda="GTQ" FechaHoraEmision="2026-07-29T10:15:30-06:00" Tipo="FACT"/>
+        <dte:Emisor AfiliacionIVA="GEN" CodigoEstablecimiento="1" CorreoEmisor="detodo.jalapa@gmail.com" NITEmisor="12345678" NombreComercial="De Todo {{y}} Mas" NombreEmisor="COMERCIAL DE TODO">
+          <dte:DireccionEmisor>
+            <dte:Direccion>Barrio La Democracia {{y}} Avenida Chipilapa 1-23 Zona 1, Jalapa, Jalapa</dte:Direccion>
+            <dte:CodigoPostal>21001</dte:CodigoPostal>
+            <dte:Municipio>Jalapa</dte:Municipio>
+            <dte:Departamento>Jalapa</dte:Departamento>
+            <dte:Pais>GT</dte:Pais>
+          </dte:DireccionEmisor>
+        </dte:Emisor>
+        <dte:Receptor IDReceptor="CF" NombreReceptor="Consumidor Final">
+          <dte:DireccionReceptor>
+            <dte:Direccion>Ciudad</dte:Direccion>
+            <dte:CodigoPostal>01001</dte:CodigoPostal>
+            <dte:Municipio>.</dte:Municipio>
+            <dte:Departamento>.</dte:Departamento>
+            <dte:Pais>GT</dte:Pais>
+          </dte:DireccionReceptor>
+        </dte:Receptor>
+        <dte:Frases>
+          <dte:Frase CodigoEscenario="1" TipoFrase="1"/>
+        </dte:Frases>
+        <dte:Items>
+          <dte:Item BienOServicio="B" NumeroLinea="1">
+            <dte:Cantidad>2</dte:Cantidad>
+            <dte:UnidadMedida>UND</dte:UnidadMedida>
+            <dte:Descripcion>Aguarras {{y}} Solvente Mineral 1 Litro</dte:Descripcion>
+            <dte:PrecioUnitario>25.5</dte:PrecioUnitario>
+            <dte:Precio>51</dte:Precio>
+            <dte:Descuento>0</dte:Descuento>
+            <dte:Impuestos>
+              <dte:Impuesto>
+                <dte:NombreCorto>IVA</dte:NombreCorto>
+                <dte:CodigoUnidadGravable>1</dte:CodigoUnidadGravable>
+                <dte:MontoGravable>45.5357142857</dte:MontoGravable>
+                <dte:MontoImpuesto>5.4642857143</dte:MontoImpuesto>
+              </dte:Impuesto>
+            </dte:Impuestos>
+            <dte:Total>51</dte:Total>
+          </dte:Item>
+          <dte:Item BienOServicio="B" NumeroLinea="2">
+            <dte:Cantidad>1</dte:Cantidad>
+            <dte:UnidadMedida>UND</dte:UnidadMedida>
+            <dte:Descripcion>Clavo de 3 pulgadas</dte:Descripcion>
+            <dte:PrecioUnitario>10</dte:PrecioUnitario>
+            <dte:Precio>10</dte:Precio>
+            <dte:Descuento>0</dte:Descuento>
+            <dte:Impuestos>
+              <dte:Impuesto>
+                <dte:NombreCorto>IVA</dte:NombreCorto>
+                <dte:CodigoUnidadGravable>1</dte:CodigoUnidadGravable>
+                <dte:MontoGravable>8.9285714286</dte:MontoGravable>
+                <dte:MontoImpuesto>1.0714285714</dte:MontoImpuesto>
+              </dte:Impuesto>
+            </dte:Impuestos>
+            <dte:Total>10</dte:Total>
+          </dte:Item>
+        </dte:Items>
+        <dte:Totales>
+          <dte:TotalImpuestos>
+            <dte:TotalImpuesto NombreCorto="IVA" TotalMontoImpuesto="6.5357142857"/>
+          </dte:TotalImpuestos>
+          <dte:GranTotal>61</dte:GranTotal>
+        </dte:Totales>
+      </dte:DatosEmision>
+    </dte:DTE>
+    <dte:Adenda>
+      <cajero>Juan Perez</cajero>
+      <correlativo>123</correlativo>
+      <lote/>
+      <ordencompra/>
+    </dte:Adenda>
+  </dte:SAT>
+</dte:GTDocumento>
