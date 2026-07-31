@@ -123,23 +123,8 @@
 
         </dependency>
 
-        <!-- DEPENDENCIA PARA CONECTOR FEL -> INFILE, S.A.-->
-		<dependency>
-			<groupId>ConectorJava</groupId>
-			<artifactId>ConectorJava</artifactId>
-			<scope>system</scope>
-			<version>1.0</version>
-			<systemPath>${basedir}/src/main/resources/libs/ConectorJava.jar</systemPath>
-		</dependency>
-
-        <dependency>
-            <groupId>gson</groupId>
-            <artifactId>gson</artifactId>
-            <scope>system</scope>
-            <version>2.8.2</version>
-            <systemPath>${basedir}/src/main/resources/libs/gson-2.8.2.jar</systemPath>
-        </dependency>
-
+        <!-- itext lo usa JasperReports para exportar a PDF; sustituye a la
+             dependencia com.lowagie:itext excluida mas arriba -->
         <dependency>
             <groupId>itext</groupId>
             <artifactId>itext</artifactId>
