@@ -30,18 +30,14 @@ public class FelClientConfig {
     @Bean
     public RestTemplate felRestTemplate(RestTemplateBuilder builder) {
         return builder
-                .setConnectTimeout(CONNECT_TIMEOUT)
-                .setReadTimeout(READ_TIMEOUT)
+                .connectTimeout(CONNECT_TIMEOUT)
+                .readTimeout(READ_TIMEOUT)
                 .errorHandler(new ResponseErrorHandler() {
                     @Override
                     public boolean hasError(ClientHttpResponse response) throws IOException {
                         return false;
                     }
 
-                    @Override
-                    public void handleError(ClientHttpResponse response) throws IOException {
-                        // Nunca se invoca: hasError siempre devuelve false.
-                    }
                 })
                 .build();
     }

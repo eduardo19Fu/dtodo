@@ -1,13 +1,12 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="utf-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.4.3</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <version>3.5.16</version>
+        <relativePath />
+        <!-- lookup parent from repository -->
     </parent>
     <groupId>com.aglayatech</groupId>
     <artifactId>detodobackend</artifactId>
@@ -15,16 +14,19 @@
     <name>detodobackend</name>
     <description>Punto de venta e inventario para libreria DeTodo</description>
     <properties>
-        <java.version>1.8</java.version>
+        <java.version>17</java.version>
+        <maven.compiler.release>${java.version}</maven.compiler.release>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <jasperreports.version>6.21.5</jasperreports.version>
     </properties>
     <repositories>
         <repository>
             <id>jasper-3rd-party</id>
             <name>Jasper3rdParty</name>
-            <url>http://jaspersoft.jfrog.io/jaspersoft/third-party-ce-artifacts/</url>
+            <url>https://jaspersoft.jfrog.io/jaspersoft/third-party-ce-artifacts/</url>
         </repository>
     </repositories>
-
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -38,7 +40,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
@@ -46,94 +47,53 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
             <scope>runtime</scope>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-
         <!-- Dependicia para validaciones desde el backend -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
-
-        <!-- SPRING SECURITY JWT Y OAUTH2 -->
-
-        <!-- https://mvnrepository.com/artifact/org.springframework.security.oauth/spring-security-oauth2 -->
+        <!-- SPRING SECURITY JWT -->
         <dependency>
-            <groupId>org.springframework.security.oauth</groupId>
-            <artifactId>spring-security-oauth2</artifactId>
-            <version>2.3.4.RELEASE</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.springframework.security/spring-security-jwt -->
         <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-jwt</artifactId>
-            <version>1.0.9.RELEASE</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
         </dependency>
-
         <!-- LOMBOK -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.30</version>
             <scope>provided</scope>
         </dependency>
-
-
-
-        <!-- Solo para JDK 9+ -->
-        <!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
-        <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
-        </dependency>
-
         <!-- JASPER REPORTS DEPENDENCY -->
         <dependency>
             <groupId>net.sf.jasperreports</groupId>
             <artifactId>jasperreports</artifactId>
-            <version>6.12.2</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.lowagie</groupId>
-                    <artifactId>itext</artifactId>
-                </exclusion>
-            </exclusions>
+            <version>${jasperreports.version}</version>
         </dependency>
-
         <!-- SOAP WEB SERVICES DEPENDENCY -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web-services</artifactId>
         </dependency>
-
         <!-- JASPER REPORT FONTS -->
         <dependency>
             <groupId>net.sf.jasperreports</groupId>
             <artifactId>jasperreports-fonts</artifactId>
-            <version>6.16.0</version>
-
-        </dependency>
-
-        <!-- itext lo usa JasperReports para exportar a PDF; sustituye a la
-             dependencia com.lowagie:itext excluida mas arriba -->
-        <dependency>
-            <groupId>itext</groupId>
-            <artifactId>itext</artifactId>
-            <scope>system</scope>
-            <version>2.1.7.js6</version>
-            <systemPath>${basedir}/src/main/resources/libs/itext-2.1.7.js6.jar</systemPath>
+            <version>${jasperreports.version}</version>
         </dependency>
     </dependencies>
-
     <profiles>
         <profile>
             <id>dev</id>
@@ -144,7 +104,6 @@
                 <build.profile.id>dev</build.profile.id>
                 <profileActive>dev</profileActive>
             </properties>
-
             <build>
                 <resources>
                     <resource>
@@ -156,7 +115,6 @@
                         </excludes>
                     </resource>
                 </resources>
-
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
@@ -192,7 +150,6 @@
                 <build.profile.id>prod</build.profile.id>
                 <profileActive>prod</profileActive>
             </properties>
-
             <build>
                 <resources>
                     <resource>
@@ -204,7 +161,6 @@
                         </excludes>
                     </resource>
                 </resources>
-
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
@@ -240,7 +196,6 @@
                 <build.profile.id>test</build.profile.id>
                 <profileActive>test</profileActive>
             </properties>
-
             <build>
                 <resources>
                     <resource>
@@ -252,7 +207,6 @@
                         </excludes>
                     </resource>
                 </resources>
-
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
@@ -280,7 +234,6 @@
             </build>
         </profile>
     </profiles>
-
     <build>
         <plugins>
             <plugin>
@@ -288,18 +241,23 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <executable>true</executable>
-                    <includeSystemScope>true</includeSystemScope>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>8</source>
-                    <target>8</target>
+                    <release>${java.version}</release>
+                    <parameters>true</parameters>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
         </plugins>
     </build>
-
 </project>

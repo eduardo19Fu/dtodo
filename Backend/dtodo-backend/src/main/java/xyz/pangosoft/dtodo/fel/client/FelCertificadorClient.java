@@ -78,8 +78,8 @@ public class FelCertificadorClient {
         try {
             ResponseEntity<String> response = felRestTemplate.postForEntity(
                     url, new HttpEntity<>(request, headers), String.class);
-            log.info("Certificador INFILE ({}) respondió HTTP {}", tipoTransaccion, response.getStatusCodeValue());
-            return parsearRespuesta(response.getBody(), response.getStatusCodeValue());
+            log.info("Certificador INFILE ({}) respondió HTTP {}", tipoTransaccion, response.getStatusCode().value());
+            return parsearRespuesta(response.getBody(), response.getStatusCode().value());
         } catch (RestClientException e) {
             log.error("No se pudo invocar el servicio de {} de INFILE: {}", tipoTransaccion, e.getMessage(), e);
             return respuestaFallida("Error ajeno a INFILE al invocar el servicio. "

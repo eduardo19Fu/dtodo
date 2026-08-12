@@ -70,8 +70,8 @@ public class FelSignerClient {
         try {
             ResponseEntity<String> response = felRestTemplate.postForEntity(
                     properties.getFirmaUrl(), new HttpEntity<>(request, headers), String.class);
-            log.info("Servicio de firma INFILE respondió HTTP {}", response.getStatusCodeValue());
-            return parsearRespuesta(response.getBody(), response.getStatusCodeValue());
+            log.info("Servicio de firma INFILE respondió HTTP {}", response.getStatusCode().value());
+            return parsearRespuesta(response.getBody(), response.getStatusCode().value());
         } catch (RestClientException e) {
             log.error("No se pudo invocar el servicio de firma de INFILE: {}", e.getMessage(), e);
             return respuestaFallida("Error ajeno a INFILE al invocar el servicio de firma: " + e.getMessage());
