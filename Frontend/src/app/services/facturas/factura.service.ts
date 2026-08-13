@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
@@ -43,6 +43,44 @@ export class FacturaService {
         });
         return response;
       })
+    );
+  }
+
+  getFacturasDtoPaginadas(page: number, fechaIni: string, fechaFin: string, size: number = 5): Observable<any> {
+    const params = new HttpParams()
+      .set('fechaIni', fechaIni)
+      .set('fechaFin', fechaFin)
+      .set('size', size.toString());
+    return this.http.get<any>(`${this.url}/facturas-dto/page/${page}`, { params }).pipe(
+      catchError(e => throwError(e))
+    );
+  }
+
+  buscarFacturasDto(page: number, fechaIni: string, fechaFin: string,
+                    filtro: string, size: number = 5): Observable<any> {
+    const params = new HttpParams()
+      .set('fechaIni', fechaIni)
+      .set('fechaFin', fechaFin)
+      .set('filtro', filtro)
+      .set('size', size.toString());
+    return this.http.get<any>(`${this.url}/facturas-dto/search/${page}`, { params }).pipe(
+      catchError(e => throwError(e))
+    );
+  }
+
+  getUltimasFacturasDto(page: number, filtro: string = '', size: number = 5): Observable<any> {
+    const params = new HttpParams()
+      .set('filtro', filtro)
+      .set('size', size.toString());
+    return this.http.get<any>(`${this.url}/facturas-dto/ultimas/${page}`, { params }).pipe(
+      catchError(e => throwError(e))
+    );
+  }
+
+  getDetalleFacturaDto(idFactura: number, page: number, size: number = 5): Observable<any> {
+    const params = new HttpParams().set('size', size.toString());
+    return this.http.get<any>(`${this.url}/facturas-dto/${idFactura}/detalle/${page}`, { params }).pipe(
+      catchError(e => throwError(e))
     );
   }
 

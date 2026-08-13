@@ -41,3 +41,16 @@
 @-webkit-keyframes fadeIn {
     0% {opacity: 0} to {opacity: 1}
 }
+
+.page-size-select {
+    width: 70px;
+}
+
+.info-paginacion {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.pagination .page-link {
+    cursor: pointer;
+}

@@ -1,6 +1,8 @@
 package xyz.pangosoft.dtodo.service.impl;
 
 import xyz.pangosoft.dtodo.dto.ProformaDto;
+import xyz.pangosoft.dtodo.dto.ProformaListadoDto;
+import xyz.pangosoft.dtodo.dto.DetalleDocumentoDto;
 import xyz.pangosoft.dtodo.error.exceptions.DataAccessException;
 import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
 import xyz.pangosoft.dtodo.error.exceptions.NoContentException;
@@ -25,6 +27,8 @@ import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
@@ -43,6 +47,7 @@ import java.sql.SQLException;
 import java.text.ParseException;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -109,6 +114,96 @@ public class ProformaServiceImpl implements IProformaService {
             throw new RuntimeException("Ha ocurrido un error inesperado: ", e);
         } finally {
             log.debug("{} Exit", __method);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Page<ProformaListadoDto> findAllListadoDto(String fechaIni, String fechaFin, Pageable pageable) {
+        Date[] rango = parseDateRange(fechaIni, fechaFin);
+        try {
+            return proformaRepository.findAllListadoDto(rango[0], rango[1], pageable);
+        } catch (org.springframework.dao.DataAccessException e) {
+            log.error("Error al consultar el listado paginado de proformas: {}", e.getMessage());
+            throw new DataAccessException("Ha ocurrido un error al consultar las proformas", e);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Page<ProformaListadoDto> searchListadoDto(String fechaIni, String fechaFin, String filtro, Pageable pageable) {
+        Date[] rango = parseDateRange(fechaIni, fechaFin);
+        String filtroAdaptado = filtro == null ? "" : filtro.trim().replaceAll("\\s+", " ");
+        try {
+            return proformaRepository.searchListadoDto(rango[0], rango[1], filtroAdaptado, pageable);
+        } catch (org.springframework.dao.DataAccessException e) {
+            log.error("Error al filtrar el listado de proformas: {}", e.getMessage());
+            throw new DataAccessException("Ha ocurrido un error al filtrar las proformas", e);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Page<ProformaListadoDto> findUltimasListadoDto(String filtro, Pageable pageable) {
+        try {
+            List<ProformaListadoDto> proformas = proformaRepository.findUltimasListadoDto(PageRequest.of(0, 500));
+            String filtroNormalizado = filtro == null ? "" : filtro.trim().toLowerCase();
+            if (!filtroNormalizado.isEmpty()) {
+                proformas = proformas.stream()
+                        .filter(proforma -> coincideFiltro(proforma, filtroNormalizado))
+                        .collect(java.util.stream.Collectors.toList());
+            }
+            int inicio = Math.min((int) pageable.getOffset(), proformas.size());
+            int fin = Math.min(inicio + pageable.getPageSize(), proformas.size());
+            return new PageImpl<>(proformas.subList(inicio, fin), pageable, proformas.size());
+        } catch (org.springframework.dao.DataAccessException e) {
+            log.error("Error al consultar las últimas 500 proformas: {}", e.getMessage());
+            throw new DataAccessException("Ha ocurrido un error al consultar las últimas proformas", e);
+        }
+    }
+
+    private boolean coincideFiltro(ProformaListadoDto proforma, String filtro) {
+        return contiene(proforma.getCliente(), filtro)
+                || contiene(proforma.getNitCliente(), filtro)
+                || contiene(proforma.getVendedor(), filtro)
+                || contiene(proforma.getUsuario(), filtro)
+                || contiene(proforma.getNoProforma(), filtro);
+    }
+
+    private boolean contiene(Object valor, String filtro) {
+        return valor != null && valor.toString().toLowerCase().contains(filtro);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Page<DetalleDocumentoDto> findDetalleDto(Long idProforma, Pageable pageable) {
+        if (!proformaRepository.existsById(idProforma)) {
+            throw new NotFoundException("La proforma con ID " + idProforma + " no existe");
+        }
+        try {
+            return proformaRepository.findDetalleDto(idProforma, pageable);
+        } catch (org.springframework.dao.DataAccessException e) {
+            log.error("Error al consultar el detalle de la proforma {}: {}", idProforma, e.getMessage());
+            throw new DataAccessException("Ha ocurrido un error al consultar el detalle de la proforma", e);
+        }
+    }
+
+    private Date[] parseDateRange(String fechaIni, String fechaFin) {
+        if (fechaIni == null || fechaIni.trim().isEmpty() || fechaFin == null || fechaFin.trim().isEmpty()) {
+            throw new BadRequestException("Debe ingresar un rango de fechas válido", null);
+        }
+        try {
+            Date inicio = Utils.stringToDate(fechaIni);
+            Date fin = Utils.stringToDate(fechaFin);
+            if (fin.before(inicio)) {
+                throw new BadRequestException("La fecha final no puede ser anterior a la fecha inicial", null);
+            }
+            Calendar calendario = Calendar.getInstance();
+            calendario.setTime(fin);
+            calendario.add(Calendar.DAY_OF_MONTH, 1);
+            return new Date[] { inicio, calendario.getTime() };
+        } catch (ParseException e) {
+            throw new BadRequestException("El formato del rango de fechas no es válido", e);
         }
     }
 

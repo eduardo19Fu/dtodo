@@ -1,103 +1,156 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
-import { Proforma } from '../../models/proforma';
-import { ProformaDto } from '../../dtos/proformaDto';
-
+import { ProformaListadoDto } from '../../dtos/proformaListadoDto';
 import { ProformaService } from '../../services/proformas/proforma.service';
 import { AuthService } from '../../services/auth.service';
 import { DetailService } from '../../services/facturas/detail.service';
 
-import { JqueryConfigs } from '../../utils/jquery/jquery-utils';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-proformas',
   templateUrl: './proformas.component.html',
-  styles: [
-  ]
+  styleUrls: ['./proformas.component.css']
 })
-export class ProformasComponent implements OnInit {
+export class ProformasComponent implements OnInit, OnDestroy {
 
-  title: string;
-  fechaIni: Date;
-  fechaFin: Date;
+  title = 'Listado de Proformas';
+  fechaIni: string;
+  fechaFin: string;
+  proformaSeleccionada: ProformaListadoDto;
+  proformasDto: ProformaListadoDto[] = [];
 
-  proformaSeleccionada: ProformaDto;
+  paginaActual = 0;
+  totalPaginas = 0;
+  totalElementos = 0;
+  pageSize = 5;
+  pageSizeOptions: number[] = [5, 10, 15, 25, 50];
+  isFirst = true;
+  isLast = false;
+  filtro = '';
+  cargando = false;
+  busquedaRealizada = false;
+  mostrandoUltimas = true;
 
-  proformas: Proforma[] = [];
-  proformasDto: ProformaDto[] = [];
-  jQueryConfigs: JqueryConfigs;
+  private busquedaSubject = new Subject<string>();
+  private busquedaSubscription: Subscription;
 
   constructor(
     private proformaService: ProformaService,
     public auth: AuthService,
     public detailService: DetailService
-  ) {
-    this.title = 'Listado de Proformas';
-    this.jQueryConfigs = new JqueryConfigs();
-  }
+  ) {}
 
   ngOnInit(): void {
-  }
-
-  getProformasSp(): void {
-    this.proformaService.getProformasSP(this.fechaIni, this.fechaFin).subscribe(response => {
-      this.proformas = response;
-      this.jQueryConfigs.configDataTable('proformas');
-      this.jQueryConfigs = new JqueryConfigs();
-    }, error => {
-      Swal.fire('Error al Cargar Proformas', `${error.error.message}`, 'error');
+    this.busquedaRealizada = true;
+    this.cargarProformas(0);
+    this.busquedaSubscription = this.busquedaSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(filtro => {
+      this.filtro = filtro;
+      if (this.busquedaRealizada) {
+        this.cargarProformas(0);
+      }
     });
   }
 
-  getProformasDto(): void {
-    this.proformaService.getProformasDto(this.fechaIni, this.fechaFin).subscribe(response => {
-      this.proformasDto = response;
-      console.log(response);
-      this.jQueryConfigs.configDataTable('proformas');
-      this.jQueryConfigs = new JqueryConfigs();
-    }, error => {
-      Swal.fire('Error al Cargar Proformas', `${error.error.message}`, 'error');
-    });
+  ngOnDestroy(): void {
+    if (this.busquedaSubscription) {
+      this.busquedaSubscription.unsubscribe();
+    }
   }
 
-
-  reloadPage() {
-    location.reload();
+  buscarPorFechas(): void {
+    if (!this.fechaIni || !this.fechaFin) {
+      Swal.fire('Advertencia', 'Por favor ingrese un rango de fechas válido.', 'warning');
+      return;
+    }
+    if (this.fechaFin < this.fechaIni) {
+      Swal.fire('Advertencia', 'La fecha final no puede ser anterior a la fecha inicial.', 'warning');
+      return;
+    }
+    this.busquedaRealizada = true;
+    this.mostrandoUltimas = false;
+    this.cargarProformas(0);
   }
 
-  printProforma(proforma: Proforma): void {
+  onBuscar(valor: string): void {
+    this.busquedaSubject.next(valor);
+  }
+
+  cargarProformas(page: number): void {
+    this.cargando = true;
+    const request = this.mostrandoUltimas
+      ? this.proformaService.getUltimasProformasDto(page, this.filtro, this.pageSize)
+      : this.filtro.trim()
+        ? this.proformaService.buscarProformasDto(page, this.fechaIni, this.fechaFin, this.filtro, this.pageSize)
+        : this.proformaService.getProformasDtoPaginadas(page, this.fechaIni, this.fechaFin, this.pageSize);
+    request.subscribe(
+      response => {
+        this.proformasDto = response.content;
+        this.paginaActual = response.number;
+        this.totalPaginas = response.totalPages;
+        this.totalElementos = response.totalElements;
+        this.pageSize = response.size;
+        this.isFirst = response.first;
+        this.isLast = response.last;
+        this.cargando = false;
+      },
+      error => {
+        this.cargando = false;
+        Swal.fire('Error al cargar proformas',
+          error.error?.message || error.error?.mensaje || 'Ha ocurrido un error inesperado', 'error');
+      }
+    );
+  }
+
+  limpiar(): void {
+    this.fechaIni = null;
+    this.fechaFin = null;
+    this.filtro = '';
+    this.mostrandoUltimas = true;
+    this.busquedaRealizada = true;
+    this.cargarProformas(0);
+  }
+
+  printProforma(proforma: ProformaListadoDto): void {
     this.proformaService.getProformaPdf(proforma.idProforma).subscribe(response => {
       const url = window.URL.createObjectURL(response.data);
-      const a = document.createElement('a');
-      document.body.appendChild(a);
-      a.setAttribute('style', 'display: none');
-      a.setAttribute('target', 'blank');
-      a.href = url;
-      /*
-        opcion para pedir descarga de la respuesta obtenida
-        a.download = response.filename;
-      */
-      window.open(a.toString(), '_blank');
+      window.open(url, '_blank');
       window.URL.revokeObjectURL(url);
-      a.remove();
-    },
-      error => {
-        console.log(error);
-      });
+    }, error => Swal.fire('Error al generar proforma',
+      error.error?.message || 'Ha ocurrido un error inesperado', 'error'));
   }
 
-  cancel(): void {}
-
-  abrirDetalle(proforma: ProformaDto): void {
+  abrirDetalle(proforma: ProformaListadoDto): void {
     this.proformaSeleccionada = null;
     setTimeout(() => {
       this.proformaSeleccionada = proforma;
       this.detailService.abrirModal();
-    }, 10);
+    });
   }
 
   cerrarDetalle(): void {
     this.proformaSeleccionada = null;
+  }
+
+  irPrimeraPagina(): void { this.cargarProformas(0); }
+  irUltimaPagina(): void { this.cargarProformas(this.totalPaginas - 1); }
+  irPaginaAnterior(): void { if (!this.isFirst) { this.cargarProformas(this.paginaActual - 1); } }
+  irPaginaSiguiente(): void { if (!this.isLast) { this.cargarProformas(this.paginaActual + 1); } }
+  irAPagina(pagina: number): void { this.cargarProformas(pagina); }
+  cambiarPageSize(size: number): void { this.pageSize = size; this.cargarProformas(0); }
+
+  get paginasVisibles(): number[] {
+    const paginas: number[] = [];
+    const inicio = Math.max(0, Math.min(this.paginaActual - 2, this.totalPaginas - 5));
+    const fin = Math.min(this.totalPaginas - 1, inicio + 4);
+    for (let pagina = inicio; pagina <= fin; pagina++) {
+      paginas.push(pagina);
+    }
+    return paginas;
   }
 }
