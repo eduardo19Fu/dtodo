@@ -10,6 +10,7 @@ export class AuthService {
 
   private _usuario: Usuario;
   private _token: string;
+  private refreshTokenValue: string;
 
   url: string;
 
@@ -46,6 +47,16 @@ export class AuthService {
     return null;
   }
 
+  public get refreshToken(): string {
+    if (this.refreshTokenValue != null) {
+      return this.refreshTokenValue;
+    } else if (sessionStorage.getItem('refreshToken')) {
+      this.refreshTokenValue = sessionStorage.getItem('refreshToken');
+      return this.refreshTokenValue;
+    }
+    return null;
+  }
+
   login(usuario: Usuario): Observable<any> {
     const urlEndpoint = this.url + '/oauth/token';
     // const credenciales = btoa('angularapp' + ':' + '12345');
@@ -61,9 +72,35 @@ export class AuthService {
     return this.http.post<any>(urlEndpoint, params.toString(), { headers: httpHeaders });
   }
 
+  refreshAccessToken(): Observable<any> {
+    const urlEndpoint = this.url + '/oauth/token';
+    const credenciales = btoa('angularapp' + ':' + 'pangosoftpuntodeventastore2021');
+    const httpHeaders = new HttpHeaders({
+      'Content-Type': 'application/x-www-form-urlencoded',
+      Authorization: 'Basic ' + credenciales
+    });
+
+    const params = new URLSearchParams();
+    params.set('grant_type', 'refresh_token');
+    params.set('refresh_token', this.refreshToken);
+
+    return this.http.post<any>(urlEndpoint, params.toString(), { headers: httpHeaders });
+  }
+
+  guardarSesion(accessToken: string, refreshToken: string): void {
+    this.guardarToken(accessToken);
+    this.guardarRefreshToken(refreshToken);
+    this.guardarUsuario(accessToken);
+  }
+
   guardarToken(accessToken: string): void {
     this._token = accessToken;
     sessionStorage.setItem('token', this._token);
+  }
+
+  guardarRefreshToken(refreshToken: string): void {
+    this.refreshTokenValue = refreshToken;
+    sessionStorage.setItem('refreshToken', this.refreshTokenValue);
   }
 
   guardarUsuario(accessToken: string): void {
@@ -105,6 +142,7 @@ export class AuthService {
 
   logout(): void {
     this._token = null;
+    this.refreshTokenValue = null;
     this._usuario = null;
     sessionStorage.clear();
     sessionStorage.removeItem('token');

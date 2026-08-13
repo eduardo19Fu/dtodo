@@ -49,10 +49,7 @@ export class LoginComponent implements OnInit {
 
     this.authService.login(this.usuario).subscribe(
       response => {
-        const payload = JSON.parse(atob(response.access_token.split('.')[1]));
-
-        this.authService.guardarUsuario(response.access_token);
-        this.authService.guardarToken(response.access_token);
+        this.authService.guardarSesion(response.access_token, response.refresh_token);
 
         window.location.href = '/home';
       },
