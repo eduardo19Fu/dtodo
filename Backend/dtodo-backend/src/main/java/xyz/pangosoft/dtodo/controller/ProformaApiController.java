@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.Valid;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -69,7 +70,7 @@ public class ProformaApiController {
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @PostMapping(value = "/proformas")
-    public ResponseEntity<Proforma> create(@RequestBody Proforma proforma) {
+    public ResponseEntity<Proforma> create(@Valid @RequestBody Proforma proforma) {
         log.info("Registrando nueva proforma: {}", proforma.toString());
         Proforma newProforma = proformaService.save(proforma, null);
         return ResponseEntity.status(HttpStatus.CREATED).body(newProforma);
@@ -77,7 +78,7 @@ public class ProformaApiController {
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @PutMapping(value = "/proformas/{id}")
-    public ResponseEntity<Proforma> udpate(@RequestBody Proforma proforma, @PathVariable Long id) {
+    public ResponseEntity<Proforma> udpate(@Valid @RequestBody Proforma proforma, @PathVariable Long id) {
         log.info("Actualizando proforma: {}", proforma.toString());
         Proforma proformaUpdated = proformaService.save(proforma, id);
         return ResponseEntity.status(HttpStatus.CREATED).body(proformaUpdated);

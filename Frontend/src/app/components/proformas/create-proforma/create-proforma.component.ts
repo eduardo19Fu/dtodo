@@ -191,19 +191,22 @@ export class CreateProformaComponent implements OnInit {
     });
   }
 
-  actualizarCantidad(idProducto: number, event: any): void {
-    const cantidad = event.target.value as number;
+  actualizarCantidad(idProducto: number, cantidad: number): void {
+    const item = this.proforma.itemsProforma.find((detalle: DetalleProforma) =>
+      idProducto === detalle.producto.idProducto
+    );
 
-    this.proforma.itemsProforma = this.proforma.itemsProforma.map((item: DetalleProforma) => {
+    if (item) {
+      item.cantidad = cantidad;
+      item.subTotal = item.calcularImporte();
+      item.subTotalDescuento = item.calcularImporteDescuento();
+    }
+  }
 
-      if (idProducto === item.producto.idProducto) {
-        item.cantidad = cantidad;
-        item.subTotal = item.calcularImporte();
-        item.subTotalDescuento = item.calcularImporteDescuento();
-      }
-
-      return item;
-    });
+  cantidadesValidas(): boolean {
+    return this.proforma.itemsProforma.every((item: DetalleProforma) =>
+      Number.isInteger(Number(item.cantidad)) && Number(item.cantidad) > 0
+    );
   }
 
   actualizarCantidadDescuento(idProducto: number, event: any): void {
@@ -222,6 +225,11 @@ export class CreateProformaComponent implements OnInit {
   }
 
   createProforma(): void {
+    if (!this.cantidadesValidas()) {
+      swal.fire('Cantidad Inválida', 'Todos los productos deben tener una cantidad entera mayor a 0.', 'warning');
+      return;
+    }
+
     this.isSaving = true;
 
     if (this.isSaving) {
@@ -235,6 +243,7 @@ export class CreateProformaComponent implements OnInit {
           this.generarProformaPdf(response.idProforma);
         }
       }, error => {
+        this.isSaving = false;
         swal.fire(`Error: ${error.error.status}`, `${error.error.message}`, 'error');
       });
     }
@@ -309,6 +318,11 @@ export class CreateProformaComponent implements OnInit {
   }
 
   update(): void {
+    if (!this.cantidadesValidas()) {
+      swal.fire('Cantidad Inválida', 'Todos los productos deben tener una cantidad entera mayor a 0.', 'warning');
+      return;
+    }
+
     this.isSaving = true;
     if (this.isSaving) {
       this.proformaService.update(this.proforma).subscribe(response => {
@@ -316,6 +330,7 @@ export class CreateProformaComponent implements OnInit {
         this.router.navigate(['/proformas/index']);
         swal.fire(response.mensaje, `Proforma ${response.noProforma} ha sido actualizada`, 'info');
       }, error => {
+        this.isSaving = false;
         console.log(error);
         swal.fire('Error', `${error.error.message}`, 'error');
       });

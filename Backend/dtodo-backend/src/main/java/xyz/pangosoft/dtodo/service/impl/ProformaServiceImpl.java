@@ -2,10 +2,12 @@ package xyz.pangosoft.dtodo.service.impl;
 
 import xyz.pangosoft.dtodo.dto.ProformaDto;
 import xyz.pangosoft.dtodo.error.exceptions.DataAccessException;
+import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
 import xyz.pangosoft.dtodo.error.exceptions.NoContentException;
 import xyz.pangosoft.dtodo.error.exceptions.NotFoundException;
 import xyz.pangosoft.dtodo.error.exceptions.ReportGenerationException;
 import xyz.pangosoft.dtodo.model.Estado;
+import xyz.pangosoft.dtodo.model.DetalleProforma;
 import xyz.pangosoft.dtodo.model.Proforma;
 import xyz.pangosoft.dtodo.repository.IProformaRepository;
 import xyz.pangosoft.dtodo.service.IEstadoService;
@@ -152,6 +154,8 @@ public class ProformaServiceImpl implements IProformaService {
         Proforma proformaExist = null;
         String noProforma = "";
 
+        validarCantidades(proforma);
+
         try {
             if (idproforma != null) {
                 proformaExist = findProforma(idproforma);
@@ -188,6 +192,21 @@ public class ProformaServiceImpl implements IProformaService {
             throw new DataAccessException("Ha ocurrido un error a nivel de base de datos => " + e.getMessage(), e.getCause());
         } finally {
             log.debug("{} Exit", __method);
+        }
+    }
+
+    private void validarCantidades(Proforma proforma) {
+        if (proforma == null || proforma.getItemsProforma() == null) {
+            throw new BadRequestException("La proforma debe incluir el detalle de productos.", null);
+        }
+
+        for (DetalleProforma item : proforma.getItemsProforma()) {
+            if (item == null || item.getCantidad() == null) {
+                throw new BadRequestException("La cantidad de todos los productos es obligatoria.", null);
+            }
+            if (item.getCantidad() <= 0) {
+                throw new BadRequestException("La cantidad de todos los productos debe ser mayor a 0.", null);
+            }
         }
     }
 

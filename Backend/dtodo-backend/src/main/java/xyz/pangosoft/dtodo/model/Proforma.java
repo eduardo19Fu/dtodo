@@ -19,6 +19,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import jakarta.validation.Valid;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -64,6 +65,7 @@ public class Proforma implements Serializable {
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "id_proforma")
     @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
+    @Valid
     private List<DetalleProforma> itemsProforma;
 
     public Proforma() {

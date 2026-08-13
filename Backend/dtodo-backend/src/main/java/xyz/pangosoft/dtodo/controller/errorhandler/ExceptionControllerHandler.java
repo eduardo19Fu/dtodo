@@ -2,6 +2,7 @@ package xyz.pangosoft.dtodo.controller.errorhandler;
 
 import xyz.pangosoft.dtodo.error.ErrorDTO;
 import xyz.pangosoft.dtodo.error.exceptions.DataAccessException;
+import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
 import xyz.pangosoft.dtodo.error.exceptions.DuplicateCorrelativoException;
 import xyz.pangosoft.dtodo.error.exceptions.DuplicateNotaCreditoException;
 import xyz.pangosoft.dtodo.error.exceptions.InvalidPasswordException;
@@ -17,9 +18,12 @@ import xyz.pangosoft.dtodo.error.exceptions.SigningDocumentFelException;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
@@ -28,6 +32,24 @@ import java.time.Instant;
 @RestControllerAdvice
 @Slf4j
 public class ExceptionControllerHandler extends ResponseEntityExceptionHandler {
+
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException exception,
+            HttpHeaders headers,
+            HttpStatusCode status,
+            WebRequest request) {
+        String message = exception.getBindingResult().getFieldErrors().stream()
+                .findFirst()
+                .map(fieldError -> fieldError.getDefaultMessage())
+                .orElse("Los datos enviados no son válidos.");
+        ErrorDTO errorDTO = new ErrorDTO();
+        errorDTO.setMessage(message);
+        errorDTO.setCode(HttpStatus.BAD_REQUEST.value());
+        errorDTO.setStatus(HttpStatus.BAD_REQUEST);
+        errorDTO.setInstant(Instant.now());
+        return new ResponseEntity<>(errorDTO, HttpStatus.BAD_REQUEST);
+    }
 
     @ExceptionHandler(value = {NoContentException.class})
     public ResponseEntity<ErrorDTO> noContentExceptionHandler(RuntimeException exception) {
@@ -99,6 +121,18 @@ public class ExceptionControllerHandler extends ResponseEntityExceptionHandler {
         errorDTO.setStatus(HttpStatus.BAD_REQUEST);
         errorDTO.setInstant(Instant.now());
         return new ResponseEntity<ErrorDTO>(errorDTO, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = {BadRequestException.class})
+    public ResponseEntity<ErrorDTO> badRequestExceptionHandler(BadRequestException exception) {
+        log.warn("Petición rechazada por datos inválidos: {}", exception.getMessage());
+        ErrorDTO errorDTO = new ErrorDTO();
+        errorDTO.setMessage(exception.getMessage());
+        errorDTO.setCause(exception.getCause());
+        errorDTO.setCode(HttpStatus.BAD_REQUEST.value());
+        errorDTO.setStatus(HttpStatus.BAD_REQUEST);
+        errorDTO.setInstant(Instant.now());
+        return new ResponseEntity<>(errorDTO, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(value = ParseException.class)
