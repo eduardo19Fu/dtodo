@@ -1,0 +1,80 @@
+package xyz.pangosoft.dtodo.model;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.ToString;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import jakarta.validation.Valid;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+@Data
+@AllArgsConstructor
+@Builder(toBuilder = true)
+@ToString
+@Entity
+@Table(name = "proformas")
+public class Proforma implements Serializable {
+
+    private static final long serialVersionUID = -7336700857512359689L;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long idProforma;
+    private String noProforma;
+    private BigDecimal total;
+//    private LocalDateTime fechaEmision;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date fechaEmision;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_usuario")
+    @JsonIgnoreProperties({"password", "roles", "hibernateLazyInitializer", "handler" })
+    private Usuario usuario;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_estado")
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
+    private Estado estado;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_cliente")
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
+    private Cliente cliente;
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "id_proforma")
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
+    @Valid
+    private List<DetalleProforma> itemsProforma;
+
+    public Proforma() {
+        itemsProforma = new ArrayList<>();
+    }
+
+    @PrePersist
+    public void prepersist(){
+        //this.fechaEmision = LocalDateTime.now();
+        this.fechaEmision = new Date();
+    }
+}

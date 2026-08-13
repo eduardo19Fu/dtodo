@@ -1,0 +1,21 @@
+.info-paginacion {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.pagination .page-link {
+    cursor: pointer;
+}
+
+.pagination .page-item.disabled .page-link {
+    cursor: not-allowed;
+}
+
+.page-size-select {
+    width: 70px;
+    display: inline-block;
+}
+
+.table-top-border {
+    border-top: 2px solid #dee2e6;
+}

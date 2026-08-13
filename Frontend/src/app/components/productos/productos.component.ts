@@ -6,6 +6,7 @@ import { AuthService } from 'src/app/services/auth.service';
 import { ProductoService } from 'src/app/services/producto.service';
 import { ModalService } from 'src/app/services/productos/modal.service';
 import { JqueryConfigs } from '../../utils/jquery/jquery-utils';
+import { ProductoDto } from 'src/app/dtos/productoDto';
 
 @Component({
   selector: 'app-productos',
@@ -16,7 +17,8 @@ import { JqueryConfigs } from '../../utils/jquery/jquery-utils';
 export class ProductosComponent implements OnInit, AfterViewInit {
 
   title: string;
-  productos: Producto[];
+  // productos: Producto[];
+  productos: ProductoDto[];
 
   public productoSeleccionado: Producto;
 
@@ -34,7 +36,8 @@ export class ProductosComponent implements OnInit, AfterViewInit {
    }
 
   ngOnInit(): void {
-    this.getProductos();
+    //this.getProductos();
+    this.getProductosDto();
     this.modalService.notificarUpload.subscribe(producto => {
       this.productos = this.productos.map(productoOriginal => {
         if (producto.idProducto === productoOriginal.idProducto){
@@ -48,14 +51,24 @@ export class ProductosComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void{
   }
 
-  getProductos(): void{
-    this.productoService.getProductos().subscribe(
+  // getProductos(): void{
+  //   this.productoService.getProductos().subscribe(
+  //     productos => {
+  //       this.productos = productos;
+  //       this.jQueryConfigs.configDataTable('productos');
+  //       this.jQueryConfigs.configToolTip();
+  //     },
+  //     error => { }
+  //   );
+  // }
+
+  getProductosDto(): void {
+    this.productoService.getProductosDto().subscribe(
       productos => {
         this.productos = productos;
         this.jQueryConfigs.configDataTable('productos');
         this.jQueryConfigs.configToolTip();
-      },
-      error => { }
+      }
     );
   }
 

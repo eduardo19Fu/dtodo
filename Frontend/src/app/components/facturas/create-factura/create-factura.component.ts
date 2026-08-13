@@ -1,26 +1,26 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
-import { UsuarioAuxiliar } from 'src/app/models/auxiliar/usuario-auxiliar';
-import { Cliente } from 'src/app/models/cliente';
-import { Correlativo } from 'src/app/models/correlativo';
-import { DetalleFactura } from 'src/app/models/detalle-factura';
-import { Factura } from 'src/app/models/factura';
-import { Producto } from 'src/app/models/producto';
+import { UsuarioAuxiliar } from '../../../models/auxiliar/usuario-auxiliar';
+import { Cliente } from '../../../models/cliente';
+import { Correlativo } from '../../../models/correlativo';
+import { DetalleFactura } from '../../../models/detalle-factura';
+import { Factura } from '../../../models/factura';
+import { Producto } from '../../../models/producto';
 
-import { AuthService } from 'src/app/services/auth.service';
-import { ClienteService } from 'src/app/services/cliente.service';
-import { CorrelativoService } from 'src/app/services/correlativos/correlativo.service';
-import { ClienteCreateService } from 'src/app/services/facturas/cliente-create.service';
-import { FacturaService } from 'src/app/services/facturas/factura.service';
-import { ProductoService } from 'src/app/services/producto.service';
-import { UsuarioService } from 'src/app/services/usuarios/usuario.service';
-
-import swal from 'sweetalert2';
+import { AuthService } from '../../../services/auth.service';
+import { ClienteService } from '../../../services/cliente.service';
+import { CorrelativoService } from '../../../services/correlativos/correlativo.service';
+import { ClienteCreateService } from '../../../services/facturas/cliente-create.service';
+import { FacturaService } from '../../../services/facturas/factura.service';
+import { ProductoService } from '../../../services/producto.service';
+import { UsuarioService } from '../../../services/usuarios/usuario.service';
 import { ModalCambioService } from '../../../services/facturas/modal-cambio.service';
 import { ProformaService } from '../../../services/proformas/proforma.service';
 import { Proforma } from '../../../models/proforma';
 import { DetalleProforma } from '../../../models/detalle-proforma';
-import { ActivatedRoute } from '@angular/router';
+
+import swal from 'sweetalert2';
 
 @Component({
   selector: 'app-create-factura',
@@ -114,7 +114,7 @@ export class CreateFacturaComponent implements OnInit {
           }
         },
         error => {
-          swal.fire('Error al cargar correlativo', error.error.mensaje, 'error');
+          swal.fire('Error al cargar correlativo', error.error.message, 'error');
         }
       );
     }
@@ -131,14 +131,13 @@ export class CreateFacturaComponent implements OnInit {
         },
         error => {
           if (error.status === 400) {
-            swal.fire(`Error: ${error.status}`, 'Petición no se puede llevar a cabo.', 'error');
+            swal.fire(`Error: ${error.error.status}`, 'Petición no se puede llevar a cabo.', 'error');
           }
 
           if (error.status === 404) {
-            swal.fire(`Error: ${error.status}`, error.error.mensaje, 'error');
+            swal.fire(`Error: ${error.error.status}`, error.error.message, 'error');
           }
-        }
-      );
+        })
     } else {
       swal.fire('Código Inválido', 'Ingrese un código de producto válido para realizar la búsqueda.', 'warning');
     }
@@ -261,40 +260,60 @@ export class CreateFacturaComponent implements OnInit {
     this.factura.usuario = this.usuario;
     this.factura.total = this.factura.calcularTotal();
 
-    this.facturaService.create(this.factura).subscribe(
+    // this.facturaService.create(this.factura).subscribe(
+    //   response => {
+    //     this.cliente = new Cliente();
+    //     this.factura = new Factura();
+    //     this.cargarCorrelativo();
+    //     (document.getElementById('buscar') as HTMLInputElement).value = '';
+    //     swal.fire('Venta Realizada', `Factura No. ${response.factura.noFactura} creada con éxito!`, 'success');
+    //     (document.getElementById('buscar') as HTMLInputElement).focus();
+    //     this.cambio = 0;
+    //     (document.getElementById('efectivo') as HTMLInputElement).value = '';
+
+    //     const url = 'https://report.feel.com.gt/ingfacereport/ingfacereport_documento?uuid=' + response.factura.certificacionSat;
+
+    //     const a = document.createElement('a');
+    //     window.open(url, '_blank').focus();
+
+    //     // this.facturaService.getBillPDF(response.factura.idFactura).subscribe(res => {
+    //     //   const url = window.URL.createObjectURL(res.data);
+    //     //   const a = document.createElement('a');
+    //     //   document.body.appendChild(a);
+    //     //   a.setAttribute('style', 'display: none');
+    //     //   a.setAttribute('target', 'blank');
+    //     //   a.href = url;
+    //     //   /*
+    //     //     opcion para pedir descarga de la respuesta obtenida
+    //     //     a.download = response.filename;
+    //     //   */
+    //     //   window.open(a.toString(), '_blank');
+    //     //   window.URL.revokeObjectURL(url);
+    //     //   a.remove();
+    //     // },
+    //     //   error => {
+    //     //     console.log(error);
+    //     //   });
+    //   }
+    // );
+
+    this.facturaService.createV2(this.factura).subscribe(
       response => {
         this.cliente = new Cliente();
         this.factura = new Factura();
         this.cargarCorrelativo();
         (document.getElementById('buscar') as HTMLInputElement).value = '';
-        swal.fire('Venta Realizada', `Factura No. ${response.factura.noFactura} creada con éxito!`, 'success');
+        swal.fire('Venta Realizada', `Factura No. ${response.noFactura} creada con éxito!`, 'success');
         (document.getElementById('buscar') as HTMLInputElement).focus();
         this.cambio = 0;
         (document.getElementById('efectivo') as HTMLInputElement).value = '';
 
-        const url = 'https://report.feel.com.gt/ingfacereport/ingfacereport_documento?uuid=' + response.factura.certificacionSat;
+        const url = 'https://report.feel.com.gt/ingfacereport/ingfacereport_documento?uuid=' + response.certificacionSat;
 
         const a = document.createElement('a');
         window.open(url, '_blank').focus();
-
-        // this.facturaService.getBillPDF(response.factura.idFactura).subscribe(res => {
-        //   const url = window.URL.createObjectURL(res.data);
-        //   const a = document.createElement('a');
-        //   document.body.appendChild(a);
-        //   a.setAttribute('style', 'display: none');
-        //   a.setAttribute('target', 'blank');
-        //   a.href = url;
-        //   /*
-        //     opcion para pedir descarga de la respuesta obtenida
-        //     a.download = response.filename;
-        //   */
-        //   window.open(a.toString(), '_blank');
-        //   window.URL.revokeObjectURL(url);
-        //   a.remove();
-        // },
-        //   error => {
-        //     console.log(error);
-        //   });
+      }, error => {
+        swal.fire(`Error: ${error.error.status} al Crear Factura`, `${error.error.message}`, 'error');
       }
     );
   }
@@ -306,7 +325,9 @@ export class CreateFacturaComponent implements OnInit {
       if (id) {
         this.buscarProformaPorId(id);
       }
-    })
+    }, error => {
+      swal.fire(`Error al cargar proforma`, `${error.error.message}`, 'error');
+    });
   }
 
   buscarProformaPorId(id: number): void {
@@ -328,6 +349,8 @@ export class CreateFacturaComponent implements OnInit {
           
           this.factura.itemsFactura.push(item);
         });
+      }, error => {
+        swal.fire(`Ha ocurrido un error: ${error.error.status}`, `${error.error.message}`, 'error');
       }
     );
   }

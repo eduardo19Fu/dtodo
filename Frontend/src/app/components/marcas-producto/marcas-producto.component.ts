@@ -4,8 +4,8 @@ import { MarcaProducto } from 'src/app/models/marca-producto';
 import { AuthService } from 'src/app/services/auth.service';
 import { MarcaProductoService } from 'src/app/services/marca-producto.service';
 
-import swal from 'sweetalert2';
 import { JqueryConfigs } from '../../utils/jquery/jquery-utils';
+import swal from 'sweetalert2';
 
 @Component({
   selector: 'app-marcas-producto',
@@ -63,7 +63,6 @@ export class MarcasProductoComponent implements OnInit {
     }).then((result) => {
       if (result.isConfirmed) {
 
-        // tslint:disable-next-line: deprecation
         this.marcaService.delete(marcaProducto.idMarcaProducto).subscribe(
           response => {
             this.marcas = this.marcas.filter(cli => cli !== marcaProducto);
@@ -72,6 +71,8 @@ export class MarcasProductoComponent implements OnInit {
               'El registro ha sido eliminado con éxito!',
               'success'
             );
+          }, error => {
+            console.log('Ha ocurrido un error inesperado');
           }
         );
       } else if (

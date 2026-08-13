@@ -39,11 +39,11 @@
                             </div>
                         </div>
 
-                        <div class="col">
+                        <div *ngIf="proforma.noProforma" class="col">
                             <div class="form-group">
                                 <label for="correlativo">No. de Proforma</label>
-                                <input type="text" class="form-control" name="correlativo" 
-                                    value="{{proforma ? proforma.noProforma : proforma.generarNoProforma()}}" disabled>
+                                <input type="text" class="form-control" name="correlativo" id="correlativo"
+                                    value="{{proforma.noProforma}}" disabled> 
                             </div>
                         </div>
 
@@ -118,7 +118,7 @@
                             <div class="form-group">
                                 <label for="cantidad" style="display: block;">Cantidad</label>
                                 <input type="number" name="cantidad" id="cantidad" class="form-control"
-                                    style="width: 65%; display: inline; margin-right: 10px;" value="0"
+                                    style="width: 65%; display: inline; margin-right: 10px;" value="0" min="1" step="1"
                                     (keyup.enter)="agregarLinea()" autofocus>
 
                                 <button type="button" class="btn bg-gradient-cyan" (click)="agregarLinea()">
@@ -148,10 +148,14 @@
                                 <td>{{item.producto.nombre}}</td>
                                 <td>{{item.producto.precioVenta | currency: "Q" : "symbol"}}</td>
                                 <td>
-                                    <input type="number" id="cant" value="{{item.cantidad}}"
-                                        class="form-control col-sm-6"
-                                        (change)="actualizarCantidad(item.producto.idProducto, $event)"
-                                        (keyup)="actualizarCantidad(item.producto.idProducto, $event)">
+                                    <input type="number" id="cant{{i}}" name="cant{{i}}" min="1" step="1" required
+                                        class="form-control col-sm-6" [(ngModel)]="item.cantidad"
+                                        #cantidadItem="ngModel"
+                                        [class.is-invalid]="cantidadItem.invalid"
+                                        (ngModelChange)="actualizarCantidad(item.producto.idProducto, $event)">
+                                    <small *ngIf="cantidadItem.invalid" class="text-danger">
+                                        Ingrese una cantidad entera mayor a 0.
+                                    </small>
                                 </td>
                                 <td>
                                     <input type="number" id="descuento" name="descuento" value="{{item.descuento}}"
@@ -203,11 +207,12 @@
             <div class="card-footer">
                 <input *ngIf="!proforma.idProforma; else elseBlock" type="submit" 
                     role="button" class="btn btn-danger margin" value="Guardar"
-                    [disabled]="!cliente.idCliente || (proforma.itemsProforma.length <= 0)" (click)="createProforma()">
+                    [disabled]="!cliente.idCliente || (proforma.itemsProforma.length <= 0) || !cantidadesValidas() || isSaving"
+                    (click)="createProforma()">
 
                     <ng-template #elseBlock>
                         <input type="submit" role="button" class="btn btn-warning margin" value="Actualizar" 
-                            (click)="update()">
+                            [disabled]="!cantidadesValidas() || isSaving" (click)="update()">
                     </ng-template>
             </div>
         </div>

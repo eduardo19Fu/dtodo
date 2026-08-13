@@ -16,9 +16,6 @@
 </section>
 
 <div class="card">
-    <div class="card-header">
-        Listado de Tipos de Identificación
-    </div>
     <div class="card-body table-responsive">
 
         <div *ngIf="productos?.length == 0" class="alert alert-info alert-dismissible">
@@ -38,6 +35,7 @@
                     <th>Codigo</th>
                     <th>Nombre</th>
                     <th>Precio</th>
+                    <th *ngIf="auth.hasRole('ROLE_ADMIN')">Precio Costo</th>
                     <th>Stock</th>
                     <th>Tipo</th>
                     <th>Marca</th>
@@ -76,13 +74,14 @@
                     <td>{{producto.codProducto}}</td>
                     <td>{{producto.nombre}}</td>
                     <td>{{producto.precioVenta}}</td>
+                    <td *ngIf="auth.hasRole('ROLE_ADMIN')">{{producto.precioCompra}}</td>
                     <td>{{producto.stock}}</td>
-                    <td>{{producto.tipoProducto.tipoProducto}}</td>
-                    <td>{{producto.marcaProducto.marca}}</td>
+                    <td>{{producto.tipoProducto}}</td>
+                    <td>{{producto.marcaProducto}}</td>
                     <td>
                         <span class="badge"
-                            [ngClass]="{'badge-primary': producto.estado.estado === 'ACTIVO', 'badge-danger': producto.estado.estado === 'INACTIVO'}">
-                            {{producto.estado.estado}}
+                            [ngClass]="{'badge-primary': producto.estado === 'ACTIVO', 'badge-danger': producto.estado === 'INACTIVO'}">
+                            {{producto.estado}}
                         </span>
                     </td>
                     <td class="center-options">
@@ -92,7 +91,7 @@
 
                         <button class="btn bg-gradient-info margin"
                             [routerLink]="['/productos/create', producto.idProducto]"
-                            *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_INVENTARIO')">
+                            *ngIf="auth.hasRole('ROLE_ADMIN')">
                             <i class="fas fa-edit"></i>
                         </button>
 
@@ -110,6 +109,7 @@
                     <th>Codigo</th>
                     <th>Nombre</th>
                     <th>Precio</th>
+                    <th *ngIf="auth.hasRole('ROLE_ADMIN')">Precio Costo</th>
                     <th>Stock</th>
                     <th>Tipo</th>
                     <th>Marca</th>

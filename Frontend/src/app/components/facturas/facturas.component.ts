@@ -1,12 +1,12 @@
 import { Component, OnInit, EventEmitter, AfterViewInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
-import { AuthService } from 'src/app/services/auth.service';
-import { DetailService } from 'src/app/services/facturas/detail.service';
-import { FacturaService } from 'src/app/services/facturas/factura.service';
+import { AuthService } from '../../services/auth.service';
+import { DetailService } from '../../services/facturas/detail.service';
+import { FacturaService } from '../../services/facturas/factura.service';
 
-import { Factura } from 'src/app/models/factura';
-import { Usuario } from 'src/app/models/usuario';
+import { Factura } from '../../models/factura';
+import { Usuario } from '../../models/usuario';
 
 import { JqueryConfigs } from '../../utils/jquery/jquery-utils';
 import swal from 'sweetalert2';
@@ -49,20 +49,10 @@ export class FacturasComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
-    // this.getFacturas();
   }
 
   ngAfterViewInit(): void {
   }
-
-  // getFacturas(): void {
-  //   this.facturaService.getFacturas().subscribe(
-  //     facturas => {
-  //       this.facturas = facturas;
-  //       this.jQueryConfigs.configDataTable('facturas');
-  //     }
-  //   );
-  // }
 
   getFacturasSP(): void {
     this.facturas = [];
@@ -75,6 +65,8 @@ export class FacturasComponent implements OnInit, AfterViewInit {
             this.facturas = facturas;
             this.jQueryConfigs.configDataTable('facturas');
             this.jQueryConfigs = new JqueryConfigs();
+          }, error => {
+            swal.fire(`Ha ocurrido un error: ${error.error.status}`, `${error.error.message}`, 'error')
           }
         );
       }
@@ -103,14 +95,16 @@ export class FacturasComponent implements OnInit, AfterViewInit {
       if (result.isConfirmed) {
 
         // aqui va el codigo de confirmación para anular factura
-        this.facturaService.cancel(factura.idFactura, this.usuario.idUsuario).subscribe(
+        this.facturaService.cancelV2(this.usuario.idUsuario, factura).subscribe(
           response => {
-            factura.estado = response.factura.estado;
+            factura.estado = response.estado;
             this.swalWithBootstrapButtons.fire(
-              `${response.mensaje}`,
+              `¡Factura Anulada!`,
               `La factura No. ${factura.noFactura} ha sido anulada con éxito`,
               'success'
             );
+          }, error => {
+            swal.fire(`Ha ocurrido un error: ${error.error.status}`, `${error.error.message}`,'error');
           }
         );
 
@@ -134,25 +128,5 @@ export class FacturasComponent implements OnInit, AfterViewInit {
     const url = 'https://report.feel.com.gt/ingfacereport/ingfacereport_documento?uuid=' + factura.certificacionSat;
     window.open(url, '_blank').focus();
 
-    /************* FACTURA PDF ***************/
-
-    // this.facturaService.getBillPDF(id).subscribe(res => {
-    //   const url = window.URL.createObjectURL(res.data);
-    //   const a = document.createElement('a');
-    //   document.body.appendChild(a);
-    //   a.setAttribute('style', 'display: none');
-    //   a.setAttribute('target', 'blank');
-    //   a.href = url;
-    //   /*
-    //     opcion para pedir descarga de la respuesta obtenida
-    //     a.download = response.filename;
-    //   */
-    //   window.open(a.toString(), '_blank');
-    //   window.URL.revokeObjectURL(url);
-    //   a.remove();
-    // },
-    //   error => {
-    //     console.log(error);
-    //   });
   }
 }

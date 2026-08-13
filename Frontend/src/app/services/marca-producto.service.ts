@@ -60,7 +60,7 @@ export class MarcaProductoService {
   getMarca(id: number): Observable<MarcaProducto> {
     return this.http.get<MarcaProducto>(`${this.url}/marcas/${id}`).pipe(
       catchError(e => {
-        swal.fire('Error al consultar la marca', e.error.mensaje, 'error');
+        swal.fire('Error al consultar la marca', e.error.message, 'error');
         return throwError(e);
       })
     );
@@ -69,7 +69,7 @@ export class MarcaProductoService {
   create(marcaProducto: MarcaProducto): Observable<any> {
     return this.http.post<any>(`${this.url}/marcas`, marcaProducto).pipe(
       catchError(e => {
-        swal.fire(e.error.mensaje, e.error.error, 'error');
+        swal.fire(e.error.status, e.error.message, 'error');
         return throwError(e);
       })
     );
@@ -78,7 +78,7 @@ export class MarcaProductoService {
   update(marcaProducto: MarcaProducto): Observable<any> {
     return this.http.put<any>(`${this.url}/marcas`, marcaProducto).pipe(
       catchError(e => {
-        swal.fire(e.error.mensaje, e.error.error, 'error');
+        swal.fire(e.error.status, e.error.message, 'error');
         return throwError(e);
       })
     );
@@ -87,7 +87,7 @@ export class MarcaProductoService {
   delete(id: number): Observable<MarcaProducto> {
     return this.http.delete<MarcaProducto>(`${this.url}/marcas/${id}`).pipe(
       catchError(e => {
-        swal.fire(e.error.mensaje, e.error.error, 'error');
+        swal.fire(e.error.status, e.error.message, 'error');
         return throwError(e);
       })
     );

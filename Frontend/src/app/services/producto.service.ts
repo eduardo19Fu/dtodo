@@ -8,6 +8,7 @@ import { MovimientoProducto } from '../models/movimiento-producto';
 
 import { global } from './global';
 import swal from 'sweetalert2';
+import { ProductoDto } from '../dtos/productoDto';
 
 
 @Injectable({
@@ -27,8 +28,30 @@ export class ProductoService {
     return this.http.get<Producto[]>(this.url + '/productos');
   }
 
-  getProductosActivos(): Observable<Producto[]> {
-    return this.http.get<Producto[]>(`${this.url}/productos-activos`);
+  getProductosDto(): Observable<ProductoDto[]> {
+    return this.http.get<ProductoDto[]>(this.url + '/productos/dto');
+  }
+
+  getProductosActivos(): Observable<ProductoDto[]> {
+    return this.http.get<ProductoDto[]>(`${this.url}/productos-activos`);
+  }
+
+  getProductosDtoPaginados(page: number, size: number = 5): Observable<any> {
+    return this.http.get<any>(`${this.url}/productos-dto/page/${page}?size=${size}`).pipe(
+      catchError(e => {
+        console.error(e);
+        return throwError(e);
+      })
+    );
+  }
+
+  buscarProductosDto(page: number, filtro: string, size: number = 5): Observable<any> {
+    return this.http.get<any>(`${this.url}/productos-dto/search/${page}?filtro=${filtro}&size=${size}`).pipe(
+      catchError(e => {
+        console.error(e);
+        return throwError(e);
+      })
+    );
   }
 
   getProductosPaginados(page: number): Observable<any> {

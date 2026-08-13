@@ -1,5 +1,5 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { NotaCredito } from '../../../models/nota-credito';
+import { NotaCreditoListDto } from '../../../dtos/nota-credito-list-dto';
 import { NotasCreditoService } from '../../../services/notas-credito.service';
 import { JqueryConfigs } from '../../../utils/jquery/jquery-utils';
 
@@ -10,10 +10,10 @@ import { JqueryConfigs } from '../../../utils/jquery/jquery-utils';
 })
 export class ModalNotasCreditoComponent implements OnInit {
 
-  @Output() notaCredito = new EventEmitter<NotaCredito>();
+  @Output() notaCredito = new EventEmitter<NotaCreditoListDto>();
 
   title: string;
-  notasCredito: NotaCredito[];
+  notasCredito: NotaCreditoListDto[];
 
   jQueryConfigs: JqueryConfigs = new JqueryConfigs();
 
@@ -36,7 +36,7 @@ export class ModalNotasCreditoComponent implements OnInit {
     );
   }
 
-  chooseNotaCredito(notaCredito: NotaCredito): void {
+  chooseNotaCredito(notaCredito: NotaCreditoListDto): void {
     this.notaCredito.emit(notaCredito);
     console.log(notaCredito);
   }

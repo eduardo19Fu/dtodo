@@ -6,8 +6,8 @@ import { TipoProductoService } from 'src/app/services/tipo-producto.service';
 
 import { TipoProducto } from 'src/app/models/tipo-producto';
 
-import swal from 'sweetalert2';
 import { JqueryConfigs } from '../../utils/jquery/jquery-utils';
+import swal from 'sweetalert2';
 
 @Component({
   selector: 'app-tipos-producto',
@@ -44,7 +44,6 @@ export class TiposProductoComponent implements OnInit {
 
   // listado de tipos normal
   getTipos(): void {
-    // tslint:disable-next-line: deprecation
     this.tipoService.getTiposProducto().subscribe(
       tiposProducto => {
         this.tipos = tiposProducto;
@@ -66,7 +65,6 @@ export class TiposProductoComponent implements OnInit {
     }).then((result) => {
       if (result.isConfirmed) {
 
-        // tslint:disable-next-line: deprecation
         this.tipoService.delete(tipoProducto.idTipoProducto).subscribe(
           response => {
             this.tipos = this.tipos.filter(cli => cli !== tipoProducto);
@@ -75,6 +73,8 @@ export class TiposProductoComponent implements OnInit {
               'El registro ha sido eliminado con éxito!',
               'success'
             );
+          }, error => {
+            console.log('Ha ocurrido un error inesperado');
           }
         );
       } else if (

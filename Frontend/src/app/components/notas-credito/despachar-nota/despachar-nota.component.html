@@ -1,0 +1,141 @@
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark">{{title}}</h1>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row" *ngIf="notaCredito?.idNotaCredito">
+    <div class="col-md-9">
+        <div class="card card-orange">
+            <div class="card-header">
+                <h3 class="card-title">Nota de Cr&eacute;dito No. {{notaCredito.idNotaCredito}}</h3>
+            </div>
+
+            <div class="card-body">
+                <!-- DATOS GENERALES DE LA NOTA -->
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Cliente:</label>
+                            <input type="text" class="form-control" value="{{notaCredito.cliente?.nombre}}" disabled>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Correlativo SAT:</label>
+                            <input type="text" class="form-control" value="{{notaCredito.correlativoFacturaSat}}" disabled>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Fecha Estimada de Entrega:</label>
+                            <input type="text" class="form-control" value="{{notaCredito.fechaEntregaEstimada | date: 'dd/MM/yyyy'}}" disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row" *ngIf="notaCredito.observaciones">
+                    <div class="col">
+                        <div class="form-group">
+                            <label>Observaciones:</label>
+                            <textarea class="form-control" rows="2" disabled>{{notaCredito.observaciones}}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+                <h5>Seleccione los productos a despachar</h5>
+                <p class="text-muted">Marque los productos que desea despachar e ingrese la cantidad correspondiente.</p>
+            </div>
+
+            <!-- LISTADO DE PRODUCTOS DE LA NOTA -->
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover table-sm">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th style="width: 50px;">
+                                <i class="fas fa-check-square"></i>
+                            </th>
+                            <th>C&oacute;digo</th>
+                            <th>Producto</th>
+                            <th>Cantidad en Nota</th>
+                            <th>Precio Unitario</th>
+                            <th>SubTotal</th>
+                            <th style="width: 180px;">Cantidad a Despachar</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr *ngFor="let registro of itemsADespachar; let i = index"
+                            [ngClass]="{'table-success': registro.seleccionado}">
+                            <td>
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input"
+                                        [checked]="registro.seleccionado"
+                                        (change)="toggleSeleccion(i)">
+                                </div>
+                            </td>
+                            <td>{{registro.item.producto.codProducto}}</td>
+                            <td>{{registro.item.producto.nombre}}</td>
+                            <td>
+                                <span class="badge badge-primary">{{registro.item.cantidad}}</span>
+                            </td>
+                            <td>{{registro.item.producto.precioVenta | currency: "Q" : "symbol"}}</td>
+                            <td>{{registro.item.subTotalDescuento | currency: "Q" : "symbol"}}</td>
+                            <td>
+                                <input type="number" class="form-control form-control-sm"
+                                    [disabled]="!registro.seleccionado"
+                                    [value]="registro.cantidadDespachar"
+                                    [max]="registro.item.cantidad"
+                                    min="0"
+                                    (change)="actualizarCantidadDespacho(i, $event)"
+                                    placeholder="0">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANEL LATERAL DE RESUMEN -->
+    <div class="col-md-3">
+        <div class="card card-fuchsia">
+            <div class="card-header">
+                <h3 class="card-title">Resumen de Despacho</h3>
+            </div>
+            <div class="card-body">
+                <h5>
+                    Total Nota: <strong>{{notaCredito.total | currency: "Q": "symbol"}}</strong>
+                </h5>
+                <hr>
+                <p><strong>Productos seleccionados:</strong></p>
+                <ul class="list-unstyled" *ngFor="let registro of itemsADespachar">
+                    <li *ngIf="registro.seleccionado && registro.cantidadDespachar > 0">
+                        <i class="fas fa-check text-success"></i>
+                        {{registro.item.producto.nombre}}: <strong>{{registro.cantidadDespachar}}</strong> / {{registro.item.cantidad}}
+                    </li>
+                </ul>
+                <div *ngIf="!hayItemsSeleccionados()" class="text-muted">
+                    <small>No hay productos seleccionados para despacho.</small>
+                </div>
+            </div>
+
+            <div class="card-footer">
+                <button type="button" class="btn btn-primary btn-block mb-2"
+                    [disabled]="!hayItemsSeleccionados()"
+                    (click)="despachar()">
+                    <i class="fas fa-truck"></i> Despachar
+                </button>
+                <button type="button" class="btn btn-secondary btn-block"
+                    (click)="cancelar()">
+                    <i class="fas fa-arrow-left"></i> Regresar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

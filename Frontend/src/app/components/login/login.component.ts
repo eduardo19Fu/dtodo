@@ -16,17 +16,28 @@ export class LoginComponent implements OnInit {
 
   title: string;
   usuario: Usuario;
+  usuarioTitle: string;
+  passwordTitle: string;
+  headerTitle: string;
+  passwordVisible: boolean = false;
 
   constructor(
     private router: Router,
     private authService: AuthService
   ) {
     this.title = 'Iniciar Sesión';
+    this.headerTitle = 'Sistema de Gestión de Inventario y Ventas'
+    this.usuarioTitle = 'Usuario';
+    this.passwordTitle = 'Password';
     this.usuario = new Usuario();
   }
 
   ngOnInit(): void {
     this.authService.logout();
+  }
+
+  togglePasswordVisible(): void {
+    this.passwordVisible = !this.passwordVisible;
   }
 
   login(): void {
@@ -38,10 +49,7 @@ export class LoginComponent implements OnInit {
 
     this.authService.login(this.usuario).subscribe(
       response => {
-        const payload = JSON.parse(atob(response.access_token.split('.')[1]));
-
-        this.authService.guardarUsuario(response.access_token);
-        this.authService.guardarToken(response.access_token);
+        this.authService.guardarSesion(response.access_token, response.refresh_token);
 
         window.location.href = '/home';
       },

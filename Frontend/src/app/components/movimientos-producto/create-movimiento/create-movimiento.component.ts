@@ -34,6 +34,7 @@ export class CreateMovimientoComponent implements OnInit, AfterViewInit {
   producto: Producto;
   productos: Producto[];
   modalForm: FormGroup;
+  movimientos: string[] = ['ENTRADA','SALIDA'];
 
   constructor(
     private movimientoProductoService: MovimientosProductoService,
@@ -76,14 +77,10 @@ export class CreateMovimientoComponent implements OnInit, AfterViewInit {
         this.movimientoProductoService.create(this.movimientoProducto).subscribe(
           response => {
             this.router.navigate(['/productos/inventario/index']);
-            Swal.fire('Movimiento creado con éxito', `El movimiento ${response.movimientoProducto.idMovimiento} ha sido creada con éxito!`, 'success');
-            // (document.getElementById('cerrar-modal')).click();
-            // this.producto = new Producto();
-            // this.movimientoProducto = new MovimientoProducto();
+            Swal.fire('Movimiento creado con éxito', `El movimiento ${response.idMovimiento} ha sido creada con éxito!`, 'success');
           },
           error => {
-            // (document.getElementById('cerrar-modal')).click();
-            Swal.fire('Error', error.error, 'error');
+            Swal.fire('Error', error.error.message, 'error');
           }
         );
 

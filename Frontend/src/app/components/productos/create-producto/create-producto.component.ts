@@ -83,17 +83,17 @@ export class CreateProductoComponent implements OnInit {
     this.producto.precioVenta = Number.parseFloat((document.getElementById('precio-venta') as HTMLInputElement).value);
     if (this.producto.codProducto) {
       this.serviceProducto.create(this.producto).subscribe(
-        response => {
+        producto => {
           this.router.navigate(['/productos/index']);
-          swal.fire('Producto Guardado', `${response.mensaje}: ${response.producto.nombre}`, 'success');
+          swal.fire('Producto Guardado', `El producto ${producto.nombre} ha sido registrado con éxito`, 'success');
         }
       );
     } else {
       this.producto.codProducto = this.producto.generarCodigo();
       this.serviceProducto.create(this.producto).subscribe(
-        response => {
+        producto => {
           this.router.navigate(['/productos/index']);
-          swal.fire('Producto Guardado', `${response.mensaje}: ${response.producto.nombre}`, 'success');
+          swal.fire('Producto Guardado', `El producto ${producto.nombre} ha sido registrado con éxito`, 'success');
         }
       );
     }
@@ -103,9 +103,9 @@ export class CreateProductoComponent implements OnInit {
     // this.producto.porcentajeGanancia = Number.parseFloat((document.getElementById('porcentaje-ganancia') as HTMLInputElement).value);
     this.producto.precioVenta = Number.parseFloat((document.getElementById('precio-venta') as HTMLInputElement).value);
     this.serviceProducto.update(this.producto).subscribe(
-      response => {
+      producto => {
         this.router.navigate(['/productos/index']);
-        swal.fire('Producto Actualizado', `${response.mensaje}: ${response.producto.nombre}`, 'success');
+        swal.fire('Producto Actualizado', `El producto ${producto.nombre} ha sido actualizado con éxito`, 'success');
       }
     );
   }

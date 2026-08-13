@@ -24,11 +24,11 @@
                                         {{producto.nombre}}</li>
                                     <li class="list-group-item">
                                         <strong>Categoría:</strong>
-                                        {{producto.tipoProducto.tipoProducto}}</li>
+                                        {{producto.tipoProducto}}</li>
                                     <li class="list-group-item">
                                         <strong>Marca:</strong>
-                                        {{producto.marcaProducto.marca}}</li>
-                                    <li *ngIf="!auth.hasRole('ROLE_COBRADOR')" class="list-group-item">
+                                        {{producto.marcaProducto}}</li>
+                                    <li *ngIf="auth.hasRole('ROLE_ADMIN')" class="list-group-item">
                                         <strong>Precio Costo:</strong>
                                         {{producto.precioCompra | currency: "Q" : "symbol"}}
                                     </li>
@@ -69,7 +69,7 @@
 
                                 <div *ngIf="progreso > 0" class="progress" style="height: 40px;">
                                     <div class="progress-bar progress-bar-striped" role="progressbar"
-                                        [ngStyle]="{'width': progreso+ '%'}" attr.aria-valuenow="{{progreso}"
+                                        [ngStyle]="{'width': progreso+ '%'}" attr.aria-valuenow="{{progreso}}"
                                         aria-valuemin="0" aria-valuemax="100">
                                         {{progreso}}%
                                     </div>

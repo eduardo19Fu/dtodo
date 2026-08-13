@@ -54,7 +54,7 @@ export class CreateTipoComponent implements OnInit {
         this.tipoService.create(this.tipoProducto).subscribe(
           response => {
             this.router.navigate(['/productos/categorias/index']);
-            swal.fire('Tipo Creado', `${response.mensaje}: ${response.tipoProducto.tipoProducto}`, 'success');
+            swal.fire('¡Categoría Creada!', `Categoría de Producto creada: ${response.tipoProducto}`, 'success');
           }
         );
       }
@@ -66,7 +66,7 @@ export class CreateTipoComponent implements OnInit {
     this.tipoService.update(this.tipoProducto).subscribe(
       response => {
         this.router.navigate(['/productos/categorias/index']);
-        swal.fire('Tipo Actualizado', `${response.mensaje}: ${response.tipoProducto.tipoProducto}`, 'success');
+        swal.fire('¡Categoría Actualizado!', `Categoría de Producto Actualizada: ${response.tipoProducto}`, 'success');
       }
     );
   }

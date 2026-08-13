@@ -1,12 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 
 import { Proforma } from '../../models/proforma';
-import { ProformaService } from '../../services/proformas/proforma.service';
+import { ProformaDto } from '../../dtos/proformaDto';
 
-import { JqueryConfigs } from 'src/app/utils/jquery/jquery-utils';
+import { ProformaService } from '../../services/proformas/proforma.service';
+import { AuthService } from '../../services/auth.service';
+import { DetailService } from '../../services/facturas/detail.service';
+
+import { JqueryConfigs } from '../../utils/jquery/jquery-utils';
 import Swal from 'sweetalert2';
-import { AuthService } from 'src/app/services/auth.service';
-import { DetailService } from 'src/app/services/facturas/detail.service';
 
 @Component({
   selector: 'app-proformas',
@@ -20,9 +22,10 @@ export class ProformasComponent implements OnInit {
   fechaIni: Date;
   fechaFin: Date;
 
-  proformaSeleccionada: Proforma;
+  proformaSeleccionada: ProformaDto;
 
   proformas: Proforma[] = [];
+  proformasDto: ProformaDto[] = [];
   jQueryConfigs: JqueryConfigs;
 
   constructor(
@@ -37,24 +40,25 @@ export class ProformasComponent implements OnInit {
   ngOnInit(): void {
   }
 
-  loadProformasSp(): void {
-    this.proformaService.getProformasSP(this.fechaIni, this.fechaFin).subscribe(response => {
-      if (this.fechaIni === undefined || this.fechaFin === undefined) {
-        Swal.fire('Advertencia', 'Porfavor ingrese un rango de fechas valido.', 'warning');
-      } else {
-        if (this.jQueryConfigs) {
-          this.getProformasSp();
-        }
-      }
-    });
-  }
-
   getProformasSp(): void {
     this.proformaService.getProformasSP(this.fechaIni, this.fechaFin).subscribe(response => {
       this.proformas = response;
       this.jQueryConfigs.configDataTable('proformas');
       this.jQueryConfigs = new JqueryConfigs();
-    })
+    }, error => {
+      Swal.fire('Error al Cargar Proformas', `${error.error.message}`, 'error');
+    });
+  }
+
+  getProformasDto(): void {
+    this.proformaService.getProformasDto(this.fechaIni, this.fechaFin).subscribe(response => {
+      this.proformasDto = response;
+      console.log(response);
+      this.jQueryConfigs.configDataTable('proformas');
+      this.jQueryConfigs = new JqueryConfigs();
+    }, error => {
+      Swal.fire('Error al Cargar Proformas', `${error.error.message}`, 'error');
+    });
   }
 
 
@@ -85,8 +89,15 @@ export class ProformasComponent implements OnInit {
 
   cancel(): void {}
 
-  abrirDetalle(proforma: Proforma): void {
-    this.proformaSeleccionada = proforma;
-    this.detailService.abrirModal();
+  abrirDetalle(proforma: ProformaDto): void {
+    this.proformaSeleccionada = null;
+    setTimeout(() => {
+      this.proformaSeleccionada = proforma;
+      this.detailService.abrirModal();
+    }, 10);
+  }
+
+  cerrarDetalle(): void {
+    this.proformaSeleccionada = null;
   }
 }

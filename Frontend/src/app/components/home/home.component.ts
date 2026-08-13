@@ -45,8 +45,14 @@ export class HomeComponent implements OnInit {
   ngOnInit(): void {
     this.getProductos();
     this.getClientes();
-    this.getUsuarios();
-    this.getFacturas();
+
+    if (this.auth.hasRole('ROLE_ADMIN')) {
+      this.getUsuarios();
+    }
+
+    if (this.auth.hasRole('ROLE_ADMIN') || this.auth.hasRole('ROLE_COBRADOR')) {
+      this.getFacturas();
+    }
   }
 
   getProductos(): void {
