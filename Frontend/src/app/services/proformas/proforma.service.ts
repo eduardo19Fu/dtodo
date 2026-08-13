@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 
 import { global } from '../global';
 import Swal from 'sweetalert2';
@@ -70,6 +70,44 @@ export class ProformaService {
         Swal.fire(e.error.mensaje, e.error.error, 'error');
         return throwError(e);
       })
+    );
+  }
+
+  getProformasDtoPaginadas(page: number, fechaIni: string, fechaFin: string, size: number = 5): Observable<any> {
+    const params = new HttpParams()
+      .set('fechaIni', fechaIni)
+      .set('fechaFin', fechaFin)
+      .set('size', size.toString());
+    return this.httpClient.get<any>(`${this.url}/proformas-dto/page/${page}`, { params }).pipe(
+      catchError(e => throwError(e))
+    );
+  }
+
+  buscarProformasDto(page: number, fechaIni: string, fechaFin: string,
+                     filtro: string, size: number = 5): Observable<any> {
+    const params = new HttpParams()
+      .set('fechaIni', fechaIni)
+      .set('fechaFin', fechaFin)
+      .set('filtro', filtro)
+      .set('size', size.toString());
+    return this.httpClient.get<any>(`${this.url}/proformas-dto/search/${page}`, { params }).pipe(
+      catchError(e => throwError(e))
+    );
+  }
+
+  getUltimasProformasDto(page: number, filtro: string = '', size: number = 5): Observable<any> {
+    const params = new HttpParams()
+      .set('filtro', filtro)
+      .set('size', size.toString());
+    return this.httpClient.get<any>(`${this.url}/proformas-dto/ultimas/${page}`, { params }).pipe(
+      catchError(e => throwError(e))
+    );
+  }
+
+  getDetalleProformaDto(idProforma: number, page: number, size: number = 5): Observable<any> {
+    const params = new HttpParams().set('size', size.toString());
+    return this.httpClient.get<any>(`${this.url}/proformas-dto/${idProforma}/detalle/${page}`, { params }).pipe(
+      catchError(e => throwError(e))
     );
   }
 

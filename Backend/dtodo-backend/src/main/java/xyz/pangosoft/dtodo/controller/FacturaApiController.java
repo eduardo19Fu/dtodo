@@ -3,6 +3,8 @@ package xyz.pangosoft.dtodo.controller;
 import java.util.List;
 
 import xyz.pangosoft.dtodo.model.Factura;
+import xyz.pangosoft.dtodo.dto.FacturaListadoDto;
+import xyz.pangosoft.dtodo.dto.DetalleDocumentoDto;
 import xyz.pangosoft.dtodo.service.IFacturaService;
 
 import lombok.RequiredArgsConstructor;
@@ -42,6 +44,47 @@ public class FacturaApiController {
     public ResponseEntity<Page<Factura>> index(@PathVariable("page") Integer page) {
         log.info("********** Buscando listado de facturas de pagina {} **********", page);
         return ResponseEntity.ok(serviceFactura.findAll(PageRequest.of(page, 5)));
+    }
+
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
+    @GetMapping(value = "/facturas-dto/page/{page}")
+    public ResponseEntity<Page<FacturaListadoDto>> getListadoDto(
+            @PathVariable("page") Integer page,
+            @RequestParam("fechaIni") String fechaIni,
+            @RequestParam("fechaFin") String fechaFin,
+            @RequestParam(value = "size", defaultValue = "5") Integer size) {
+        return ResponseEntity.ok(serviceFactura.findAllListadoDto(
+                fechaIni, fechaFin, PageRequest.of(page, size)));
+    }
+
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
+    @GetMapping(value = "/facturas-dto/search/{page}")
+    public ResponseEntity<Page<FacturaListadoDto>> searchListadoDto(
+            @PathVariable("page") Integer page,
+            @RequestParam("fechaIni") String fechaIni,
+            @RequestParam("fechaFin") String fechaFin,
+            @RequestParam(value = "filtro", defaultValue = "") String filtro,
+            @RequestParam(value = "size", defaultValue = "5") Integer size) {
+        return ResponseEntity.ok(serviceFactura.searchListadoDto(
+                fechaIni, fechaFin, filtro, PageRequest.of(page, size)));
+    }
+
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
+    @GetMapping(value = "/facturas-dto/ultimas/{page}")
+    public ResponseEntity<Page<FacturaListadoDto>> getUltimasListadoDto(
+            @PathVariable("page") Integer page,
+            @RequestParam(value = "filtro", defaultValue = "") String filtro,
+            @RequestParam(value = "size", defaultValue = "5") Integer size) {
+        return ResponseEntity.ok(serviceFactura.findUltimasListadoDto(filtro, PageRequest.of(page, size)));
+    }
+
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
+    @GetMapping(value = "/facturas-dto/{idFactura}/detalle/{page}")
+    public ResponseEntity<Page<DetalleDocumentoDto>> getDetalleDto(
+            @PathVariable("idFactura") Long idFactura,
+            @PathVariable("page") Integer page,
+            @RequestParam(value = "size", defaultValue = "5") Integer size) {
+        return ResponseEntity.ok(serviceFactura.findDetalleDto(idFactura, PageRequest.of(page, size)));
     }
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})

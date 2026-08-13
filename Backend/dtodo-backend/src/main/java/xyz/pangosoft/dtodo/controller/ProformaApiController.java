@@ -1,6 +1,8 @@
 package xyz.pangosoft.dtodo.controller;
 
 import xyz.pangosoft.dtodo.dto.ProformaDto;
+import xyz.pangosoft.dtodo.dto.ProformaListadoDto;
+import xyz.pangosoft.dtodo.dto.DetalleDocumentoDto;
 import xyz.pangosoft.dtodo.model.Proforma;
 import xyz.pangosoft.dtodo.service.IEstadoService;
 import xyz.pangosoft.dtodo.service.IProformaService;
@@ -9,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
@@ -45,6 +49,47 @@ public class ProformaApiController {
     public ResponseEntity<List<Proforma>> index(){
         log.info("Retornando listado de Proformas registradas");
         return ResponseEntity.ok(proformaService.findAll());
+    }
+
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
+    @GetMapping("/proformas-dto/page/{page}")
+    public ResponseEntity<Page<ProformaListadoDto>> getListadoDto(
+            @PathVariable("page") Integer page,
+            @RequestParam("fechaIni") String fechaIni,
+            @RequestParam("fechaFin") String fechaFin,
+            @RequestParam(value = "size", defaultValue = "5") Integer size) {
+        return ResponseEntity.ok(proformaService.findAllListadoDto(
+                fechaIni, fechaFin, PageRequest.of(page, size)));
+    }
+
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
+    @GetMapping("/proformas-dto/search/{page}")
+    public ResponseEntity<Page<ProformaListadoDto>> searchListadoDto(
+            @PathVariable("page") Integer page,
+            @RequestParam("fechaIni") String fechaIni,
+            @RequestParam("fechaFin") String fechaFin,
+            @RequestParam(value = "filtro", defaultValue = "") String filtro,
+            @RequestParam(value = "size", defaultValue = "5") Integer size) {
+        return ResponseEntity.ok(proformaService.searchListadoDto(
+                fechaIni, fechaFin, filtro, PageRequest.of(page, size)));
+    }
+
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
+    @GetMapping("/proformas-dto/ultimas/{page}")
+    public ResponseEntity<Page<ProformaListadoDto>> getUltimasListadoDto(
+            @PathVariable("page") Integer page,
+            @RequestParam(value = "filtro", defaultValue = "") String filtro,
+            @RequestParam(value = "size", defaultValue = "5") Integer size) {
+        return ResponseEntity.ok(proformaService.findUltimasListadoDto(filtro, PageRequest.of(page, size)));
+    }
+
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
+    @GetMapping("/proformas-dto/{idProforma}/detalle/{page}")
+    public ResponseEntity<Page<DetalleDocumentoDto>> getDetalleDto(
+            @PathVariable("idProforma") Long idProforma,
+            @PathVariable("page") Integer page,
+            @RequestParam(value = "size", defaultValue = "5") Integer size) {
+        return ResponseEntity.ok(proformaService.findDetalleDto(idProforma, PageRequest.of(page, size)));
     }
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})

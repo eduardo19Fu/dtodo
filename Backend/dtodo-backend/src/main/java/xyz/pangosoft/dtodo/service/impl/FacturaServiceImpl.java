@@ -12,6 +12,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +22,9 @@ import java.util.Optional;
 import javax.sql.DataSource;
 
 import xyz.pangosoft.dtodo.error.exceptions.NoContentException;
+import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
+import xyz.pangosoft.dtodo.dto.FacturaListadoDto;
+import xyz.pangosoft.dtodo.dto.DetalleDocumentoDto;
 import xyz.pangosoft.dtodo.error.exceptions.NotFoundException;
 import xyz.pangosoft.dtodo.error.exceptions.ReportGenerationException;
 import xyz.pangosoft.dtodo.model.Certificador;
@@ -64,6 +68,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
@@ -126,6 +132,101 @@ public class FacturaServiceImpl implements IFacturaService {
 	@Override
 	public Page<Factura> findAll(Pageable pageable) {
 		return repoFactura.findAll(pageable);
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public Page<FacturaListadoDto> findAllListadoDto(String fechaIni, String fechaFin, Pageable pageable) {
+		Date[] rango = parseDateRange(fechaIni, fechaFin);
+		try {
+			return repoFactura.findAllListadoDto(rango[0], rango[1], pageable);
+		} catch (DataAccessException e) {
+			log.error("Error al consultar el listado paginado de facturas: {}", e.getMessage());
+			throw new xyz.pangosoft.dtodo.error.exceptions.DataAccessException(
+					"Ha ocurrido un error al consultar las facturas", e);
+		}
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public Page<FacturaListadoDto> searchListadoDto(String fechaIni, String fechaFin, String filtro, Pageable pageable) {
+		Date[] rango = parseDateRange(fechaIni, fechaFin);
+		String filtroAdaptado = filtro == null ? "" : filtro.trim().replaceAll("\\s+", " ");
+		try {
+			return repoFactura.searchListadoDto(rango[0], rango[1], filtroAdaptado, pageable);
+		} catch (DataAccessException e) {
+			log.error("Error al filtrar el listado de facturas: {}", e.getMessage());
+			throw new xyz.pangosoft.dtodo.error.exceptions.DataAccessException(
+					"Ha ocurrido un error al filtrar las facturas", e);
+		}
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public Page<FacturaListadoDto> findUltimasListadoDto(String filtro, Pageable pageable) {
+		try {
+			List<FacturaListadoDto> facturas = repoFactura.findUltimasListadoDto(PageRequest.of(0, 500));
+			String filtroNormalizado = filtro == null ? "" : filtro.trim().toLowerCase();
+			if (!filtroNormalizado.isEmpty()) {
+				facturas = facturas.stream()
+						.filter(factura -> coincideFiltro(factura, filtroNormalizado))
+						.collect(java.util.stream.Collectors.toList());
+			}
+			int inicio = Math.min((int) pageable.getOffset(), facturas.size());
+			int fin = Math.min(inicio + pageable.getPageSize(), facturas.size());
+			return new PageImpl<>(facturas.subList(inicio, fin), pageable, facturas.size());
+		} catch (DataAccessException e) {
+			log.error("Error al consultar las últimas 500 facturas: {}", e.getMessage());
+			throw new xyz.pangosoft.dtodo.error.exceptions.DataAccessException(
+					"Ha ocurrido un error al consultar las últimas facturas", e);
+		}
+	}
+
+	private boolean coincideFiltro(FacturaListadoDto factura, String filtro) {
+		return contiene(factura.getCliente(), filtro)
+				|| contiene(factura.getNitCliente(), filtro)
+				|| contiene(factura.getVendedor(), filtro)
+				|| contiene(factura.getUsuario(), filtro)
+				|| contiene(factura.getSerie(), filtro)
+				|| contiene(factura.getNoFactura(), filtro);
+	}
+
+	private boolean contiene(Object valor, String filtro) {
+		return valor != null && valor.toString().toLowerCase().contains(filtro);
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public Page<DetalleDocumentoDto> findDetalleDto(Long idFactura, Pageable pageable) {
+		if (!repoFactura.existsById(idFactura)) {
+			throw new NotFoundException("La factura con ID " + idFactura + " no existe");
+		}
+		try {
+			return repoFactura.findDetalleDto(idFactura, pageable);
+		} catch (DataAccessException e) {
+			log.error("Error al consultar el detalle de la factura {}: {}", idFactura, e.getMessage());
+			throw new xyz.pangosoft.dtodo.error.exceptions.DataAccessException(
+					"Ha ocurrido un error al consultar el detalle de la factura", e);
+		}
+	}
+
+	private Date[] parseDateRange(String fechaIni, String fechaFin) {
+		if (fechaIni == null || fechaIni.trim().isEmpty() || fechaFin == null || fechaFin.trim().isEmpty()) {
+			throw new BadRequestException("Debe ingresar un rango de fechas válido", null);
+		}
+		try {
+			Date inicio = Utils.stringToDate(fechaIni);
+			Date fin = Utils.stringToDate(fechaFin);
+			if (fin.before(inicio)) {
+				throw new BadRequestException("La fecha final no puede ser anterior a la fecha inicial", null);
+			}
+			Calendar calendario = Calendar.getInstance();
+			calendario.setTime(fin);
+			calendario.add(Calendar.DAY_OF_MONTH, 1);
+			return new Date[] { inicio, calendario.getTime() };
+		} catch (ParseException e) {
+			throw new BadRequestException("El formato del rango de fechas no es válido", e);
+		}
 	}
 
 	@Override

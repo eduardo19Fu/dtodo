@@ -1,34 +1,45 @@
-import { Component, OnInit, EventEmitter, AfterViewInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 import { AuthService } from '../../services/auth.service';
 import { DetailService } from '../../services/facturas/detail.service';
 import { FacturaService } from '../../services/facturas/factura.service';
-
-import { Factura } from '../../models/factura';
 import { Usuario } from '../../models/usuario';
+import { FacturaListadoDto } from '../../dtos/facturaListadoDto';
 
-import { JqueryConfigs } from '../../utils/jquery/jquery-utils';
-import swal from 'sweetalert2';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-facturas',
   templateUrl: './facturas.component.html',
   styleUrls: ['./facturas.component.css']
 })
-export class FacturasComponent implements OnInit, AfterViewInit {
+export class FacturasComponent implements OnInit, OnDestroy {
 
-  title: string;
-  fechaIni: Date;
-  fechaFin: Date;
-
-  facturas: Factura[];
-
+  title = 'Facturas';
+  fechaIni: string;
+  fechaFin: string;
+  facturasDto: FacturaListadoDto[] = [];
+  facturaSeleccionada: FacturaListadoDto;
   usuario: Usuario;
-  facturaSeleccionada: Factura;
-  jQueryConfigs: JqueryConfigs;
 
-  swalWithBootstrapButtons = swal.mixin({
+  paginaActual = 0;
+  totalPaginas = 0;
+  totalElementos = 0;
+  pageSize = 5;
+  pageSizeOptions: number[] = [5, 10, 15, 25, 50];
+  isFirst = true;
+  isLast = false;
+  filtro = '';
+  cargando = false;
+  busquedaRealizada = false;
+  mostrandoUltimas = true;
+
+  private busquedaSubject = new Subject<string>();
+  private busquedaSubscription: Subscription;
+
+  swalWithBootstrapButtons = Swal.mixin({
     customClass: {
       confirmButton: 'btn btn-success',
       cancelButton: 'btn btn-danger'
@@ -39,94 +50,137 @@ export class FacturasComponent implements OnInit, AfterViewInit {
   constructor(
     private detailService: DetailService,
     private facturaService: FacturaService,
-    private activatedRoute: ActivatedRoute,
     public auth: AuthService
   ) {
-    this.title = 'Facturas';
-    this.jQueryConfigs = new JqueryConfigs();
     this.usuario = auth.usuario;
-    this.facturas = [];
   }
 
   ngOnInit(): void {
-  }
-
-  ngAfterViewInit(): void {
-  }
-
-  getFacturasSP(): void {
-    this.facturas = [];
-    if (this.fechaIni === undefined || this.fechaFin === undefined) {
-      swal.fire('Advertencia', 'Porfavor ingrese un rango de fechas valido.', 'warning');
-    } else {
-      if (this.jQueryConfigs) {
-        this.facturaService.getFacturasSP(this.fechaIni, this.fechaFin).subscribe(
-          facturas => {
-            this.facturas = facturas;
-            this.jQueryConfigs.configDataTable('facturas');
-            this.jQueryConfigs = new JqueryConfigs();
-          }, error => {
-            swal.fire(`Ha ocurrido un error: ${error.error.status}`, `${error.error.message}`, 'error')
-          }
-        );
-      }
-    }
-  }
-
-  reloadPage(): void {
-    location.reload();
-  }
-
-  abrirDetalle(factura: Factura): void {
-    this.facturaSeleccionada = factura;
-    this.detailService.abrirModal();
-  }
-
-  cancel(factura: Factura): void {
-    this.swalWithBootstrapButtons.fire({
-      title: '¿Está seguro?',
-      text: `¿Seguro que desea anular la factura No. ${factura.noFactura}`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: '¡Si, anular!',
-      cancelButtonText: '¡No, cancelar!',
-      reverseButtons: true
-    }).then((result) => {
-      if (result.isConfirmed) {
-
-        // aqui va el codigo de confirmación para anular factura
-        this.facturaService.cancelV2(this.usuario.idUsuario, factura).subscribe(
-          response => {
-            factura.estado = response.estado;
-            this.swalWithBootstrapButtons.fire(
-              `¡Factura Anulada!`,
-              `La factura No. ${factura.noFactura} ha sido anulada con éxito`,
-              'success'
-            );
-          }, error => {
-            swal.fire(`Ha ocurrido un error: ${error.error.status}`, `${error.error.message}`,'error');
-          }
-        );
-
-      } else if (
-        /* Read more about handling dismissals below */
-        result.dismiss === swal.DismissReason.cancel
-      ) {
-        this.swalWithBootstrapButtons.fire(
-          'Proceso Cancelado',
-          `La factura No. ${factura.noFactura} no fué anulada.`,
-          'error'
-        );
+    this.busquedaRealizada = true;
+    this.cargarFacturas(0);
+    this.busquedaSubscription = this.busquedaSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(filtro => {
+      this.filtro = filtro;
+      if (this.busquedaRealizada) {
+        this.cargarFacturas(0);
       }
     });
   }
 
-  printBill(factura: Factura): void {
-    const id = factura.idFactura;
+  ngOnDestroy(): void {
+    if (this.busquedaSubscription) {
+      this.busquedaSubscription.unsubscribe();
+    }
+  }
 
-    /************ REGIMEN FEL *************/
+  buscarPorFechas(): void {
+    if (!this.fechaIni || !this.fechaFin) {
+      Swal.fire('Advertencia', 'Por favor ingrese un rango de fechas válido.', 'warning');
+      return;
+    }
+    if (this.fechaFin < this.fechaIni) {
+      Swal.fire('Advertencia', 'La fecha final no puede ser anterior a la fecha inicial.', 'warning');
+      return;
+    }
+    this.busquedaRealizada = true;
+    this.mostrandoUltimas = false;
+    this.cargarFacturas(0);
+  }
+
+  onBuscar(valor: string): void {
+    this.busquedaSubject.next(valor);
+  }
+
+  cargarFacturas(page: number): void {
+    this.cargando = true;
+    const request = this.mostrandoUltimas
+      ? this.facturaService.getUltimasFacturasDto(page, this.filtro, this.pageSize)
+      : this.filtro.trim()
+        ? this.facturaService.buscarFacturasDto(page, this.fechaIni, this.fechaFin, this.filtro, this.pageSize)
+        : this.facturaService.getFacturasDtoPaginadas(page, this.fechaIni, this.fechaFin, this.pageSize);
+
+    request.subscribe(
+      response => {
+        this.facturasDto = response.content;
+        this.paginaActual = response.number;
+        this.totalPaginas = response.totalPages;
+        this.totalElementos = response.totalElements;
+        this.pageSize = response.size;
+        this.isFirst = response.first;
+        this.isLast = response.last;
+        this.cargando = false;
+      },
+      error => {
+        this.cargando = false;
+        Swal.fire('Error al cargar facturas',
+          error.error?.message || error.error?.mensaje || 'Ha ocurrido un error inesperado', 'error');
+      }
+    );
+  }
+
+  limpiar(): void {
+    this.fechaIni = null;
+    this.fechaFin = null;
+    this.filtro = '';
+    this.mostrandoUltimas = true;
+    this.busquedaRealizada = true;
+    this.cargarFacturas(0);
+  }
+
+  abrirDetalle(facturaDto: FacturaListadoDto): void {
+    this.facturaSeleccionada = facturaDto;
+    this.detailService.abrirModal();
+  }
+
+  cancel(facturaDto: FacturaListadoDto): void {
+    this.swalWithBootstrapButtons.fire({
+      title: '¿Está seguro?',
+      text: `¿Seguro que desea anular la factura No. ${facturaDto.noFactura}?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: '¡Sí, anular!',
+      cancelButtonText: '¡No, cancelar!',
+      reverseButtons: true
+    }).then(result => {
+      if (!result.isConfirmed) {
+        return;
+      }
+      this.facturaService.getFactura(facturaDto.idFactura).subscribe(factura => {
+        this.facturaService.cancelV2(this.usuario.idUsuario, factura).subscribe(
+          response => {
+            facturaDto.idEstado = response.estado.idEstado;
+            facturaDto.estado = response.estado.estado;
+            this.swalWithBootstrapButtons.fire('¡Factura anulada!',
+              `La factura No. ${facturaDto.noFactura} ha sido anulada con éxito`, 'success');
+          },
+          error => Swal.fire('Error al anular factura',
+            error.error?.message || error.error?.mensaje || 'Ha ocurrido un error inesperado', 'error')
+        );
+      });
+    });
+  }
+
+  printBill(factura: FacturaListadoDto): void {
     const url = 'https://report.feel.com.gt/ingfacereport/ingfacereport_documento?uuid=' + factura.certificacionSat;
     window.open(url, '_blank').focus();
+  }
 
+  irPrimeraPagina(): void { this.cargarFacturas(0); }
+  irUltimaPagina(): void { this.cargarFacturas(this.totalPaginas - 1); }
+  irPaginaAnterior(): void { if (!this.isFirst) { this.cargarFacturas(this.paginaActual - 1); } }
+  irPaginaSiguiente(): void { if (!this.isLast) { this.cargarFacturas(this.paginaActual + 1); } }
+  irAPagina(pagina: number): void { this.cargarFacturas(pagina); }
+  cambiarPageSize(size: number): void { this.pageSize = size; this.cargarFacturas(0); }
+
+  get paginasVisibles(): number[] {
+    const paginas: number[] = [];
+    const inicio = Math.max(0, Math.min(this.paginaActual - 2, this.totalPaginas - 5));
+    const fin = Math.min(this.totalPaginas - 1, inicio + 4);
+    for (let pagina = inicio; pagina <= fin; pagina++) {
+      paginas.push(pagina);
+    }
+    return paginas;
   }
 }
