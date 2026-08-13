@@ -5,7 +5,11 @@ import xyz.pangosoft.dtodo.model.NotaCredito;
 import xyz.pangosoft.dtodo.model.enums.EstadoNotaCreditoEnum;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface INotaCreditoRepository extends JpaRepository<NotaCredito, Long> {
@@ -31,7 +35,7 @@ public interface INotaCreditoRepository extends JpaRepository<NotaCredito, Long>
     boolean existsByNoProforma(String noProforma);
 
     @Query("SELECT new xyz.pangosoft.dtodo.dto.NotaCreditoListDto("
-            + "nc.idNotaCredito, nc.total, nc.usuario.usuario, nc.correlativoFacturaSat, "
+            + "nc.idNotaCredito, nc.total, nc.usuario.usuario, nc.cliente.nombre, nc.cliente.nit, nc.correlativoFacturaSat, "
             + "nc.serieFacturaSat, nc.tipoDocumentoOrigen, nc.noProforma, "
             + "nc.fechaCreacion, nc.fechaEntregaEstimada, nc.estado) "
             + "FROM NotaCredito nc "
@@ -39,11 +43,38 @@ public interface INotaCreditoRepository extends JpaRepository<NotaCredito, Long>
     List<NotaCreditoListDto> findAllAsDto();
 
     @Query("SELECT new xyz.pangosoft.dtodo.dto.NotaCreditoListDto("
-            + "nc.idNotaCredito, nc.total, nc.usuario.usuario, nc.correlativoFacturaSat, "
+            + "nc.idNotaCredito, nc.total, nc.usuario.usuario, nc.cliente.nombre, nc.cliente.nit, nc.correlativoFacturaSat, "
             + "nc.serieFacturaSat, nc.tipoDocumentoOrigen, nc.noProforma, "
             + "nc.fechaCreacion, nc.fechaEntregaEstimada, nc.estado) "
             + "FROM NotaCredito nc "
             + "WHERE nc.estado = ?1 "
             + "ORDER BY nc.idNotaCredito DESC")
     List<NotaCreditoListDto> findByEstadoAsDto(EstadoNotaCreditoEnum estado);
+
+    @Query("SELECT new xyz.pangosoft.dtodo.dto.NotaCreditoListDto(" +
+            "nc.idNotaCredito, nc.total, nc.usuario.usuario, nc.cliente.nombre, nc.cliente.nit, " +
+            "nc.correlativoFacturaSat, nc.serieFacturaSat, nc.tipoDocumentoOrigen, nc.noProforma, " +
+            "nc.fechaCreacion, nc.fechaEntregaEstimada, nc.estado) " +
+            "FROM NotaCredito nc ORDER BY nc.fechaCreacion DESC")
+    List<NotaCreditoListDto> findUltimasAsDto(Pageable pageable);
+
+    @Query("SELECT new xyz.pangosoft.dtodo.dto.NotaCreditoListDto(" +
+            "nc.idNotaCredito, nc.total, nc.usuario.usuario, nc.cliente.nombre, nc.cliente.nit, " +
+            "nc.correlativoFacturaSat, nc.serieFacturaSat, nc.tipoDocumentoOrigen, nc.noProforma, " +
+            "nc.fechaCreacion, nc.fechaEntregaEstimada, nc.estado) " +
+            "FROM NotaCredito nc WHERE nc.fechaCreacion >= :fechaIni AND nc.fechaCreacion < :fechaFin " +
+            "AND (:filtro = '' OR lower(nc.cliente.nombre) LIKE lower(concat('%', :filtro, '%')) " +
+            "OR lower(nc.cliente.nit) LIKE lower(concat('%', :filtro, '%')) " +
+            "OR lower(nc.usuario.usuario) LIKE lower(concat('%', :filtro, '%')) " +
+            "OR lower(coalesce(nc.serieFacturaSat, '')) LIKE lower(concat('%', :filtro, '%')) " +
+            "OR lower(coalesce(nc.correlativoFacturaSat, '')) LIKE lower(concat('%', :filtro, '%')) " +
+            "OR lower(coalesce(nc.noProforma, '')) LIKE lower(concat('%', :filtro, '%')) " +
+            "OR lower(str(nc.idNotaCredito)) LIKE lower(concat('%', :filtro, '%')) " +
+            "OR lower(str(nc.tipoDocumentoOrigen)) LIKE lower(concat('%', :filtro, '%')) " +
+            "OR lower(str(nc.estado)) LIKE lower(concat('%', :filtro, '%'))) " +
+            "ORDER BY nc.fechaCreacion DESC")
+    Page<NotaCreditoListDto> findByFechasAsDto(@Param("fechaIni") LocalDateTime fechaIni,
+                                                @Param("fechaFin") LocalDateTime fechaFin,
+                                                @Param("filtro") String filtro,
+                                                Pageable pageable);
 }

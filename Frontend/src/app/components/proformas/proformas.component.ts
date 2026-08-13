@@ -5,7 +5,6 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ProformaListadoDto } from '../../dtos/proformaListadoDto';
 import { ProformaService } from '../../services/proformas/proforma.service';
 import { AuthService } from '../../services/auth.service';
-import { DetailService } from '../../services/facturas/detail.service';
 
 import Swal from 'sweetalert2';
 
@@ -39,8 +38,7 @@ export class ProformasComponent implements OnInit, OnDestroy {
 
   constructor(
     private proformaService: ProformaService,
-    public auth: AuthService,
-    public detailService: DetailService
+    public auth: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -126,11 +124,17 @@ export class ProformasComponent implements OnInit, OnDestroy {
   }
 
   abrirDetalle(proforma: ProformaListadoDto): void {
-    this.proformaSeleccionada = null;
-    setTimeout(() => {
-      this.proformaSeleccionada = proforma;
-      this.detailService.abrirModal();
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'warning',
+      title: `Cargando detalle de la proforma No. ${proforma.noProforma}...`,
+      showConfirmButton: false,
+      didOpen: () => Swal.showLoading()
     });
+
+    this.proformaSeleccionada = null;
+    setTimeout(() => this.proformaSeleccionada = proforma);
   }
 
   cerrarDetalle(): void {

@@ -3,7 +3,6 @@ import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 import { AuthService } from '../../services/auth.service';
-import { DetailService } from '../../services/facturas/detail.service';
 import { FacturaService } from '../../services/facturas/factura.service';
 import { Usuario } from '../../models/usuario';
 import { FacturaListadoDto } from '../../dtos/facturaListadoDto';
@@ -48,7 +47,6 @@ export class FacturasComponent implements OnInit, OnDestroy {
   });
 
   constructor(
-    private detailService: DetailService,
     private facturaService: FacturaService,
     public auth: AuthService
   ) {
@@ -130,8 +128,17 @@ export class FacturasComponent implements OnInit, OnDestroy {
   }
 
   abrirDetalle(facturaDto: FacturaListadoDto): void {
-    this.facturaSeleccionada = facturaDto;
-    this.detailService.abrirModal();
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'warning',
+      title: `Cargando detalle de la factura No. ${facturaDto.noFactura}...`,
+      showConfirmButton: false,
+      didOpen: () => Swal.showLoading()
+    });
+
+    this.facturaSeleccionada = null;
+    setTimeout(() => this.facturaSeleccionada = facturaDto);
   }
 
   cancel(facturaDto: FacturaListadoDto): void {

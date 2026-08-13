@@ -208,13 +208,94 @@
     </div><!-- /.container-fluid -->
 </section>
 
+<div class="card filter-card">
+    <div class="card-header filter-card-header">
+        <div class="filter-heading">
+            <span class="filter-icon"><i class="fas fa-filter"></i></span>
+            <div>
+                <h3 class="card-title">Filtrar notas de cr&eacute;dito</h3>
+                <small>Selecciona un rango de fechas para acotar los resultados</small>
+            </div>
+        </div>
+        <span class="filter-status" *ngIf="mostrandoUltimas">
+            <i class="fas fa-history"></i> &Uacute;ltimas 500
+        </span>
+    </div>
+    <form #searchForm="ngForm" (ngSubmit)="buscarPorFechas()">
+        <div class="card-body filter-card-body">
+            <div class="row align-items-end">
+                <div class="col-lg-4 col-md-6 mb-3 mb-lg-0">
+                    <label for="fecha-inicio" class="filter-label">Fecha de inicio</label>
+                    <div class="input-group filter-input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="far fa-calendar-alt"></i></span>
+                        </div>
+                        <input type="date" name="fecha-inicio" id="fecha-inicio" class="form-control"
+                            [(ngModel)]="fechaIni" aria-label="Fecha de inicio">
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-3 mb-lg-0">
+                    <label for="fecha-fin" class="filter-label">Fecha de fin</label>
+                    <div class="input-group filter-input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="far fa-calendar-check"></i></span>
+                        </div>
+                        <input type="date" name="fecha-fin" id="fecha-fin" class="form-control"
+                            [(ngModel)]="fechaFin" aria-label="Fecha de fin">
+                    </div>
+                </div>
+                <div class="col-lg-4 filter-actions">
+                    <button type="submit" class="btn btn-info filter-button">
+                        <i class="fas fa-search"></i><span>Buscar</span>
+                    </button>
+                    <button type="button" class="btn btn-light filter-button clear-button" (click)="limpiar()">
+                        <i class="fas fa-undo-alt"></i><span>Restablecer</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
 <div class="card">
     <div class="card-header">
         Listado de Notas de Cr&eacute;dito Creadas
     </div>
     <div class="card-body table-responsive">
 
-        <div *ngIf="notasCredito?.length == 0" class="alert alert-info alert-dismissible">
+        <div class="row mb-2 align-items-center">
+            <div class="col-sm-4">
+                <div class="d-inline-flex align-items-center">
+                    <label class="mb-0 mr-2">Mostrar</label>
+                    <select class="form-control form-control-sm page-size-select" [ngModel]="pageSize"
+                        (ngModelChange)="cambiarPageSize($event)">
+                        <option *ngFor="let opt of pageSizeOptions" [ngValue]="opt">{{opt}}</option>
+                    </select>
+                    <label class="mb-0 ml-2">registros</label>
+                </div>
+            </div>
+            <div class="col-sm-4 text-center">
+                <span *ngIf="notasCredito.length > 0" class="info-paginacion">
+                    Mostrando registros del <strong>{{paginaActual * pageSize + 1}}</strong>
+                    al <strong>{{paginaActual * pageSize + notasCredito.length}}</strong>
+                    de un total de <strong>{{totalElementos}}</strong>
+                </span>
+            </div>
+            <div class="col-sm-4">
+                <div class="d-inline-flex align-items-center float-right">
+                    <label class="mb-0 mr-2">B&uacute;squeda:</label>
+                    <input type="text" class="form-control form-control-sm" [value]="filtro"
+                        (input)="onBuscar($event.target.value)"
+                        placeholder="Cliente, NIT, usuario, referencia o estado">
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="cargando" class="text-center p-4">
+            <div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div>
+        </div>
+
+        <div *ngIf="!cargando && notasCredito.length === 0" class="alert alert-info alert-dismissible">
             <h5>
                 <i class="icon fas fa-info"></i>
                 Atención!
@@ -223,13 +304,14 @@
             No existe ninguna nota de cr&eacute;dito registrada en la base de datos!
         </div>
 
-        <table id="notas-credito" class="table table-hover table-striped table-bordered dataTable dtr-inline table-sm"
-            role="grid" *ngIf="notasCredito?.length > 0">
+        <table class="table table-hover table-striped table-bordered table-sm mt-0"
+            *ngIf="!cargando && notasCredito.length > 0">
             <thead>
                 <tr>
                     <th>ID</th>
                     <th>Total</th>
                     <th>Emisor</th>
+                    <th>Cliente / NIT</th>
                     <th>Origen</th>
                     <th>Referencia</th>
                     <th>Fecha Creaci&oacute;n</th>
@@ -244,6 +326,7 @@
                     <td>{{nota.idNotaCredito}}</td>
                     <td>{{nota.total | currency: "Q" : "symbol"}}</td>
                     <td>{{nota.usuario}}</td>
+                    <td>{{nota.cliente}}<br><small>{{nota.nitCliente}}</small></td>
                     <td>
                         <span class="badge"
                             [ngClass]="{'badge-warning': (nota.tipoDocumentoOrigen || 'FACTURA') === 'FACTURA',
@@ -302,19 +385,35 @@
                 </tr>
             </tbody>
 
-            <tfoot>
-                <tr>
-                    <th>ID</th>
-                    <th>Total</th>
-                    <th>Emisor</th>
-                    <th>Origen</th>
-                    <th>Referencia</th>
-                    <th>Fecha Creaci&oacute;n</th>
-                    <th>Fecha Estimada de Entrega</th>
-                    <th>Estado</th>
-                    <th *ngIf="puedeOperar">Opciones</th>
-                </tr>
-            </tfoot>
         </table>
+
+        <nav *ngIf="!cargando && totalPaginas > 1" aria-label="Paginaci&oacute;n de notas de cr&eacute;dito">
+            <ul class="pagination justify-content-center mt-3">
+                <li class="page-item" [ngClass]="{'disabled': isFirst}">
+                    <a class="page-link" href="javascript:void(0)" (click)="irPrimeraPagina()">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item" [ngClass]="{'disabled': isFirst}">
+                    <a class="page-link" href="javascript:void(0)" (click)="irPaginaAnterior()">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                </li>
+                <li class="page-item" *ngFor="let pagina of paginasVisibles"
+                    [ngClass]="{'active': pagina === paginaActual}">
+                    <a class="page-link" href="javascript:void(0)" (click)="irAPagina(pagina)">{{pagina + 1}}</a>
+                </li>
+                <li class="page-item" [ngClass]="{'disabled': isLast}">
+                    <a class="page-link" href="javascript:void(0)" (click)="irPaginaSiguiente()">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                </li>
+                <li class="page-item" [ngClass]="{'disabled': isLast}">
+                    <a class="page-link" href="javascript:void(0)" (click)="irUltimaPagina()">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
     </div>
 </div>

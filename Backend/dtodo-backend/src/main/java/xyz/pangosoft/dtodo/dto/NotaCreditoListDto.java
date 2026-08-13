@@ -21,6 +21,8 @@ public class NotaCreditoListDto {
     private Long idNotaCredito;
     private BigDecimal total;
     private String usuario;
+    private String cliente;
+    private String nitCliente;
     private String correlativoFacturaSat;
     private String serieFacturaSat;
     private TipoDocumentoOrigenEnum tipoDocumentoOrigen;

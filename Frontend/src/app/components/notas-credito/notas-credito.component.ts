@@ -1,4 +1,6 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { NotaCredito } from 'src/app/models/nota-credito';
 import { NotaCreditoDetalle } from 'src/app/models/nota-credito-detalle';
@@ -8,7 +10,6 @@ import { NotaCreditoListDto } from 'src/app/dtos/nota-credito-list-dto';
 import { AuthService } from 'src/app/services/auth.service';
 import { DetailService } from 'src/app/services/facturas/detail.service';
 import { NotasCreditoService } from 'src/app/services/notas-credito.service';
-import { JqueryConfigs } from 'src/app/utils/jquery/jquery-utils';
 
 import swal from 'sweetalert2';
 
@@ -17,15 +18,28 @@ import swal from 'sweetalert2';
   templateUrl: './notas-credito.component.html',
   styleUrls: ['./notas-credito.component.css']
 })
-export class NotasCreditoComponent implements OnInit {
+export class NotasCreditoComponent implements OnInit, OnDestroy {
 
   @ViewChild('passwordInput') passwordInput: ElementRef;
 
   title: string;
-  jQueryConfigs: JqueryConfigs;
-
-  notasCredito: NotaCreditoListDto[];
+  notasCredito: NotaCreditoListDto[] = [];
   notaSeleccionada: NotaCredito;
+
+  fechaIni: string;
+  fechaFin: string;
+  paginaActual = 0;
+  totalPaginas = 0;
+  totalElementos = 0;
+  pageSize = 5;
+  pageSizeOptions: number[] = [5, 10, 15, 25, 50];
+  isFirst = true;
+  isLast = false;
+  filtro = '';
+  cargando = false;
+  mostrandoUltimas = true;
+  private busquedaSubject = new Subject<string>();
+  private busquedaSubscription: Subscription;
 
   // Modal despacho
   mostrarModalDespacho: boolean = false;
@@ -56,11 +70,23 @@ export class NotasCreditoComponent implements OnInit {
     private router: Router
   ) {
     this.title = 'Notas de Crédito';
-    this.jQueryConfigs = new JqueryConfigs();
   }
 
   ngOnInit(): void {
-    this.loadNotasCredito();
+    this.cargarNotasCredito(0);
+    this.busquedaSubscription = this.busquedaSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(filtro => {
+      this.filtro = filtro;
+      this.cargarNotasCredito(0);
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.busquedaSubscription) {
+      this.busquedaSubscription.unsubscribe();
+    }
   }
 
   /**
@@ -74,13 +100,66 @@ export class NotasCreditoComponent implements OnInit {
       || this.auth.hasRole('ROLE_INVENTARIO');
   }
 
-  loadNotasCredito(): void {
-    this.notasService.getNotasCredito().subscribe(res => {
-      this.notasCredito = res || [];
-      if (this.notasCredito.length > 0) {
-        this.jQueryConfigs.configDataTable('notas-credito');
-      }
+  cargarNotasCredito(page: number): void {
+    this.cargando = true;
+    const request = this.mostrandoUltimas
+      ? this.notasService.getUltimasNotasCredito(page, this.filtro, this.pageSize)
+      : this.notasService.getNotasCreditoPorFechas(
+        page, this.fechaIni, this.fechaFin, this.filtro, this.pageSize);
+
+    request.subscribe(response => {
+      this.notasCredito = response.content;
+      this.paginaActual = response.number;
+      this.totalPaginas = response.totalPages;
+      this.totalElementos = response.totalElements;
+      this.pageSize = response.size;
+      this.isFirst = response.first;
+      this.isLast = response.last;
+      this.cargando = false;
+    }, error => {
+      this.cargando = false;
+      swal.fire('Error al cargar notas de crédito',
+        error.error?.message || error.error?.mensaje || 'Ha ocurrido un error inesperado', 'error');
     });
+  }
+
+  buscarPorFechas(): void {
+    if (!this.fechaIni || !this.fechaFin) {
+      swal.fire('Advertencia', 'Por favor ingrese un rango de fechas válido.', 'warning');
+      return;
+    }
+    if (this.fechaFin < this.fechaIni) {
+      swal.fire('Advertencia', 'La fecha final no puede ser anterior a la fecha inicial.', 'warning');
+      return;
+    }
+    this.mostrandoUltimas = false;
+    this.cargarNotasCredito(0);
+  }
+
+  limpiar(): void {
+    this.fechaIni = null;
+    this.fechaFin = null;
+    this.filtro = '';
+    this.mostrandoUltimas = true;
+    this.cargarNotasCredito(0);
+  }
+
+  onBuscar(valor: string): void { this.busquedaSubject.next(valor); }
+  irPrimeraPagina(): void { this.cargarNotasCredito(0); }
+  irUltimaPagina(): void { this.cargarNotasCredito(this.totalPaginas - 1); }
+  irPaginaAnterior(): void { if (!this.isFirst) { this.cargarNotasCredito(this.paginaActual - 1); } }
+  irPaginaSiguiente(): void { if (!this.isLast) { this.cargarNotasCredito(this.paginaActual + 1); } }
+  irAPagina(pagina: number): void { this.cargarNotasCredito(pagina); }
+  cambiarPageSize(size: number): void { this.pageSize = size; this.cargarNotasCredito(0); }
+
+  get paginasVisibles(): number[] {
+    const paginas: number[] = [];
+    const inicio = Math.max(0, Math.min(this.paginaActual - 2, this.totalPaginas - 5));
+    const fin = Math.min(this.totalPaginas - 1, inicio + 4);
+    for (let pagina = inicio; pagina <= fin; pagina++) {
+      paginas.push(pagina);
+    }
+    return paginas;
   }
 
   abrirDetalle(nota: NotaCreditoListDto): void {

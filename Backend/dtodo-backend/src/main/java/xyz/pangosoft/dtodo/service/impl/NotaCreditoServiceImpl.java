@@ -25,6 +25,10 @@ import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +40,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -81,6 +88,65 @@ public class NotaCreditoServiceImpl implements INotaCreditoService {
         } finally {
             log.debug("{} Exit", __method);
         }
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Page<NotaCreditoListDto> findUltimas(String filtro, Pageable pageable) {
+        try {
+            List<NotaCreditoListDto> notas = notaCreditoRepository.findUltimasAsDto(PageRequest.of(0, 500));
+            String filtroNormalizado = filtro == null ? "" : filtro.trim().toLowerCase();
+            if (!filtroNormalizado.isEmpty()) {
+                notas = notas.stream()
+                        .filter(nota -> coincideFiltro(nota, filtroNormalizado))
+                        .collect(Collectors.toList());
+            }
+            int inicio = Math.min((int) pageable.getOffset(), notas.size());
+            int fin = Math.min(inicio + pageable.getPageSize(), notas.size());
+            return new PageImpl<>(notas.subList(inicio, fin), pageable, notas.size());
+        } catch (DataAccessException e) {
+            log.error("Error al consultar las últimas 500 notas de crédito: {}", e.getMessage());
+            throw new xyz.pangosoft.dtodo.error.exceptions.DataAccessException(
+                    "Ha ocurrido un error al consultar las notas de crédito", e);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Page<NotaCreditoListDto> findPorFechas(String fechaIni, String fechaFin,
+                                                   String filtro, Pageable pageable) {
+        try {
+            LocalDate inicio = LocalDate.parse(fechaIni);
+            LocalDate fin = LocalDate.parse(fechaFin);
+            if (fin.isBefore(inicio)) {
+                throw new BadRequestException("La fecha final no puede ser anterior a la fecha inicial", null);
+            }
+            String filtroNormalizado = filtro == null ? "" : filtro.trim().replaceAll("\\s+", " ");
+            return notaCreditoRepository.findByFechasAsDto(
+                    inicio.atStartOfDay(), fin.plusDays(1).atStartOfDay(), filtroNormalizado, pageable);
+        } catch (DateTimeParseException e) {
+            throw new BadRequestException("El formato del rango de fechas no es válido", e);
+        } catch (DataAccessException e) {
+            log.error("Error al consultar notas de crédito por fechas: {}", e.getMessage());
+            throw new xyz.pangosoft.dtodo.error.exceptions.DataAccessException(
+                    "Ha ocurrido un error al consultar las notas de crédito", e);
+        }
+    }
+
+    private boolean coincideFiltro(NotaCreditoListDto nota, String filtro) {
+        return contiene(nota.getIdNotaCredito(), filtro)
+                || contiene(nota.getUsuario(), filtro)
+                || contiene(nota.getCliente(), filtro)
+                || contiene(nota.getNitCliente(), filtro)
+                || contiene(nota.getSerieFacturaSat(), filtro)
+                || contiene(nota.getCorrelativoFacturaSat(), filtro)
+                || contiene(nota.getNoProforma(), filtro)
+                || contiene(nota.getTipoDocumentoOrigen(), filtro)
+                || contiene(nota.getEstado(), filtro);
+    }
+
+    private boolean contiene(Object valor, String filtro) {
+        return valor != null && valor.toString().toLowerCase().contains(filtro);
     }
 
     @Override

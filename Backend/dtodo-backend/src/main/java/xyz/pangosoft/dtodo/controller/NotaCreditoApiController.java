@@ -19,6 +19,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 
@@ -34,6 +37,27 @@ public class NotaCreditoApiController {
     public ResponseEntity<List<NotaCreditoListDto>> getNotasCredito() {
         log.info("Buscando listado de Notas de Credito");
         return ResponseEntity.ok(notaCreditoService.findNotas());
+    }
+
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
+    @GetMapping(value = "/notas-credito-dto/ultimas/{page}")
+    public ResponseEntity<Page<NotaCreditoListDto>> getUltimasNotas(
+            @PathVariable("page") Integer page,
+            @RequestParam(value = "filtro", defaultValue = "") String filtro,
+            @RequestParam(value = "size", defaultValue = "5") Integer size) {
+        return ResponseEntity.ok(notaCreditoService.findUltimas(filtro, PageRequest.of(page, size)));
+    }
+
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
+    @GetMapping(value = "/notas-credito-dto/fechas/{page}")
+    public ResponseEntity<Page<NotaCreditoListDto>> getNotasPorFechas(
+            @PathVariable("page") Integer page,
+            @RequestParam("fechaIni") String fechaIni,
+            @RequestParam("fechaFin") String fechaFin,
+            @RequestParam(value = "filtro", defaultValue = "") String filtro,
+            @RequestParam(value = "size", defaultValue = "5") Integer size) {
+        return ResponseEntity.ok(notaCreditoService.findPorFechas(
+                fechaIni, fechaFin, filtro, PageRequest.of(page, size)));
     }
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
