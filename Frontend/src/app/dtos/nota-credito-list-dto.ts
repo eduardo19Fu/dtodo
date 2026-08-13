@@ -4,6 +4,8 @@ export class NotaCreditoListDto {
     idNotaCredito: number;
     total: number;
     usuario: string;
+    cliente: string;
+    nitCliente: string;
     correlativoFacturaSat: string;
     serieFacturaSat: string;
     tipoDocumentoOrigen: TipoDocumentoOrigen;

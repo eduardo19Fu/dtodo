@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { global } from './global';
@@ -33,6 +33,27 @@ export class NotasCreditoService {
         Swal.fire(mensaje, `${detalle}`, 'error');
         return throwError(e);
       })
+    );
+  }
+
+  getUltimasNotasCredito(page: number, filtro: string = '', size: number = 5): Observable<any> {
+    const params = new HttpParams()
+      .set('filtro', filtro)
+      .set('size', size.toString());
+    return this.httpClient.get<any>(`${this.url}/notas-credito-dto/ultimas/${page}`, { params }).pipe(
+      catchError(e => throwError(e))
+    );
+  }
+
+  getNotasCreditoPorFechas(page: number, fechaIni: string, fechaFin: string,
+                           filtro: string = '', size: number = 5): Observable<any> {
+    const params = new HttpParams()
+      .set('fechaIni', fechaIni)
+      .set('fechaFin', fechaFin)
+      .set('filtro', filtro)
+      .set('size', size.toString());
+    return this.httpClient.get<any>(`${this.url}/notas-credito-dto/fechas/${page}`, { params }).pipe(
+      catchError(e => throwError(e))
     );
   }
 

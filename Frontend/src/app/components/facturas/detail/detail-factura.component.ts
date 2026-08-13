@@ -26,6 +26,7 @@ export class DetailFacturaComponent implements OnChanges {
   isFirst = true;
   isLast = false;
   cargando = false;
+  private cargaInicialPendiente = false;
 
   constructor(
     public detailService: DetailService,
@@ -34,6 +35,7 @@ export class DetailFacturaComponent implements OnChanges {
 
   ngOnChanges(): void {
     if (this.factura) {
+      this.cargaInicialPendiente = true;
       this.cargarDetalle(0);
     }
   }
@@ -50,9 +52,16 @@ export class DetailFacturaComponent implements OnChanges {
         this.isFirst = response.first;
         this.isLast = response.last;
         this.cargando = false;
+        if (this.cargaInicialPendiente) {
+          this.cargaInicialPendiente = false;
+          Swal.close();
+          this.detailService.abrirModal();
+        }
       },
       error => {
         this.cargando = false;
+        this.cargaInicialPendiente = false;
+        Swal.close();
         Swal.fire('Error al cargar el detalle de la factura',
           error.error?.message || error.error?.mensaje || 'Ha ocurrido un error inesperado', 'error');
       }
