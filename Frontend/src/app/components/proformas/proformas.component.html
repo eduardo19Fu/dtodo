@@ -104,52 +104,60 @@
       No se encontraron proformas con los filtros indicados.
     </div>
 
-    <table class="table table-hover table-striped table-bordered table-sm mt-0"
+    <table class="table table-hover table-striped table-bordered table-sm mt-0 document-table"
            *ngIf="!cargando && proformasDto.length > 0">
       <thead>
         <tr>
-          <th>No. Proforma</th>
-          <th>Fecha</th>
-          <th>Cliente / NIT</th>
-          <th>Vendedor</th>
-          <th>Usuario</th>
-          <th>Total</th>
-          <th>Estado</th>
-          <th *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR') || auth.hasRole('ROLE_INVENTARIO')">Opciones</th>
+          <th class="col-numero">No. Proforma</th>
+          <th class="col-fecha">Fecha</th>
+          <th class="col-cliente">Cliente / NIT</th>
+          <th class="col-vendedor">Vendedor</th>
+          <th class="col-usuario">Usuario</th>
+          <th class="col-total">Total</th>
+          <th class="col-estado">Estado</th>
+          <th class="col-opciones" *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR') || auth.hasRole('ROLE_INVENTARIO')">Opciones</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let proforma of proformasDto">
-          <td>{{proforma.noProforma}}</td>
-          <td>{{proforma.fechaEmision | date: 'dd/MM/yyyy - HH:mm'}}</td>
-          <td>{{proforma.cliente}}<br><small>{{proforma.nitCliente}}</small></td>
-          <td>{{proforma.vendedor}}</td>
-          <td>{{proforma.usuario}}</td>
-          <td>{{proforma.total | currency: 'Q' : 'symbol'}}</td>
-          <td>
+          <td class="col-numero text-nowrap">{{proforma.noProforma}}</td>
+          <td class="col-fecha">
+            <span class="fecha-principal">{{proforma.fechaEmision | date: 'dd/MM/yyyy'}}</span>
+            <small class="fecha-hora">{{proforma.fechaEmision | date: 'HH:mm'}}</small>
+          </td>
+          <td class="col-cliente">
+            <span class="cliente-nombre" [title]="proforma.cliente">{{proforma.cliente}}</span>
+            <small class="cliente-nit">NIT: {{proforma.nitCliente || 'C/F'}}</small>
+          </td>
+          <td class="col-vendedor"><span class="cell-ellipsis" [title]="proforma.vendedor">{{proforma.vendedor}}</span></td>
+          <td class="col-usuario"><span class="cell-ellipsis" [title]="proforma.usuario">{{proforma.usuario}}</span></td>
+          <td class="col-total text-nowrap">{{proforma.total | currency: 'Q' : 'symbol'}}</td>
+          <td class="col-estado">
             <span class="badge" [ngClass]="{'badge-success': proforma.idEstado === 3,
                                              'badge-danger': proforma.idEstado === 4}">{{proforma.estado}}</span>
           </td>
-          <td class="center-options"
+          <td class="col-opciones"
               *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR') || auth.hasRole('ROLE_INVENTARIO')">
-            <button class="btn bg-gradient-success btn-sm margin" type="button" placement="top"
+            <div class="action-buttons">
+            <button class="btn bg-gradient-success btn-sm" type="button" placement="top"
                     ngbTooltip="Detalle de la proforma" (click)="abrirDetalle(proforma)">
               <i class="fas fa-asterisk"></i>
             </button>
-            <button class="btn bg-gradient-warning btn-sm margin" type="button" placement="top"
+            <button class="btn bg-gradient-warning btn-sm" type="button" placement="top"
                     ngbTooltip="Imprimir proforma" (click)="printProforma(proforma)" [disabled]="proforma.idEstado === 4">
               <i class="fas fa-print"></i>
             </button>
-            <button class="btn bg-gradient-info btn-sm margin" type="button" placement="top"
+            <button class="btn bg-gradient-info btn-sm" type="button" placement="top"
                     ngbTooltip="Editar proforma" *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_INVENTARIO')"
                     [routerLink]="['/proformas/create', proforma.idProforma]">
               <i class="fas fa-edit"></i>
             </button>
-            <button class="btn bg-gradient-secondary btn-sm margin" type="button" placement="top"
+            <button class="btn bg-gradient-secondary btn-sm" type="button" placement="top"
                     ngbTooltip="Facturar proforma" *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_INVENTARIO')"
                     [disabled]="proforma.idEstado === 4" [routerLink]="['/facturas/create', proforma.idProforma]">
               <i class="fas fa-share-square"></i>
             </button>
+            </div>
           </td>
         </tr>
       </tbody>

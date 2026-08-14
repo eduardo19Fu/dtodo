@@ -304,37 +304,42 @@
             No existe ninguna nota de cr&eacute;dito registrada en la base de datos!
         </div>
 
-        <table class="table table-hover table-striped table-bordered table-sm mt-0"
+        <table class="table table-hover table-striped table-bordered table-sm mt-0 notas-table"
             *ngIf="!cargando && notasCredito.length > 0">
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Total</th>
-                    <th>Emisor</th>
-                    <th>Cliente / NIT</th>
-                    <th>Origen</th>
-                    <th>Referencia</th>
-                    <th>Fecha Creaci&oacute;n</th>
-                    <th>Fecha Estimada de Entrega</th>
-                    <th>Estado</th>
-                    <th *ngIf="puedeOperar">Opciones</th>
+                    <th class="col-id">ID</th>
+                    <th class="col-total">Total</th>
+                    <th class="col-emisor">Emisor</th>
+                    <th class="col-cliente">Cliente / NIT</th>
+                    <th class="col-origen">Origen</th>
+                    <th class="col-referencia">Referencia</th>
+                    <th class="col-fecha">Fecha Creaci&oacute;n</th>
+                    <th class="col-fecha-entrega">Fecha Estimada de Entrega</th>
+                    <th class="col-estado">Estado</th>
+                    <th class="col-opciones" *ngIf="puedeOperar">Opciones</th>
                 </tr>
             </thead>
 
             <tbody>
                 <tr *ngFor="let nota of notasCredito">
-                    <td>{{nota.idNotaCredito}}</td>
-                    <td>{{nota.total | currency: "Q" : "symbol"}}</td>
-                    <td>{{nota.usuario}}</td>
-                    <td>{{nota.cliente}}<br><small>{{nota.nitCliente}}</small></td>
-                    <td>
+                    <td class="col-id">{{nota.idNotaCredito}}</td>
+                    <td class="col-total text-nowrap">{{nota.total | currency: "Q" : "symbol"}}</td>
+                    <td class="col-emisor">
+                        <span class="cell-ellipsis" [title]="nota.usuario">{{nota.usuario}}</span>
+                    </td>
+                    <td class="col-cliente">
+                        <span class="cliente-nombre" [title]="nota.cliente">{{nota.cliente}}</span>
+                        <small class="cliente-nit">NIT: {{nota.nitCliente || 'C/F'}}</small>
+                    </td>
+                    <td class="col-origen">
                         <span class="badge"
                             [ngClass]="{'badge-warning': (nota.tipoDocumentoOrigen || 'FACTURA') === 'FACTURA',
                                         'badge-primary': nota.tipoDocumentoOrigen === 'PROFORMA'}">
                             {{nota.tipoDocumentoOrigen || 'FACTURA'}}
                         </span>
                     </td>
-                    <td>
+                    <td class="col-referencia text-nowrap">
                         <ng-container *ngIf="(nota.tipoDocumentoOrigen || 'FACTURA') === 'FACTURA'">
                             {{nota.serieFacturaSat}}-{{nota.correlativoFacturaSat}}
                         </ng-container>
@@ -342,9 +347,12 @@
                             {{nota.noProforma}}
                         </ng-container>
                     </td>
-                    <td>{{nota.fechaCreacion | date: 'dd/MM/yyyy - hh:mm'}}</td>
-                    <td>{{nota.fechaEntregaEstimada | date: 'dd/MM/yyyy'}}</td>
-                    <td>
+                    <td class="col-fecha">
+                        <span class="fecha-principal">{{nota.fechaCreacion | date: 'dd/MM/yyyy'}}</span>
+                        <small class="fecha-hora">{{nota.fechaCreacion | date: 'HH:mm'}}</small>
+                    </td>
+                    <td class="col-fecha-entrega text-nowrap">{{nota.fechaEntregaEstimada | date: 'dd/MM/yyyy'}}</td>
+                    <td class="col-estado">
                         <span class="badge"
                             [ngClass]="{'badge-warning': nota.estado === 'ENTREGA_PENDIENTE',
                                         'badge-danger': nota.estado === 'ANULADO',
@@ -352,35 +360,37 @@
 
                             [ngSwitch]="nota.estado">
 
-                            <h8 *ngSwitchCase="'ENTREGA_PENDIENTE'">Entrega Pendiente</h8>
-                            <h8 *ngSwitchCase="'ANULADO'">Anulado</h8>
-                            <h8 *ngSwitchCase="'ENTREGADO'">Entregado</h8>
+                            <span *ngSwitchCase="'ENTREGA_PENDIENTE'">Entrega Pendiente</span>
+                            <span *ngSwitchCase="'ANULADO'">Anulado</span>
+                            <span *ngSwitchCase="'ENTREGADO'">Entregado</span>
                         </span>
                     </td>
-                    <td class="center-options" *ngIf="puedeOperar">
+                    <td class="col-opciones" *ngIf="puedeOperar">
+                        <div class="action-buttons">
 
-                        <button class="btn bg-gradient-success margin" name="detail" type="button" placement="top" ngbTooltip="Detalle"
+                        <button class="btn bg-gradient-success" name="detail" type="button" placement="top" ngbTooltip="Detalle"
                             (click)="abrirDetalle(nota)">
                             <i class="fas fa-asterisk"></i>
                         </button>
 
-                        <button class="btn bg-gradient-info margin" name="despachar" type="button" placement="top" ngbTooltip="Despachar Productos"
+                        <button class="btn bg-gradient-info" name="despachar" type="button" placement="top" ngbTooltip="Despachar Productos"
                             (click)="despacharProductos(nota)"
                             [disabled]="nota.estado === 'ANULADO' || nota.estado === 'ENTREGADO'">
                             <i class="fas fa-truck"></i>
                         </button>
 
-                        <button class="btn bg-gradient-warning margin" name="print" type="button" placement="top" ngbTooltip="Imprimir Comprobante"
+                        <button class="btn bg-gradient-warning" name="print" type="button" placement="top" ngbTooltip="Imprimir Comprobante"
                             (click)="printNote(nota)" [disabled]="nota.estado === 'ANULADO'">
                             <i class="fas fa-print"></i>
                         </button>
 
                         <!-- Aquí va el botón de anular -->
-                        <button class="btn bg-gradient-danger margin" name="cancel" type="button" placement="top" ngbTooltip="Anular Nota"
+                        <button class="btn bg-gradient-danger" name="cancel" type="button" placement="top" ngbTooltip="Anular Nota"
                             (click)="cancel(nota)" *ngIf="auth.hasRole('ROLE_ADMIN')"
                             [disabled]="nota.estado === 'ANULADO'">
                             <i class="fas fa-ban"></i>
                         </button>
+                        </div>
                     </td>
                 </tr>
             </tbody>
