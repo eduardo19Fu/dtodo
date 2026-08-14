@@ -339,13 +339,18 @@
                             {{nota.tipoDocumentoOrigen || 'FACTURA'}}
                         </span>
                     </td>
-                    <td class="col-referencia text-nowrap">
-                        <ng-container *ngIf="(nota.tipoDocumentoOrigen || 'FACTURA') === 'FACTURA'">
-                            {{nota.serieFacturaSat}}-{{nota.correlativoFacturaSat}}
-                        </ng-container>
-                        <ng-container *ngIf="nota.tipoDocumentoOrigen === 'PROFORMA'">
-                            {{nota.noProforma}}
-                        </ng-container>
+                    <td class="col-referencia">
+                        <span class="cell-ellipsis"
+                            [title]="(nota.tipoDocumentoOrigen || 'FACTURA') === 'FACTURA'
+                                ? (nota.serieFacturaSat + '-' + nota.correlativoFacturaSat)
+                                : nota.noProforma">
+                            <ng-container *ngIf="(nota.tipoDocumentoOrigen || 'FACTURA') === 'FACTURA'">
+                                {{nota.serieFacturaSat}}-{{nota.correlativoFacturaSat}}
+                            </ng-container>
+                            <ng-container *ngIf="nota.tipoDocumentoOrigen === 'PROFORMA'">
+                                {{nota.noProforma}}
+                            </ng-container>
+                        </span>
                     </td>
                     <td class="col-fecha">
                         <span class="fecha-principal">{{nota.fechaCreacion | date: 'dd/MM/yyyy'}}</span>

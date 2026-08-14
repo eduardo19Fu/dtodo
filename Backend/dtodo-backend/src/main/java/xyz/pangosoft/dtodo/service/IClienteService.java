@@ -13,6 +13,8 @@ public interface IClienteService {
 	public List<Cliente> findAll();
 
 	public List<ClienteDto> findAllDto();
+
+	Page<ClienteDto> findListado(String filtro, Pageable pageable);
 	
 	public Page<Cliente> findAll(Pageable pageable);
 	

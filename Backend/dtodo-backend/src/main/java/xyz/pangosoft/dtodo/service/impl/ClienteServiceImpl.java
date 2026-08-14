@@ -74,6 +74,19 @@ public class ClienteServiceImpl implements IClienteService {
 
 	@Transactional(readOnly = true)
 	@Override
+	public Page<ClienteDto> findListado(String filtro, Pageable pageable) {
+		try {
+			log.info("Listando clientes paginados con filtro");
+			return clienteRepository.findListado(filtro == null ? "" : filtro.trim(), pageable);
+		} catch (DataAccessException e) {
+			log.error("Error al consultar el listado paginado de clientes", e);
+			throw new xyz.pangosoft.dtodo.error.exceptions.DataAccessException(
+					"Ha ocurrido un error al consultar los clientes", e);
+		}
+	}
+
+	@Transactional(readOnly = true)
+	@Override
 	public Page<Cliente> findAll(Pageable pageable) {
 
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();

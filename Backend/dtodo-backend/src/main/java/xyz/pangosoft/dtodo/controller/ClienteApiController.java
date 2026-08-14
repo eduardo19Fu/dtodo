@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import xyz.pangosoft.dtodo.model.Cliente;
 import xyz.pangosoft.dtodo.service.IClienteService;
@@ -40,6 +42,31 @@ public class ClienteApiController {
 	public ResponseEntity<List<ClienteDto>> listarClientes () {
 		log.info("Listando Clientes");
 		return ResponseEntity.ok(serviceCliente.findAllDto());
+	}
+
+	@GetMapping(value = "/clientes/listado")
+	public ResponseEntity<Page<ClienteDto>> listarClientes(
+			@RequestParam(value = "page", defaultValue = "0") Integer page,
+			@RequestParam(value = "size", defaultValue = "5") Integer size,
+			@RequestParam(value = "filtro", defaultValue = "") String filtro,
+			@RequestParam(value = "orden", defaultValue = "nombre") String orden,
+			@RequestParam(value = "direccion", defaultValue = "asc") String direccion) {
+		log.info("Listando clientes paginados con filtro");
+		Sort.Direction sentido = "desc".equalsIgnoreCase(direccion)
+				? Sort.Direction.DESC : Sort.Direction.ASC;
+		return ResponseEntity.ok(serviceCliente.findListado(filtro,
+				PageRequest.of(page, size, Sort.by(sentido, obtenerPropiedadOrden(orden)))));
+	}
+
+	private String obtenerPropiedadOrden(String orden) {
+		switch (orden == null ? "" : orden.toLowerCase()) {
+			case "id": return "idCliente";
+			case "nit": return "nit";
+			case "telefono": return "telefono";
+			case "direccion": return "direccion";
+			case "fecha": return "fechaRegistro";
+			default: return "nombre";
+		}
 	}
 	
 	@GetMapping(value = "/clientes/page/{page}")
