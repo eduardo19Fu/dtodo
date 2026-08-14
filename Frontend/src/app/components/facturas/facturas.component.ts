@@ -5,7 +5,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { AuthService } from '../../services/auth.service';
 import { FacturaService } from '../../services/facturas/factura.service';
 import { Usuario } from '../../models/usuario';
-import { FacturaListadoDto } from '../../dtos/facturaListadoDto';
+import { FacturaDto } from '../../dtos/factura-dto';
 
 import Swal from 'sweetalert2';
 
@@ -19,8 +19,8 @@ export class FacturasComponent implements OnInit, OnDestroy {
   title = 'Facturas';
   fechaIni: string;
   fechaFin: string;
-  facturasDto: FacturaListadoDto[] = [];
-  facturaSeleccionada: FacturaListadoDto;
+  facturasDto: FacturaDto[] = [];
+  facturaSeleccionada: FacturaDto;
   usuario: Usuario;
 
   paginaActual = 0;
@@ -127,7 +127,7 @@ export class FacturasComponent implements OnInit, OnDestroy {
     this.cargarFacturas(0);
   }
 
-  abrirDetalle(facturaDto: FacturaListadoDto): void {
+  abrirDetalle(facturaDto: FacturaDto): void {
     Swal.fire({
       toast: true,
       position: 'top-end',
@@ -141,7 +141,7 @@ export class FacturasComponent implements OnInit, OnDestroy {
     setTimeout(() => this.facturaSeleccionada = facturaDto);
   }
 
-  cancel(facturaDto: FacturaListadoDto): void {
+  cancel(facturaDto: FacturaDto): void {
     this.swalWithBootstrapButtons.fire({
       title: '¿Está seguro?',
       text: `¿Seguro que desea anular la factura No. ${facturaDto.noFactura}?`,
@@ -169,7 +169,7 @@ export class FacturasComponent implements OnInit, OnDestroy {
     });
   }
 
-  printBill(factura: FacturaListadoDto): void {
+  printBill(factura: FacturaDto): void {
     const url = 'https://report.feel.com.gt/ingfacereport/ingfacereport_documento?uuid=' + factura.certificacionSat;
     window.open(url, '_blank').focus();
   }

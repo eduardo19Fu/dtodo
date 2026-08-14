@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
 
 import { DetalleDocumentoDto } from '../../../dtos/detalleDocumentoDto';
-import { ProformaListadoDto } from '../../../dtos/proformaListadoDto';
+import { ProformaDto } from '../../../dtos/proforma-dto';
 import { DetailService } from '../../../services/facturas/detail.service';
 import { ProformaService } from '../../../services/proformas/proforma.service';
 
@@ -14,7 +14,7 @@ import Swal from 'sweetalert2';
 })
 export class DetailProformaComponent implements OnChanges {
 
-  @Input() proformadto: ProformaListadoDto;
+  @Input() proformadto: ProformaDto;
   @Output() closeModal = new EventEmitter<void>();
 
   title = 'Detalle de Proforma';

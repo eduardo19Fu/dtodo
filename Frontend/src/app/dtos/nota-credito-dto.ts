@@ -1,6 +1,6 @@
 import { TipoDocumentoOrigen } from '../models/nota-credito';
 
-export class NotaCreditoListDto {
+export class NotaCreditoDto {
     idNotaCredito: number;
     total: number;
     usuario: string;

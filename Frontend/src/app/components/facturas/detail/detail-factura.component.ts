@@ -1,7 +1,7 @@
 import { Component, Input, OnChanges } from '@angular/core';
 
 import { DetalleDocumentoDto } from '../../../dtos/detalleDocumentoDto';
-import { FacturaListadoDto } from '../../../dtos/facturaListadoDto';
+import { FacturaDto } from '../../../dtos/factura-dto';
 import { DetailService } from '../../../services/facturas/detail.service';
 import { FacturaService } from '../../../services/facturas/factura.service';
 
@@ -15,7 +15,7 @@ import Swal from 'sweetalert2';
 export class DetailFacturaComponent implements OnChanges {
 
   title = 'Detalle de Factura';
-  @Input() factura: FacturaListadoDto;
+  @Input() factura: FacturaDto;
 
   items: DetalleDocumentoDto[] = [];
   paginaActual = 0;

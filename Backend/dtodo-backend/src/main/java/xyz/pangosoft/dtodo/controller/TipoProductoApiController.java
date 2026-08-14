@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
@@ -22,7 +23,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import xyz.pangosoft.dtodo.dto.TipoProductoDto;
 import xyz.pangosoft.dtodo.model.TipoProducto;
 import xyz.pangosoft.dtodo.service.ITipoProductoService;
 
@@ -50,6 +53,31 @@ public class TipoProductoApiController {
 
 		Page<TipoProducto> tiposPaginados = serviceTipo.findAll(PageRequest.of(page, 5));
 		return ResponseEntity.ok(tiposPaginados);
+	}
+
+	@GetMapping(value = "/tipos-producto/listado")
+	public ResponseEntity<Page<TipoProductoDto>> listado(
+			@RequestParam(value = "page", defaultValue = "0") Integer page,
+			@RequestParam(value = "size", defaultValue = "5") Integer size,
+			@RequestParam(value = "filtro", defaultValue = "") String filtro,
+			@RequestParam(value = "orden", defaultValue = "nombre") String orden,
+			@RequestParam(value = "direccion", defaultValue = "asc") String direccion) {
+		log.info("Listando categorías paginadas con filtro");
+		String propiedad = obtenerPropiedadOrden(orden);
+		Sort.Direction sentido = "desc".equalsIgnoreCase(direccion)
+				? Sort.Direction.DESC : Sort.Direction.ASC;
+		return ResponseEntity.ok(serviceTipo.findListado(
+				filtro, PageRequest.of(page, size, Sort.by(sentido, propiedad))));
+	}
+
+	private String obtenerPropiedadOrden(String orden) {
+		if ("id".equalsIgnoreCase(orden)) {
+			return "idTipoProducto";
+		}
+		if ("creador".equalsIgnoreCase(orden)) {
+			return "usuario.usuario";
+		}
+		return "tipoProducto";
 	}
 	
 	@Secured(value = {"ROLE_COBRADOR","ROLE_ADMIN", "ROLE_INVENTARIO"})

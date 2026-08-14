@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
@@ -55,6 +55,16 @@ export class MarcaProductoService {
         return response;
       })
     );
+  }
+
+  getListado(page: number, size: number, filtro: string, orden: string, direccion: string): Observable<any> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString())
+      .set('filtro', filtro || '')
+      .set('orden', orden)
+      .set('direccion', direccion);
+    return this.http.get(`${this.url}/marcas/listado`, { params });
   }
 
   getMarca(id: number): Observable<MarcaProducto> {

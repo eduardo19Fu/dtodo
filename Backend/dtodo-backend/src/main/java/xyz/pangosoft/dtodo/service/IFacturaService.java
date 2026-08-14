@@ -6,7 +6,7 @@ import java.util.Date;
 import java.util.List;
 
 import xyz.pangosoft.dtodo.model.TipoFactura;
-import xyz.pangosoft.dtodo.dto.FacturaListadoDto;
+import xyz.pangosoft.dtodo.dto.FacturaDto;
 import xyz.pangosoft.dtodo.dto.DetalleDocumentoDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,11 +23,11 @@ public interface IFacturaService {
 	
 	public Page<Factura> findAll(Pageable pageable);
 
-	Page<FacturaListadoDto> findAllListadoDto(String fechaIni, String fechaFin, Pageable pageable);
+	Page<FacturaDto> findAllListadoDto(String fechaIni, String fechaFin, Pageable pageable);
 
-	Page<FacturaListadoDto> searchListadoDto(String fechaIni, String fechaFin, String filtro, Pageable pageable);
+	Page<FacturaDto> searchListadoDto(String fechaIni, String fechaFin, String filtro, Pageable pageable);
 
-	Page<FacturaListadoDto> findUltimasListadoDto(String filtro, Pageable pageable);
+	Page<FacturaDto> findUltimasListadoDto(String filtro, Pageable pageable);
 
 	Page<DetalleDocumentoDto> findDetalleDto(Long idFactura, Pageable pageable);
 	

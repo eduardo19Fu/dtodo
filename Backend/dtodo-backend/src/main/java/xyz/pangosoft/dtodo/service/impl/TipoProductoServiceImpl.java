@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import xyz.pangosoft.dtodo.error.exceptions.NoContentException;
 import xyz.pangosoft.dtodo.error.exceptions.NotFoundException;
+import xyz.pangosoft.dtodo.dto.TipoProductoDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
@@ -82,6 +83,18 @@ public class TipoProductoServiceImpl implements ITipoProductoService {
 			throw new RuntimeException("Ha ocurrido un error inesperado: ", e);
 		} finally {
 			log.debug("{} Exit", __method);
+		}
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public Page<TipoProductoDto> findListado(String filtro, Pageable pageable) {
+		try {
+			return repoTipo.findListado(filtro == null ? "" : filtro.trim(), pageable);
+		} catch (DataAccessException e) {
+			log.error("Error al consultar el listado paginado de categorías: {}", e.getMessage());
+			throw new xyz.pangosoft.dtodo.error.exceptions.DataAccessException(
+					"Ha ocurrido un error al consultar las categorías", e);
 		}
 	}
 

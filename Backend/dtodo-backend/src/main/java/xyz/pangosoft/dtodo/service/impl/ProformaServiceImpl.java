@@ -1,7 +1,7 @@
 package xyz.pangosoft.dtodo.service.impl;
 
+import xyz.pangosoft.dtodo.dto.ProformaFechaDto;
 import xyz.pangosoft.dtodo.dto.ProformaDto;
-import xyz.pangosoft.dtodo.dto.ProformaListadoDto;
 import xyz.pangosoft.dtodo.dto.DetalleDocumentoDto;
 import xyz.pangosoft.dtodo.error.exceptions.DataAccessException;
 import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
@@ -119,7 +119,7 @@ public class ProformaServiceImpl implements IProformaService {
 
     @Transactional(readOnly = true)
     @Override
-    public Page<ProformaListadoDto> findAllListadoDto(String fechaIni, String fechaFin, Pageable pageable) {
+    public Page<ProformaDto> findAllListadoDto(String fechaIni, String fechaFin, Pageable pageable) {
         Date[] rango = parseDateRange(fechaIni, fechaFin);
         try {
             return proformaRepository.findAllListadoDto(rango[0], rango[1], pageable);
@@ -131,7 +131,7 @@ public class ProformaServiceImpl implements IProformaService {
 
     @Transactional(readOnly = true)
     @Override
-    public Page<ProformaListadoDto> searchListadoDto(String fechaIni, String fechaFin, String filtro, Pageable pageable) {
+    public Page<ProformaDto> searchListadoDto(String fechaIni, String fechaFin, String filtro, Pageable pageable) {
         Date[] rango = parseDateRange(fechaIni, fechaFin);
         String filtroAdaptado = filtro == null ? "" : filtro.trim().replaceAll("\\s+", " ");
         try {
@@ -144,9 +144,9 @@ public class ProformaServiceImpl implements IProformaService {
 
     @Transactional(readOnly = true)
     @Override
-    public Page<ProformaListadoDto> findUltimasListadoDto(String filtro, Pageable pageable) {
+    public Page<ProformaDto> findUltimasListadoDto(String filtro, Pageable pageable) {
         try {
-            List<ProformaListadoDto> proformas = proformaRepository.findUltimasListadoDto(PageRequest.of(0, 500));
+            List<ProformaDto> proformas = proformaRepository.findUltimasListadoDto(PageRequest.of(0, 500));
             String filtroNormalizado = filtro == null ? "" : filtro.trim().toLowerCase();
             if (!filtroNormalizado.isEmpty()) {
                 proformas = proformas.stream()
@@ -162,7 +162,7 @@ public class ProformaServiceImpl implements IProformaService {
         }
     }
 
-    private boolean coincideFiltro(ProformaListadoDto proforma, String filtro) {
+    private boolean coincideFiltro(ProformaDto proforma, String filtro) {
         return contiene(proforma.getCliente(), filtro)
                 || contiene(proforma.getNitCliente(), filtro)
                 || contiene(proforma.getVendedor(), filtro)
@@ -365,7 +365,7 @@ public class ProformaServiceImpl implements IProformaService {
     }
 
     @Override
-    public List<ProformaDto> proformasPorFechaSp(String iniDate, String endDate) {
+    public List<ProformaFechaDto> proformasPorFechaSp(String iniDate, String endDate) {
         String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
         log.debug("Enter {}", __method);
 
@@ -374,7 +374,7 @@ public class ProformaServiceImpl implements IProformaService {
                 Date fechaIni = Utils.stringToDate(iniDate);
                 Date fechaFin = Utils.stringToDate(endDate);
 
-                List<ProformaDto> proformas = proformaRepository.findAllProformasDto(fechaIni, fechaFin);
+                List<ProformaFechaDto> proformas = proformaRepository.findAllProformasDto(fechaIni, fechaFin);
 
                 if (!proformas.isEmpty()) {
                     log.info("Obteniendo listado de proformas registradas entre {} y {}", iniDate, endDate);
