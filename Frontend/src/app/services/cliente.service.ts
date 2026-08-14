@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { global } from './global';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
@@ -25,6 +25,16 @@ export class ClienteService {
 
   getClientes(): Observable<Cliente[]> {
     return this.http.get<Cliente[]>(`${this.url}/clientes`);
+  }
+
+  getListado(page: number, size: number, filtro: string, orden: string, direccion: string): Observable<any> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString())
+      .set('filtro', filtro || '')
+      .set('orden', orden)
+      .set('direccion', direccion);
+    return this.http.get(`${this.url}/clientes/listado`, { params });
   }
 
   getClientesPaginados(page: number): Observable<Cliente[]> {
