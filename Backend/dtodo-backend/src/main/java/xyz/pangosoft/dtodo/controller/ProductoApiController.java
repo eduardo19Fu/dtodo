@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.validation.BindingResult;
@@ -36,7 +37,8 @@ import xyz.pangosoft.dtodo.service.IEstadoService;
 import xyz.pangosoft.dtodo.service.IProductoService;
 import xyz.pangosoft.dtodo.service.IUploadFileService;
 
-@CrossOrigin(origins = { "http://localhost:4200", "https://dtodojalapa.xyz" })
+@CrossOrigin(origins = { "http://localhost:4200", "https://dtodojalapa.xyz" },
+		exposedHeaders = { HttpHeaders.CONTENT_DISPOSITION })
 @RestController
 @RequestMapping(value = "/api")
 @RequiredArgsConstructor
@@ -196,5 +198,19 @@ public class ProductoApiController {
 	@GetMapping(value = "/productos/pdf/inventario")
 	public ResponseEntity<byte[]> generarInventarioPDF(@RequestParam String fechaIni, @RequestParam String fechaFin) {
 		return null;
+	}
+
+	@Secured(value = {"ROLE_ADMIN"})
+	@GetMapping(value = "/productos/excel")
+	public ResponseEntity<byte[]> generarProductosExcel() {
+		log.info("Generando reporte Excel de productos");
+		byte[] reporte = serviceProducto.productosExcel();
+
+		return ResponseEntity.ok()
+				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=productos.xlsx")
+				.contentType(MediaType.parseMediaType(
+						"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+				.contentLength(reporte.length)
+				.body(reporte);
 	}
 }

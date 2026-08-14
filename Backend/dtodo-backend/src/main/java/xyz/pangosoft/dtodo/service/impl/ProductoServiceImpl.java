@@ -1,6 +1,8 @@
 package xyz.pangosoft.dtodo.service.impl;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.sql.Connection;
@@ -8,7 +10,9 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.sql.DataSource;
@@ -16,6 +20,7 @@ import javax.sql.DataSource;
 import xyz.pangosoft.dtodo.dto.ProductoDto;
 import xyz.pangosoft.dtodo.dto.ProductoDtoMejorado;
 import xyz.pangosoft.dtodo.error.exceptions.NoContentException;
+import xyz.pangosoft.dtodo.error.exceptions.ReportGenerationException;
 import xyz.pangosoft.dtodo.service.IEstadoService;
 import xyz.pangosoft.dtodo.service.IUploadFileService;
 import xyz.pangosoft.dtodo.util.Utils;
@@ -36,6 +41,17 @@ import xyz.pangosoft.dtodo.repository.IProductoRepository;
 import xyz.pangosoft.dtodo.service.IProductoService;
 
 import org.springframework.web.multipart.MultipartFile;
+
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JRParameter;
+import net.sf.jasperreports.engine.JasperCompileManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
+import net.sf.jasperreports.export.SimpleExporterInput;
+import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
+import net.sf.jasperreports.export.SimpleXlsxReportConfiguration;
 
 @Service
 @RequiredArgsConstructor
@@ -407,6 +423,50 @@ public class ProductoServiceImpl implements IProductoService {
 			Connection connection = localDataSource.getConnection();
 		} catch (ParseException e) {} catch (SQLException e) {}
 		return new byte[0];
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public byte[] productosExcel() {
+		try (Connection connection = localDataSource.getConnection();
+			 InputStream template = getClass().getResourceAsStream("/reports/productos_excel.jrxml");
+			 ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+
+			if (template == null) {
+				throw new ReportGenerationException("No se encontró la plantilla del reporte de productos", null);
+			}
+
+			Map<String, Object> parameters = new HashMap<>();
+			parameters.put(JRParameter.IS_IGNORE_PAGINATION, true);
+
+			JasperReport report = JasperCompileManager.compileReport(template);
+			JasperPrint print = JasperFillManager.fillReport(report, parameters, connection);
+
+			JRXlsxExporter exporter = new JRXlsxExporter();
+			exporter.setExporterInput(new SimpleExporterInput(print));
+			exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(output));
+
+			SimpleXlsxReportConfiguration configuration = new SimpleXlsxReportConfiguration();
+			configuration.setDetectCellType(true);
+			configuration.setRemoveEmptySpaceBetweenRows(true);
+			configuration.setWhitePageBackground(false);
+			configuration.setOnePagePerSheet(false);
+			configuration.setSheetNames(new String[] { "Productos" });
+			exporter.setConfiguration(configuration);
+			exporter.exportReport();
+
+			return output.toByteArray();
+		} catch (JRException e) {
+			log.error("No fue posible generar el reporte Excel de productos: {}", e.getMessage());
+			throw new ReportGenerationException("No fue posible generar el reporte Excel de productos", e);
+		} catch (SQLException e) {
+			log.error("No fue posible consultar los productos para el reporte: {}", e.getMessage());
+			throw new xyz.pangosoft.dtodo.error.exceptions.SQLException(
+					"No fue posible consultar los productos para el reporte", e);
+		} catch (IOException e) {
+			log.error("No fue posible leer la plantilla del reporte de productos: {}", e.getMessage());
+			throw new ReportGenerationException("No fue posible leer la plantilla del reporte de productos", e);
+		}
 	}
 
 	protected Page<ProductoDtoMejorado> mapPageToProductoDtoMejorado(Page<Object[]> results) {
