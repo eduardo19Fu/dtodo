@@ -7,7 +7,7 @@ import { NotaCredito } from '../models/nota-credito';
 import { DespachoNota } from '../models/despacho-nota';
 import { DespachoNotaDto } from '../dtos/despacho-nota-dto';
 import { DespachoRequest } from '../dtos/despacho-request';
-import { NotaCreditoListDto } from '../dtos/nota-credito-list-dto';
+import { NotaCreditoDto } from '../dtos/nota-credito-dto';
 
 import Swal from 'sweetalert2';
 
@@ -22,8 +22,8 @@ export class NotasCreditoService {
     this.url = global.url;
   }
 
-  getNotasCredito(): Observable<NotaCreditoListDto[]> {
-    return this.httpClient.get<NotaCreditoListDto[]>(`${this.url}/notas-credito`).pipe(
+  getNotasCredito(): Observable<NotaCreditoDto[]> {
+    return this.httpClient.get<NotaCreditoDto[]>(`${this.url}/notas-credito`).pipe(
       catchError(e => {
         if (e.status === 204 || e.status === 404) {
           return of([]);
@@ -57,8 +57,8 @@ export class NotasCreditoService {
     );
   }
 
-  getNotasCreditoActivas(): Observable<NotaCreditoListDto[]> {
-    return this.httpClient.get<NotaCreditoListDto[]>(`${this.url}/notas-credito/activas`).pipe(
+  getNotasCreditoActivas(): Observable<NotaCreditoDto[]> {
+    return this.httpClient.get<NotaCreditoDto[]>(`${this.url}/notas-credito/activas`).pipe(
       catchError(e => {
         if (e.status === 204 || e.status === 404) {
           return of([]);

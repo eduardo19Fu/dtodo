@@ -6,12 +6,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import xyz.pangosoft.dtodo.model.TipoProducto;
+import xyz.pangosoft.dtodo.dto.TipoProductoDto;
 
 public interface ITipoProductoService {
 	
 	public List<TipoProducto> findAll();
 	
 	public Page<TipoProducto> findAll(Pageable pageable);
+
+	public Page<TipoProductoDto> findListado(String filtro, Pageable pageable);
 	
 	public List<TipoProducto> findByTipo(String tipo);
 	

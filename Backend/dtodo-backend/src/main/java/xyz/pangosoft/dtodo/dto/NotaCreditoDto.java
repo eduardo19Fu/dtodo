@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class NotaCreditoListDto {
+public class NotaCreditoDto {
     private Long idNotaCredito;
     private BigDecimal total;
     private String usuario;

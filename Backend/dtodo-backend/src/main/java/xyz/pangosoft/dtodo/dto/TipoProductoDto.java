@@ -9,9 +9,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class MarcaProductoDto {
-	private Integer idMarcaProducto;
-	private String marca;
-	private LocalDateTime fechaRegistro;
-	private String usuario;
+public class TipoProductoDto {
+    private Integer idTipoProducto;
+    private String tipoProducto;
+    private LocalDateTime fechaRegistro;
+    private String usuario;
 }

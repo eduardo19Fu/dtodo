@@ -6,7 +6,7 @@ import { NotaCredito } from 'src/app/models/nota-credito';
 import { NotaCreditoDetalle } from 'src/app/models/nota-credito-detalle';
 import { DespachoNota } from 'src/app/models/despacho-nota';
 import { DespachoNotaDto } from 'src/app/dtos/despacho-nota-dto';
-import { NotaCreditoListDto } from 'src/app/dtos/nota-credito-list-dto';
+import { NotaCreditoDto } from 'src/app/dtos/nota-credito-dto';
 import { AuthService } from 'src/app/services/auth.service';
 import { DetailService } from 'src/app/services/facturas/detail.service';
 import { NotasCreditoService } from 'src/app/services/notas-credito.service';
@@ -23,7 +23,7 @@ export class NotasCreditoComponent implements OnInit, OnDestroy {
   @ViewChild('passwordInput') passwordInput: ElementRef;
 
   title: string;
-  notasCredito: NotaCreditoListDto[] = [];
+  notasCredito: NotaCreditoDto[] = [];
   notaSeleccionada: NotaCredito;
 
   fechaIni: string;
@@ -162,7 +162,7 @@ export class NotasCreditoComponent implements OnInit, OnDestroy {
     return paginas;
   }
 
-  abrirDetalle(nota: NotaCreditoListDto): void {
+  abrirDetalle(nota: NotaCreditoDto): void {
     swal.fire({
       toast: true,
       position: 'top-end',
@@ -184,7 +184,7 @@ export class NotasCreditoComponent implements OnInit, OnDestroy {
 
   // --- Modal de Despacho ---
 
-  despacharProductos(nota: NotaCreditoListDto): void {
+  despacharProductos(nota: NotaCreditoDto): void {
     this.cargandoDespacho = true;
     this.mostrarModalDespacho = true;
 
@@ -398,7 +398,7 @@ export class NotasCreditoComponent implements OnInit, OnDestroy {
 
   // --- Otras acciones ---
 
-  cancel(nota: NotaCreditoListDto): void {
+  cancel(nota: NotaCreditoDto): void {
     this.swalWithBootstrapButtons.fire({
       title: '¿Está seguro?',
       text: `¿Seguro que desea anular la nota de crédito No. ${nota.idNotaCredito}?`,
@@ -431,7 +431,7 @@ export class NotasCreditoComponent implements OnInit, OnDestroy {
     });
   }
 
-  printNote(nota: NotaCreditoListDto): void {
+  printNote(nota: NotaCreditoDto): void {
     this.notasService.getNotaCreditoPDF(nota.idNotaCredito).subscribe(
       response => {
         const file = new Blob([response.data], { type: 'application/pdf' });

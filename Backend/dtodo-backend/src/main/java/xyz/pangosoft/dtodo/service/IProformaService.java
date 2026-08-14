@@ -1,7 +1,7 @@
 package xyz.pangosoft.dtodo.service;
 
+import xyz.pangosoft.dtodo.dto.ProformaFechaDto;
 import xyz.pangosoft.dtodo.dto.ProformaDto;
-import xyz.pangosoft.dtodo.dto.ProformaListadoDto;
 import xyz.pangosoft.dtodo.dto.DetalleDocumentoDto;
 import xyz.pangosoft.dtodo.model.Proforma;
 import net.sf.jasperreports.engine.JRException;
@@ -19,11 +19,11 @@ public interface IProformaService {
 
     public Page<Proforma> findAll(Pageable pageable);
 
-    Page<ProformaListadoDto> findAllListadoDto(String fechaIni, String fechaFin, Pageable pageable);
+    Page<ProformaDto> findAllListadoDto(String fechaIni, String fechaFin, Pageable pageable);
 
-    Page<ProformaListadoDto> searchListadoDto(String fechaIni, String fechaFin, String filtro, Pageable pageable);
+    Page<ProformaDto> searchListadoDto(String fechaIni, String fechaFin, String filtro, Pageable pageable);
 
-    Page<ProformaListadoDto> findUltimasListadoDto(String filtro, Pageable pageable);
+    Page<ProformaDto> findUltimasListadoDto(String filtro, Pageable pageable);
 
     Page<DetalleDocumentoDto> findDetalleDto(Long idProforma, Pageable pageable);
 
@@ -43,7 +43,7 @@ public interface IProformaService {
 
     public List<Proforma> proformasPorFecha(String iniDate, String endDate);
 
-    public List<ProformaDto> proformasPorFechaSp(String iniDate, String endDate);
+    public List<ProformaFechaDto> proformasPorFechaSp(String iniDate, String endDate);
 
     // REPORTES PARA PROFORMAS
 

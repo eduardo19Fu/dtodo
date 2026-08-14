@@ -1,6 +1,6 @@
 package xyz.pangosoft.dtodo.repository;
 
-import xyz.pangosoft.dtodo.dto.NotaCreditoListDto;
+import xyz.pangosoft.dtodo.dto.NotaCreditoDto;
 import xyz.pangosoft.dtodo.model.NotaCredito;
 import xyz.pangosoft.dtodo.model.enums.EstadoNotaCreditoEnum;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -34,31 +34,31 @@ public interface INotaCreditoRepository extends JpaRepository<NotaCredito, Long>
      */
     boolean existsByNoProforma(String noProforma);
 
-    @Query("SELECT new xyz.pangosoft.dtodo.dto.NotaCreditoListDto("
+    @Query("SELECT new xyz.pangosoft.dtodo.dto.NotaCreditoDto("
             + "nc.idNotaCredito, nc.total, nc.usuario.usuario, nc.cliente.nombre, nc.cliente.nit, nc.correlativoFacturaSat, "
             + "nc.serieFacturaSat, nc.tipoDocumentoOrigen, nc.noProforma, "
             + "nc.fechaCreacion, nc.fechaEntregaEstimada, nc.estado) "
             + "FROM NotaCredito nc "
             + "ORDER BY nc.idNotaCredito DESC")
-    List<NotaCreditoListDto> findAllAsDto();
+    List<NotaCreditoDto> findAllAsDto();
 
-    @Query("SELECT new xyz.pangosoft.dtodo.dto.NotaCreditoListDto("
+    @Query("SELECT new xyz.pangosoft.dtodo.dto.NotaCreditoDto("
             + "nc.idNotaCredito, nc.total, nc.usuario.usuario, nc.cliente.nombre, nc.cliente.nit, nc.correlativoFacturaSat, "
             + "nc.serieFacturaSat, nc.tipoDocumentoOrigen, nc.noProforma, "
             + "nc.fechaCreacion, nc.fechaEntregaEstimada, nc.estado) "
             + "FROM NotaCredito nc "
             + "WHERE nc.estado = ?1 "
             + "ORDER BY nc.idNotaCredito DESC")
-    List<NotaCreditoListDto> findByEstadoAsDto(EstadoNotaCreditoEnum estado);
+    List<NotaCreditoDto> findByEstadoAsDto(EstadoNotaCreditoEnum estado);
 
-    @Query("SELECT new xyz.pangosoft.dtodo.dto.NotaCreditoListDto(" +
+    @Query("SELECT new xyz.pangosoft.dtodo.dto.NotaCreditoDto(" +
             "nc.idNotaCredito, nc.total, nc.usuario.usuario, nc.cliente.nombre, nc.cliente.nit, " +
             "nc.correlativoFacturaSat, nc.serieFacturaSat, nc.tipoDocumentoOrigen, nc.noProforma, " +
             "nc.fechaCreacion, nc.fechaEntregaEstimada, nc.estado) " +
             "FROM NotaCredito nc ORDER BY nc.fechaCreacion DESC")
-    List<NotaCreditoListDto> findUltimasAsDto(Pageable pageable);
+    List<NotaCreditoDto> findUltimasAsDto(Pageable pageable);
 
-    @Query("SELECT new xyz.pangosoft.dtodo.dto.NotaCreditoListDto(" +
+    @Query("SELECT new xyz.pangosoft.dtodo.dto.NotaCreditoDto(" +
             "nc.idNotaCredito, nc.total, nc.usuario.usuario, nc.cliente.nombre, nc.cliente.nit, " +
             "nc.correlativoFacturaSat, nc.serieFacturaSat, nc.tipoDocumentoOrigen, nc.noProforma, " +
             "nc.fechaCreacion, nc.fechaEntregaEstimada, nc.estado) " +
@@ -73,7 +73,7 @@ public interface INotaCreditoRepository extends JpaRepository<NotaCredito, Long>
             "OR lower(str(nc.tipoDocumentoOrigen)) LIKE lower(concat('%', :filtro, '%')) " +
             "OR lower(str(nc.estado)) LIKE lower(concat('%', :filtro, '%'))) " +
             "ORDER BY nc.fechaCreacion DESC")
-    Page<NotaCreditoListDto> findByFechasAsDto(@Param("fechaIni") LocalDateTime fechaIni,
+    Page<NotaCreditoDto> findByFechasAsDto(@Param("fechaIni") LocalDateTime fechaIni,
                                                 @Param("fechaFin") LocalDateTime fechaFin,
                                                 @Param("filtro") String filtro,
                                                 Pageable pageable);

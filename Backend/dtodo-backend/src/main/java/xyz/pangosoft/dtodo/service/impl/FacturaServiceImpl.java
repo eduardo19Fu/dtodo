@@ -23,7 +23,7 @@ import javax.sql.DataSource;
 
 import xyz.pangosoft.dtodo.error.exceptions.NoContentException;
 import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
-import xyz.pangosoft.dtodo.dto.FacturaListadoDto;
+import xyz.pangosoft.dtodo.dto.FacturaDto;
 import xyz.pangosoft.dtodo.dto.DetalleDocumentoDto;
 import xyz.pangosoft.dtodo.error.exceptions.NotFoundException;
 import xyz.pangosoft.dtodo.error.exceptions.ReportGenerationException;
@@ -136,7 +136,7 @@ public class FacturaServiceImpl implements IFacturaService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public Page<FacturaListadoDto> findAllListadoDto(String fechaIni, String fechaFin, Pageable pageable) {
+	public Page<FacturaDto> findAllListadoDto(String fechaIni, String fechaFin, Pageable pageable) {
 		Date[] rango = parseDateRange(fechaIni, fechaFin);
 		try {
 			return repoFactura.findAllListadoDto(rango[0], rango[1], pageable);
@@ -149,7 +149,7 @@ public class FacturaServiceImpl implements IFacturaService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public Page<FacturaListadoDto> searchListadoDto(String fechaIni, String fechaFin, String filtro, Pageable pageable) {
+	public Page<FacturaDto> searchListadoDto(String fechaIni, String fechaFin, String filtro, Pageable pageable) {
 		Date[] rango = parseDateRange(fechaIni, fechaFin);
 		String filtroAdaptado = filtro == null ? "" : filtro.trim().replaceAll("\\s+", " ");
 		try {
@@ -163,9 +163,9 @@ public class FacturaServiceImpl implements IFacturaService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public Page<FacturaListadoDto> findUltimasListadoDto(String filtro, Pageable pageable) {
+	public Page<FacturaDto> findUltimasListadoDto(String filtro, Pageable pageable) {
 		try {
-			List<FacturaListadoDto> facturas = repoFactura.findUltimasListadoDto(PageRequest.of(0, 500));
+			List<FacturaDto> facturas = repoFactura.findUltimasListadoDto(PageRequest.of(0, 500));
 			String filtroNormalizado = filtro == null ? "" : filtro.trim().toLowerCase();
 			if (!filtroNormalizado.isEmpty()) {
 				facturas = facturas.stream()
@@ -182,7 +182,7 @@ public class FacturaServiceImpl implements IFacturaService {
 		}
 	}
 
-	private boolean coincideFiltro(FacturaListadoDto factura, String filtro) {
+	private boolean coincideFiltro(FacturaDto factura, String filtro) {
 		return contiene(factura.getCliente(), filtro)
 				|| contiene(factura.getNitCliente(), filtro)
 				|| contiene(factura.getVendedor(), filtro)

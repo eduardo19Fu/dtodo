@@ -1,7 +1,7 @@
 package xyz.pangosoft.dtodo.repository;
 
+import xyz.pangosoft.dtodo.dto.ProformaFechaDto;
 import xyz.pangosoft.dtodo.dto.ProformaDto;
-import xyz.pangosoft.dtodo.dto.ProformaListadoDto;
 import xyz.pangosoft.dtodo.dto.DetalleDocumentoDto;
 import xyz.pangosoft.dtodo.model.Proforma;
 import org.springframework.data.domain.Page;
@@ -22,28 +22,28 @@ public interface IProformaRepository extends JpaRepository<Proforma, Long> {
     List<Proforma> findAllProformas(@Param("date1") Date date1, @Param("date2") Date date2);
 
     @Query(value = "{call sp_consultar_proformas_dto(:date1, :date2)}", nativeQuery = true)
-    List<ProformaDto> findAllProformasDto(@Param("date1") Date date1, @Param("date2") Date date2);
+    List<ProformaFechaDto> findAllProformasDto(@Param("date1") Date date1, @Param("date2") Date date2);
 
     Optional<Proforma> findProformaByNoProforma(String noProforma);
 
-    @Query("select new xyz.pangosoft.dtodo.dto.ProformaListadoDto(" +
+    @Query("select new xyz.pangosoft.dtodo.dto.ProformaDto(" +
             "p.idProforma, p.noProforma, p.fechaEmision, p.total, e.idEstado, e.estado, " +
             "u.usuario, concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, '')), c.nombre, c.nit) " +
             "from Proforma p join p.estado e join p.usuario u join p.cliente c " +
             "order by p.fechaEmision desc")
-    List<ProformaListadoDto> findUltimasListadoDto(Pageable pageable);
+    List<ProformaDto> findUltimasListadoDto(Pageable pageable);
 
-    @Query("select new xyz.pangosoft.dtodo.dto.ProformaListadoDto(" +
+    @Query("select new xyz.pangosoft.dtodo.dto.ProformaDto(" +
             "p.idProforma, p.noProforma, p.fechaEmision, p.total, e.idEstado, e.estado, " +
             "u.usuario, concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, '')), c.nombre, c.nit) " +
             "from Proforma p join p.estado e join p.usuario u join p.cliente c " +
             "where p.fechaEmision >= :fechaIni and p.fechaEmision < :fechaFin " +
             "order by p.fechaEmision desc")
-    Page<ProformaListadoDto> findAllListadoDto(@Param("fechaIni") Date fechaIni,
+    Page<ProformaDto> findAllListadoDto(@Param("fechaIni") Date fechaIni,
                                                 @Param("fechaFin") Date fechaFin,
                                                 Pageable pageable);
 
-    @Query("select new xyz.pangosoft.dtodo.dto.ProformaListadoDto(" +
+    @Query("select new xyz.pangosoft.dtodo.dto.ProformaDto(" +
             "p.idProforma, p.noProforma, p.fechaEmision, p.total, e.idEstado, e.estado, " +
             "u.usuario, concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, '')), c.nombre, c.nit) " +
             "from Proforma p join p.estado e join p.usuario u join p.cliente c " +
@@ -54,7 +54,7 @@ public interface IProformaRepository extends JpaRepository<Proforma, Long> {
             "lower(concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, ''))) like lower(concat('%', :filtro, '%')) or " +
             "lower(p.noProforma) like lower(concat('%', :filtro, '%'))) " +
             "order by p.fechaEmision desc")
-    Page<ProformaListadoDto> searchListadoDto(@Param("fechaIni") Date fechaIni,
+    Page<ProformaDto> searchListadoDto(@Param("fechaIni") Date fechaIni,
                                                @Param("fechaFin") Date fechaFin,
                                                @Param("filtro") String filtro,
                                                Pageable pageable);

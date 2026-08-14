@@ -1,6 +1,6 @@
 package xyz.pangosoft.dtodo.service;
 
-import xyz.pangosoft.dtodo.dto.NotaCreditoListDto;
+import xyz.pangosoft.dtodo.dto.NotaCreditoDto;
 import xyz.pangosoft.dtodo.model.NotaCredito;
 import xyz.pangosoft.dtodo.model.enums.EstadoNotaCreditoEnum;
 
@@ -10,13 +10,13 @@ import org.springframework.data.domain.Pageable;
 
 public interface INotaCreditoService {
 
-    public List<NotaCreditoListDto> findNotas();
+    public List<NotaCreditoDto> findNotas();
 
-    public List<NotaCreditoListDto> findNotasActivas(EstadoNotaCreditoEnum estado);
+    public List<NotaCreditoDto> findNotasActivas(EstadoNotaCreditoEnum estado);
 
-    Page<NotaCreditoListDto> findUltimas(String filtro, Pageable pageable);
+    Page<NotaCreditoDto> findUltimas(String filtro, Pageable pageable);
 
-    Page<NotaCreditoListDto> findPorFechas(String fechaIni, String fechaFin, String filtro, Pageable pageable);
+    Page<NotaCreditoDto> findPorFechas(String fechaIni, String fechaFin, String filtro, Pageable pageable);
 
     public NotaCredito findNota(Long idNota);
 

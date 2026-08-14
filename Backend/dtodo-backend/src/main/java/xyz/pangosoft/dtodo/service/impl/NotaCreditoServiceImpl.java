@@ -1,6 +1,6 @@
 package xyz.pangosoft.dtodo.service.impl;
 
-import xyz.pangosoft.dtodo.dto.NotaCreditoListDto;
+import xyz.pangosoft.dtodo.dto.NotaCreditoDto;
 import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
 import xyz.pangosoft.dtodo.error.exceptions.DuplicateNotaCreditoException;
 import xyz.pangosoft.dtodo.error.exceptions.NotFoundException;
@@ -55,12 +55,12 @@ public class NotaCreditoServiceImpl implements INotaCreditoService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<NotaCreditoListDto> findNotas() {
+    public List<NotaCreditoDto> findNotas() {
         String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
         log.debug("Enter {}", __method);
 
         try {
-            List<NotaCreditoListDto> notas = notaCreditoRepository.findAllAsDto();
+            List<NotaCreditoDto> notas = notaCreditoRepository.findAllAsDto();
             log.info("Retornando listado de {} notas de credito registradas", notas.size());
             return notas;
         } catch (DataAccessException e) {
@@ -74,12 +74,12 @@ public class NotaCreditoServiceImpl implements INotaCreditoService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<NotaCreditoListDto> findNotasActivas(EstadoNotaCreditoEnum estado) {
+    public List<NotaCreditoDto> findNotasActivas(EstadoNotaCreditoEnum estado) {
         String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
         log.debug("Enter {}", __method);
 
         try {
-            List<NotaCreditoListDto> notas = notaCreditoRepository.findByEstadoAsDto(estado);
+            List<NotaCreditoDto> notas = notaCreditoRepository.findByEstadoAsDto(estado);
             log.info("Retornando listado de {} notas de credito con estado: {}", notas.size(), estado);
             return notas;
         } catch (DataAccessException e) {
@@ -92,9 +92,9 @@ public class NotaCreditoServiceImpl implements INotaCreditoService {
 
     @Transactional(readOnly = true)
     @Override
-    public Page<NotaCreditoListDto> findUltimas(String filtro, Pageable pageable) {
+    public Page<NotaCreditoDto> findUltimas(String filtro, Pageable pageable) {
         try {
-            List<NotaCreditoListDto> notas = notaCreditoRepository.findUltimasAsDto(PageRequest.of(0, 500));
+            List<NotaCreditoDto> notas = notaCreditoRepository.findUltimasAsDto(PageRequest.of(0, 500));
             String filtroNormalizado = filtro == null ? "" : filtro.trim().toLowerCase();
             if (!filtroNormalizado.isEmpty()) {
                 notas = notas.stream()
@@ -113,7 +113,7 @@ public class NotaCreditoServiceImpl implements INotaCreditoService {
 
     @Transactional(readOnly = true)
     @Override
-    public Page<NotaCreditoListDto> findPorFechas(String fechaIni, String fechaFin,
+    public Page<NotaCreditoDto> findPorFechas(String fechaIni, String fechaFin,
                                                    String filtro, Pageable pageable) {
         try {
             LocalDate inicio = LocalDate.parse(fechaIni);
@@ -133,7 +133,7 @@ public class NotaCreditoServiceImpl implements INotaCreditoService {
         }
     }
 
-    private boolean coincideFiltro(NotaCreditoListDto nota, String filtro) {
+    private boolean coincideFiltro(NotaCreditoDto nota, String filtro) {
         return contiene(nota.getIdNotaCredito(), filtro)
                 || contiene(nota.getUsuario(), filtro)
                 || contiene(nota.getCliente(), filtro)

@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import xyz.pangosoft.dtodo.model.MarcaProducto;
+import xyz.pangosoft.dtodo.dto.MarcaProductoDto;
 
 public interface IMarcaProductoService {
 
@@ -14,6 +15,8 @@ public interface IMarcaProductoService {
 	
 	// Devuelve un listado paginable PARA el frontend
 	public Page<MarcaProducto> findAll(Pageable pageable);
+
+	public Page<MarcaProductoDto> findListado(String filtro, Pageable pageable);
 
 	// Devuelve la marca encontrada por su id en la base de datos
 	public MarcaProducto findById(Integer idMarca);

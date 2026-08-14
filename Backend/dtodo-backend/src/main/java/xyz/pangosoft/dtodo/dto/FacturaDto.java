@@ -12,7 +12,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class FacturaListadoDto {
+public class FacturaDto {
     private Long idFactura;
     private Long noFactura;
     private String serie;

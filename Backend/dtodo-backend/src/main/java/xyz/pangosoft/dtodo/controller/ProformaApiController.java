@@ -1,7 +1,7 @@
 package xyz.pangosoft.dtodo.controller;
 
+import xyz.pangosoft.dtodo.dto.ProformaFechaDto;
 import xyz.pangosoft.dtodo.dto.ProformaDto;
-import xyz.pangosoft.dtodo.dto.ProformaListadoDto;
 import xyz.pangosoft.dtodo.dto.DetalleDocumentoDto;
 import xyz.pangosoft.dtodo.model.Proforma;
 import xyz.pangosoft.dtodo.service.IEstadoService;
@@ -53,7 +53,7 @@ public class ProformaApiController {
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @GetMapping("/proformas-dto/page/{page}")
-    public ResponseEntity<Page<ProformaListadoDto>> getListadoDto(
+    public ResponseEntity<Page<ProformaDto>> getListadoDto(
             @PathVariable("page") Integer page,
             @RequestParam("fechaIni") String fechaIni,
             @RequestParam("fechaFin") String fechaFin,
@@ -64,7 +64,7 @@ public class ProformaApiController {
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @GetMapping("/proformas-dto/search/{page}")
-    public ResponseEntity<Page<ProformaListadoDto>> searchListadoDto(
+    public ResponseEntity<Page<ProformaDto>> searchListadoDto(
             @PathVariable("page") Integer page,
             @RequestParam("fechaIni") String fechaIni,
             @RequestParam("fechaFin") String fechaFin,
@@ -76,7 +76,7 @@ public class ProformaApiController {
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @GetMapping("/proformas-dto/ultimas/{page}")
-    public ResponseEntity<Page<ProformaListadoDto>> getUltimasListadoDto(
+    public ResponseEntity<Page<ProformaDto>> getUltimasListadoDto(
             @PathVariable("page") Integer page,
             @RequestParam(value = "filtro", defaultValue = "") String filtro,
             @RequestParam(value = "size", defaultValue = "5") Integer size) {
@@ -153,10 +153,10 @@ public class ProformaApiController {
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @GetMapping("/proformas/get-listado-dto/get")
-    public ResponseEntity<List<ProformaDto>> getProformasPorFechaSp(@RequestParam(value = "date1", required = false) String fechaIni,
+    public ResponseEntity<List<ProformaFechaDto>> getProformasPorFechaSp(@RequestParam(value = "date1", required = false) String fechaIni,
                                                                     @RequestParam(value = "date2", required = false) String fechaFin)
     {
-        List<ProformaDto> proformas = new ArrayList<>();
+        List<ProformaFechaDto> proformas = new ArrayList<>();
         proformas = proformaService.proformasPorFechaSp(fechaIni, fechaFin);
         return ResponseEntity.ok(proformas);
     }

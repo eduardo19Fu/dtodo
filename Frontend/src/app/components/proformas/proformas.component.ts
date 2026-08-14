@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
-import { ProformaListadoDto } from '../../dtos/proformaListadoDto';
+import { ProformaDto } from '../../dtos/proforma-dto';
 import { ProformaService } from '../../services/proformas/proforma.service';
 import { AuthService } from '../../services/auth.service';
 
@@ -18,8 +18,8 @@ export class ProformasComponent implements OnInit, OnDestroy {
   title = 'Listado de Proformas';
   fechaIni: string;
   fechaFin: string;
-  proformaSeleccionada: ProformaListadoDto;
-  proformasDto: ProformaListadoDto[] = [];
+  proformaSeleccionada: ProformaDto;
+  proformasDto: ProformaDto[] = [];
 
   paginaActual = 0;
   totalPaginas = 0;
@@ -114,7 +114,7 @@ export class ProformasComponent implements OnInit, OnDestroy {
     this.cargarProformas(0);
   }
 
-  printProforma(proforma: ProformaListadoDto): void {
+  printProforma(proforma: ProformaDto): void {
     this.proformaService.getProformaPdf(proforma.idProforma).subscribe(response => {
       const url = window.URL.createObjectURL(response.data);
       window.open(url, '_blank');
@@ -123,7 +123,7 @@ export class ProformasComponent implements OnInit, OnDestroy {
       error.error?.message || 'Ha ocurrido un error inesperado', 'error'));
   }
 
-  abrirDetalle(proforma: ProformaListadoDto): void {
+  abrirDetalle(proforma: ProformaDto): void {
     Swal.fire({
       toast: true,
       position: 'top-end',

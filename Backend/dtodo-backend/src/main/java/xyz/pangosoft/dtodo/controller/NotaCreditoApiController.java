@@ -1,6 +1,6 @@
 package xyz.pangosoft.dtodo.controller;
 
-import xyz.pangosoft.dtodo.dto.NotaCreditoListDto;
+import xyz.pangosoft.dtodo.dto.NotaCreditoDto;
 import xyz.pangosoft.dtodo.model.NotaCredito;
 import xyz.pangosoft.dtodo.model.enums.EstadoNotaCreditoEnum;
 import xyz.pangosoft.dtodo.service.INotaCreditoService;
@@ -34,14 +34,14 @@ public class NotaCreditoApiController {
     private final INotaCreditoService notaCreditoService;
 
     @GetMapping(value = "/notas-credito")
-    public ResponseEntity<List<NotaCreditoListDto>> getNotasCredito() {
+    public ResponseEntity<List<NotaCreditoDto>> getNotasCredito() {
         log.info("Buscando listado de Notas de Credito");
         return ResponseEntity.ok(notaCreditoService.findNotas());
     }
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @GetMapping(value = "/notas-credito-dto/ultimas/{page}")
-    public ResponseEntity<Page<NotaCreditoListDto>> getUltimasNotas(
+    public ResponseEntity<Page<NotaCreditoDto>> getUltimasNotas(
             @PathVariable("page") Integer page,
             @RequestParam(value = "filtro", defaultValue = "") String filtro,
             @RequestParam(value = "size", defaultValue = "5") Integer size) {
@@ -50,7 +50,7 @@ public class NotaCreditoApiController {
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @GetMapping(value = "/notas-credito-dto/fechas/{page}")
-    public ResponseEntity<Page<NotaCreditoListDto>> getNotasPorFechas(
+    public ResponseEntity<Page<NotaCreditoDto>> getNotasPorFechas(
             @PathVariable("page") Integer page,
             @RequestParam("fechaIni") String fechaIni,
             @RequestParam("fechaFin") String fechaFin,
@@ -62,7 +62,7 @@ public class NotaCreditoApiController {
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @GetMapping(value = "/notas-credito/activas")
-    public ResponseEntity<List<NotaCreditoListDto>> getNotasCreditoActivas() {
+    public ResponseEntity<List<NotaCreditoDto>> getNotasCreditoActivas() {
         log.info("Buscando listado de Notas de Credito con estado ENTREGA_PENDIENTE");
         return ResponseEntity.ok(notaCreditoService.findNotasActivas(EstadoNotaCreditoEnum.ENTREGA_PENDIENTE));
     }
