@@ -73,7 +73,8 @@
 .notas-table .col-emisor { width: 140px; }
 .notas-table .col-cliente { width: 280px; }
 .notas-table .col-origen { text-align: center; width: 110px; }
-.notas-table .col-referencia { width: 130px; }
+.notas-table .col-referencia { width: 180px; }
+.notas-table td.col-referencia { overflow: hidden; }
 .notas-table .col-fecha { width: 130px; }
 .notas-table .col-fecha-entrega { width: 125px; }
 .notas-table .col-estado { text-align: center; width: 165px; }
