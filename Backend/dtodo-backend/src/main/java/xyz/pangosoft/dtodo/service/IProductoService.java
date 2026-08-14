@@ -48,4 +48,6 @@ public interface IProductoService {
 	public Resource cargar(String nombreImagen);
 
 	public byte[] inventarioPDF(String fechaIni, String fechaFin);
+
+	public byte[] productosExcel();
 }

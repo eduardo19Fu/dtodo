@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpEvent, HttpRequest } from '@angular/common/http';
+import { HttpClient, HttpEvent, HttpRequest, HttpResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
@@ -144,6 +144,18 @@ export class ProductoService {
   }
 
   /******** SERVICIO DE REPORTES **********/
+
+  exportarProductosExcel(): Observable<HttpResponse<Blob>> {
+    return this.http.get(`${this.url}/productos/excel`, {
+      observe: 'response',
+      responseType: 'blob'
+    }).pipe(
+      catchError(e => {
+        console.error(e);
+        return throwError(e);
+      })
+    );
+  }
 
 
   // Código original de subida de imagenes para productos

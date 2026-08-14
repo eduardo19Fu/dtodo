@@ -38,6 +38,7 @@ export class ListadoProductosMejoradoComponent implements OnInit, OnDestroy {
   private busquedaSubscription: Subscription;
 
   cargando: boolean = false;
+  exportando: boolean = false;
 
   constructor(
     public modalService: ModalService,
@@ -148,6 +149,40 @@ export class ListadoProductosMejoradoComponent implements OnInit, OnDestroy {
   abrirModal(producto: any): void {
     this.productoSeleccionado = producto;
     this.modalService.abrirModal();
+  }
+
+  exportarExcel(): void {
+    if (this.exportando) {
+      return;
+    }
+
+    this.exportando = true;
+    this.productoService.exportarProductosExcel().subscribe(
+      response => {
+        const disposition = response.headers.get('content-disposition');
+        const filenameMatch = disposition && disposition.match(/filename="?([^";]+)"?/i);
+        const filename = filenameMatch ? filenameMatch[1] : 'productos.xlsx';
+        const url = window.URL.createObjectURL(response.body);
+        const link = document.createElement('a');
+
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        this.exportando = false;
+      },
+      error => {
+        console.error(error);
+        this.exportando = false;
+        Swal.fire(
+          'Error al exportar productos',
+          error.error?.mensaje || 'No fue posible generar el archivo Excel',
+          'error'
+        );
+      }
+    );
   }
 
 }

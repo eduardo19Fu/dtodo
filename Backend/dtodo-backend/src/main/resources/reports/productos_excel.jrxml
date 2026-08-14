@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="productos_excel" pageWidth="1080" pageHeight="842" orientation="Landscape"
+              columnWidth="1040" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+    <property name="net.sf.jasperreports.export.xlsx.detect.cell.type" value="true"/>
+    <property name="net.sf.jasperreports.export.xlsx.remove.empty.space.between.rows" value="true"/>
+    <queryString language="SQL"><![CDATA[
+        SELECT p.cod_producto AS codigo,
+               p.nombre AS nombre,
+               p.precio_compra AS precio_compra,
+               p.precio_venta AS precio_venta,
+               p.porcentaje_ganancia AS porcentaje_ganancia,
+               p.stock AS stock,
+               COALESCE(m.marca, '') AS marca,
+               COALESCE(tp.tipo_producto, '') AS tipo
+          FROM productos p
+          LEFT JOIN marcas_producto m ON m.id_marca_producto = p.id_marca_producto
+          LEFT JOIN tipos_producto tp ON tp.id_tipo_producto = p.id_tipo_producto
+         ORDER BY p.nombre
+    ]]></queryString>
+    <field name="codigo" class="java.lang.String"/>
+    <field name="nombre" class="java.lang.String"/>
+    <field name="precio_compra" class="java.math.BigDecimal"/>
+    <field name="precio_venta" class="java.math.BigDecimal"/>
+    <field name="porcentaje_ganancia" class="java.lang.Float"/>
+    <field name="stock" class="java.lang.Integer"/>
+    <field name="marca" class="java.lang.String"/>
+    <field name="tipo" class="java.lang.String"/>
+    <title>
+        <band height="45">
+            <staticText>
+                <reportElement x="0" y="0" width="1040" height="35" forecolor="#FFFFFF" backcolor="#343A40" mode="Opaque"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle"><font size="18" isBold="true"/></textElement>
+                <text><![CDATA[Listado de Productos]]></text>
+            </staticText>
+        </band>
+    </title>
+    <columnHeader>
+        <band height="30">
+            <staticText><reportElement x="0" y="0" width="110" height="30" forecolor="#FFFFFF" backcolor="#6C757D" mode="Opaque"/><box><pen lineWidth="0.5" lineColor="#CED4DA"/></box><textElement verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><text><![CDATA[Código]]></text></staticText>
+            <staticText><reportElement x="110" y="0" width="260" height="30" forecolor="#FFFFFF" backcolor="#6C757D" mode="Opaque"/><box><pen lineWidth="0.5" lineColor="#CED4DA"/></box><textElement verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><text><![CDATA[Nombre]]></text></staticText>
+            <staticText><reportElement x="370" y="0" width="120" height="30" forecolor="#FFFFFF" backcolor="#6C757D" mode="Opaque"/><box><pen lineWidth="0.5" lineColor="#CED4DA"/></box><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><text><![CDATA[Precio Compra]]></text></staticText>
+            <staticText><reportElement x="490" y="0" width="120" height="30" forecolor="#FFFFFF" backcolor="#6C757D" mode="Opaque"/><box><pen lineWidth="0.5" lineColor="#CED4DA"/></box><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><text><![CDATA[Precio Venta]]></text></staticText>
+            <staticText><reportElement x="610" y="0" width="110" height="30" forecolor="#FFFFFF" backcolor="#6C757D" mode="Opaque"/><box><pen lineWidth="0.5" lineColor="#CED4DA"/></box><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><text><![CDATA[% Ganancia]]></text></staticText>
+            <staticText><reportElement x="720" y="0" width="70" height="30" forecolor="#FFFFFF" backcolor="#6C757D" mode="Opaque"/><box><pen lineWidth="0.5" lineColor="#CED4DA"/></box><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><text><![CDATA[Stock]]></text></staticText>
+            <staticText><reportElement x="790" y="0" width="130" height="30" forecolor="#FFFFFF" backcolor="#6C757D" mode="Opaque"/><box><pen lineWidth="0.5" lineColor="#CED4DA"/></box><textElement verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><text><![CDATA[Marca]]></text></staticText>
+            <staticText><reportElement x="920" y="0" width="120" height="30" forecolor="#FFFFFF" backcolor="#6C757D" mode="Opaque"/><box><pen lineWidth="0.5" lineColor="#CED4DA"/></box><textElement verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><text><![CDATA[Tipo]]></text></staticText>
+        </band>
+    </columnHeader>
+    <detail>
+        <band height="24">
+            <textField isBlankWhenNull="true"><reportElement x="0" y="0" width="110" height="24"/><box><pen lineWidth="0.5" lineColor="#DEE2E6"/></box><textElement verticalAlignment="Middle"><font size="9"/></textElement><textFieldExpression><![CDATA[$F{codigo}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement x="110" y="0" width="260" height="24"/><box><pen lineWidth="0.5" lineColor="#DEE2E6"/></box><textElement verticalAlignment="Middle"><font size="9"/></textElement><textFieldExpression><![CDATA[$F{nombre}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00" isBlankWhenNull="true"><reportElement x="370" y="0" width="120" height="24"/><box><pen lineWidth="0.5" lineColor="#DEE2E6"/></box><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9"/></textElement><textFieldExpression><![CDATA[$F{precio_compra}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00" isBlankWhenNull="true"><reportElement x="490" y="0" width="120" height="24"/><box><pen lineWidth="0.5" lineColor="#DEE2E6"/></box><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9"/></textElement><textFieldExpression><![CDATA[$F{precio_venta}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00" isBlankWhenNull="true"><reportElement x="610" y="0" width="110" height="24"/><box><pen lineWidth="0.5" lineColor="#DEE2E6"/></box><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9"/></textElement><textFieldExpression><![CDATA[$F{porcentaje_ganancia}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement x="720" y="0" width="70" height="24"/><box><pen lineWidth="0.5" lineColor="#DEE2E6"/></box><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9"/></textElement><textFieldExpression><![CDATA[$F{stock}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement x="790" y="0" width="130" height="24"/><box><pen lineWidth="0.5" lineColor="#DEE2E6"/></box><textElement verticalAlignment="Middle"><font size="9"/></textElement><textFieldExpression><![CDATA[$F{marca}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement x="920" y="0" width="120" height="24"/><box><pen lineWidth="0.5" lineColor="#DEE2E6"/></box><textElement verticalAlignment="Middle"><font size="9"/></textElement><textFieldExpression><![CDATA[$F{tipo}]]></textFieldExpression></textField>
+        </band>
+    </detail>
+</jasperReport>

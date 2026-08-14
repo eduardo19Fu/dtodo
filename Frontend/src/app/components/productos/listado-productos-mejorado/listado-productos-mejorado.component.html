@@ -10,6 +10,15 @@
                     <i class="fas fa-plus-circle"></i>
                     Nuevo
                 </a>
+                <button type="button"
+                        class="btn bg-gradient-info ml-2"
+                        *ngIf="auth.hasRole('ROLE_ADMIN')"
+                        [disabled]="exportando"
+                        (click)="exportarExcel()">
+                    <span *ngIf="exportando" class="spinner-border spinner-border-sm mr-1" role="status" aria-hidden="true"></span>
+                    <i *ngIf="!exportando" class="fas fa-file-excel mr-1"></i>
+                    {{exportando ? 'Generando...' : 'Exportar Excel'}}
+                </button>
             </div>
         </div>
     </div>
