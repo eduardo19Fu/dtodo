@@ -68,18 +68,51 @@ public class ProductoApiController {
 
 	@GetMapping(value = "/productos-dto/page/{page}")
 	public ResponseEntity<Page<ProductoDtoMejorado>> getPageDto(@PathVariable("page") Integer page,
-																@RequestParam(value = "size", defaultValue = "5") Integer size)
+																@RequestParam(value = "size", defaultValue = "5") Integer size,
+																@RequestParam(value = "orden", defaultValue = "nombre") String orden,
+																@RequestParam(value = "direccion", defaultValue = "asc") String direccion)
 	{
-		return ResponseEntity.ok(serviceProducto.findAllDtoMejorado(PageRequest.of(page, size)));
+		return ResponseEntity.ok(serviceProducto.findAllDtoMejorado(
+				validarOrden(orden), validarDireccion(direccion), PageRequest.of(page, size)));
 	}
 
 	@GetMapping(value = "/productos-dto/search/{page}")
 	public ResponseEntity<Page<ProductoDtoMejorado>> searchProductosDto(
 																@PathVariable("page") Integer page,
 																@RequestParam(required = false) String filtro,
-																@RequestParam(value = "size", defaultValue = "5") Integer size)
+																@RequestParam(value = "size", defaultValue = "5") Integer size,
+																@RequestParam(value = "orden", defaultValue = "nombre") String orden,
+																@RequestParam(value = "direccion", defaultValue = "asc") String direccion)
 	{
-		return ResponseEntity.ok(serviceProducto.searchProductoDtoMejorado(filtro, PageRequest.of(page, size)));
+		return ResponseEntity.ok(serviceProducto.searchProductoDtoMejorado(
+				filtro, validarOrden(orden), validarDireccion(direccion), PageRequest.of(page, size)));
+	}
+
+	private String validarOrden(String orden) {
+		switch (orden == null ? "" : orden.toLowerCase()) {
+			case "codigo":
+				return "codigo";
+			case "nombre":
+				return "nombre";
+			case "preciocompra":
+				return "precioCompra";
+			case "precioventa":
+				return "precioVenta";
+			case "stock":
+				return "stock";
+			case "tipo":
+				return "tipo";
+			case "marca":
+				return "marca";
+			case "estado":
+				return "estado";
+			default:
+				return "nombre";
+		}
+	}
+
+	private String validarDireccion(String direccion) {
+		return "desc".equalsIgnoreCase(direccion) ? "desc" : "asc";
 	}
 
 	@GetMapping(value = "/productos/page/{page}")

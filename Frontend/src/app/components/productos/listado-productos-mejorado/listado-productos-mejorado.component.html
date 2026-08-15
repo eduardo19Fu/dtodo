@@ -53,7 +53,7 @@
                     <input type="text" class="form-control form-control-sm"
                            [value]="filtro"
                            (input)="onBuscar($event.target.value)"
-                           placeholder="">
+                           placeholder="C&oacute;digo, nombre, tipo, marca o estado">
                 </div>
             </div>
         </div>
@@ -77,14 +77,14 @@
             *ngIf="!cargando && productosDto?.length > 0">
             <thead>
                 <tr>
-                    <th class="col-codigo">C&oacute;digo</th>
-                    <th class="col-nombre">Nombre</th>
-                    <th class="col-precio" *ngIf="auth.hasRole('ROLE_ADMIN')">Precio Compra</th>
-                    <th class="col-precio">Precio Venta</th>
-                    <th class="col-stock">Stock</th>
-                    <th class="col-tipo">Tipo</th>
-                    <th class="col-marca">Marca</th>
-                    <th class="col-estado">Estado</th>
+                    <th class="col-codigo"><button type="button" class="sort-header" (click)="ordenarPor('codigo')">C&oacute;digo <i [class]="iconoOrden('codigo')"></i></button></th>
+                    <th class="col-nombre"><button type="button" class="sort-header" (click)="ordenarPor('nombre')">Nombre <i [class]="iconoOrden('nombre')"></i></button></th>
+                    <th class="col-precio" *ngIf="auth.hasRole('ROLE_ADMIN')"><button type="button" class="sort-header" (click)="ordenarPor('precioCompra')">Precio Compra <i [class]="iconoOrden('precioCompra')"></i></button></th>
+                    <th class="col-precio"><button type="button" class="sort-header" (click)="ordenarPor('precioVenta')">Precio Venta <i [class]="iconoOrden('precioVenta')"></i></button></th>
+                    <th class="col-stock"><button type="button" class="sort-header" (click)="ordenarPor('stock')">Stock <i [class]="iconoOrden('stock')"></i></button></th>
+                    <th class="col-tipo"><button type="button" class="sort-header" (click)="ordenarPor('tipo')">Tipo <i [class]="iconoOrden('tipo')"></i></button></th>
+                    <th class="col-marca"><button type="button" class="sort-header" (click)="ordenarPor('marca')">Marca <i [class]="iconoOrden('marca')"></i></button></th>
+                    <th class="col-estado"><button type="button" class="sort-header" (click)="ordenarPor('estado')">Estado <i [class]="iconoOrden('estado')"></i></button></th>
                     <th class="col-opciones">Opciones</th>
                 </tr>
             </thead>
