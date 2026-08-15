@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Correlativo } from 'src/app/models/correlativo';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 
 import { global } from '../global';
@@ -33,6 +33,17 @@ export class CorrelativoService {
         return response;
       })
     );
+  }
+
+  getListado(page: number, size: number, filtro: string,
+             orden: string, direccion: 'asc' | 'desc'): Observable<any> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString())
+      .set('filtro', filtro || '')
+      .set('orden', orden)
+      .set('direccion', direccion);
+    return this.http.get<any>(`${this.url}/correlativos/listado`, {params});
   }
 
   getCorrelativo(id: number): Observable<Correlativo>{

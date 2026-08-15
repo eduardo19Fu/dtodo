@@ -1,100 +1,117 @@
-<!-- Content Header (Page header) -->
-<div class="content-header">
-    <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-sm-6">
-                <h1 class="m-0 text-dark">
-                    {{title}}
-                </h1>
-            </div><!-- /.col -->
-        </div><!-- /.row -->
-        <hr>
-        <div class="row">
-            <div class="col s6">
-                <a *ngIf="authService.hasRole('ROLE_ADMIN') || authService.hasRole('ROLE_COBRADOR')"
-                    [routerLink]="['/facturas/correlativos/create']" class="btn bg-gradient-success"><i
-                        class="fas fa-plus-square"></i>&nbsp; Nuevo</a>
-            </div>
-        </div>
-    </div><!-- /.container-fluid -->
-</div>
-<!-- /.content-header -->
+<section class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1>{{title}}</h1>
+        <br>
+        <a *ngIf="authService.hasRole('ROLE_ADMIN')"
+           [routerLink]="['/facturas/correlativos/create']" class="btn bg-gradient-success">
+          <i class="fas fa-plus-circle"></i> Nuevo
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
 
 <div class="card">
-    <div class="card-header">
-        <h3 class="card-title">Listado</h3>
-    </div>
-    <!-- /.card-header -->
-    <div class="card-body table-responsive">
-
-        <div *ngIf="correlativos?.length == 0" class="alert alert-info alert-dismissible">
-            <h5>
-                <i class="icon fas fa-info"></i>
-                Atención!
-            </h5>
-
-            No existe ningún correlativo registrado en la base de datos!
+  <div class="card-header">Listado de Correlativos</div>
+  <div class="card-body table-responsive">
+    <div class="row mb-2 align-items-center table-controls">
+      <div class="col-sm-4">
+        <div class="d-inline-flex align-items-center">
+          <label class="mb-0 mr-2">Mostrar</label>
+          <select class="form-control form-control-sm page-size-select"
+                  [ngModel]="pageSize" (ngModelChange)="cambiarPageSize($event)">
+            <option *ngFor="let opt of pageSizeOptions" [ngValue]="opt">{{opt}}</option>
+          </select>
+          <label class="mb-0 ml-2">registros</label>
         </div>
-
-        <table id="correlativos" class="table table-hover table-striped table-bordered dataTable dtr-inline table-sm" role="grid" 
-            *ngIf="correlativos?.length > 0">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Corr. Inicial</th>
-                    <th>Corr. Final</th>
-                    <th>Corr. Actual</th>
-                    <th>Fecha Registro</th>
-                    <th>Usuario Asignado</th>
-                    <th>Estado</th>
-                    <th *ngIf="authService.hasRole('ROLE_ADMIN')">Opciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let correlativo of correlativos">
-                    <td>{{correlativo.idCorrelativo}}</td>
-                    <td>{{correlativo.correlativoInicial}}</td>
-                    <td>{{correlativo.correlativoFinal}}</td>
-                    <td>{{correlativo.correlativoActual}}</td>
-                    <td>{{correlativo.fechaCreacion | date: 'dd/MM/yyyy - hh:mm'}}</td>
-                    <td>{{correlativo.usuario.usuario}}</td>
-                    <td>
-                        <span class="badge" 
-                            [ngClass]="{'badge-primary': correlativo.estado.estado === 'ACTIVO',
-                                'badge-danger' : correlativo.estado.estado === 'ANULADO',
-                                'badge-secondary' : correlativo.estado.estado === 'INACTIVO'}">
-                            {{correlativo.estado.estado}}
-                        </span>
-                    </td>
-                    <td *ngIf="authService.hasRole('ROLE_ADMIN')">
-
-                        <button class="btn bg-gradient-info margin" name="edit" type="button"
-                            [routerLink]="['/facturas/correlativos/create', correlativo.idCorrelativo]">
-                            <i class="fas fa-edit"></i>
-                        </button>
-
-                        <!-- Aquí va el botón de eliminar -->
-                        <button class="btn bg-gradient-danger margin" name="delete"
-                            type="button" (click)="anularCorrelativo(correlativo)">
-                            <i class="fas fa-ban"></i>
-                        </button>
-                    </td>
-                </tr>
-            </tbody>
-            <tfoot>
-                <tr>
-                    <th>ID</th>
-                    <th>Corr. Inicial</th>
-                    <th>Corr. Final</th>
-                    <th>Corr. Actual</th>
-                    <th>Fecha Registro</th>
-                    <th>Usuario Asignado</th>
-                    <th>Estado</th>
-                    <th *ngIf="authService.hasRole('ROLE_ADMIN')">Opciones</th>
-                </tr>
-            </tfoot>
-        </table>
+      </div>
+      <div class="col-sm-4 text-center">
+        <span *ngIf="correlativos.length > 0" class="info-paginacion">
+          Mostrando registros del <strong>{{paginaActual * pageSize + 1}}</strong>
+          al <strong>{{paginaActual * pageSize + correlativos.length}}</strong>
+          de un total de <strong>{{totalElementos}}</strong> registros
+        </span>
+      </div>
+      <div class="col-sm-4">
+        <div class="d-inline-flex align-items-center float-right search-control">
+          <label class="mb-0 mr-2">Búsqueda:</label>
+          <input type="text" class="form-control form-control-sm" [value]="filtro"
+                 (input)="onBuscar($event.target.value)"
+                 placeholder="Correlativo, serie, usuario o estado">
+        </div>
+      </div>
     </div>
-    <!-- /.card-body -->
-</div>
 
+    <div *ngIf="cargando" class="text-center p-4">
+      <div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div>
+    </div>
+
+    <div *ngIf="!cargando && correlativos.length === 0" class="alert alert-info">
+      <h5><i class="icon fas fa-info"></i> Atención!</h5>
+      No se encontraron correlativos con el filtro indicado.
+    </div>
+
+    <table class="table table-hover table-striped table-bordered table-sm mt-0 correlativos-table"
+           *ngIf="!cargando && correlativos.length > 0">
+      <thead>
+        <tr>
+          <th class="col-id"><button type="button" class="sort-header" (click)="ordenarPor('id')">ID <i [class]="iconoOrden('id')"></i></button></th>
+          <th class="col-correlativo"><button type="button" class="sort-header" (click)="ordenarPor('inicial')">Corr. Inicial <i [class]="iconoOrden('inicial')"></i></button></th>
+          <th class="col-correlativo"><button type="button" class="sort-header" (click)="ordenarPor('final')">Corr. Final <i [class]="iconoOrden('final')"></i></button></th>
+          <th class="col-correlativo"><button type="button" class="sort-header" (click)="ordenarPor('actual')">Corr. Actual <i [class]="iconoOrden('actual')"></i></button></th>
+          <th class="col-serie"><button type="button" class="sort-header" (click)="ordenarPor('serie')">Serie <i [class]="iconoOrden('serie')"></i></button></th>
+          <th class="col-fecha"><button type="button" class="sort-header" (click)="ordenarPor('fecha')">Fecha Registro <i [class]="iconoOrden('fecha')"></i></button></th>
+          <th class="col-usuario"><button type="button" class="sort-header" (click)="ordenarPor('usuario')">Usuario Asignado <i [class]="iconoOrden('usuario')"></i></button></th>
+          <th class="col-estado"><button type="button" class="sort-header" (click)="ordenarPor('estado')">Estado <i [class]="iconoOrden('estado')"></i></button></th>
+          <th class="col-opciones" *ngIf="authService.hasRole('ROLE_ADMIN')">Opciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let correlativo of correlativos">
+          <td class="col-id">{{correlativo.idCorrelativo}}</td>
+          <td class="col-correlativo">{{correlativo.correlativoInicial}}</td>
+          <td class="col-correlativo">{{correlativo.correlativoFinal}}</td>
+          <td class="col-correlativo font-weight-bold">{{correlativo.correlativoActual}}</td>
+          <td class="col-serie"><span class="cell-ellipsis" [title]="correlativo.serie || ''">{{correlativo.serie || 'Sin serie'}}</span></td>
+          <td class="col-fecha">
+            <span class="fecha-principal">{{correlativo.fechaCreacion | date: 'dd/MM/yyyy'}}</span>
+            <small class="fecha-hora">{{correlativo.fechaCreacion | date: 'HH:mm'}}</small>
+          </td>
+          <td class="col-usuario"><span class="cell-ellipsis" [title]="correlativo.usuario || ''">{{correlativo.usuario || 'Sin usuario'}}</span></td>
+          <td class="col-estado">
+            <span class="badge"
+                  [ngClass]="{'badge-primary': correlativo.estado === 'ACTIVO',
+                              'badge-danger': correlativo.estado === 'ANULADO',
+                              'badge-secondary': correlativo.estado === 'INACTIVO'}">
+              {{correlativo.estado}}
+            </span>
+          </td>
+          <td class="col-opciones" *ngIf="authService.hasRole('ROLE_ADMIN')">
+            <div class="action-buttons">
+              <button class="btn bg-gradient-info btn-sm" type="button" placement="top" ngbTooltip="Editar"
+                      [routerLink]="['/facturas/correlativos/create', correlativo.idCorrelativo]">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="btn bg-gradient-danger btn-sm" type="button" placement="top" ngbTooltip="Anular"
+                      [disabled]="correlativo.estado === 'ANULADO'" (click)="anularCorrelativo(correlativo)">
+                <i class="fas fa-ban"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <nav *ngIf="!cargando && totalPaginas > 1" aria-label="Paginación de correlativos">
+      <ul class="pagination justify-content-center mt-3">
+        <li class="page-item" [ngClass]="{'disabled': isFirst}"><a class="page-link" href="javascript:void(0)" (click)="irPrimeraPagina()"><i class="fas fa-angle-double-left"></i></a></li>
+        <li class="page-item" [ngClass]="{'disabled': isFirst}"><a class="page-link" href="javascript:void(0)" (click)="irPaginaAnterior()"><i class="fas fa-angle-left"></i></a></li>
+        <li class="page-item" *ngFor="let pagina of paginasVisibles" [ngClass]="{'active': pagina === paginaActual}"><a class="page-link" href="javascript:void(0)" (click)="irAPagina(pagina)">{{pagina + 1}}</a></li>
+        <li class="page-item" [ngClass]="{'disabled': isLast}"><a class="page-link" href="javascript:void(0)" (click)="irPaginaSiguiente()"><i class="fas fa-angle-right"></i></a></li>
+        <li class="page-item" [ngClass]="{'disabled': isLast}"><a class="page-link" href="javascript:void(0)" (click)="irUltimaPagina()"><i class="fas fa-angle-double-right"></i></a></li>
+      </ul>
+    </nav>
+  </div>
+</div>
