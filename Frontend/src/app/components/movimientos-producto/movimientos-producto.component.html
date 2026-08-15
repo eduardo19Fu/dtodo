@@ -26,12 +26,11 @@
     <div class="card-body table-responsive">
 
         <!-- Controles superiores: selector de registros y búsqueda -->
-        <div class="row mb-2 align-items-center">
+        <div class="row mb-2 align-items-center table-controls">
             <div class="col-sm-4">
                 <div class="d-inline-flex align-items-center">
                     <label class="mb-0 mr-2">Mostrar</label>
-                    <select class="form-control form-control-sm"
-                            style="width: 70px; display: inline-block;"
+                    <select class="form-control form-control-sm page-size-select"
                             [ngModel]="pageSize"
                             (ngModelChange)="cambiarPageSize($event)">
                         <option *ngFor="let opt of pageSizeOptions" [ngValue]="opt">{{opt}}</option>
@@ -40,19 +39,19 @@
                 </div>
             </div>
             <div class="col-sm-4 text-center">
-                <span *ngIf="movimientosDto?.length > 0" style="color: #6c757d; font-size: 0.9rem;">
+                <span *ngIf="movimientosDto?.length > 0" class="info-paginacion">
                     Mostrando registros del <strong>{{paginaActual * pageSize + 1}}</strong>
                     al <strong>{{paginaActual * pageSize + movimientosDto.length}}</strong>
                     de un total de <strong>{{totalElementos}}</strong> registros
                 </span>
             </div>
             <div class="col-sm-4">
-                <div class="d-inline-flex align-items-center float-right">
+                <div class="d-inline-flex align-items-center float-right search-control">
                     <label class="mb-0 mr-2">Búsqueda:</label>
                     <input type="text" class="form-control form-control-sm"
                            [value]="filtro"
                            (input)="onBuscar($event.target.value)"
-                           placeholder="">
+                           placeholder="Producto, creador, tipo o No. movimiento">
                 </div>
             </div>
         </div>
@@ -72,35 +71,38 @@
             No existe ningún movimiento registrado en la base de datos!
         </div>
 
-        <table class="table table-hover table-striped table-bordered table-sm mt-0 table-top-border"
+        <table class="table table-hover table-striped table-bordered table-sm mt-0 movimientos-table"
             *ngIf="!cargando && movimientosDto?.length > 0">
             <thead>
                 <tr>
-                    <th>No. Movimiento</th>
-                    <th>Fecha</th>
-                    <th>Tipo de Movimiento</th>
-                    <th>Producto</th>
-                    <th>Stock Inicial</th>
-                    <th>Cantidad</th>
-                    <th>Creador</th>
+                    <th class="col-id"><button type="button" class="sort-header" (click)="ordenarPor('id')">No. Movimiento <i [class]="iconoOrden('id')"></i></button></th>
+                    <th class="col-fecha"><button type="button" class="sort-header" (click)="ordenarPor('fecha')">Fecha <i [class]="iconoOrden('fecha')"></i></button></th>
+                    <th class="col-producto"><button type="button" class="sort-header" (click)="ordenarPor('producto')">Producto <i [class]="iconoOrden('producto')"></i></button></th>
+                    <th class="col-stock"><button type="button" class="sort-header" (click)="ordenarPor('stock')">Stock Inicial <i [class]="iconoOrden('stock')"></i></button></th>
+                    <th class="col-cantidad"><button type="button" class="sort-header" (click)="ordenarPor('cantidad')">Cantidad <i [class]="iconoOrden('cantidad')"></i></button></th>
+                    <th class="col-creador"><button type="button" class="sort-header" (click)="ordenarPor('creador')">Creador <i [class]="iconoOrden('creador')"></i></button></th>
+                    <th class="col-tipo"><button type="button" class="sort-header" (click)="ordenarPor('tipo')">Tipo de Movimiento <i [class]="iconoOrden('tipo')"></i></button></th>
                 </tr>
             </thead>
 
             <tbody>
                 <tr *ngFor="let movimiento of movimientosDto">
-                    <td>{{movimiento.idMovimiento}}</td>
-                    <td>{{movimiento.fechaMovimiento | date: 'dd/MM/yyyy - HH:mm'}}</td>
-                    <td>
+                    <td class="col-id">{{movimiento.idMovimiento}}</td>
+                    <td class="col-fecha">
+                        <span class="fecha-principal">{{movimiento.fechaMovimiento | date: 'dd/MM/yyyy'}}</span>
+                        <small class="fecha-hora">{{movimiento.fechaMovimiento | date: 'HH:mm'}}</small>
+                    </td>
+                    <td class="col-producto"><span class="producto-nombre" [title]="movimiento.productoNombre">{{movimiento.productoNombre}}</span></td>
+                    <td class="col-stock">{{movimiento.stockInicial}}</td>
+                    <td class="col-cantidad">{{movimiento.cantidad}}</td>
+                    <td class="col-creador"><span class="cell-ellipsis" [title]="movimiento.usuarioNombre">{{movimiento.usuarioNombre}}</span></td>
+                    <td class="col-tipo">
                         <span class="badge"
                             [ngClass]="{'badge-warning': movimiento.tipoMovimiento === 'ENTRADA', 'badge-danger' : movimiento.tipoMovimiento === 'SALIDA',
                                         'badge-dark':movimiento.tipoMovimiento === 'ANULACION FACTURA', 'badge-info': movimiento.tipoMovimiento === 'VENTA'}">
                             {{movimiento.tipoMovimiento}}
                         </span>
                     </td>
-                    <td>{{movimiento.productoNombre}}</td>
-                    <td>{{movimiento.stockInicial}}</td>
-                    <td>{{movimiento.cantidad}}</td>
-                    <td>{{movimiento.usuarioNombre}}</td>
                 </tr>
             </tbody>
         </table>

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Usuario } from '../../models/usuario';
 import { global } from '../global';
 import { Observable, throwError } from 'rxjs';
@@ -40,6 +40,17 @@ export class UsuarioService {
         return response;
       })
     );
+  }
+
+  getListado(page: number, size: number, filtro: string,
+             orden: string, direccion: 'asc' | 'desc'): Observable<any> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString())
+      .set('filtro', filtro || '')
+      .set('orden', orden)
+      .set('direccion', direccion);
+    return this.http.get<any>(`${this.url}/usuarios/listado`, {params});
   }
 
   getCajeros(): Observable<Usuario[]> {

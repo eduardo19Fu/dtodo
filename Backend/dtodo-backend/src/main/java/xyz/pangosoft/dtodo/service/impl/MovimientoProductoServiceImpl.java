@@ -142,6 +142,17 @@ public class MovimientoProductoServiceImpl implements IMovimientoProductoService
 		}
 	}
 
+	@Transactional(readOnly = true)
+	@Override
+	public Page<MovimientoProductoDto> findListado(String filtro, Pageable pageable) {
+		try {
+			return repoMovimiento.findListado(filtro == null ? "" : filtro.trim(), pageable);
+		} catch (org.springframework.dao.DataAccessException e) {
+			log.error("Error al consultar el listado de movimientos: {}", e.getMessage());
+			throw new DataAccessException("Ha ocurrido un error al consultar los movimientos", e);
+		}
+	}
+
 	@Override
 	public Page<MovimientoProducto> findProductoMoves(Producto producto, Pageable pageable) {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();

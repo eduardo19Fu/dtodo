@@ -7,12 +7,15 @@ import org.springframework.data.domain.Pageable;
 
 import xyz.pangosoft.dtodo.model.Role;
 import xyz.pangosoft.dtodo.model.Usuario;
+import xyz.pangosoft.dtodo.dto.UsuarioDto;
 
 public interface IUsuarioService {
 
 	List<Usuario> findAll();
 
 	Page<Usuario> findAll(Pageable pageable);
+
+	Page<UsuarioDto> findListado(String filtro, Pageable pageable);
 
 	Usuario findById(Integer idUsuario);
 

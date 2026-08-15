@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { Usuario } from 'src/app/models/usuario';
+import { UsuarioAuxiliar } from 'src/app/models/auxiliar/usuario-auxiliar';
 import { DetailUsuarioService } from 'src/app/services/usuarios/detail-usuario.service';
 
 @Component({
@@ -11,7 +11,7 @@ export class DetailUsuarioComponent implements OnInit {
 
   title: string;
 
-  @Input() usuario: Usuario;
+  @Input() usuario: UsuarioAuxiliar;
 
   constructor(
     public detailUsuarioService: DetailUsuarioService

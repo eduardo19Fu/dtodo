@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
@@ -68,6 +69,39 @@ public class MovimientoProductoApiController {
 																  @RequestParam(value = "size", defaultValue = "5") Integer size)
 	{
 		return ResponseEntity.ok(serviceMove.searchMovimientoDtoMejorado(filtro, PageRequest.of(page, size)));
+	}
+
+	@Secured({"ROLE_ADMIN", "ROLE_INVENTARIO"})
+	@GetMapping(value = "/movimientos/listado")
+	public ResponseEntity<Page<MovimientoProductoDto>> listado(
+			@RequestParam(value = "page", defaultValue = "0") Integer page,
+			@RequestParam(value = "size", defaultValue = "5") Integer size,
+			@RequestParam(value = "filtro", defaultValue = "") String filtro,
+			@RequestParam(value = "orden", defaultValue = "fecha") String orden,
+			@RequestParam(value = "direccion", defaultValue = "desc") String direccion) {
+		Sort.Direction sentido = "asc".equalsIgnoreCase(direccion)
+				? Sort.Direction.ASC : Sort.Direction.DESC;
+		return ResponseEntity.ok(serviceMove.findListado(
+				filtro, PageRequest.of(page, size, Sort.by(sentido, obtenerPropiedadOrden(orden)))));
+	}
+
+	private String obtenerPropiedadOrden(String orden) {
+		switch (orden == null ? "" : orden.toLowerCase()) {
+			case "id":
+				return "idMovimiento";
+			case "tipo":
+				return "tipoMovimiento";
+			case "producto":
+				return "producto.nombre";
+			case "stock":
+				return "stockInicial";
+			case "cantidad":
+				return "cantidad";
+			case "creador":
+				return "usuario.usuario";
+			default:
+				return "fechaMovimiento";
+		}
 	}
 
 	@Secured({"ROLE_ADMIN", "ROLE_INVENTARIO"})

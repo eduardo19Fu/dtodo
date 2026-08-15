@@ -30,6 +30,8 @@ export class MovimientosProductoComponent implements OnInit, OnDestroy {
 
   // Búsqueda
   filtro: string = '';
+  orden: string = 'fecha';
+  direccion: 'asc' | 'desc' = 'desc';
   private busquedaSubject = new Subject<string>();
   private busquedaSubscription: Subscription;
 
@@ -66,11 +68,9 @@ export class MovimientosProductoComponent implements OnInit, OnDestroy {
 
   cargarMovimientos(page: number): void {
     this.cargando = true;
-    const request = this.filtro
-      ? this.movimientosProductoService.buscarMovimientosDto(page, this.filtro, this.pageSize)
-      : this.movimientosProductoService.getMovimientosDtoPaginados(page, this.pageSize);
-
-    request.subscribe(
+    this.movimientosProductoService.getListado(
+      page, this.pageSize, this.filtro, this.orden, this.direccion
+    ).subscribe(
       response => {
         this.movimientosDto = response.content;
         this.paginaActual = response.number;
@@ -116,6 +116,23 @@ export class MovimientosProductoComponent implements OnInit, OnDestroy {
   cambiarPageSize(nuevoSize: number): void {
     this.pageSize = nuevoSize;
     this.cargarMovimientos(0);
+  }
+
+  ordenarPor(campo: string): void {
+    if (this.orden === campo) {
+      this.direccion = this.direccion === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.orden = campo;
+      this.direccion = 'asc';
+    }
+    this.cargarMovimientos(0);
+  }
+
+  iconoOrden(campo: string): string {
+    if (this.orden !== campo) {
+      return 'fas fa-sort';
+    }
+    return this.direccion === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down';
   }
 
   get paginasVisibles(): number[] {

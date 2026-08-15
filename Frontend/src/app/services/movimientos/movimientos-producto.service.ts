@@ -45,6 +45,17 @@ export class MovimientosProductoService {
     );
   }
 
+  getListado(page: number, size: number, filtro: string,
+             orden: string, direccion: 'asc' | 'desc'): Observable<any> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString())
+      .set('filtro', filtro || '')
+      .set('orden', orden)
+      .set('direccion', direccion);
+    return this.http.get<any>(`${this.url}/movimientos/listado`, {params});
+  }
+
   getMovimientosProductoPage(idproducto: number, page: number): Observable<any> {
     return this.http.get<any>(`${this.url}/movimientos/${idproducto}/${page}`).pipe(
       map((response: any) => {
