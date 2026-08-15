@@ -26,7 +26,8 @@ public interface IMovimientoProductoService {
 
 	public Page<MovimientoProductoDto> searchMovimientoDtoMejorado(String filtro, Pageable pageable);
 
-	public Page<MovimientoProductoDto> findListado(String filtro, Pageable pageable);
+	public Page<MovimientoProductoDto> findListado(
+			String fechaIni, String fechaFin, String filtro, Pageable pageable);
 
 	public Page<MovimientoProducto> findProductoMoves(Producto producto, Pageable pageable);
 

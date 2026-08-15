@@ -32,6 +32,10 @@ export class MovimientosProductoComponent implements OnInit, OnDestroy {
   filtro: string = '';
   orden: string = 'fecha';
   direccion: 'asc' | 'desc' = 'desc';
+  fechaIni: string;
+  fechaFin: string;
+  fechaIniAplicada: string;
+  fechaFinAplicada: string;
   private busquedaSubject = new Subject<string>();
   private busquedaSubscription: Subscription;
 
@@ -69,7 +73,8 @@ export class MovimientosProductoComponent implements OnInit, OnDestroy {
   cargarMovimientos(page: number): void {
     this.cargando = true;
     this.movimientosProductoService.getListado(
-      page, this.pageSize, this.filtro, this.orden, this.direccion
+      page, this.pageSize, this.filtro, this.orden, this.direccion,
+      this.fechaIniAplicada, this.fechaFinAplicada
     ).subscribe(
       response => {
         this.movimientosDto = response.content;
@@ -115,6 +120,28 @@ export class MovimientosProductoComponent implements OnInit, OnDestroy {
 
   cambiarPageSize(nuevoSize: number): void {
     this.pageSize = nuevoSize;
+    this.cargarMovimientos(0);
+  }
+
+  buscarPorFechas(): void {
+    if (!this.fechaIni || !this.fechaFin) {
+      Swal.fire('Advertencia', 'Por favor ingrese un rango de fechas válido.', 'warning');
+      return;
+    }
+    if (this.fechaFin < this.fechaIni) {
+      Swal.fire('Advertencia', 'La fecha final no puede ser anterior a la fecha inicial.', 'warning');
+      return;
+    }
+    this.fechaIniAplicada = this.fechaIni;
+    this.fechaFinAplicada = this.fechaFin;
+    this.cargarMovimientos(0);
+  }
+
+  limpiarFechas(): void {
+    this.fechaIni = null;
+    this.fechaFin = null;
+    this.fechaIniAplicada = null;
+    this.fechaFinAplicada = null;
     this.cargarMovimientos(0);
   }
 

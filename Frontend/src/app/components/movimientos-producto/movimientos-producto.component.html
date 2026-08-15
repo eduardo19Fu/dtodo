@@ -22,12 +22,65 @@
     </div>
 </section>
 
+<div class="card filter-card">
+    <div class="card-header filter-card-header">
+        <div class="filter-heading">
+            <span class="filter-icon"><i class="fas fa-filter"></i></span>
+            <div>
+                <h3 class="card-title">Filtrar movimientos</h3>
+                <small>Selecciona un rango para consultar todos los movimientos registrados en esas fechas</small>
+            </div>
+        </div>
+        <span class="filter-status" *ngIf="fechaIniAplicada && fechaFinAplicada">
+            <i class="far fa-calendar-check"></i> Rango aplicado
+        </span>
+        <span class="filter-status" *ngIf="!fechaIniAplicada || !fechaFinAplicada">
+            <i class="fas fa-history"></i> Últimos 500
+        </span>
+    </div>
+    <form #searchForm="ngForm" (ngSubmit)="buscarPorFechas()">
+        <div class="card-body filter-card-body">
+            <div class="row align-items-end">
+                <div class="col-lg-4 col-md-6 mb-3 mb-lg-0">
+                    <label for="movimiento-fecha-inicio" class="filter-label">Fecha de inicio</label>
+                    <div class="input-group filter-input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="far fa-calendar-alt"></i></span>
+                        </div>
+                        <input type="date" name="movimiento-fecha-inicio" id="movimiento-fecha-inicio"
+                               class="form-control" [(ngModel)]="fechaIni" aria-label="Fecha de inicio">
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-3 mb-lg-0">
+                    <label for="movimiento-fecha-fin" class="filter-label">Fecha de fin</label>
+                    <div class="input-group filter-input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="far fa-calendar-check"></i></span>
+                        </div>
+                        <input type="date" name="movimiento-fecha-fin" id="movimiento-fecha-fin"
+                               class="form-control" [(ngModel)]="fechaFin" aria-label="Fecha de fin">
+                    </div>
+                </div>
+                <div class="col-lg-4 filter-actions">
+                    <button type="submit" class="btn btn-info filter-button">
+                        <i class="fas fa-search"></i><span>Buscar</span>
+                    </button>
+                    <button type="button" class="btn btn-light filter-button clear-button"
+                            (click)="limpiarFechas()">
+                        <i class="fas fa-undo-alt"></i><span>Restablecer</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
 <div class="card">
     <div class="card-body table-responsive">
 
         <!-- Controles superiores: selector de registros y búsqueda -->
-        <div class="row mb-2 align-items-center table-controls">
-            <div class="col-sm-4">
+        <div class="table-controls">
+            <div class="page-size-control">
                 <div class="d-inline-flex align-items-center">
                     <label class="mb-0 mr-2">Mostrar</label>
                     <select class="form-control form-control-sm page-size-select"
@@ -38,15 +91,15 @@
                     <label class="mb-0 ml-2">registros</label>
                 </div>
             </div>
-            <div class="col-sm-4 text-center">
+            <div class="pagination-summary">
                 <span *ngIf="movimientosDto?.length > 0" class="info-paginacion">
                     Mostrando registros del <strong>{{paginaActual * pageSize + 1}}</strong>
                     al <strong>{{paginaActual * pageSize + movimientosDto.length}}</strong>
                     de un total de <strong>{{totalElementos}}</strong> registros
                 </span>
             </div>
-            <div class="col-sm-4">
-                <div class="d-inline-flex align-items-center float-right search-control">
+            <div class="search-control">
+                <div class="search-control-inner">
                     <label class="mb-0 mr-2">Búsqueda:</label>
                     <input type="text" class="form-control form-control-sm"
                            [value]="filtro"

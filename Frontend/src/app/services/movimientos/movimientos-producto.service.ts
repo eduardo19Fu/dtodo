@@ -46,13 +46,17 @@ export class MovimientosProductoService {
   }
 
   getListado(page: number, size: number, filtro: string,
-             orden: string, direccion: 'asc' | 'desc'): Observable<any> {
-    const params = new HttpParams()
+             orden: string, direccion: 'asc' | 'desc',
+             fechaIni?: string, fechaFin?: string): Observable<any> {
+    let params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString())
       .set('filtro', filtro || '')
       .set('orden', orden)
       .set('direccion', direccion);
+    if (fechaIni && fechaFin) {
+      params = params.set('fechaIni', fechaIni).set('fechaFin', fechaFin);
+    }
     return this.http.get<any>(`${this.url}/movimientos/listado`, {params});
   }
 

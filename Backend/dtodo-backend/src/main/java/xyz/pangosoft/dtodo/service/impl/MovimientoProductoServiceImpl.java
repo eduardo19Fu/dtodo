@@ -6,6 +6,9 @@ import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +17,7 @@ import javax.sql.DataSource;
 
 import xyz.pangosoft.dtodo.dto.MovimientoProductoDto;
 import xyz.pangosoft.dtodo.error.exceptions.DataAccessException;
+import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
 import xyz.pangosoft.dtodo.error.exceptions.NoContentException;
 import xyz.pangosoft.dtodo.model.Estado;
 import xyz.pangosoft.dtodo.model.enums.TipoMovimientoEnum;
@@ -22,6 +26,8 @@ import xyz.pangosoft.dtodo.service.IProductoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +48,8 @@ import net.sf.jasperreports.engine.JasperReport;
 @RequiredArgsConstructor
 @Slf4j
 public class MovimientoProductoServiceImpl implements IMovimientoProductoService {
+
+	private static final int LIMITE_MOVIMIENTOS_INICIALES = 500;
 
 	private final IMovimientoProductoRepository repoMovimiento;
 	private final IEstadoService estadoService;
@@ -144,12 +152,49 @@ public class MovimientoProductoServiceImpl implements IMovimientoProductoService
 
 	@Transactional(readOnly = true)
 	@Override
-	public Page<MovimientoProductoDto> findListado(String filtro, Pageable pageable) {
+	public Page<MovimientoProductoDto> findListado(
+			String fechaIni, String fechaFin, String filtro, Pageable pageable) {
 		try {
-			return repoMovimiento.findListado(filtro == null ? "" : filtro.trim(), pageable);
+			LocalDateTime[] rango = parseDateRange(fechaIni, fechaFin);
+			String filtroNormalizado = filtro == null ? "" : filtro.trim();
+			if (rango[0] == null) {
+				List<Long> ultimosIds = repoMovimiento.findUltimosIds(
+						PageRequest.of(0, LIMITE_MOVIMIENTOS_INICIALES));
+				if (ultimosIds.isEmpty()) {
+					return new PageImpl<>(java.util.Collections.emptyList(), pageable, 0);
+				}
+				return repoMovimiento.findListadoLimitado(
+						ultimosIds, filtroNormalizado, pageable);
+			}
+			return repoMovimiento.findListado(
+					rango[0], rango[1], filtroNormalizado, pageable);
 		} catch (org.springframework.dao.DataAccessException e) {
 			log.error("Error al consultar el listado de movimientos: {}", e.getMessage());
 			throw new DataAccessException("Ha ocurrido un error al consultar los movimientos", e);
+		}
+	}
+
+	private LocalDateTime[] parseDateRange(String fechaIni, String fechaFin) {
+		boolean sinInicio = fechaIni == null || fechaIni.trim().isEmpty();
+		boolean sinFin = fechaFin == null || fechaFin.trim().isEmpty();
+		if (sinInicio && sinFin) {
+			return new LocalDateTime[] { null, null };
+		}
+		if (sinInicio || sinFin) {
+			throw new BadRequestException("Debe ingresar ambas fechas del rango", null);
+		}
+		try {
+			LocalDate inicio = LocalDate.parse(fechaIni);
+			LocalDate fin = LocalDate.parse(fechaFin);
+			if (fin.isBefore(inicio)) {
+				throw new BadRequestException(
+						"La fecha final no puede ser anterior a la fecha inicial", null);
+			}
+			return new LocalDateTime[] {
+					inicio.atStartOfDay(), fin.plusDays(1).atStartOfDay()
+			};
+		} catch (DateTimeParseException e) {
+			throw new BadRequestException("El formato del rango de fechas no es válido", e);
 		}
 	}
 
