@@ -30,6 +30,12 @@ export class MovimientosProductoComponent implements OnInit, OnDestroy {
 
   // Búsqueda
   filtro: string = '';
+  orden: string = 'fecha';
+  direccion: 'asc' | 'desc' = 'desc';
+  fechaIni: string;
+  fechaFin: string;
+  fechaIniAplicada: string;
+  fechaFinAplicada: string;
   private busquedaSubject = new Subject<string>();
   private busquedaSubscription: Subscription;
 
@@ -66,11 +72,10 @@ export class MovimientosProductoComponent implements OnInit, OnDestroy {
 
   cargarMovimientos(page: number): void {
     this.cargando = true;
-    const request = this.filtro
-      ? this.movimientosProductoService.buscarMovimientosDto(page, this.filtro, this.pageSize)
-      : this.movimientosProductoService.getMovimientosDtoPaginados(page, this.pageSize);
-
-    request.subscribe(
+    this.movimientosProductoService.getListado(
+      page, this.pageSize, this.filtro, this.orden, this.direccion,
+      this.fechaIniAplicada, this.fechaFinAplicada
+    ).subscribe(
       response => {
         this.movimientosDto = response.content;
         this.paginaActual = response.number;
@@ -116,6 +121,45 @@ export class MovimientosProductoComponent implements OnInit, OnDestroy {
   cambiarPageSize(nuevoSize: number): void {
     this.pageSize = nuevoSize;
     this.cargarMovimientos(0);
+  }
+
+  buscarPorFechas(): void {
+    if (!this.fechaIni || !this.fechaFin) {
+      Swal.fire('Advertencia', 'Por favor ingrese un rango de fechas válido.', 'warning');
+      return;
+    }
+    if (this.fechaFin < this.fechaIni) {
+      Swal.fire('Advertencia', 'La fecha final no puede ser anterior a la fecha inicial.', 'warning');
+      return;
+    }
+    this.fechaIniAplicada = this.fechaIni;
+    this.fechaFinAplicada = this.fechaFin;
+    this.cargarMovimientos(0);
+  }
+
+  limpiarFechas(): void {
+    this.fechaIni = null;
+    this.fechaFin = null;
+    this.fechaIniAplicada = null;
+    this.fechaFinAplicada = null;
+    this.cargarMovimientos(0);
+  }
+
+  ordenarPor(campo: string): void {
+    if (this.orden === campo) {
+      this.direccion = this.direccion === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.orden = campo;
+      this.direccion = 'asc';
+    }
+    this.cargarMovimientos(0);
+  }
+
+  iconoOrden(campo: string): string {
+    if (this.orden !== campo) {
+      return 'fas fa-sort';
+    }
+    return this.direccion === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down';
   }
 
   get paginasVisibles(): number[] {

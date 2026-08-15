@@ -2,6 +2,7 @@ package xyz.pangosoft.dtodo.repository;
 
 import java.util.Date;
 import java.util.List;
+import java.time.LocalDateTime;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import xyz.pangosoft.dtodo.model.MovimientoProducto;
 import xyz.pangosoft.dtodo.model.Producto;
+import xyz.pangosoft.dtodo.dto.MovimientoProductoDto;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -73,5 +75,60 @@ public interface IMovimientoProductoRepository extends JpaRepository<MovimientoP
 				"OR mp.tipo_movimiento LIKE %:filtro%",
 			nativeQuery = true)
 	Page<Object[]> searchMovimientosDto(@Param("filtro") String filtro, Pageable pageable);
+
+	@Query(value = "SELECT new xyz.pangosoft.dtodo.dto.MovimientoProductoDto(" +
+			"m.idMovimiento, m.fechaMovimiento, m.stockInicial, m.tipoMovimiento, " +
+			"m.cantidad, p.nombre, u.usuario) FROM MovimientoProducto m " +
+			"JOIN m.producto p JOIN m.usuario u " +
+			"WHERE (:fechaIni IS NULL OR (m.fechaMovimiento >= :fechaIni " +
+			"AND m.fechaMovimiento < :fechaFin)) AND (:filtro = '' " +
+			"OR LOWER(p.nombre) LIKE LOWER(CONCAT('%', :filtro, '%')) " +
+			"OR LOWER(u.usuario) LIKE LOWER(CONCAT('%', :filtro, '%')) " +
+			"OR LOWER(STR(m.tipoMovimiento)) LIKE LOWER(CONCAT('%', :filtro, '%')) " +
+			"OR STR(m.idMovimiento) LIKE CONCAT('%', :filtro, '%') " +
+			"OR STR(m.stockInicial) LIKE CONCAT('%', :filtro, '%') " +
+			"OR STR(m.cantidad) LIKE CONCAT('%', :filtro, '%'))",
+			countQuery = "SELECT COUNT(m) FROM MovimientoProducto m " +
+					"JOIN m.producto p JOIN m.usuario u " +
+					"WHERE (:fechaIni IS NULL OR (m.fechaMovimiento >= :fechaIni " +
+					"AND m.fechaMovimiento < :fechaFin)) AND (:filtro = '' " +
+					"OR LOWER(p.nombre) LIKE LOWER(CONCAT('%', :filtro, '%')) " +
+					"OR LOWER(u.usuario) LIKE LOWER(CONCAT('%', :filtro, '%')) " +
+					"OR LOWER(STR(m.tipoMovimiento)) LIKE LOWER(CONCAT('%', :filtro, '%')) " +
+					"OR STR(m.idMovimiento) LIKE CONCAT('%', :filtro, '%') " +
+					"OR STR(m.stockInicial) LIKE CONCAT('%', :filtro, '%') " +
+					"OR STR(m.cantidad) LIKE CONCAT('%', :filtro, '%'))")
+	Page<MovimientoProductoDto> findListado(
+			@Param("fechaIni") LocalDateTime fechaIni,
+			@Param("fechaFin") LocalDateTime fechaFin,
+			@Param("filtro") String filtro, Pageable pageable);
+
+	@Query("SELECT m.idMovimiento FROM MovimientoProducto m " +
+			"ORDER BY m.fechaMovimiento DESC, m.idMovimiento DESC")
+	List<Long> findUltimosIds(Pageable pageable);
+
+	@Query(value = "SELECT new xyz.pangosoft.dtodo.dto.MovimientoProductoDto(" +
+			"m.idMovimiento, m.fechaMovimiento, m.stockInicial, m.tipoMovimiento, " +
+			"m.cantidad, p.nombre, u.usuario) FROM MovimientoProducto m " +
+			"JOIN m.producto p JOIN m.usuario u " +
+			"WHERE m.idMovimiento IN :ids AND (:filtro = '' " +
+			"OR LOWER(p.nombre) LIKE LOWER(CONCAT('%', :filtro, '%')) " +
+			"OR LOWER(u.usuario) LIKE LOWER(CONCAT('%', :filtro, '%')) " +
+			"OR LOWER(STR(m.tipoMovimiento)) LIKE LOWER(CONCAT('%', :filtro, '%')) " +
+			"OR STR(m.idMovimiento) LIKE CONCAT('%', :filtro, '%') " +
+			"OR STR(m.stockInicial) LIKE CONCAT('%', :filtro, '%') " +
+			"OR STR(m.cantidad) LIKE CONCAT('%', :filtro, '%'))",
+			countQuery = "SELECT COUNT(m) FROM MovimientoProducto m " +
+					"JOIN m.producto p JOIN m.usuario u " +
+					"WHERE m.idMovimiento IN :ids AND (:filtro = '' " +
+					"OR LOWER(p.nombre) LIKE LOWER(CONCAT('%', :filtro, '%')) " +
+					"OR LOWER(u.usuario) LIKE LOWER(CONCAT('%', :filtro, '%')) " +
+					"OR LOWER(STR(m.tipoMovimiento)) LIKE LOWER(CONCAT('%', :filtro, '%')) " +
+					"OR STR(m.idMovimiento) LIKE CONCAT('%', :filtro, '%') " +
+					"OR STR(m.stockInicial) LIKE CONCAT('%', :filtro, '%') " +
+					"OR STR(m.cantidad) LIKE CONCAT('%', :filtro, '%'))")
+	Page<MovimientoProductoDto> findListadoLimitado(
+			@Param("ids") List<Long> ids,
+			@Param("filtro") String filtro, Pageable pageable);
 
 }

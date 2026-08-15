@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import xyz.pangosoft.dtodo.error.exceptions.NoContentException;
 import xyz.pangosoft.dtodo.error.exceptions.NotFoundException;
+import xyz.pangosoft.dtodo.dto.UsuarioDto;
 import xyz.pangosoft.dtodo.model.Role;
 import xyz.pangosoft.dtodo.model.Usuario;
 import xyz.pangosoft.dtodo.repository.IUsuarioRepository;
@@ -83,6 +84,17 @@ public class UsuarioServiceImpl implements UserDetailsService, IUsuarioService {
 			return repoUsuario.findAll(pageable);
 		} catch (DataAccessException e) {
 			log.error("Error de base de datos al paginar usuarios: {}", e.getMessage());
+			throw new xyz.pangosoft.dtodo.error.exceptions.DataAccessException(e.getMessage(), e);
+		}
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Page<UsuarioDto> findListado(String filtro, Pageable pageable) {
+		try {
+			return repoUsuario.findListado(filtro == null ? "" : filtro.trim(), pageable);
+		} catch (DataAccessException e) {
+			log.error("Error de base de datos al consultar el listado de usuarios: {}", e.getMessage());
 			throw new xyz.pangosoft.dtodo.error.exceptions.DataAccessException(e.getMessage(), e);
 		}
 	}

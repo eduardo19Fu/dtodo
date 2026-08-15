@@ -41,8 +41,7 @@
                                             *ngIf="usuario.enabled else elseblock">ACTIVO</span>
 
                                         <ng-template #elseblock>
-                                            <span class="badge badge-danger"
-                                                *ngIf="usuario.enabled else elseblock">INACTIVO</span>
+                                            <span class="badge badge-danger">INACTIVO</span>
                                         </ng-template>
 
                                     </li>
