@@ -32,6 +32,9 @@ export class ProformasComponent implements OnInit, OnDestroy {
   cargando = false;
   busquedaRealizada = false;
   mostrandoUltimas = true;
+  orden = 'fecha';
+  direccion: 'asc' | 'desc' = 'desc';
+  exportando = false;
 
   private busquedaSubject = new Subject<string>();
   private busquedaSubscription: Subscription;
@@ -82,10 +85,13 @@ export class ProformasComponent implements OnInit, OnDestroy {
   cargarProformas(page: number): void {
     this.cargando = true;
     const request = this.mostrandoUltimas
-      ? this.proformaService.getUltimasProformasDto(page, this.filtro, this.pageSize)
+      ? this.proformaService.getUltimasProformasDto(
+          page, this.filtro, this.pageSize, this.orden, this.direccion)
       : this.filtro.trim()
-        ? this.proformaService.buscarProformasDto(page, this.fechaIni, this.fechaFin, this.filtro, this.pageSize)
-        : this.proformaService.getProformasDtoPaginadas(page, this.fechaIni, this.fechaFin, this.pageSize);
+        ? this.proformaService.buscarProformasDto(
+            page, this.fechaIni, this.fechaFin, this.filtro, this.pageSize, this.orden, this.direccion)
+        : this.proformaService.getProformasDtoPaginadas(
+            page, this.fechaIni, this.fechaFin, this.pageSize, this.orden, this.direccion);
     request.subscribe(
       response => {
         this.proformasDto = response.content;
@@ -139,6 +145,126 @@ export class ProformasComponent implements OnInit, OnDestroy {
 
   cerrarDetalle(): void {
     this.proformaSeleccionada = null;
+  }
+
+  ordenarPor(campo: string): void {
+    if (this.orden === campo) {
+      this.direccion = this.direccion === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.orden = campo;
+      this.direccion = 'asc';
+    }
+    this.cargarProformas(0);
+  }
+
+  iconoOrden(campo: string): string {
+    if (this.orden !== campo) {
+      return 'fas fa-sort';
+    }
+    return this.direccion === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down';
+  }
+
+  abrirModalExportacion(): void {
+    if (this.exportando) {
+      return;
+    }
+    Swal.fire({
+      title: 'Exportar proformas a Excel',
+      html: `
+        <div class="text-left">
+          <p class="text-muted">Selecciona el rango de fechas que deseas incluir.</p>
+          <div class="form-group">
+            <label for="export-fecha-inicio">Fecha de inicio</label>
+            <input id="export-fecha-inicio" type="date" class="form-control">
+          </div>
+          <div class="form-group">
+            <label for="export-fecha-fin">Fecha de fin</label>
+            <input id="export-fecha-fin" type="date" class="form-control">
+          </div>
+          <div class="alert alert-warning mb-0">
+            <i class="fas fa-exclamation-triangle mr-1"></i>
+            Exportar todas las proformas puede demorar según la cantidad de registros.
+          </div>
+        </div>`,
+      icon: 'info',
+      showCancelButton: true,
+      showDenyButton: true,
+      confirmButtonText: '<i class="fas fa-file-excel mr-1"></i> Exportar rango',
+      denyButtonText: 'Exportar todas',
+      cancelButtonText: 'Cancelar',
+      focusConfirm: false,
+      preConfirm: () => {
+        const fechaInicio = (document.getElementById('export-fecha-inicio') as HTMLInputElement).value;
+        const fechaFin = (document.getElementById('export-fecha-fin') as HTMLInputElement).value;
+        if (!fechaInicio || !fechaFin) {
+          Swal.showValidationMessage('Debes ingresar ambas fechas.');
+          return false;
+        }
+        if (fechaFin < fechaInicio) {
+          Swal.showValidationMessage('La fecha final no puede ser anterior a la fecha inicial.');
+          return false;
+        }
+        return { fechaInicio, fechaFin };
+      }
+    }).then(result => {
+      if (result.isConfirmed) {
+        const rango = result.value as { fechaInicio: string; fechaFin: string };
+        this.generarExcel(rango.fechaInicio, rango.fechaFin, false);
+      } else if (result.isDenied) {
+        this.confirmarExportacionCompleta();
+      }
+    });
+  }
+
+  private confirmarExportacionCompleta(): void {
+    Swal.fire({
+      title: '¿Exportar todas las proformas?',
+      text: 'El archivo puede tardar en generarse si existen muchos registros.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, exportar todas',
+      cancelButtonText: 'Cancelar'
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.generarExcel(null, null, true);
+      }
+    });
+  }
+
+  private generarExcel(fechaInicio: string, fechaFin: string, todas: boolean): void {
+    this.exportando = true;
+    Swal.fire({
+      title: 'Generando reporte de proformas...',
+      text: todas ? 'Consultando todas las proformas registradas.' : 'Consultando el rango seleccionado.',
+      allowEscapeKey: false,
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      didOpen: () => Swal.showLoading()
+    });
+
+    this.proformaService.exportarProformasExcel(fechaInicio, fechaFin, todas).subscribe(
+      response => {
+        const disposition = response.headers.get('content-disposition');
+        const filenameMatch = disposition && disposition.match(/filename="?([^";]+)"?/i);
+        const filename = filenameMatch ? filenameMatch[1] : 'proformas.xlsx';
+        const url = window.URL.createObjectURL(response.body);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        this.exportando = false;
+        Swal.close();
+      },
+      error => {
+        console.error(error);
+        this.exportando = false;
+        Swal.fire('Error al exportar proformas',
+          'No fue posible generar el archivo Excel.', 'error');
+      }
+    );
   }
 
   irPrimeraPagina(): void { this.cargarProformas(0); }

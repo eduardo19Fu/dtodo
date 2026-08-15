@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpEvent, HttpRequest, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpEvent, HttpParams, HttpRequest, HttpResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
@@ -36,8 +36,13 @@ export class ProductoService {
     return this.http.get<ProductoDto[]>(`${this.url}/productos-activos`);
   }
 
-  getProductosDtoPaginados(page: number, size: number = 5): Observable<any> {
-    return this.http.get<any>(`${this.url}/productos-dto/page/${page}?size=${size}`).pipe(
+  getProductosDtoPaginados(page: number, size: number = 5,
+                           orden: string = 'nombre', direccion: 'asc' | 'desc' = 'asc'): Observable<any> {
+    const params = new HttpParams()
+      .set('size', size.toString())
+      .set('orden', orden)
+      .set('direccion', direccion);
+    return this.http.get<any>(`${this.url}/productos-dto/page/${page}`, {params}).pipe(
       catchError(e => {
         console.error(e);
         return throwError(e);
@@ -45,8 +50,14 @@ export class ProductoService {
     );
   }
 
-  buscarProductosDto(page: number, filtro: string, size: number = 5): Observable<any> {
-    return this.http.get<any>(`${this.url}/productos-dto/search/${page}?filtro=${filtro}&size=${size}`).pipe(
+  buscarProductosDto(page: number, filtro: string, size: number = 5,
+                     orden: string = 'nombre', direccion: 'asc' | 'desc' = 'asc'): Observable<any> {
+    const params = new HttpParams()
+      .set('filtro', filtro)
+      .set('size', size.toString())
+      .set('orden', orden)
+      .set('direccion', direccion);
+    return this.http.get<any>(`${this.url}/productos-dto/search/${page}`, {params}).pipe(
       catchError(e => {
         console.error(e);
         return throwError(e);

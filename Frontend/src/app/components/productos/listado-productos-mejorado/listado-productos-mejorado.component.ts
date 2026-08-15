@@ -34,6 +34,8 @@ export class ListadoProductosMejoradoComponent implements OnInit, OnDestroy {
 
   // Búsqueda
   filtro: string = '';
+  orden: string = 'nombre';
+  direccion: 'asc' | 'desc' = 'asc';
   private busquedaSubject = new Subject<string>();
   private busquedaSubscription: Subscription;
 
@@ -76,8 +78,8 @@ export class ListadoProductosMejoradoComponent implements OnInit, OnDestroy {
   cargarProductos(page: number): void {
     this.cargando = true;
     const request = this.filtro
-      ? this.productoService.buscarProductosDto(page, this.filtro, this.pageSize)
-      : this.productoService.getProductosDtoPaginados(page, this.pageSize);
+      ? this.productoService.buscarProductosDto(page, this.filtro, this.pageSize, this.orden, this.direccion)
+      : this.productoService.getProductosDtoPaginados(page, this.pageSize, this.orden, this.direccion);
 
     request.subscribe(
       response => {
@@ -125,6 +127,23 @@ export class ListadoProductosMejoradoComponent implements OnInit, OnDestroy {
   cambiarPageSize(nuevoSize: number): void {
     this.pageSize = nuevoSize;
     this.cargarProductos(0);
+  }
+
+  ordenarPor(campo: string): void {
+    if (this.orden === campo) {
+      this.direccion = this.direccion === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.orden = campo;
+      this.direccion = 'asc';
+    }
+    this.cargarProductos(0);
+  }
+
+  iconoOrden(campo: string): string {
+    if (this.orden !== campo) {
+      return 'fas fa-sort';
+    }
+    return this.direccion === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down';
   }
 
   get paginasVisibles(): number[] {

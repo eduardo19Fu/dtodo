@@ -19,9 +19,10 @@ public interface IProductoService {
 
 	public List<ProductoDto> findAllDto();
 
-	public Page<ProductoDtoMejorado> findAllDtoMejorado(Pageable pageable);
+	public Page<ProductoDtoMejorado> findAllDtoMejorado(String orden, String direccion, Pageable pageable);
 
-	public Page<ProductoDtoMejorado> searchProductoDtoMejorado(String filtro, Pageable pageable);
+	public Page<ProductoDtoMejorado> searchProductoDtoMejorado(
+			String filtro, String orden, String direccion, Pageable pageable);
 	
 	public List<ProductoDto> findAllByEstado(Estado estado);
 	

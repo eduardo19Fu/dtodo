@@ -62,6 +62,24 @@
 .action-buttons { display: flex; gap: 0.35rem; justify-content: center; white-space: nowrap; }
 .action-buttons .btn { align-items: center; display: inline-flex; flex: 0 0 40px; height: 38px; justify-content: center; margin: 0; padding: 0; width: 40px; }
 .action-buttons .btn:disabled { cursor: not-allowed; opacity: 0.55; }
+.sort-header {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  font-weight: inherit;
+  justify-content: space-between;
+  padding: 0;
+  text-align: left;
+  width: 100%;
+}
+.sort-header i { color: #adb5bd; margin-left: 0.45rem; }
+.sort-header .fa-sort-up,
+.sort-header .fa-sort-down { color: #fff; }
+.sort-header:focus { outline: 2px solid rgba(255, 255, 255, 0.65); outline-offset: 2px; }
 
 .filter-card {
   border: 0;

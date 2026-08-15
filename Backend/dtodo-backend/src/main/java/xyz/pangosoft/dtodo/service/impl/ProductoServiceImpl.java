@@ -106,13 +106,13 @@ public class ProductoServiceImpl implements IProductoService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public Page<ProductoDtoMejorado> findAllDtoMejorado(Pageable pageable) {
+	public Page<ProductoDtoMejorado> findAllDtoMejorado(String orden, String direccion, Pageable pageable) {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
 		log.debug("Enter {}", __method);
 
 		try {
 			log.debug("Consultando productos desde la base de datos...");
-			Page<Object[]> results = repoProducto.findAllProductosDto(pageable);
+			Page<Object[]> results = repoProducto.findAllProductosDto(orden, direccion, pageable);
 
 			if (results.isEmpty()) {
 				log.warn("No existen productos registrados");
@@ -130,14 +130,15 @@ public class ProductoServiceImpl implements IProductoService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public Page<ProductoDtoMejorado> searchProductoDtoMejorado(String filtro, Pageable pageable) {
+	public Page<ProductoDtoMejorado> searchProductoDtoMejorado(
+			String filtro, String orden, String direccion, Pageable pageable) {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
 		log.debug("Enter {}", __method);
 
 		try {
 			log.debug("Consultando productos desde la base de datos que conicidan con la busqueda...");
-			String filtroAdaptado = filtro.trim().replaceAll("\\s+", "%");
-			Page<Object[]> results = repoProducto.searchProductosDto(filtroAdaptado, pageable);
+			String filtroAdaptado = filtro == null ? "" : filtro.trim().replaceAll("\\s+", "%");
+			Page<Object[]> results = repoProducto.searchProductosDto(filtroAdaptado, orden, direccion, pageable);
 
 			return mapPageToProductoDtoMejorado(results);
 		} catch (DataAccessException dax) {
