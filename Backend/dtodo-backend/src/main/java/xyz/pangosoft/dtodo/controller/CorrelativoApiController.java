@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
@@ -22,7 +23,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import xyz.pangosoft.dtodo.dto.CorrelativoDto;
 import xyz.pangosoft.dtodo.model.Correlativo;
 import xyz.pangosoft.dtodo.service.ICorrelativoService;
 
@@ -51,6 +54,41 @@ public class CorrelativoApiController {
 
 		Page<Correlativo> correlativos = serviceCorrelativo.findAll(PageRequest.of(page, 5));
 		return ResponseEntity.ok(correlativos);
+	}
+
+	@Secured(value = {"ROLE_ADMIN"})
+	@GetMapping(value = "/correlativos/listado")
+	public ResponseEntity<Page<CorrelativoDto>> listado(
+			@RequestParam(value = "page", defaultValue = "0") Integer page,
+			@RequestParam(value = "size", defaultValue = "5") Integer size,
+			@RequestParam(value = "filtro", defaultValue = "") String filtro,
+			@RequestParam(value = "orden", defaultValue = "id") String orden,
+			@RequestParam(value = "direccion", defaultValue = "asc") String direccion) {
+		Sort.Direction sentido = "desc".equalsIgnoreCase(direccion)
+				? Sort.Direction.DESC : Sort.Direction.ASC;
+		return ResponseEntity.ok(serviceCorrelativo.findListado(
+				filtro, PageRequest.of(page, size, Sort.by(sentido, obtenerPropiedadOrden(orden)))));
+	}
+
+	private String obtenerPropiedadOrden(String orden) {
+		switch (orden == null ? "" : orden.toLowerCase()) {
+			case "inicial":
+				return "correlativoInicial";
+			case "final":
+				return "correlativoFinal";
+			case "actual":
+				return "correlativoActual";
+			case "serie":
+				return "serie";
+			case "fecha":
+				return "fechaCreacion";
+			case "usuario":
+				return "usuario.usuario";
+			case "estado":
+				return "estado.estado";
+			default:
+				return "idCorrelativo";
+		}
 	}
 
 	@Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})

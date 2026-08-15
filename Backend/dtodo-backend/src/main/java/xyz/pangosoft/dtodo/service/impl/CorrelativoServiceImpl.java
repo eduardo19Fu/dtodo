@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import xyz.pangosoft.dtodo.error.exceptions.DuplicateCorrelativoException;
+import xyz.pangosoft.dtodo.dto.CorrelativoDto;
 import xyz.pangosoft.dtodo.error.exceptions.NoContentException;
 import xyz.pangosoft.dtodo.error.exceptions.NotFoundException;
 import xyz.pangosoft.dtodo.service.IEstadoService;
@@ -86,6 +87,18 @@ public class CorrelativoServiceImpl implements ICorrelativoService {
 			throw new RuntimeException("Ha ocurrido un error inesperado");
 		} finally {
 			log.debug("{} Exit", __method);
+		}
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public Page<CorrelativoDto> findListado(String filtro, Pageable pageable) {
+		try {
+			return correlativoRepository.findListado(filtro == null ? "" : filtro.trim(), pageable);
+		} catch (DataAccessException e) {
+			log.error("Error al consultar el listado de correlativos: {}", e.getMessage());
+			throw new xyz.pangosoft.dtodo.error.exceptions.DataAccessException(
+					"Ha ocurrido un error al consultar los correlativos", e);
 		}
 	}
 
