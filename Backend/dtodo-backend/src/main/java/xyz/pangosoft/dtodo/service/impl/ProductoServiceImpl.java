@@ -8,6 +8,7 @@ import java.net.MalformedURLException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.ParseException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -360,6 +361,11 @@ public class ProductoServiceImpl implements IProductoService {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
 		log.debug("Enter {}", __method);
 		Producto productoSaved = null;
+		producto.setNombre(producto.getNombre().trim().toUpperCase());
+
+		if (producto.getFechaRegistro() == null) {
+			producto.setFechaRegistro(LocalDateTime.now());
+		}
 
 		try {
 			if(producto.getIdProducto() != null) {

@@ -35,16 +35,4 @@ public class Cliente implements Serializable {
 	private String direccion;
 	private String telefono;
 	private LocalDateTime fechaRegistro;
-
-	@PrePersist
-	public void configFechaRegistro() {
-		if (fechaRegistro == null) {
-			fechaRegistro = LocalDateTime.now();
-		}
-
-		setNombre(nombre.toUpperCase());
-		setNit(nit.toUpperCase());
-		setDireccion(direccion.toUpperCase());
-	}
-
 }
