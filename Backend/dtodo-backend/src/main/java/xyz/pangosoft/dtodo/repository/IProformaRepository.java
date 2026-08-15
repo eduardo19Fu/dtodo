@@ -37,8 +37,7 @@ public interface IProformaRepository extends JpaRepository<Proforma, Long> {
             "p.idProforma, p.noProforma, p.fechaEmision, p.total, e.idEstado, e.estado, " +
             "u.usuario, concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, '')), c.nombre, c.nit) " +
             "from Proforma p join p.estado e join p.usuario u join p.cliente c " +
-            "where p.fechaEmision >= :fechaIni and p.fechaEmision < :fechaFin " +
-            "order by p.fechaEmision desc")
+            "where p.fechaEmision >= :fechaIni and p.fechaEmision < :fechaFin")
     Page<ProformaDto> findAllListadoDto(@Param("fechaIni") Date fechaIni,
                                                 @Param("fechaFin") Date fechaFin,
                                                 Pageable pageable);
@@ -52,8 +51,7 @@ public interface IProformaRepository extends JpaRepository<Proforma, Long> {
             "lower(c.nit) like lower(concat('%', :filtro, '%')) or " +
             "lower(u.usuario) like lower(concat('%', :filtro, '%')) or " +
             "lower(concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, ''))) like lower(concat('%', :filtro, '%')) or " +
-            "lower(p.noProforma) like lower(concat('%', :filtro, '%'))) " +
-            "order by p.fechaEmision desc")
+            "lower(p.noProforma) like lower(concat('%', :filtro, '%')))")
     Page<ProformaDto> searchListadoDto(@Param("fechaIni") Date fechaIni,
                                                @Param("fechaFin") Date fechaFin,
                                                @Param("filtro") String filtro,

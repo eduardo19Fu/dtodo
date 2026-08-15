@@ -11,8 +11,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpHeaders;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
@@ -33,7 +35,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@CrossOrigin(value = {"http://localhost:4200", "https://dtodojalapa.xyz", "http://dtodojalapa.xyz"})
+@CrossOrigin(value = {"http://localhost:4200", "https://dtodojalapa.xyz", "http://dtodojalapa.xyz"},
+        exposedHeaders = {HttpHeaders.CONTENT_DISPOSITION})
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
@@ -57,9 +60,11 @@ public class ProformaApiController {
             @PathVariable("page") Integer page,
             @RequestParam("fechaIni") String fechaIni,
             @RequestParam("fechaFin") String fechaFin,
-            @RequestParam(value = "size", defaultValue = "5") Integer size) {
+            @RequestParam(value = "size", defaultValue = "5") Integer size,
+            @RequestParam(value = "orden", defaultValue = "fecha") String orden,
+            @RequestParam(value = "direccion", defaultValue = "desc") String direccion) {
         return ResponseEntity.ok(proformaService.findAllListadoDto(
-                fechaIni, fechaFin, PageRequest.of(page, size)));
+                fechaIni, fechaFin, PageRequest.of(page, size, obtenerOrden(orden, direccion))));
     }
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
@@ -69,9 +74,11 @@ public class ProformaApiController {
             @RequestParam("fechaIni") String fechaIni,
             @RequestParam("fechaFin") String fechaFin,
             @RequestParam(value = "filtro", defaultValue = "") String filtro,
-            @RequestParam(value = "size", defaultValue = "5") Integer size) {
+            @RequestParam(value = "size", defaultValue = "5") Integer size,
+            @RequestParam(value = "orden", defaultValue = "fecha") String orden,
+            @RequestParam(value = "direccion", defaultValue = "desc") String direccion) {
         return ResponseEntity.ok(proformaService.searchListadoDto(
-                fechaIni, fechaFin, filtro, PageRequest.of(page, size)));
+                fechaIni, fechaFin, filtro, PageRequest.of(page, size, obtenerOrden(orden, direccion))));
     }
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
@@ -79,8 +86,25 @@ public class ProformaApiController {
     public ResponseEntity<Page<ProformaDto>> getUltimasListadoDto(
             @PathVariable("page") Integer page,
             @RequestParam(value = "filtro", defaultValue = "") String filtro,
-            @RequestParam(value = "size", defaultValue = "5") Integer size) {
-        return ResponseEntity.ok(proformaService.findUltimasListadoDto(filtro, PageRequest.of(page, size)));
+            @RequestParam(value = "size", defaultValue = "5") Integer size,
+            @RequestParam(value = "orden", defaultValue = "fecha") String orden,
+            @RequestParam(value = "direccion", defaultValue = "desc") String direccion) {
+        return ResponseEntity.ok(proformaService.findUltimasListadoDto(
+                filtro, PageRequest.of(page, size, obtenerOrden(orden, direccion))));
+    }
+
+    private Sort obtenerOrden(String orden, String direccion) {
+        Sort.Direction sentido = "desc".equalsIgnoreCase(direccion)
+                ? Sort.Direction.DESC : Sort.Direction.ASC;
+        switch (orden == null ? "" : orden.toLowerCase()) {
+            case "numero": return Sort.by(sentido, "noProforma");
+            case "cliente": return Sort.by(sentido, "cliente.nombre");
+            case "vendedor": return Sort.by(sentido, "usuario.primerNombre", "usuario.apellido");
+            case "usuario": return Sort.by(sentido, "usuario.usuario");
+            case "total": return Sort.by(sentido, "total");
+            case "estado": return Sort.by(sentido, "estado.estado");
+            default: return Sort.by(sentido, "fechaEmision");
+        }
     }
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
@@ -171,5 +195,24 @@ public class ProformaApiController {
     public ResponseEntity<byte[]> showProforma(@PathVariable("id") Long idproforma) {
         byte[] proformaPdf = proformaService.showProforma(idproforma);
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_PDF).body(proformaPdf);
+    }
+
+    @Secured(value = "ROLE_ADMIN")
+    @GetMapping("/proformas/excel")
+    public ResponseEntity<byte[]> generarProformasExcel(
+            @RequestParam(value = "fechaIni", required = false) String fechaIni,
+            @RequestParam(value = "fechaFin", required = false) String fechaFin,
+            @RequestParam(value = "todas", defaultValue = "false") boolean todas) {
+        log.info("Generando reporte Excel de proformas. Todas: {}", todas);
+        byte[] reporte = proformaService.proformasExcel(fechaIni, fechaFin, todas);
+        String nombreArchivo = todas
+                ? "proformas_todas.xlsx"
+                : String.format("proformas_%s_%s.xlsx", fechaIni, fechaFin);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + nombreArchivo)
+                .contentType(MediaType.parseMediaType(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .contentLength(reporte.length)
+                .body(reporte);
     }
 }

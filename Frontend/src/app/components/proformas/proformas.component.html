@@ -10,6 +10,14 @@
         <a [routerLink]="['/proformas/create']" class="btn bg-gradient-success">
           <i class="fas fa-plus-circle"></i> Nuevo
         </a>
+        <button type="button" class="btn bg-gradient-info ml-2"
+                *ngIf="auth.hasRole('ROLE_ADMIN')" [disabled]="exportando"
+                (click)="abrirModalExportacion()">
+          <span *ngIf="exportando" class="spinner-border spinner-border-sm mr-1"
+                role="status" aria-hidden="true"></span>
+          <i *ngIf="!exportando" class="fas fa-file-excel mr-1"></i>
+          {{exportando ? 'Generando...' : 'Exportar Excel'}}
+        </button>
       </div>
     </div>
   </div>
@@ -108,13 +116,13 @@
            *ngIf="!cargando && proformasDto.length > 0">
       <thead>
         <tr>
-          <th class="col-numero">No. Proforma</th>
-          <th class="col-fecha">Fecha</th>
-          <th class="col-cliente">Cliente / NIT</th>
-          <th class="col-vendedor">Vendedor</th>
-          <th class="col-usuario">Usuario</th>
-          <th class="col-total">Total</th>
-          <th class="col-estado">Estado</th>
+          <th class="col-numero"><button type="button" class="sort-header" (click)="ordenarPor('numero')">No. Proforma <i [class]="iconoOrden('numero')"></i></button></th>
+          <th class="col-fecha"><button type="button" class="sort-header" (click)="ordenarPor('fecha')">Fecha <i [class]="iconoOrden('fecha')"></i></button></th>
+          <th class="col-cliente"><button type="button" class="sort-header" (click)="ordenarPor('cliente')">Cliente / NIT <i [class]="iconoOrden('cliente')"></i></button></th>
+          <th class="col-vendedor"><button type="button" class="sort-header" (click)="ordenarPor('vendedor')">Vendedor <i [class]="iconoOrden('vendedor')"></i></button></th>
+          <th class="col-usuario"><button type="button" class="sort-header" (click)="ordenarPor('usuario')">Usuario <i [class]="iconoOrden('usuario')"></i></button></th>
+          <th class="col-total"><button type="button" class="sort-header" (click)="ordenarPor('total')">Total <i [class]="iconoOrden('total')"></i></button></th>
+          <th class="col-estado"><button type="button" class="sort-header" (click)="ordenarPor('estado')">Estado <i [class]="iconoOrden('estado')"></i></button></th>
           <th class="col-opciones" *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR') || auth.hasRole('ROLE_INVENTARIO')">Opciones</th>
         </tr>
       </thead>

@@ -51,4 +51,6 @@ public interface IProformaService {
 
     public byte[] showProforma(Long idfactura);
 
+    byte[] proformasExcel(String fechaIni, String fechaFin, boolean todas);
+
 }

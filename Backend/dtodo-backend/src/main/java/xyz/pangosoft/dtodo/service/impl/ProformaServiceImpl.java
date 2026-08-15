@@ -25,6 +25,11 @@ import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.JRParameter;
+import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
+import net.sf.jasperreports.export.SimpleExporterInput;
+import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
+import net.sf.jasperreports.export.SimpleXlsxReportConfiguration;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -39,6 +44,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.sql.DataSource;
 
 import java.io.FileNotFoundException;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 import java.sql.Connection;
@@ -48,6 +55,7 @@ import java.text.ParseException;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -153,6 +161,7 @@ public class ProformaServiceImpl implements IProformaService {
                         .filter(proforma -> coincideFiltro(proforma, filtroNormalizado))
                         .collect(java.util.stream.Collectors.toList());
             }
+            ordenarProformas(proformas, pageable.getSort());
             int inicio = Math.min((int) pageable.getOffset(), proformas.size());
             int fin = Math.min(inicio + pageable.getPageSize(), proformas.size());
             return new PageImpl<>(proformas.subList(inicio, fin), pageable, proformas.size());
@@ -172,6 +181,53 @@ public class ProformaServiceImpl implements IProformaService {
 
     private boolean contiene(Object valor, String filtro) {
         return valor != null && valor.toString().toLowerCase().contains(filtro);
+    }
+
+    private void ordenarProformas(List<ProformaDto> proformas, Sort sort) {
+        Comparator<ProformaDto> comparador = null;
+        for (Sort.Order order : sort) {
+            Comparator<ProformaDto> comparadorCampo = (primera, segunda) -> compararValores(
+                    obtenerValorOrden(primera, order.getProperty()),
+                    obtenerValorOrden(segunda, order.getProperty()));
+            if (order.isDescending()) {
+                comparadorCampo = comparadorCampo.reversed();
+            }
+            comparador = comparador == null ? comparadorCampo : comparador.thenComparing(comparadorCampo);
+        }
+        if (comparador != null) {
+            proformas.sort(comparador);
+        }
+    }
+
+    private Comparable<?> obtenerValorOrden(ProformaDto proforma, String propiedad) {
+        switch (propiedad) {
+            case "noProforma": return normalizar(proforma.getNoProforma());
+            case "cliente.nombre": return normalizar(proforma.getCliente());
+            case "usuario.primerNombre":
+            case "usuario.apellido": return normalizar(proforma.getVendedor());
+            case "usuario.usuario": return normalizar(proforma.getUsuario());
+            case "total": return proforma.getTotal();
+            case "estado.estado": return normalizar(proforma.getEstado());
+            default: return proforma.getFechaEmision();
+        }
+    }
+
+    private String normalizar(String valor) {
+        return valor == null ? null : valor.toLowerCase();
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private int compararValores(Comparable primero, Comparable segundo) {
+        if (primero == null && segundo == null) {
+            return 0;
+        }
+        if (primero == null) {
+            return 1;
+        }
+        if (segundo == null) {
+            return -1;
+        }
+        return primero.compareTo(segundo);
     }
 
     @Transactional(readOnly = true)
@@ -428,6 +484,57 @@ public class ProformaServiceImpl implements IProformaService {
         } catch (Exception e) {
             log.error("Ha ocurrido un error inesperado: {}", e);
             throw new RuntimeException("Ha ocurrido un error inesperado: " + e.getMessage());
+        }
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public byte[] proformasExcel(String fechaIni, String fechaFin, boolean todas) {
+        Date[] rango = todas ? null : parseDateRange(fechaIni, fechaFin);
+        try (Connection connection = dataSource.getConnection();
+             InputStream template = getClass().getResourceAsStream("/reports/proformas_excel.jrxml");
+             ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+
+            if (template == null) {
+                throw new ReportGenerationException("No se encontró la plantilla del reporte de proformas", null);
+            }
+
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put(JRParameter.IS_IGNORE_PAGINATION, true);
+            parameters.put("FECHA_INI", todas ? null : rango[0]);
+            parameters.put("FECHA_FIN", todas ? null : rango[1]);
+            parameters.put("EXPORTAR_TODAS", todas);
+            parameters.put("RANGO", todas
+                    ? "Todas las proformas registradas"
+                    : String.format("Del %s al %s", fechaIni, fechaFin));
+
+            JasperReport report = JasperCompileManager.compileReport(template);
+            JasperPrint print = JasperFillManager.fillReport(report, parameters, connection);
+
+            JRXlsxExporter exporter = new JRXlsxExporter();
+            exporter.setExporterInput(new SimpleExporterInput(print));
+            exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(output));
+
+            SimpleXlsxReportConfiguration configuration = new SimpleXlsxReportConfiguration();
+            configuration.setDetectCellType(true);
+            configuration.setRemoveEmptySpaceBetweenRows(true);
+            configuration.setWhitePageBackground(false);
+            configuration.setOnePagePerSheet(false);
+            configuration.setSheetNames(new String[] { "Proformas" });
+            exporter.setConfiguration(configuration);
+            exporter.exportReport();
+
+            return output.toByteArray();
+        } catch (JRException e) {
+            log.error("No fue posible generar el reporte Excel de proformas: {}", e.getMessage());
+            throw new ReportGenerationException("No fue posible generar el reporte Excel de proformas", e);
+        } catch (SQLException e) {
+            log.error("No fue posible consultar las proformas para el reporte: {}", e.getMessage());
+            throw new xyz.pangosoft.dtodo.error.exceptions.SQLException(
+                    "No fue posible consultar las proformas para el reporte", e);
+        } catch (IOException e) {
+            log.error("No fue posible leer la plantilla del reporte de proformas: {}", e.getMessage());
+            throw new ReportGenerationException("No fue posible leer la plantilla del reporte de proformas", e);
         }
     }
 
