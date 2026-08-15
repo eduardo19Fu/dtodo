@@ -1,5 +1,6 @@
 package xyz.pangosoft.dtodo.service.impl;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -52,6 +53,7 @@ public class ClienteServiceImpl implements IClienteService {
 		}
 	}
 
+	@Transactional(readOnly = true)
 	@Override
 	public List<ClienteDto> findAllDto() {
 		List<ClienteDto> clientes = new ArrayList<>();
@@ -205,6 +207,10 @@ public class ClienteServiceImpl implements IClienteService {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
 		Cliente newCliente = null;
 		log.debug("Enter {}", __method);
+
+		if (cliente.getFechaRegistro() == null) {
+			cliente.setFechaRegistro(LocalDateTime.now());
+		}
 
 		try {
 			log.info("Registrando nuevo cliente");

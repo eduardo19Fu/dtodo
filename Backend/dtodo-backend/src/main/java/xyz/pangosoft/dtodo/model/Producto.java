@@ -2,6 +2,7 @@ package xyz.pangosoft.dtodo.model;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 import jakarta.persistence.Entity;
@@ -47,15 +48,13 @@ public class Producto implements Serializable {
 	private String imagen;
 	private String descripcion;
 	private String link;
+	private LocalDateTime fechaRegistro;
 
 	@Temporal(TemporalType.DATE)
 	private Date fechaVencimiento;
 
 	@Temporal(TemporalType.DATE)
 	private Date fechaIngreso;
-
-	@Temporal(TemporalType.TIMESTAMP)
-	private Date fechaRegistro;
 
 	private int stock;
 
@@ -75,9 +74,4 @@ public class Producto implements Serializable {
 	@JoinColumn(name = "id_estado")
 	@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 	private Estado estado;
-
-	@PrePersist
-	public void configFechaRegistro() {
-		this.fechaRegistro = new Date();
-	}
 }
