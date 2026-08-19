@@ -3,6 +3,7 @@ package xyz.pangosoft.dtodo.service.impl;
 import xyz.pangosoft.dtodo.dto.ProformaFechaDto;
 import xyz.pangosoft.dtodo.dto.ProformaDto;
 import xyz.pangosoft.dtodo.dto.DetalleDocumentoDto;
+import xyz.pangosoft.dtodo.dto.UsuarioDto;
 import xyz.pangosoft.dtodo.error.exceptions.DataAccessException;
 import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
 import xyz.pangosoft.dtodo.error.exceptions.NoContentException;
@@ -489,7 +490,21 @@ public class ProformaServiceImpl implements IProformaService {
 
     @Transactional(readOnly = true)
     @Override
-    public byte[] proformasExcel(String fechaIni, String fechaFin, boolean todas) {
+    public List<UsuarioDto> findUsuariosExportacion() {
+        try {
+            return proformaRepository.findUsuariosConProformas();
+        } catch (org.springframework.dao.DataAccessException e) {
+            log.error("No fue posible consultar los usuarios con proformas: {}", e.getMessage());
+            throw new DataAccessException("No fue posible consultar los usuarios con proformas", e);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public byte[] proformasExcel(String fechaIni, String fechaFin, boolean todas, Integer idUsuario) {
+        if (idUsuario == null || idUsuario <= 0) {
+            throw new BadRequestException("Debe seleccionar el usuario que generó las proformas", null);
+        }
         Date[] rango = todas ? null : parseDateRange(fechaIni, fechaFin);
         try (Connection connection = dataSource.getConnection();
              InputStream template = getClass().getResourceAsStream("/reports/proformas_excel.jrxml");
@@ -504,6 +519,7 @@ public class ProformaServiceImpl implements IProformaService {
             parameters.put("FECHA_INI", todas ? null : rango[0]);
             parameters.put("FECHA_FIN", todas ? null : rango[1]);
             parameters.put("EXPORTAR_TODAS", todas);
+            parameters.put("ID_USUARIO", idUsuario);
             parameters.put("RANGO", todas
                     ? "Todas las proformas registradas"
                     : String.format("Del %s al %s", fechaIni, fechaFin));

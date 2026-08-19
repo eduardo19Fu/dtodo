@@ -3,6 +3,7 @@ import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 import { ProformaDto } from '../../dtos/proforma-dto';
+import { UsuarioDto } from '../../dtos/usuario-dto';
 import { ProformaService } from '../../services/proformas/proforma.service';
 import { AuthService } from '../../services/auth.service';
 
@@ -35,6 +36,7 @@ export class ProformasComponent implements OnInit, OnDestroy {
   orden = 'fecha';
   direccion: 'asc' | 'desc' = 'desc';
   exportando = false;
+  preparandoExportacion = false;
 
   private busquedaSubject = new Subject<string>();
   private busquedaSubscription: Subscription;
@@ -165,14 +167,54 @@ export class ProformasComponent implements OnInit, OnDestroy {
   }
 
   abrirModalExportacion(): void {
-    if (this.exportando) {
+    if (this.exportando || this.preparandoExportacion) {
       return;
     }
+    this.preparandoExportacion = true;
+    Swal.fire({
+      title: 'Consultando usuarios...',
+      allowEscapeKey: false,
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      didOpen: () => Swal.showLoading()
+    });
+    this.proformaService.getUsuariosExportacion().subscribe(
+      usuarios => {
+        this.preparandoExportacion = false;
+        if (!usuarios || usuarios.length === 0) {
+          Swal.fire('Sin usuarios', 'No existen usuarios con proformas registradas.', 'info');
+          return;
+        }
+        this.mostrarModalExportacion(usuarios);
+      },
+      error => {
+        console.error(error);
+        this.preparandoExportacion = false;
+        Swal.fire('Error al consultar usuarios',
+          error.error?.message || error.error?.mensaje || 'No fue posible cargar los usuarios.', 'error');
+      }
+    );
+  }
+
+  private mostrarModalExportacion(usuarios: UsuarioDto[]): void {
+    const opcionesUsuarios = usuarios.map(usuario => {
+      const nombre = [usuario.primerNombre, usuario.segundoNombre, usuario.apellido]
+        .filter(valor => !!valor).join(' ');
+      const etiqueta = nombre ? `${usuario.usuario} - ${nombre}` : usuario.usuario;
+      return `<option value="${usuario.idUsuario}">${this.escaparHtml(etiqueta)}</option>`;
+    }).join('');
     Swal.fire({
       title: 'Exportar proformas a Excel',
       html: `
         <div class="text-left">
-          <p class="text-muted">Selecciona el rango de fechas que deseas incluir.</p>
+          <p class="text-muted">Selecciona el usuario que generó las proformas y el rango que deseas incluir.</p>
+          <div class="form-group">
+            <label for="export-usuario">Usuario</label>
+            <select id="export-usuario" class="form-control">
+              <option value="">Selecciona un usuario</option>
+              ${opcionesUsuarios}
+            </select>
+          </div>
           <div class="form-group">
             <label for="export-fecha-inicio">Fecha de inicio</label>
             <input id="export-fecha-inicio" type="date" class="form-control">
@@ -194,6 +236,10 @@ export class ProformasComponent implements OnInit, OnDestroy {
       cancelButtonText: 'Cancelar',
       focusConfirm: false,
       preConfirm: () => {
+        const usuario = this.obtenerUsuarioExportacion();
+        if (!usuario) {
+          return false;
+        }
         const fechaInicio = (document.getElementById('export-fecha-inicio') as HTMLInputElement).value;
         const fechaFin = (document.getElementById('export-fecha-fin') as HTMLInputElement).value;
         if (!fechaInicio || !fechaFin) {
@@ -204,45 +250,70 @@ export class ProformasComponent implements OnInit, OnDestroy {
           Swal.showValidationMessage('La fecha final no puede ser anterior a la fecha inicial.');
           return false;
         }
-        return { fechaInicio, fechaFin };
+        return { fechaInicio, fechaFin, ...usuario };
+      },
+      preDeny: () => {
+        const usuario = this.obtenerUsuarioExportacion();
+        return usuario || false;
       }
     }).then(result => {
       if (result.isConfirmed) {
-        const rango = result.value as { fechaInicio: string; fechaFin: string };
-        this.generarExcel(rango.fechaInicio, rango.fechaFin, false);
+        const rango = result.value as {
+          fechaInicio: string; fechaFin: string; idUsuario: number; nombreUsuario: string
+        };
+        this.generarExcel(rango.idUsuario, rango.nombreUsuario,
+          rango.fechaInicio, rango.fechaFin, false);
       } else if (result.isDenied) {
-        this.confirmarExportacionCompleta();
+        const usuario = result.value as { idUsuario: number; nombreUsuario: string };
+        this.confirmarExportacionCompleta(usuario.idUsuario, usuario.nombreUsuario);
       }
     });
   }
 
-  private confirmarExportacionCompleta(): void {
+  private obtenerUsuarioExportacion(): { idUsuario: number; nombreUsuario: string } | null {
+    const selector = document.getElementById('export-usuario') as HTMLSelectElement;
+    const idUsuario = selector ? Number(selector.value) : 0;
+    if (!idUsuario) {
+      Swal.showValidationMessage('Debes seleccionar el usuario que generó las proformas.');
+      return null;
+    }
+    return {
+      idUsuario,
+      nombreUsuario: selector.options[selector.selectedIndex].text
+    };
+  }
+
+  private confirmarExportacionCompleta(idUsuario: number, nombreUsuario: string): void {
     Swal.fire({
       title: '¿Exportar todas las proformas?',
-      text: 'El archivo puede tardar en generarse si existen muchos registros.',
+      text: `Se exportarán todas las proformas generadas por ${nombreUsuario}. El archivo puede tardar en generarse.`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Sí, exportar todas',
       cancelButtonText: 'Cancelar'
     }).then(result => {
       if (result.isConfirmed) {
-        this.generarExcel(null, null, true);
+        this.generarExcel(idUsuario, nombreUsuario, null, null, true);
       }
     });
   }
 
-  private generarExcel(fechaInicio: string, fechaFin: string, todas: boolean): void {
+  private generarExcel(idUsuario: number, nombreUsuario: string,
+                       fechaInicio: string, fechaFin: string, todas: boolean): void {
     this.exportando = true;
     Swal.fire({
       title: 'Generando reporte de proformas...',
-      text: todas ? 'Consultando todas las proformas registradas.' : 'Consultando el rango seleccionado.',
+      text: todas
+        ? `Consultando todas las proformas generadas por ${nombreUsuario}.`
+        : `Consultando las proformas de ${nombreUsuario} en el rango seleccionado.`,
       allowEscapeKey: false,
       allowOutsideClick: false,
       showConfirmButton: false,
       didOpen: () => Swal.showLoading()
     });
 
-    this.proformaService.exportarProformasExcel(fechaInicio, fechaFin, todas).subscribe(
+    this.proformaService.exportarProformasExcel(
+      idUsuario, fechaInicio, fechaFin, todas).subscribe(
       response => {
         const disposition = response.headers.get('content-disposition');
         const filenameMatch = disposition && disposition.match(/filename="?([^";]+)"?/i);
@@ -265,6 +336,14 @@ export class ProformasComponent implements OnInit, OnDestroy {
           'No fue posible generar el archivo Excel.', 'error');
       }
     );
+  }
+
+  private escaparHtml(valor: string): string {
+    return valor.replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   }
 
   irPrimeraPagina(): void { this.cargarProformas(0); }

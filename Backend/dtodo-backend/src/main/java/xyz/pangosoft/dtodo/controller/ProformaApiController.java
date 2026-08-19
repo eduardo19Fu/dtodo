@@ -2,6 +2,7 @@ package xyz.pangosoft.dtodo.controller;
 
 import xyz.pangosoft.dtodo.dto.ProformaFechaDto;
 import xyz.pangosoft.dtodo.dto.ProformaDto;
+import xyz.pangosoft.dtodo.dto.UsuarioDto;
 import xyz.pangosoft.dtodo.dto.DetalleDocumentoDto;
 import xyz.pangosoft.dtodo.model.Proforma;
 import xyz.pangosoft.dtodo.service.IEstadoService;
@@ -198,16 +199,23 @@ public class ProformaApiController {
     }
 
     @Secured(value = "ROLE_ADMIN")
+    @GetMapping("/proformas/usuarios-exportacion")
+    public ResponseEntity<List<UsuarioDto>> usuariosExportacion() {
+        return ResponseEntity.ok(proformaService.findUsuariosExportacion());
+    }
+
+    @Secured(value = "ROLE_ADMIN")
     @GetMapping("/proformas/excel")
     public ResponseEntity<byte[]> generarProformasExcel(
             @RequestParam(value = "fechaIni", required = false) String fechaIni,
             @RequestParam(value = "fechaFin", required = false) String fechaFin,
-            @RequestParam(value = "todas", defaultValue = "false") boolean todas) {
-        log.info("Generando reporte Excel de proformas. Todas: {}", todas);
-        byte[] reporte = proformaService.proformasExcel(fechaIni, fechaFin, todas);
+            @RequestParam(value = "todas", defaultValue = "false") boolean todas,
+            @RequestParam(value = "idUsuario") Integer idUsuario) {
+        log.info("Generando reporte Excel de proformas. Todas: {}, usuario: {}", todas, idUsuario);
+        byte[] reporte = proformaService.proformasExcel(fechaIni, fechaFin, todas, idUsuario);
         String nombreArchivo = todas
-                ? "proformas_todas.xlsx"
-                : String.format("proformas_%s_%s.xlsx", fechaIni, fechaFin);
+                ? String.format("proformas_usuario_%s_todas.xlsx", idUsuario)
+                : String.format("proformas_usuario_%s_%s_%s.xlsx", idUsuario, fechaIni, fechaFin);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + nombreArchivo)
                 .contentType(MediaType.parseMediaType(

@@ -6,6 +6,7 @@ import Swal from 'sweetalert2';
 import { Observable, throwError } from 'rxjs';
 import { Proforma } from 'src/app/models/proforma';
 import { catchError, map } from 'rxjs/operators';
+import { UsuarioDto } from '../../dtos/usuario-dto';
 
 @Injectable({
   providedIn: 'root'
@@ -162,9 +163,16 @@ export class ProformaService {
     );
   }
 
-  exportarProformasExcel(fechaIni?: string, fechaFin?: string,
+  getUsuariosExportacion(): Observable<UsuarioDto[]> {
+    return this.httpClient.get<UsuarioDto[]>(`${this.url}/proformas/usuarios-exportacion`)
+      .pipe(catchError(e => throwError(e)));
+  }
+
+  exportarProformasExcel(idUsuario: number, fechaIni?: string, fechaFin?: string,
                          todas: boolean = false): Observable<HttpResponse<Blob>> {
-    let params = new HttpParams().set('todas', todas.toString());
+    let params = new HttpParams()
+      .set('todas', todas.toString())
+      .set('idUsuario', idUsuario.toString());
     if (!todas) {
       params = params.set('fechaIni', fechaIni).set('fechaFin', fechaFin);
     }

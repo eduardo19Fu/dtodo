@@ -3,6 +3,7 @@ package xyz.pangosoft.dtodo.service;
 import xyz.pangosoft.dtodo.dto.ProformaFechaDto;
 import xyz.pangosoft.dtodo.dto.ProformaDto;
 import xyz.pangosoft.dtodo.dto.DetalleDocumentoDto;
+import xyz.pangosoft.dtodo.dto.UsuarioDto;
 import xyz.pangosoft.dtodo.model.Proforma;
 import net.sf.jasperreports.engine.JRException;
 import org.springframework.data.domain.Page;
@@ -26,6 +27,8 @@ public interface IProformaService {
     Page<ProformaDto> findUltimasListadoDto(String filtro, Pageable pageable);
 
     Page<DetalleDocumentoDto> findDetalleDto(Long idProforma, Pageable pageable);
+
+    List<UsuarioDto> findUsuariosExportacion();
 
     public Proforma findProforma(Long idproforma);
 
@@ -51,6 +54,6 @@ public interface IProformaService {
 
     public byte[] showProforma(Long idfactura);
 
-    byte[] proformasExcel(String fechaIni, String fechaFin, boolean todas);
+    byte[] proformasExcel(String fechaIni, String fechaFin, boolean todas, Integer idUsuario);
 
 }
