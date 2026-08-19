@@ -1,8 +1,10 @@
 package xyz.pangosoft.dtodo.reports;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStream;
+import java.util.Arrays;
 
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperReport;
@@ -16,6 +18,8 @@ class ProformasExcelTemplateTest {
             assertNotNull(template, "La plantilla del reporte de proformas debe existir");
             JasperReport report = JasperCompileManager.compileReport(template);
             assertNotNull(report);
+            assertTrue(Arrays.stream(report.getParameters())
+                    .anyMatch(parameter -> "ID_USUARIO".equals(parameter.getName())));
         }
     }
 }

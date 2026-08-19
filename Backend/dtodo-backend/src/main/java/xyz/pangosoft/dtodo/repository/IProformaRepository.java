@@ -3,6 +3,7 @@ package xyz.pangosoft.dtodo.repository;
 import xyz.pangosoft.dtodo.dto.ProformaFechaDto;
 import xyz.pangosoft.dtodo.dto.ProformaDto;
 import xyz.pangosoft.dtodo.dto.DetalleDocumentoDto;
+import xyz.pangosoft.dtodo.dto.UsuarioDto;
 import xyz.pangosoft.dtodo.model.Proforma;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -64,5 +65,11 @@ public interface IProformaRepository extends JpaRepository<Proforma, Long> {
             countQuery = "SELECT COUNT(*) FROM proformas_detalle WHERE id_proforma = :idProforma",
             nativeQuery = true)
     Page<DetalleDocumentoDto> findDetalleDto(@Param("idProforma") Long idProforma, Pageable pageable);
+
+    @Query("select distinct new xyz.pangosoft.dtodo.dto.UsuarioDto(" +
+            "u.idUsuario, u.usuario, u.primerNombre, u.segundoNombre, " +
+            "u.apellido, u.enabled, u.fechaRegistro) " +
+            "from Proforma p join p.usuario u order by u.usuario")
+    List<UsuarioDto> findUsuariosConProformas();
 
 }

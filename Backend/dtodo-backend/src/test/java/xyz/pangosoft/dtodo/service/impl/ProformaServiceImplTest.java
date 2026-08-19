@@ -69,4 +69,12 @@ class ProformaServiceImplTest {
         assertEquals("100P", resultado.getContent().get(0).getNoProforma());
         assertEquals("200P", resultado.getContent().get(1).getNoProforma());
     }
+
+    @Test
+    void exigeUsuarioParaExportarProformas() {
+        BadRequestException exception = assertThrows(BadRequestException.class,
+                () -> service.proformasExcel(null, null, true, null));
+
+        assertTrue(exception.getMessage().contains("usuario"));
+    }
 }

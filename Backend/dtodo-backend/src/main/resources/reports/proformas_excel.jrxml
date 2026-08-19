@@ -9,6 +9,7 @@
     <parameter name="FECHA_INI" class="java.util.Date"/>
     <parameter name="FECHA_FIN" class="java.util.Date"/>
     <parameter name="EXPORTAR_TODAS" class="java.lang.Boolean"/>
+    <parameter name="ID_USUARIO" class="java.lang.Integer"/>
     <parameter name="RANGO" class="java.lang.String"/>
     <queryString language="SQL"><![CDATA[
         SELECT p.no_proforma AS no_proforma,
@@ -23,7 +24,8 @@
           INNER JOIN clientes c ON c.id_cliente = p.id_cliente
           INNER JOIN usuarios u ON u.id_usuario = p.id_usuario
           INNER JOIN estados e ON e.id_estado = p.id_estado
-         WHERE ($P{EXPORTAR_TODAS} = TRUE OR
+         WHERE p.id_usuario = $P{ID_USUARIO}
+           AND ($P{EXPORTAR_TODAS} = TRUE OR
                (p.fecha_emision >= $P{FECHA_INI} AND p.fecha_emision < $P{FECHA_FIN}))
          ORDER BY p.fecha_emision DESC
     ]]></queryString>
