@@ -1,68 +1,96 @@
 <div *ngIf="clienteCreateService.modal" class="abrir-modal animacion fadeIn">
-    <div class="modal" tabindex="-1" style="display: block; overflow-y: scroll;">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title ">{{title}}</h5>
-                    <button (click)="cerrarModal()" id="close" type="button" class="close" data-dismiss="modal"
-                        aria-label="Close">
-                        <span aria-hidden="true" style="color: white;">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <!-- FORMULARIO DE CREACION DE CLIENTE -->
-                    <form #clienteForm="ngForm">
-
-                        <div class="row">
-                            <div class="form-group col">
-                                <label for="nombre">Nombre</label>
-                                <input type="text" class="form-control" name="nombre" [(ngModel)]="cliente.nombre"
-                                    required placeholder="Ingrese nombre del cliente" #nombre="ngModel">
-
-                                <div *ngIf="nombre.invalid && (nombre.touched || nombre.dirty)">
-                                    <span class="requerido">
-                                        El nombre no puede estar vacío.
-                                    </span>
-                                </div>
-                            </div>
-
-                            <div class="form-group col">
-                                <label for="nit">NIT</label>
-                                <input type="text" name="nit" class="form-control" [(ngModel)]="cliente.nit" required
-                                    placeholder="Ingrese NIT del cliente" #nit="ngModel" [disabled]="cliente.nit">
-
-                                <div *ngIf="nit.invalid && (nit.touched || nit.dirty)">
-                                    <span class="requerido">
-                                        El NIT no puede estar vacío.
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="form-group col">
-                                <label for="direccion">Dirección</label>
-                                <input type="text" name="direccion" class="form-control" [(ngModel)]="cliente.direccion"
-                                    placeholder="Ingrese dirección del cliente" required #direccion="ngModel">
-
-                                <div *ngIf="direccion.invalid && (direccion.dirty || direccion.touched)">
-                                    <span class="requerido">
-                                        La dirección no puede estar vacía.
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <button type="submit" role="button" class="btn btn-primary" (click)="create()"
-                            [disabled]="!clienteForm.form.valid"> Guardar
-                        </button>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button (click)="cerrarModal()" type="button" class="btn btn-secondary"
-                        data-dismiss="modal">Cerrar</button>
-                </div>
+  <div class="modal quick-client-modal" tabindex="-1" role="dialog" aria-modal="true"
+    aria-labelledby="quick-client-title">
+    <div class="modal-dialog modal-lg quick-client-dialog">
+      <div class="modal-content quick-client-content">
+        <div class="modal-header quick-client-header">
+          <div class="quick-client-heading">
+            <span class="quick-client-heading-icon" aria-hidden="true"><i class="fas fa-user-plus"></i></span>
+            <div>
+              <span>Cliente no encontrado</span>
+              <h5 class="modal-title" id="quick-client-title">{{title}}</h5>
             </div>
+          </div>
+          <button (click)="cerrarModal()" type="button" class="quick-client-close" aria-label="Cerrar modal">
+            <i class="fas fa-times" aria-hidden="true"></i>
+          </button>
         </div>
+
+        <form #clienteForm="ngForm" class="quick-client-form">
+          <div class="modal-body quick-client-body">
+            <div class="quick-client-intro">
+              <span class="quick-client-info-icon" aria-hidden="true"><i class="fas fa-info-circle"></i></span>
+              <div>
+                <strong>Completa los datos del nuevo cliente</strong>
+                <p>El NIT consultado quedará asociado automáticamente al documento actual.</p>
+              </div>
+              <span class="quick-client-nit"><i class="fas fa-fingerprint"></i> NIT {{cliente.nit}}</span>
+            </div>
+
+            <div class="quick-client-grid">
+              <div class="field-group name-field">
+                <label for="modal-cliente-nombre">Nombre <span class="required-mark">*</span></label>
+                <div class="control-with-icon">
+                  <i class="fas fa-user" aria-hidden="true"></i>
+                  <input type="text" id="modal-cliente-nombre" class="form-control" name="nombre"
+                    [(ngModel)]="cliente.nombre" required placeholder="Nombre completo o razón social"
+                    #nombre="ngModel">
+                </div>
+                <div class="validation-message" *ngIf="nombre.invalid && (nombre.touched || nombre.dirty)">
+                  <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+                  El nombre no puede estar vacío.
+                </div>
+              </div>
+
+              <div class="field-group nit-field">
+                <label for="modal-cliente-nit">NIT</label>
+                <div class="control-with-icon readonly-control">
+                  <i class="fas fa-fingerprint" aria-hidden="true"></i>
+                  <input type="text" id="modal-cliente-nit" name="nit" class="form-control"
+                    [(ngModel)]="cliente.nit" required readonly #nit="ngModel">
+                  <span class="locked-indicator" title="NIT consultado"><i class="fas fa-lock"></i></span>
+                </div>
+              </div>
+
+              <div class="field-group address-field">
+                <label for="modal-cliente-direccion">Dirección <span class="required-mark">*</span></label>
+                <div class="control-with-icon">
+                  <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                  <input type="text" id="modal-cliente-direccion" name="direccion" class="form-control"
+                    [(ngModel)]="cliente.direccion" placeholder="Dirección completa del cliente" required
+                    #direccion="ngModel">
+                </div>
+                <div class="validation-message"
+                  *ngIf="direccion.invalid && (direccion.dirty || direccion.touched)">
+                  <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+                  La dirección no puede estar vacía.
+                </div>
+              </div>
+
+              <div class="field-group phone-field">
+                <label for="modal-cliente-telefono">Teléfono</label>
+                <div class="control-with-icon">
+                  <i class="fas fa-phone-alt" aria-hidden="true"></i>
+                  <input type="text" id="modal-cliente-telefono" name="telefono" class="form-control"
+                    [(ngModel)]="cliente.telefono" placeholder="Ej. 5555-5555">
+                </div>
+                <small>Opcional</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer quick-client-footer">
+            <p><i class="fas fa-shield-alt" aria-hidden="true"></i> Los datos se guardarán en el directorio de clientes.</p>
+            <div class="quick-client-actions">
+              <button (click)="cerrarModal()" type="button" class="quick-client-cancel">Cancelar</button>
+              <button type="submit" class="quick-client-confirm" (click)="create()"
+                [disabled]="!clienteForm.form.valid">
+                <i class="fas fa-save" aria-hidden="true"></i> Guardar cliente
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
+  </div>
 </div>
