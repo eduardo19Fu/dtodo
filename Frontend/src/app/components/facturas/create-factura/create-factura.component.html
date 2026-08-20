@@ -1,234 +1,286 @@
-<!-- MODAL DE REGISTRO PARA CLIENTES -->
-<app-modal-create *ngIf="nitIngresado" [nit]="nitIngresado" (clienteCreado)="cargarCliente($event)"></app-modal-create>
+<app-modal-create *ngIf="nitIngresado" [nit]="nitIngresado"
+  (clienteCreado)="cargarCliente($event)">
+</app-modal-create>
 
-<!-- MODAL CALCULAR CAMBIO -->
 <app-modal-cambio *ngIf="pagar" [factura]="factura"></app-modal-cambio>
-
-<!-- MODAL PARA BUSCAR PRODUCTOS -->
 <app-modal-buscar-producto (producto)="loadProducto($event)"></app-modal-buscar-producto>
-
-<!-- MODAL PARA BUSCAR CLIENTES -->
 <app-modal-buscar-cliente (cliente)="loadCliente($event)"></app-modal-buscar-cliente>
 
-<!-- Content Header (Page header) -->
-<div class="content-header">
-    <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-sm-6">
-                <h1 class="m-0 text-dark">{{title}}</h1>
-            </div><!-- /.col -->
-        </div><!-- /.row -->
-    </div><!-- /.container-fluid -->
-</div>
-<!-- /.content-header -->
+<div class="product-form-page invoice-page">
+  <header class="page-heading">
+    <div>
+      <span class="page-eyebrow">Ventas y facturación</span>
+      <h1>{{ title }}</h1>
+      <p>Completa los datos fiscales, agrega los productos y confirma el cobro.</p>
+    </div>
+    <div class="heading-icon" aria-hidden="true">
+      <i class="fas fa-file-invoice-dollar"></i>
+    </div>
+  </header>
 
-<div class="row">
-
-    <div class="col-md-9">
-        <div class="card card-primary">
-            <div class="card-header">
-                <h3 class="card-title">Ingrese los datos</h3>
-            </div>
-            <!-- /.card-header -->
-            <!-- form start -->
-            <form>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="usuario">Vendedor</label>
-                                <input class="form-control" type="text" name="usuario"
-                                    value="{{usuario.primerNombre + ' ' + usuario.apellido}}" [disabled]="usuario">
-                            </div>
-                        </div>
-
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="correlativo">Correlativo</label>
-                                <input type="text" class="form-control" name="correlativo"
-                                    [disabled]="correlativo.correlativoActual" [value]="correlativo.correlativoActual">
-                            </div>
-                        </div>
-
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="serie">Serie</label>
-                                <input class="form-control" type="text" name="serie" [value]="correlativo.serie"
-                                    [disabled]="correlativo.serie">
-                            </div>
-                        </div>
-
-                        <div class="col">
-                            <label for="buscar" style="display: block;">Buscar</label>
-                            <input type="text" id="buscar" name="buscar" class="form-control"
-                                style="width: 70%; display: inline; margin-right: 10px;" (keyup.enter)="buscarCliente()"
-                                autofocus>
-
-                            <button type="button" role="button" class="btn bg-fuchsia" data-toggle="modal"
-                                data-target="#modal-buscar-cliente">
-                                <i class="fas fa-search"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <hr>
-                    <div class="row">
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="nit">NIT:</label>
-                                <input type="text" class="form-control" name="nit"
-                                    value="{{cliente ? cliente.nit : ''}}" disabled>
-                            </div>
-                        </div>
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="nombre">Nombre:</label>
-                                <input type="text" class="form-control" name="nombre"
-                                    value="{{cliente ? cliente.nombre : ''}}" disabled>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="direccion">Dirección:</label>
-                                <input type="text" class="form-control" name="direccion"
-                                    value="{{cliente ? cliente.direccion : ''}}" disabled>
-                            </div>
-                        </div>
-                    </div>
-                    <hr>
-
-                    <div class="row">
-                        <div class="col-md-auto">
-                            <div class="form-group">
-                                <label for="codigo" style="display: block;">Codigo</label>
-                                <input type="text" class="form-control" name="codigo" id="codigo"
-                                    value="{{producto ? producto.codProducto : ''}}"
-                                    style="width: 70%; display: inline; margin-right: 10px;"
-                                    (keyup.enter)="buscarProducto()">
-
-                                <button type="button" class="btn bg-gradient-fuchsia" data-toggle="modal"
-                                    data-target="#modal-buscar-producto">
-                                    <i class="fas fa-search"></i>
-                                </button>
-
-                            </div>
-                        </div>
-
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="nombre">Producto</label>
-                                <input type="text" class="form-control" name="nombre"
-                                    value="{{producto ? producto.nombre : ''}}" [disabled]="producto.nombre">
-
-                            </div>
-                        </div>
-
-                        <div class="col-sm-2">
-                            <div class="form-group">
-                                <label for="cantidad" style="display: block;">Cantidad</label>
-                                <input type="number" name="cantidad" id="cantidad" class="form-control"
-                                    style="width: 65%; display: inline; margin-right: 10px;" value="0"
-                                    (keyup.enter)="agregarLinea()" autofocus>
-
-                                <button type="button" class="btn bg-gradient-cyan" (click)="agregarLinea()">
-                                    <i class="fas fa-plus-square"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card-body table-responsive">
-                    <table class="table table-hover table-sm">
-                        <thead>
-                            <tr>
-                                <th>Codigo</th>
-                                <th>Producto</th>
-                                <th>Precio</th>
-                                <th>Cantidad</th>
-                                <th>Descuento</th>
-                                <th>N. Precio</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr *ngFor="let item of factura.itemsFactura; let i = index">
-                                <td>{{item.producto.codProducto}}</td>
-                                <td>{{item.producto.nombre}}</td>
-                                <td>{{item.producto.precioVenta | currency: "Q" : "symbol"}}</td>
-                                <td>
-                                    <input type="number" id="cant" value="{{item.cantidad}}"
-                                        class="form-control col-sm-6"
-                                        (change)="actualizarCantidad(item.producto.idProducto, $event)"
-                                        (keyup)="actualizarCantidad(item.producto.idProducto, $event)">
-                                </td>
-                                <td>
-                                    <input type="number" id="descuento" name="descuento" value="{{item.descuento}}"
-                                        class="form-control col-sm-6"
-                                        (change)="actualizarCantidadDescuento(item.producto.idProducto, $event)"
-                                        (keyup)="actualizarCantidadDescuento(item.producto.idProducto, $event)">
-                                </td>
-
-                                <td>
-                                    {{item.calcularPrecioDescuento() | currency: "Q" : "symbol"}}
-                                </td>
-
-                                <!-- <td>{{item.calcularImporte() | currency: "Q" : "symbol"}}</td> -->
-                                <td>{{item.subTotalDescuento | currency: "Q" : "symbol"}}</td>
-                                <td>
-                                    <button type="button" class="btn bg-gradient-danger" (click)="eliminarItem(i)">
-                                        X
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <br>
-                    <!-- <h5 class="float-right">
-                        Total: <span>{{factura.calcularTotal() | currency: "Q": "symbol"}}</span>
-                    </h5> -->
-                </div>
-                <!-- /.card-body -->
-                <!-- <div class="card-footer">
-                    <input type="submit" role="button" class="btn btn-primary" value="Guardar"
-                        [disabled]="!cliente.idCliente || (factura.itemsFactura.length <= 0)" (click)="createFactura()">
-                </div> -->
-            </form>
-        </div>
-        <!-- /.card -->
+  <form class="product-card">
+    <div class="card-hero">
+      <div class="hero-icon" aria-hidden="true">
+        <i class="fas fa-receipt"></i>
+      </div>
+      <div>
+        <h2>Nueva factura</h2>
+        <p>Selecciona al cliente y construye el detalle de la venta.</p>
+      </div>
+      <span class="status-pill">
+        <i class="fas fa-circle" aria-hidden="true"></i>
+        {{ correlativo.correlativoActual ? 'Serie ' + correlativo.serie : 'Preparando documento' }}
+      </span>
     </div>
 
-    <div class="col-md-3">
-        <div class="card card-fuchsia">
-            <div class="card-header">
-                <h3 class="card-title">Calculo de Cambio y Total</h3>
-            </div>
-            <div class="card-body">
-                <h4>
-                    Total: <span><strong>{{factura.calcularTotal() | currency: "Q": "symbol"}}</strong></span>
-                </h4>
-                <form action="">
-                    <div class="form-group">
-                        <label for="efectivo">Efectivo:</label>
-                        <input type="number" name="efectivo" id="efectivo" class="form-control"
-                            (keyup)="calcularCambio($event)" [(ngModel)]="efectivo">
-                    </div>
+    <section class="invoice-checkout-bar" aria-label="Cobro de la factura">
+      <div class="checkout-total">
+        <span>Total de la factura</span>
+        <strong>{{ factura.calcularTotal() | currency: "Q" : "symbol" }}</strong>
+        <small>
+          {{ factura.itemsFactura.length }}
+          {{ factura.itemsFactura.length === 1 ? 'producto' : 'productos' }}
+        </small>
+      </div>
 
-                    <div class="form-group">
-                        <label for="">Cambio:</label>
-                        <h3>
-                            <span><strong>{{cambio | currency: "Q":"symbol"}}</strong></span>
-                        </h3>
-                    </div>
-                </form>
-            </div>
-
-            <div class="card-footer">
-                <input type="submit" role="button" class="btn btn-primary margin" value="Pagar"
-                    [disabled]="!cliente.idCliente || (factura.itemsFactura.length <= 0)" (click)="createFactura()">
-            </div>
+      <div class="checkout-cash field-group">
+        <label for="efectivo">Efectivo recibido</label>
+        <div class="control-with-icon">
+          <i class="fas fa-money-bill-wave" aria-hidden="true"></i>
+          <input type="number" name="efectivo" id="efectivo" class="form-control" min="0" step="0.01"
+            [(ngModel)]="efectivo" (ngModelChange)="calcularCambio()" placeholder="0.00">
         </div>
+      </div>
+
+      <div class="checkout-change" [class.insufficient-change]="efectivo && cambio < 0">
+        <span>{{ efectivo && cambio < 0 ? 'Falta por cobrar' : 'Cambio' }}</span>
+        <strong>{{ (cambio < 0 ? -cambio : cambio) | currency: "Q" : "symbol" }}</strong>
+      </div>
+
+      <div class="checkout-action">
+        <button type="button" class="checkout-pay-button"
+          [disabled]="!cliente.idCliente || factura.itemsFactura.length <= 0 || !pagoSuficiente() || isSaving"
+          (click)="createFactura()">
+          <i class="fas" [ngClass]="isSaving ? 'fa-spinner fa-spin' : 'fa-check-circle'" aria-hidden="true"></i>
+          {{ isSaving ? 'Procesando...' : 'Confirmar pago' }}
+        </button>
+      </div>
+    </section>
+
+    <div class="form-content">
+      <section class="form-section" aria-labelledby="invoice-client-section-title">
+        <div class="section-heading">
+          <span class="section-number">01</span>
+          <div>
+            <h3 id="invoice-client-section-title">Información de la factura</h3>
+            <p>Confirma el documento, identifica al vendedor y busca al cliente por su NIT.</p>
+          </div>
+        </div>
+
+        <div class="form-grid invoice-meta-grid">
+          <div class="field-group">
+            <label for="usuario">Vendedor</label>
+            <div class="control-with-icon">
+              <i class="fas fa-user-tie" aria-hidden="true"></i>
+              <input class="form-control" type="text" id="usuario" name="usuario"
+                value="{{ usuario.primerNombre + ' ' + usuario.apellido }}" disabled>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="correlativo">Correlativo</label>
+            <div class="control-with-icon">
+              <i class="fas fa-hashtag" aria-hidden="true"></i>
+              <input type="text" class="form-control" name="correlativo" id="correlativo"
+                [value]="correlativo.correlativoActual || ''" disabled>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="serie">Serie</label>
+            <div class="control-with-icon">
+              <i class="fas fa-layer-group" aria-hidden="true"></i>
+              <input class="form-control" type="text" name="serie" id="serie"
+                [value]="correlativo.serie || ''" disabled>
+            </div>
+          </div>
+
+          <div class="field-group client-search-field">
+            <label for="buscar">Buscar cliente</label>
+            <div class="inline-search-control">
+              <div class="control-with-icon">
+                <i class="fas fa-id-card" aria-hidden="true"></i>
+                <input type="text" id="buscar" name="buscar" class="form-control"
+                  (keyup.enter)="buscarCliente()" placeholder="Ingresa el NIT del cliente" autofocus>
+              </div>
+              <button type="button" class="inline-search-button" data-toggle="modal"
+                data-target="#modal-buscar-cliente" aria-label="Buscar cliente" title="Buscar cliente">
+                <i class="fas fa-search" aria-hidden="true"></i>
+              </button>
+            </div>
+            <small>Presiona Enter o busca en el directorio de clientes.</small>
+          </div>
+        </div>
+
+        <div class="client-summary" [class.has-client]="cliente.idCliente">
+          <div class="client-summary-heading">
+            <span class="client-avatar" aria-hidden="true"><i class="fas fa-user"></i></span>
+            <div>
+              <strong>{{ cliente.idCliente ? 'Cliente seleccionado' : 'Sin cliente seleccionado' }}</strong>
+              <p>{{ cliente.idCliente ? 'Datos fiscales asociados a la factura.' : 'Busca un cliente para continuar.' }}</p>
+            </div>
+            <span class="selection-status" *ngIf="cliente.idCliente">
+              <i class="fas fa-check-circle" aria-hidden="true"></i> Seleccionado
+            </span>
+          </div>
+
+          <div class="client-data-grid">
+            <div>
+              <span>NIT</span>
+              <strong>{{ cliente ? cliente.nit : '' }}</strong>
+            </div>
+            <div>
+              <span>Nombre</span>
+              <strong>{{ cliente ? cliente.nombre : '' }}</strong>
+            </div>
+            <div class="address-data">
+              <span>Dirección</span>
+              <strong>{{ cliente ? cliente.direccion : '' }}</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section" aria-labelledby="invoice-products-section-title">
+        <div class="section-heading">
+          <span class="section-number">02</span>
+          <div>
+            <h3 id="invoice-products-section-title">Agregar productos</h3>
+            <p>Busca un producto, define la cantidad y agrégalo a la factura.</p>
+          </div>
+        </div>
+
+        <div class="form-grid add-product-grid">
+          <div class="field-group">
+            <label for="codigo">Código</label>
+            <div class="inline-search-control">
+              <div class="control-with-icon">
+                <i class="fas fa-barcode" aria-hidden="true"></i>
+                <input type="text" class="form-control" name="codigo" id="codigo"
+                  value="{{ producto ? producto.codProducto : '' }}" (keyup.enter)="buscarProducto()"
+                  placeholder="Código del producto">
+              </div>
+              <button type="button" class="inline-search-button" data-toggle="modal"
+                data-target="#modal-buscar-producto" aria-label="Buscar producto" title="Buscar producto">
+                <i class="fas fa-search" aria-hidden="true"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="producto-seleccionado">Producto seleccionado</label>
+            <div class="control-with-icon">
+              <i class="fas fa-box" aria-hidden="true"></i>
+              <input type="text" class="form-control" name="producto-seleccionado" id="producto-seleccionado"
+                value="{{ producto ? producto.nombre : '' }}" [disabled]="producto.nombre"
+                placeholder="Selecciona un producto">
+            </div>
+          </div>
+
+          <div class="field-group quantity-field">
+            <label for="cantidad">Cantidad</label>
+            <div class="quantity-add-control">
+              <div class="control-with-icon">
+                <i class="fas fa-sort-numeric-up" aria-hidden="true"></i>
+                <input type="number" name="cantidad" id="cantidad" class="form-control"
+                  min="1" step="1" (keyup.enter)="agregarLinea()" placeholder="0">
+              </div>
+              <button type="button" class="add-line-button" (click)="agregarLinea()"
+                aria-label="Agregar producto" title="Agregar producto">
+                <i class="fas fa-plus" aria-hidden="true"></i>
+                <span>Agregar</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section last-section" aria-labelledby="invoice-detail-section-title">
+        <div class="section-heading detail-heading">
+          <span class="section-number">03</span>
+          <div>
+            <h3 id="invoice-detail-section-title">Detalle de la factura</h3>
+            <p>Revisa cantidades, descuentos y subtotales antes de confirmar el pago.</p>
+          </div>
+          <span class="items-count">
+            {{ factura.itemsFactura.length }}
+            {{ factura.itemsFactura.length === 1 ? 'producto' : 'productos' }}
+          </span>
+        </div>
+
+        <div class="empty-detail" *ngIf="factura.itemsFactura.length === 0">
+          <span aria-hidden="true"><i class="fas fa-shopping-basket"></i></span>
+          <h4>Aún no hay productos</h4>
+          <p>Busca un producto y agrégalo para comenzar la factura.</p>
+        </div>
+
+        <div class="detail-table-wrapper" *ngIf="factura.itemsFactura.length > 0">
+          <table class="detail-table invoice-detail-table">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Producto</th>
+                <th>Precio</th>
+                <th>Cantidad</th>
+                <th>Descuento</th>
+                <th>Nuevo precio</th>
+                <th>Total</th>
+                <th><span class="sr-only">Acciones</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of factura.itemsFactura; let i = index">
+                <td><span class="product-code">{{ item.producto.codProducto }}</span></td>
+                <td>
+                  <div class="table-product-name">
+                    <span aria-hidden="true"><i class="fas fa-box"></i></span>
+                    <strong>{{ item.producto.nombre }}</strong>
+                  </div>
+                </td>
+                <td><span class="price-value">{{ item.producto.precioVenta | currency: "Q" : "symbol" }}</span></td>
+                <td>
+                  <input type="number" id="cant{{ i }}" name="cant{{ i }}" min="1" step="1"
+                    value="{{ item.cantidad }}" class="table-control quantity-control"
+                    (change)="actualizarCantidad(item.producto.idProducto, $event)"
+                    (keyup)="actualizarCantidad(item.producto.idProducto, $event)">
+                </td>
+                <td>
+                  <div class="discount-control">
+                    <input type="number" id="descuento{{ i }}" name="descuento{{ i }}"
+                      value="{{ item.descuento }}" class="table-control"
+                      (change)="actualizarCantidadDescuento(item.producto.idProducto, $event)"
+                      (keyup)="actualizarCantidadDescuento(item.producto.idProducto, $event)">
+                    <span>%</span>
+                  </div>
+                </td>
+                <td><span class="new-price">{{ item.calcularPrecioDescuento() | currency: "Q" : "symbol" }}</span></td>
+                <td><strong class="line-total">{{ item.subTotalDescuento | currency: "Q" : "symbol" }}</strong></td>
+                <td>
+                  <button type="button" class="remove-line-button" (click)="eliminarItem(i)"
+                    aria-label="Eliminar producto" title="Eliminar producto">
+                    <i class="fas fa-trash-alt" aria-hidden="true"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="invoice-detail-note">
+          <i class="fas fa-shield-alt" aria-hidden="true"></i>
+          Verifica los datos antes de confirmar el pago.
+        </div>
+      </section>
     </div>
+  </form>
 </div>

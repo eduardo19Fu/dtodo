@@ -11,8 +11,7 @@ import swal from 'sweetalert2';
 @Component({
   selector: 'app-create-marca',
   templateUrl: './create-marca.component.html',
-  styles: [
-  ]
+  styleUrls: ['../../productos/create-producto/create-producto.component.css']
 })
 export class CreateMarcaComponent implements OnInit {
 

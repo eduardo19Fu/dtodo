@@ -26,6 +26,17 @@
     width: 100%;
 }
 
+.table-controls-row {
+    margin-left: 0;
+    margin-right: 0;
+    min-width: 1360px;
+    width: 100%;
+}
+
+.table-controls-row > [class*='col-']:first-child { padding-left: 0; }
+.table-controls-row > [class*='col-']:last-child { padding-right: 0; }
+.table-controls-row > [class*='col-']:last-child > div { width: 100%; }
+
 .productos-table th {
     background: #343a40;
     border-color: #454d55;
@@ -109,10 +120,10 @@
 .action-buttons .btn {
     align-items: center;
     display: inline-flex;
-    flex: 0 0 40px;
-    height: 38px;
+    flex: 0 0 38px;
+    height: 36px;
     justify-content: center;
     margin: 0;
     padding: 0;
-    width: 40px;
+    width: 38px;
 }

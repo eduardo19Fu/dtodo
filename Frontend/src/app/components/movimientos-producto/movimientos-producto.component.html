@@ -8,12 +8,12 @@
             <div class="col-sm-6">
                 <h1>{{title}}</h1>
                 <br>
-                <button type="button" class="btn bg-gradient-success" [routerLink]="['/productos/inventario/create']">
-                    <i class="fas fa-plus-circle"></i>
+                <button type="button" class="btn listing-page-action listing-primary-action" [routerLink]="['/productos/inventario/create']">
+                    <i class="fas fa-plus"></i>
                     Nuevo
                 </button>&nbsp;
 
-                <button type="button" class="btn btn-outline-warning" data-toggle="modal" data-target="#modal-busqueda">
+                <button type="button" class="btn listing-page-action listing-secondary-action" data-toggle="modal" data-target="#modal-busqueda">
                     <i class="fas fa-print"></i>
                     Imprimir
                 </button>
@@ -62,10 +62,10 @@
                     </div>
                 </div>
                 <div class="col-lg-4 filter-actions">
-                    <button type="submit" class="btn btn-info filter-button">
+                    <button type="submit" class="btn filter-button search-button">
                         <i class="fas fa-search"></i><span>Buscar</span>
                     </button>
-                    <button type="button" class="btn btn-light filter-button clear-button"
+                    <button type="button" class="btn filter-button clear-button"
                             (click)="limpiarFechas()">
                         <i class="fas fa-undo-alt"></i><span>Restablecer</span>
                     </button>
@@ -99,7 +99,7 @@
                 </span>
             </div>
             <div class="search-control">
-                <div class="search-control-inner">
+                <div class="search-control-inner listing-search-control">
                     <label class="mb-0 mr-2">Búsqueda:</label>
                     <input type="text" class="form-control form-control-sm"
                            [value]="filtro"
@@ -150,9 +150,15 @@
                     <td class="col-cantidad">{{movimiento.cantidad}}</td>
                     <td class="col-creador"><span class="cell-ellipsis" [title]="movimiento.usuarioNombre">{{movimiento.usuarioNombre}}</span></td>
                     <td class="col-tipo">
-                        <span class="badge"
-                            [ngClass]="{'badge-warning': movimiento.tipoMovimiento === 'ENTRADA', 'badge-danger' : movimiento.tipoMovimiento === 'SALIDA',
-                                        'badge-dark':movimiento.tipoMovimiento === 'ANULACION FACTURA', 'badge-info': movimiento.tipoMovimiento === 'VENTA'}">
+                        <span class="listing-status-pill"
+                            [ngClass]="{'listing-status-success': movimiento.tipoMovimiento === 'ENTRADA',
+                                        'listing-status-warning': movimiento.tipoMovimiento === 'SALIDA',
+                                        'listing-status-danger': movimiento.tipoMovimiento === 'ANULACION FACTURA',
+                                        'listing-status-info': movimiento.tipoMovimiento === 'VENTA',
+                                        'listing-status-neutral': movimiento.tipoMovimiento !== 'ENTRADA'
+                                            && movimiento.tipoMovimiento !== 'SALIDA'
+                                            && movimiento.tipoMovimiento !== 'ANULACION FACTURA'
+                                            && movimiento.tipoMovimiento !== 'VENTA'}">
                             {{movimiento.tipoMovimiento}}
                         </span>
                     </td>
@@ -161,8 +167,8 @@
         </table>
 
         <!-- Paginación -->
-        <nav *ngIf="!cargando && totalPaginas > 1" aria-label="Paginación de movimientos">
-            <ul class="pagination justify-content-center mt-3">
+        <nav class="listing-pagination" *ngIf="!cargando && totalPaginas > 1" aria-label="Paginación de movimientos">
+            <ul class="pagination justify-content-center mt-3 mb-0">
                 <li class="page-item" [ngClass]="{'disabled': isFirst}">
                     <a class="page-link" (click)="irPrimeraPagina()" href="javascript:void(0)">
                         <i class="fas fa-angle-double-left"></i>

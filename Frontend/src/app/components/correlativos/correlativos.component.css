@@ -37,14 +37,18 @@
 .action-buttons .btn {
   align-items: center;
   display: inline-flex;
-  flex: 0 0 40px;
-  height: 38px;
+  flex: 0 0 38px;
+  height: 36px;
   justify-content: center;
   margin: 0;
   padding: 0;
-  width: 40px;
+  width: 38px;
 }
 .action-buttons .btn:disabled { cursor: not-allowed; opacity: 0.55; }
+.action-cancel { color: #c23b4a; }
+.action-cancel:not(:disabled):hover,
+.action-cancel:not(:disabled):focus { background: #c23b4a; border-color: #c23b4a; }
+.table-controls-row { min-width: 1160px; }
 .search-control .form-control { min-width: 280px; }
 .sort-header {
   align-items: center;

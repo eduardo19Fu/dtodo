@@ -10,8 +10,7 @@ import swal from 'sweetalert2';
 @Component({
   selector: 'app-create-producto',
   templateUrl: './create-tipo.component.html',
-  styles: [
-  ]
+  styleUrls: ['../../productos/create-producto/create-producto.component.css']
 })
 export class CreateTipoComponent implements OnInit {
 

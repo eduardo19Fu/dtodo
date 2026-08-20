@@ -7,6 +7,7 @@ import { Observable, throwError } from 'rxjs';
 import { Proforma } from 'src/app/models/proforma';
 import { catchError, map } from 'rxjs/operators';
 import { UsuarioDto } from '../../dtos/usuario-dto';
+import { DocumentoOrigenNotaDto } from '../../dtos/documento-origen-nota-dto';
 
 @Injectable({
   providedIn: 'root'
@@ -119,6 +120,12 @@ export class ProformaService {
     return this.httpClient.get<any>(`${this.url}/proformas-dto/${idProforma}/detalle/${page}`, { params }).pipe(
       catchError(e => throwError(e))
     );
+  }
+
+  getOrigenNotaDto(noProforma: string): Observable<DocumentoOrigenNotaDto> {
+    const numero = encodeURIComponent(noProforma);
+    return this.httpClient.get<DocumentoOrigenNotaDto>(`${this.url}/proformas-dto/nota-credito/origen/${numero}`)
+      .pipe(catchError(e => throwError(e)));
   }
 
   create(proforma: Proforma): Observable<any> {

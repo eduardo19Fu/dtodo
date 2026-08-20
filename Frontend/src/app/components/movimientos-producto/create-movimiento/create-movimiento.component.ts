@@ -22,7 +22,10 @@ window['$'] = window['jQuery'] = $;
 @Component({
   selector: 'app-create-movimiento',
   templateUrl: './create-movimiento.component.html',
-  styleUrls: ['./create-movimiento.component.css']
+  styleUrls: [
+    '../../productos/create-producto/create-producto.component.css',
+    './create-movimiento.component.css'
+  ]
 })
 export class CreateMovimientoComponent implements OnInit, AfterViewInit {
 
@@ -34,7 +37,7 @@ export class CreateMovimientoComponent implements OnInit, AfterViewInit {
   producto: Producto;
   productos: Producto[];
   modalForm: FormGroup;
-  movimientos: string[] = ['ENTRADA','SALIDA'];
+  movimientos: string[] = ['ENTRADA', 'SALIDA'];
 
   constructor(
     private movimientoProductoService: MovimientosProductoService,

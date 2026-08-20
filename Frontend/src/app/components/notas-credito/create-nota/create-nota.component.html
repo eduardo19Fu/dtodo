@@ -6,331 +6,363 @@
 
 <!-- MODAL DE SELECCIÓN DE PRODUCTOS DE FACTURA -->
 <div *ngIf="mostrarModalProductos" class="abrir-modal animacion fadeIn">
-    <div class="modal" tabindex="-1" style="display: block; overflow-y: auto;">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header bg-orange">
-                    <h5 class="modal-title">
-                        <i class="fas fa-file-invoice mr-2"></i>
-                        {{tituloModal}}
-                    </h5>
-                    <button (click)="cerrarModalProductos()" type="button" class="close">
-                        <span aria-hidden="true" style="color: white;">&times;</span>
+    <div class="modal credit-products-modal" tabindex="-1" role="dialog" aria-modal="true"
+        aria-labelledby="credit-products-modal-title">
+        <div class="modal-dialog modal-xl credit-products-dialog">
+            <div class="modal-content credit-products-content">
+                <div class="modal-header credit-products-header">
+                    <div class="credit-products-heading">
+                        <span class="credit-products-heading-icon" aria-hidden="true">
+                            <i class="fas fa-box-open"></i>
+                        </span>
+                        <div>
+                            <span>Productos pendientes</span>
+                            <h5 class="modal-title" id="credit-products-modal-title">{{tituloModal}}</h5>
+                        </div>
+                    </div>
+                    <button (click)="cerrarModalProductos()" type="button" class="credit-products-close"
+                        aria-label="Cerrar modal">
+                        <i class="fas fa-times" aria-hidden="true"></i>
                     </button>
                 </div>
-                <div class="card-body">
-                    <div class="modal-body table-responsive">
-                        <p class="text-muted mb-3">
-                            <i class="fas fa-info-circle mr-1"></i>
-                            Seleccione los productos que quedaron pendientes de entrega e indique la cantidad correspondiente.
-                        </p>
-
-                        <!-- Controles superiores: selector de registros y búsqueda -->
-                        <div class="row mb-2 align-items-center">
-                            <div class="col-sm-4">
-                                <div class="d-inline-flex align-items-center">
-                                    <label class="mb-0 mr-2">Mostrar</label>
-                                    <select class="form-control form-control-sm"
-                                            style="width: 70px;"
-                                            [ngModel]="pageSize"
-                                            (ngModelChange)="cambiarPageSizeModal($event)">
-                                        <option *ngFor="let opt of pageSizeOptions" [ngValue]="opt">{{opt}}</option>
-                                    </select>
-                                    <label class="mb-0 ml-2">registros</label>
-                                </div>
-                            </div>
-                            <div class="col-sm-4 text-center">
-                                <span *ngIf="itemsFiltrados.length > 0" class="text-muted small">
-                                    Mostrando <strong>{{paginaActual * pageSize + 1}}</strong>
-                                    al <strong>{{paginaActual * pageSize + itemsPaginados.length}}</strong>
-                                    de <strong>{{itemsFiltrados.length}}</strong>
-                                </span>
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="d-inline-flex align-items-center float-right">
-                                    <label class="mb-0 mr-2">B&uacute;squeda:</label>
-                                    <input type="text" class="form-control form-control-sm"
-                                           [value]="filtroModal"
-                                           (input)="onFiltrarModal($event.target.value)"
-                                           placeholder="">
-                                </div>
-                            </div>
+                <div class="modal-body credit-products-body">
+                    <div class="credit-products-intro">
+                        <span class="credit-products-info-icon" aria-hidden="true">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
+                        <div>
+                            <strong>Selecciona los productos pendientes</strong>
+                            <p>Marca cada producto e indica la cantidad que formará parte de la nota de crédito.</p>
                         </div>
+                        <span class="credit-products-count">
+                            <i class="fas fa-check-circle" aria-hidden="true"></i>
+                            {{cantidadProductosSeleccionados}} seleccionados
+                        </span>
+                    </div>
 
-                        <div *ngIf="itemsFiltrados.length === 0" class="alert alert-info mt-2">
-                            <i class="icon fas fa-info"></i>
-                            No se encontraron productos.
+                    <div class="credit-products-toolbar">
+                        <div class="credit-products-page-size">
+                            <label for="credit-products-page-size">Mostrar</label>
+                            <select id="credit-products-page-size" class="form-control"
+                                [ngModel]="pageSize" (ngModelChange)="cambiarPageSizeModal($event)">
+                                <option *ngFor="let opt of pageSizeOptions" [ngValue]="opt">{{opt}}</option>
+                            </select>
+                            <span>por página</span>
                         </div>
+                        <div class="credit-products-range" *ngIf="itemsFiltrados.length > 0">
+                            <i class="fas fa-list-ul" aria-hidden="true"></i>
+                            Mostrando <strong>{{paginaActual * pageSize + 1}}–{{paginaActual * pageSize + itemsPaginados.length}}</strong>
+                            de <strong>{{itemsFiltrados.length}}</strong> productos
+                        </div>
+                        <div class="credit-products-search">
+                            <i class="fas fa-search" aria-hidden="true"></i>
+                            <input type="search" class="form-control" aria-label="Buscar productos"
+                                [value]="filtroModal" (input)="onFiltrarModal($event.target.value)"
+                                placeholder="Código o nombre del producto">
+                        </div>
+                    </div>
 
-                        <table class="table table-hover table-striped table-bordered table-sm mt-0"
-                            *ngIf="itemsFiltrados.length > 0">
+                    <div *ngIf="itemsFiltrados.length === 0" class="credit-products-empty">
+                        <i class="fas fa-search" aria-hidden="true"></i>
+                        <strong>No encontramos productos</strong>
+                        <span>Prueba con otro código o nombre.</span>
+                    </div>
+
+                    <div class="credit-products-table-wrap" *ngIf="itemsFiltrados.length > 0">
+                        <table class="credit-products-table">
                             <thead>
                                 <tr>
-                                    <th class="text-center" style="width: 50px;">
-                                        <i class="fas fa-check-square"></i>
-                                    </th>
-                                    <th>C&oacute;digo</th>
+                                    <th class="select-column"><i class="fas fa-check" aria-hidden="true"></i></th>
+                                    <th>Código</th>
                                     <th>Producto</th>
-                                    <th class="text-center">Cant. Original</th>
-                                    <th class="text-right">Precio Unitario</th>
-                                    <th class="text-center">Descuento</th>
-                                    <th class="text-right">SubTotal</th>
-                                    <th class="text-center" style="width: 150px;">Cant. Pendiente</th>
+                                    <th class="numeric-column">Cant. original</th>
+                                    <th class="numeric-column">Precio unitario</th>
+                                    <th class="numeric-column">Descuento</th>
+                                    <th class="numeric-column">Subtotal</th>
+                                    <th class="quantity-column">Cant. pendiente</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr *ngFor="let registro of itemsPaginados; let i = index"
-                                    [ngClass]="{'table-success': registro.seleccionado}">
-                                    <td class="text-center align-middle">
-                                        <div class="custom-control custom-checkbox">
-                                            <input type="checkbox" class="custom-control-input"
-                                                [id]="'chk-prod-' + i"
+                                    [class.is-selected]="registro.seleccionado">
+                                    <td class="select-column">
+                                        <label class="credit-product-checkbox" [for]="'chk-prod-' + i">
+                                            <input type="checkbox" [id]="'chk-prod-' + i"
                                                 [checked]="registro.seleccionado"
                                                 (change)="toggleProducto(getIndiceReal(i))">
-                                            <label class="custom-control-label" [for]="'chk-prod-' + i"></label>
+                                            <span><i class="fas fa-check" aria-hidden="true"></i></span>
+                                        </label>
+                                    </td>
+                                    <td><span class="product-code">{{registro.codProducto}}</span></td>
+                                    <td>
+                                        <div class="product-name-cell">
+                                            <span class="product-cube" aria-hidden="true"><i class="fas fa-box"></i></span>
+                                            <strong>{{registro.nombreProducto}}</strong>
                                         </div>
                                     </td>
-                                    <td class="align-middle">{{registro.codProducto}}</td>
-                                    <td class="align-middle">{{registro.nombreProducto}}</td>
-                                    <td class="text-center align-middle">
-                                        <span class="badge badge-primary">{{registro.cantidadOriginal}}</span>
-                                    </td>
-                                    <td class="text-right align-middle">{{registro.precioVenta | currency: "Q" : "symbol"}}</td>
-                                    <td class="text-center align-middle">{{registro.descuento | number: "1.0-2"}}%</td>
-                                    <td class="text-right align-middle">{{registro.subTotalOriginal | currency: "Q" : "symbol"}}</td>
-                                    <td class="text-center align-middle">
-                                        <input type="number" class="form-control form-control-sm text-center"
-                                            style="width: 80px; margin: 0 auto;"
+                                    <td class="numeric-column"><span class="original-quantity">{{registro.cantidadOriginal}}</span></td>
+                                    <td class="numeric-column price-cell">{{registro.precioVenta | currency: "Q" : "symbol"}}</td>
+                                    <td class="numeric-column">{{registro.descuento | number: "1.0-2"}}%</td>
+                                    <td class="numeric-column subtotal-cell">{{registro.subTotalOriginal | currency: "Q" : "symbol"}}</td>
+                                    <td class="quantity-column">
+                                        <input type="number" class="form-control pending-quantity"
                                             [disabled]="!registro.seleccionado"
                                             [value]="registro.cantidadSeleccionada"
-                                            [max]="registro.cantidadOriginal"
-                                            min="1"
+                                            [max]="registro.cantidadOriginal" min="1"
                                             (change)="actualizarCantidadSeleccion(getIndiceReal(i), $event)">
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
-
-                        <!-- Paginación -->
-                        <nav *ngIf="totalPaginasModal > 1" aria-label="Paginación de productos">
-                            <ul class="pagination pagination-sm justify-content-center mt-2 mb-0">
-                                <li class="page-item" [ngClass]="{'disabled': paginaActual === 0}">
-                                    <a class="page-link" (click)="irPaginaModal(0)" href="javascript:void(0)">
-                                        <i class="fas fa-angle-double-left"></i>
-                                    </a>
-                                </li>
-                                <li class="page-item" [ngClass]="{'disabled': paginaActual === 0}">
-                                    <a class="page-link" (click)="irPaginaModal(paginaActual - 1)" href="javascript:void(0)">
-                                        <i class="fas fa-angle-left"></i>
-                                    </a>
-                                </li>
-                                <li class="page-item" *ngFor="let pagina of paginasVisiblesModal"
-                                    [ngClass]="{'active': pagina === paginaActual}">
-                                    <a class="page-link" (click)="irPaginaModal(pagina)" href="javascript:void(0)">
-                                        {{pagina + 1}}
-                                    </a>
-                                </li>
-                                <li class="page-item" [ngClass]="{'disabled': paginaActual >= totalPaginasModal - 1}">
-                                    <a class="page-link" (click)="irPaginaModal(paginaActual + 1)" href="javascript:void(0)">
-                                        <i class="fas fa-angle-right"></i>
-                                    </a>
-                                </li>
-                                <li class="page-item" [ngClass]="{'disabled': paginaActual >= totalPaginasModal - 1}">
-                                    <a class="page-link" (click)="irPaginaModal(totalPaginasModal - 1)" href="javascript:void(0)">
-                                        <i class="fas fa-angle-double-right"></i>
-                                    </a>
-                                </li>
-                            </ul>
-                        </nav>
                     </div>
+
+                    <nav *ngIf="totalPaginasModal > 1" class="credit-products-pagination"
+                        aria-label="Paginación de productos">
+                        <button type="button" [disabled]="paginaActual === 0" (click)="irPaginaModal(0)"
+                            aria-label="Primera página"><i class="fas fa-angle-double-left"></i></button>
+                        <button type="button" [disabled]="paginaActual === 0" (click)="irPaginaModal(paginaActual - 1)"
+                            aria-label="Página anterior"><i class="fas fa-angle-left"></i></button>
+                        <button type="button" *ngFor="let pagina of paginasVisiblesModal"
+                            [class.is-active]="pagina === paginaActual" (click)="irPaginaModal(pagina)">
+                            {{pagina + 1}}
+                        </button>
+                        <button type="button" [disabled]="paginaActual >= totalPaginasModal - 1"
+                            (click)="irPaginaModal(paginaActual + 1)" aria-label="Página siguiente">
+                            <i class="fas fa-angle-right"></i>
+                        </button>
+                        <button type="button" [disabled]="paginaActual >= totalPaginasModal - 1"
+                            (click)="irPaginaModal(totalPaginasModal - 1)" aria-label="Última página">
+                            <i class="fas fa-angle-double-right"></i>
+                        </button>
+                    </nav>
                 </div>
-                <div class="modal-footer">
-                    <button (click)="cerrarModalProductos()" type="button" class="btn btn-secondary">
-                        <i class="fas fa-times mr-1"></i> Cancelar
-                    </button>
-                    <button (click)="confirmarSeleccion()" type="button" class="btn btn-primary"
-                        [disabled]="!hayProductosSeleccionados()">
-                        <i class="fas fa-check mr-1"></i> Confirmar y Crear Nota
-                    </button>
+                <div class="modal-footer credit-products-footer">
+                    <div class="credit-products-footer-note">
+                        <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                        Las cantidades no pueden superar el valor original del documento.
+                    </div>
+                    <div class="credit-products-actions">
+                        <button (click)="cerrarModalProductos()" type="button" class="credit-products-cancel">
+                            Cancelar
+                        </button>
+                        <button (click)="confirmarSeleccion()" type="button" class="credit-products-confirm"
+                            [disabled]="!hayProductosSeleccionados()">
+                            <i class="fas fa-check" aria-hidden="true"></i> Confirmar y crear nota
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="content-header">
-    <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-sm-6">
-                <h1 class="m-0 text-dark">{{title}}</h1>
-            </div>
+<div class="product-form-page credit-note-page">
+    <header class="page-heading">
+        <div>
+            <span class="page-eyebrow">Ventas y devoluciones</span>
+            <h1>{{title}}</h1>
+            <p>Registra los productos pendientes asociados a una factura o proforma.</p>
         </div>
-    </div>
-</div>
+        <div class="heading-icon" aria-hidden="true"><i class="fas fa-file-invoice-dollar"></i></div>
+    </header>
 
-<div class="row">
-    <div class="col-md-9">
-        <div class="card card-orange">
-            <div class="card-header">
-                <h3 class="card-title">Rellene el formulario</h3>
+<div class="row credit-note-layout">
+    <div class="col-md-9 credit-note-main">
+        <form #notaForm="ngForm" class="product-card credit-note-form-card credit-note-form">
+            <div class="card-hero">
+                <div class="hero-icon" aria-hidden="true"><i class="fas fa-clipboard-list"></i></div>
+                <div>
+                    <h2>Nueva nota de crédito</h2>
+                    <p>Completa el documento origen antes de seleccionar los productos pendientes.</p>
+                </div>
+                <span class="status-pill"><i class="fas fa-circle" aria-hidden="true"></i> Nuevo registro</span>
             </div>
 
-            <form #notaForm="ngForm">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="usuario">Vendedor</label>
-                                <input class="form-control" type="text" name="usuario"
-                                    value="{{usuario.primerNombre + ' ' + usuario.apellido}}" [disabled]="usuario">
+            <div class="credit-note-action-bar"
+                [ngClass]="tipoOrigen === 'FACTURA' ? 'origin-factura-theme' : 'origin-proforma-theme'">
+                <div class="credit-note-action-title">
+                    <span>Nota de crédito</span>
+                    <strong>{{ tipoOrigen === 'FACTURA' ? 'Factura' : 'Proforma' }}</strong>
+                </div>
+                <div class="credit-note-action-summary">
+                    <i class="fas" [ngClass]="puedeGuardar ? 'fa-check-circle' : 'fa-info-circle'" aria-hidden="true"></i>
+                    <div>
+                        <strong>{{ puedeGuardar ? 'Datos preparados' : 'Completa los datos requeridos' }}</strong>
+                        <small>El siguiente paso permite elegir los productos pendientes.</small>
+                    </div>
+                </div>
+                <div class="credit-note-action-footer">
+                    <button type="button" class="credit-note-save-button"
+                        [disabled]="!puedeGuardar || cargandoProductosOrigen"
+                        (click)="abrirSeleccionProductos()">
+                        <i class="fas" [ngClass]="cargandoProductosOrigen ? 'fa-spinner fa-spin' : 'fa-arrow-right'"></i>
+                        {{ cargandoProductosOrigen ? 'Buscando productos...' : 'Seleccionar productos' }}
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-content credit-note-form-body">
+                <section class="form-section" aria-labelledby="note-client-title">
+                    <div class="section-heading">
+                        <span class="section-number">01</span>
+                        <div>
+                            <h3 id="note-client-title">Cliente y responsable</h3>
+                            <p>Identifica al vendedor y selecciona el cliente asociado al documento.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-grid seller-search-grid">
+                        <div class="field-group">
+                            <label for="usuario">Vendedor</label>
+                            <div class="control-with-icon">
+                                <i class="fas fa-user-tie" aria-hidden="true"></i>
+                                <input class="form-control" type="text" id="usuario" name="usuario"
+                                    value="{{usuario.primerNombre + ' ' + usuario.apellido}}" disabled>
                             </div>
                         </div>
 
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="buscar" style="display: block;">Buscar Cliente</label>
-                                <input #mybuscar type="text" id="buscar" name="buscar" class="form-control"
-                                    style="width: 70%; display: inline; margin-right: 10px;" (keyup.enter)="buscarCliente()"
-                                    autofocus>
-
-                                <button type="button" role="button" class="btn bg-fuchsia" data-toggle="modal"
-                                    data-target="#modal-buscar-cliente">
-                                    <i class="fas fa-search"></i>
+                        <div class="field-group client-search-field">
+                            <label for="buscar">Buscar cliente</label>
+                            <div class="inline-search-control">
+                                <div class="control-with-icon">
+                                    <i class="fas fa-id-card" aria-hidden="true"></i>
+                                    <input #mybuscar type="text" id="buscar" name="buscar" class="form-control"
+                                        (keyup.enter)="buscarCliente()" placeholder="Ingresa el NIT del cliente" autofocus>
+                                </div>
+                                <button type="button" class="inline-search-button" data-toggle="modal"
+                                    data-target="#modal-buscar-cliente" aria-label="Buscar cliente" title="Buscar cliente">
+                                    <i class="fas fa-search" aria-hidden="true"></i>
                                 </button>
                             </div>
-                        </div>
-                    </div>
-                    <hr>
-                    <div class="row">
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="nit">NIT:</label>
-                                <input type="text" class="form-control" name="nit"
-                                    value="{{cliente ? cliente.nit : ''}}" disabled>
-                            </div>
-                        </div>
-
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="nombre">Nombre:</label>
-                                <input type="text" class="form-control" name="nombre"
-                                    value="{{cliente ? cliente.nombre : ''}}" disabled>
-                            </div>
+                            <small>Presiona Enter o busca en el directorio de clientes.</small>
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="direccion">Dirección:</label>
-                                <input type="text" class="form-control" name="direccion"
-                                    value="{{cliente ? cliente.direccion : ''}}" disabled>
+                    <div class="client-summary" [class.has-client]="cliente.idCliente">
+                        <div class="client-summary-heading">
+                            <span class="client-avatar" aria-hidden="true"><i class="fas fa-user"></i></span>
+                            <div>
+                                <strong>{{ cliente.idCliente ? 'Cliente seleccionado' : 'Sin cliente seleccionado' }}</strong>
+                                <p>{{ cliente.idCliente ? 'Datos asociados a la nota de crédito.' : 'Busca un cliente para continuar.' }}</p>
+                            </div>
+                            <span class="selection-status" *ngIf="cliente.idCliente">
+                                <i class="fas fa-check-circle" aria-hidden="true"></i> Seleccionado
+                            </span>
+                        </div>
+                        <div class="client-data-grid">
+                            <div>
+                                <span>NIT</span>
+                                <strong>{{ cliente ? cliente.nit : '' }}</strong>
+                            </div>
+                            <div>
+                                <span>Nombre</span>
+                                <strong>{{ cliente ? cliente.nombre : '' }}</strong>
+                            </div>
+                            <div class="address-data">
+                                <span>Dirección</span>
+                                <strong>{{ cliente ? cliente.direccion : '' }}</strong>
                             </div>
                         </div>
                     </div>
-                    <hr>
+                </section>
 
-                    <!-- Selector de documento origen -->
-                    <div class="row">
-                        <div class="col">
-                            <label class="d-block">Documento Origen</label>
-                            <div class="origen-toggle" role="group" aria-label="Seleccionar tipo de documento origen">
-                                <button type="button"
-                                    class="origen-option origen-factura"
-                                    [ngClass]="{'is-active': tipoOrigen === 'FACTURA'}"
-                                    [attr.aria-pressed]="tipoOrigen === 'FACTURA'"
-                                    (click)="cambiarTipoOrigen('FACTURA')">
-                                    <i class="fas fa-file-invoice"></i>
-                                    <span>Factura</span>
-                                    <i *ngIf="tipoOrigen === 'FACTURA'" class="fas fa-check-circle ml-1"></i>
-                                </button>
-                                <button type="button"
-                                    class="origen-option origen-proforma"
-                                    [ngClass]="{'is-active': tipoOrigen === 'PROFORMA'}"
-                                    [attr.aria-pressed]="tipoOrigen === 'PROFORMA'"
-                                    (click)="cambiarTipoOrigen('PROFORMA')">
-                                    <i class="fas fa-file-alt"></i>
-                                    <span>Proforma</span>
-                                    <i *ngIf="tipoOrigen === 'PROFORMA'" class="fas fa-check-circle ml-1"></i>
-                                </button>
-                            </div>
-                            <div class="origen-indicator">
-                                Origen seleccionado: <strong>{{ tipoOrigen === 'FACTURA' ? 'Factura' : 'Proforma' }}</strong>
-                            </div>
-                        </div>
-                    </div>
-                    <br>
-
-                    <!-- Campos específicos por tipo de origen -->
-                    <div class="row" *ngIf="tipoOrigen === 'FACTURA'">
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="correlativo-factura">No. Correlativo Factura</label>
-                                <input #myCorrelativoFactura type="text" name="correlativo-factura" id="correlativo-factura" class="form-control"
-                                    [(ngModel)]="notaCredito.correlativoFacturaSat">
-                            </div>
-                        </div>
-
-                        <div class="col">
-                            <label for="serie-factura">Serie Factura</label>
-                            <input type="text" name="serie-factura" id="serie-factura" class="form-control"
-                                [(ngModel)]="notaCredito.serieFacturaSat">
-                        </div>
-
-                        <div class="col">
-                            <label for="fecha-entrega-estimada">Fecha de Entrega Estimada</label>
-                            <input type="date" name="fecha-entrega-estimada" id="fecha-entrega-estimada" class="form-control"
-                                [(ngModel)]="notaCredito.fechaEntregaEstimada">
+                <section class="form-section" aria-labelledby="note-origin-title">
+                    <div class="section-heading">
+                        <span class="section-number">02</span>
+                        <div>
+                            <h3 id="note-origin-title">Documento origen</h3>
+                            <p>Selecciona el tipo de documento e ingresa sus datos de referencia.</p>
                         </div>
                     </div>
 
-                    <div class="row" *ngIf="tipoOrigen === 'PROFORMA'">
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="no-proforma">No. Proforma</label>
+                    <div class="origin-selector-block">
+                        <div class="origen-toggle" role="group" aria-label="Seleccionar tipo de documento origen">
+                            <button type="button" class="origen-option origen-factura"
+                                [ngClass]="{'is-active': tipoOrigen === 'FACTURA'}"
+                                [attr.aria-pressed]="tipoOrigen === 'FACTURA'" (click)="cambiarTipoOrigen('FACTURA')">
+                                <i class="fas fa-file-invoice" aria-hidden="true"></i>
+                                <span>Factura</span>
+                                <i *ngIf="tipoOrigen === 'FACTURA'" class="fas fa-check-circle ml-1" aria-hidden="true"></i>
+                            </button>
+                            <button type="button" class="origen-option origen-proforma"
+                                [ngClass]="{'is-active': tipoOrigen === 'PROFORMA'}"
+                                [attr.aria-pressed]="tipoOrigen === 'PROFORMA'" (click)="cambiarTipoOrigen('PROFORMA')">
+                                <i class="fas fa-file-alt" aria-hidden="true"></i>
+                                <span>Proforma</span>
+                                <i *ngIf="tipoOrigen === 'PROFORMA'" class="fas fa-check-circle ml-1" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <div class="origen-indicator">
+                            Origen seleccionado: <strong>{{ tipoOrigen === 'FACTURA' ? 'Factura' : 'Proforma' }}</strong>
+                        </div>
+                    </div>
+
+                    <div class="form-grid origin-data-grid invoice-origin-grid" *ngIf="tipoOrigen === 'FACTURA'">
+                        <div class="field-group">
+                            <label for="correlativo-factura">No. correlativo <span class="required-mark">*</span></label>
+                            <div class="control-with-icon">
+                                <i class="fas fa-hashtag" aria-hidden="true"></i>
+                                <input #myCorrelativoFactura type="text" name="correlativo-factura"
+                                    id="correlativo-factura" class="form-control"
+                                    [(ngModel)]="notaCredito.correlativoFacturaSat" placeholder="Número de factura">
+                            </div>
+                        </div>
+                        <div class="field-group">
+                            <label for="serie-factura">Serie <span class="required-mark">*</span></label>
+                            <div class="control-with-icon">
+                                <i class="fas fa-layer-group" aria-hidden="true"></i>
+                                <input type="text" name="serie-factura" id="serie-factura" class="form-control"
+                                    [(ngModel)]="notaCredito.serieFacturaSat" placeholder="Serie de factura">
+                            </div>
+                        </div>
+                        <div class="field-group">
+                            <label for="fecha-entrega-estimada">Fecha de entrega estimada</label>
+                            <div class="control-with-icon">
+                                <i class="far fa-calendar-alt" aria-hidden="true"></i>
+                                <input type="date" name="fecha-entrega-estimada" id="fecha-entrega-estimada"
+                                    class="form-control" [(ngModel)]="notaCredito.fechaEntregaEstimada">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-grid origin-data-grid proforma-origin-grid" *ngIf="tipoOrigen === 'PROFORMA'">
+                        <div class="field-group">
+                            <label for="no-proforma">No. proforma <span class="required-mark">*</span></label>
+                            <div class="control-with-icon">
+                                <i class="fas fa-hashtag" aria-hidden="true"></i>
                                 <input type="text" name="no-proforma" id="no-proforma" class="form-control"
-                                    [(ngModel)]="notaCredito.noProforma" placeholder="Ej: 123456789P">
+                                    [(ngModel)]="notaCredito.noProforma" placeholder="Ej. 123456789P">
                             </div>
                         </div>
-
-                        <div class="col">
-                            <label for="fecha-entrega-estimada-p">Fecha de Entrega Estimada</label>
-                            <input type="date" name="fecha-entrega-estimada-p" id="fecha-entrega-estimada-p" class="form-control"
-                                [(ngModel)]="notaCredito.fechaEntregaEstimada">
+                        <div class="field-group">
+                            <label for="fecha-entrega-estimada-p">Fecha de entrega estimada</label>
+                            <div class="control-with-icon">
+                                <i class="far fa-calendar-alt" aria-hidden="true"></i>
+                                <input type="date" name="fecha-entrega-estimada-p" id="fecha-entrega-estimada-p"
+                                    class="form-control" [(ngModel)]="notaCredito.fechaEntregaEstimada">
+                            </div>
                         </div>
                     </div>
+                </section>
 
-                    <div class="row">
-                        <div class="col">
-                            <label for="observaciones">Observaciones</label>
-                            <textarea name="observaciones" id="observaciones" cols="30" rows="3" class="form-control"
-                                [(ngModel)]="notaCredito.observaciones"></textarea>
+                <section class="form-section last-section" aria-labelledby="note-details-title">
+                    <div class="section-heading">
+                        <span class="section-number">03</span>
+                        <div>
+                            <h3 id="note-details-title">Detalles adicionales</h3>
+                            <p>Agrega información útil para comprender el motivo o las condiciones de la nota.</p>
                         </div>
                     </div>
-                </div>
-            </form>
-        </div>
+                    <div class="field-group">
+                        <label for="observaciones">Observaciones</label>
+                        <textarea name="observaciones" id="observaciones" rows="3" class="form-control"
+                            [(ngModel)]="notaCredito.observaciones"
+                            placeholder="Describe brevemente el motivo o cualquier consideración adicional"></textarea>
+                    </div>
+                </section>
+            </div>
+        </form>
     </div>
 
-    <!-- PANEL LATERAL -->
-    <div class="col-md-3">
-        <div class="card card-fuchsia">
-            <div class="card-header">
-                <h3 class="card-title">Nota de Cr&eacute;dito</h3>
-            </div>
-            <div class="card-body">
-                <p class="text-muted">
-                    Complete los datos del formulario y presione "Guardar" para seleccionar los productos pendientes de la factura.
-                </p>
-            </div>
-
-            <div class="card-footer">
-                <button type="button" class="btn btn-primary btn-block"
-                    [disabled]="!puedeGuardar"
-                    (click)="abrirSeleccionProductos()">
-                    <i class="fas fa-save"></i> Guardar
-                </button>
-            </div>
-        </div>
-    </div>
+</div>
 </div>

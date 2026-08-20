@@ -1,4 +1,4 @@
-export interface ProformaDto {
+export class ProformaDto {
   idProforma: number;
   noProforma: string;
   fechaEmision: Date;

@@ -1,91 +1,116 @@
-<div class="container">
-    <!-- Content Header (Page header) -->
-    <div class="content-header">
-        <div class="container-fluid">
-            <div class="row mb-2">
-                <div class="col-sm-6">
-                    <h1 class="m-0 text-dark">{{title}}</h1>
-                </div><!-- /.col -->
-            </div><!-- /.row -->
-        </div><!-- /.container-fluid -->
+<div class="client-form-page">
+  <header class="page-heading">
+    <div>
+      <span class="page-eyebrow">Clientes</span>
+      <h1>{{title}}</h1>
+      <p>Registra la información necesaria para identificar y contactar al cliente.</p>
     </div>
-    <!-- /.content-header -->
+    <div class="heading-icon" aria-hidden="true"><i class="fas fa-user-plus"></i></div>
+  </header>
 
-    <div class="col-md-12">
-        <!-- general form elements -->
-        <div class="card card-primary">
-            <div class="card-header">
-                <h3 class="card-title">Ingrese los datos</h3>
-            </div>
-            <!-- /.card-header -->
-            <!-- form start -->
-            <form #clienteForm="ngForm">
-                <div class="card-body">
+  <form #clienteForm="ngForm" class="client-card">
+    <div class="card-hero">
+      <div class="hero-icon" aria-hidden="true"><i class="fas fa-address-card"></i></div>
+      <div>
+        <h2>{{cliente.idCliente ? 'Editar cliente' : 'Nuevo cliente'}}</h2>
+        <p>Los campos marcados con <span aria-hidden="true">*</span> son obligatorios.</p>
+      </div>
+      <span class="status-pill">
+        <i class="fas fa-circle" aria-hidden="true"></i>
+        {{cliente.idCliente ? 'Edición' : 'Nuevo registro'}}
+      </span>
+    </div>
 
-                    <div class="row">
-                        <div class="form-group col">
-                            <label for="nombre">Nombre</label>
-                            <input type="text" class="form-control" name="nombre" [(ngModel)]="cliente.nombre" required
-                                placeholder="Ingrese nombre del cliente" #nombre="ngModel">
-
-                            <div *ngIf="nombre.invalid && (nombre.touched || nombre.dirty)">
-                                <span class="requerido">
-                                    El nombre no puede estar vacío.
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="form-group col">
-                            <label for="nit">NIT</label>
-                            <input type="text" name="nit" class="form-control" [(ngModel)]="cliente.nit" required
-                                placeholder="Ingrese NIT del cliente" #nit="ngModel">
-
-                            <div *ngIf="nit.invalid && (nit.touched || nit.dirty)">
-                                <span class="requerido">
-                                    El NIT no puede estar vacío.
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="form-group col">
-                            <label for="direccion">Dirección</label>
-                            <input type="text" name="direccion" class="form-control" [(ngModel)]="cliente.direccion"
-                                placeholder="Ingrese dirección del cliente" required #direccion="ngModel">
-
-                            <div *ngIf="direccion.invalid && (direccion.dirty || direccion.touched)">
-                                <span class="requerido">
-                                    La dirección no puede estar vacía.
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="form-group col">
-                            <label for="telefono">Teléfono</label>
-                            <input type="text" name="telefono" id="telefono" class="form-control"
-                                [(ngModel)]="cliente.telefono" placeholder="Ingrese número de teléfono">
-                        </div>
-                    </div>
-                </div>
-                <!-- /.card-body -->
-
-                <div class="card-footer">
-                    <button type="submit" role="button" class="btn btn-primary" (click)="create()"
-                        *ngIf="!cliente.idCliente else elseBlock" [disabled]="!clienteForm.form.valid">
-                        Guardar
-                    </button>
-
-                    <ng-template #elseBlock>
-                        <button type="submit" role="button" class="btn btn-primary" (click)="update()"
-                            [disabled]="!clienteForm.form.valid">
-                            Actualizar
-                        </button>
-                    </ng-template>
-
-                </div>
-            </form>
+    <div class="form-content">
+      <section class="form-section" aria-labelledby="identity-title">
+        <div class="section-heading">
+          <span class="section-number">01</span>
+          <div>
+            <h3 id="identity-title">Identificación del cliente</h3>
+            <p>Datos principales para reconocer al cliente en ventas y documentos.</p>
+          </div>
         </div>
-        <!-- /.card -->
+
+        <div class="form-grid identity-grid">
+          <div class="field-group">
+            <label for="nombre">Nombre <span class="required-mark">*</span></label>
+            <div class="control-with-icon">
+              <i class="fas fa-user" aria-hidden="true"></i>
+              <input type="text" id="nombre" class="form-control" name="nombre"
+                [(ngModel)]="cliente.nombre" required placeholder="Nombre completo o razón social" #nombre="ngModel">
+            </div>
+            <div class="validation-message" *ngIf="nombre.invalid && (nombre.touched || nombre.dirty)">
+              <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+              El nombre no puede estar vacío.
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="nit">NIT <span class="required-mark">*</span></label>
+            <div class="control-with-icon">
+              <i class="fas fa-fingerprint" aria-hidden="true"></i>
+              <input type="text" id="nit" name="nit" class="form-control" [(ngModel)]="cliente.nit"
+                required placeholder="Ej. 1234567-8 o CF" #nit="ngModel">
+            </div>
+            <small>Ingresa el NIT con guion o utiliza CF para consumidor final.</small>
+            <div class="validation-message" *ngIf="nit.invalid && (nit.touched || nit.dirty)">
+              <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+              El NIT no puede estar vacío.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section last-section" aria-labelledby="contact-title">
+        <div class="section-heading">
+          <span class="section-number">02</span>
+          <div>
+            <h3 id="contact-title">Información de contacto</h3>
+            <p>Indica dónde localizar al cliente y cómo comunicarse con él.</p>
+          </div>
+        </div>
+
+        <div class="form-grid contact-grid">
+          <div class="field-group">
+            <label for="direccion">Dirección <span class="required-mark">*</span></label>
+            <div class="control-with-icon">
+              <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+              <input type="text" id="direccion" name="direccion" class="form-control"
+                [(ngModel)]="cliente.direccion" placeholder="Dirección completa del cliente" required
+                #direccion="ngModel">
+            </div>
+            <div class="validation-message"
+              *ngIf="direccion.invalid && (direccion.dirty || direccion.touched)">
+              <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+              La dirección no puede estar vacía.
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="telefono">Teléfono</label>
+            <div class="control-with-icon">
+              <i class="fas fa-phone-alt" aria-hidden="true"></i>
+              <input type="text" name="telefono" id="telefono" class="form-control"
+                [(ngModel)]="cliente.telefono" placeholder="Ej. 5555-5555">
+            </div>
+            <small>Este campo es opcional.</small>
+          </div>
+        </div>
+      </section>
     </div>
+
+    <footer class="form-actions">
+      <p><i class="fas fa-shield-alt" aria-hidden="true"></i> La información se utilizará en documentos y búsquedas.</p>
+      <button type="submit" class="primary-action" (click)="create()"
+        *ngIf="!cliente.idCliente else updateBlock" [disabled]="!clienteForm.form.valid">
+        <i class="fas fa-save" aria-hidden="true"></i> Guardar cliente
+      </button>
+      <ng-template #updateBlock>
+        <button type="submit" class="primary-action" (click)="update()"
+          [disabled]="!clienteForm.form.valid">
+          <i class="fas fa-check" aria-hidden="true"></i> Actualizar cliente
+        </button>
+      </ng-template>
+    </footer>
+  </form>
 </div>

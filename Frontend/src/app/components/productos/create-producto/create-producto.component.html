@@ -1,191 +1,213 @@
-<div class="container">
-    <!-- Content Header (Page header) -->
-    <div class="content-header">
-        <div class="container-fluid">
-            <div class="row mb-2">
-                <div class="col-sm-6">
-                    <h1 class="m-0 text-dark">{{title}}</h1>
-                </div><!-- /.col -->
-            </div><!-- /.row -->
-        </div><!-- /.container-fluid -->
+<div class="product-form-page">
+  <header class="page-heading">
+    <div>
+      <span class="page-eyebrow">Productos e inventario</span>
+      <h1>{{ title }}</h1>
+      <p>Completa la información para mantener tu catálogo actualizado.</p>
     </div>
-    <!-- /.content-header -->
+    <div class="heading-icon" aria-hidden="true"><i class="fas fa-box-open"></i></div>
+  </header>
 
-    <div class="col-md-12">
-        <!-- general form elements -->
-        <div class="card card-primary">
-            <div class="card-header">
-                <h3 class="card-title">Ingrese los datos</h3>
-            </div>
-            <!-- /.card-header -->
-            <!-- form start -->
-            <form #productoForm="ngForm">
-                <div class="card-body">
+  <form #productoForm="ngForm" class="product-card">
+    <div class="card-hero">
+      <div class="hero-icon" aria-hidden="true"><i class="fas fa-cube"></i></div>
+      <div>
+        <h2>{{ producto.idProducto ? 'Editar producto' : 'Nuevo producto' }}</h2>
+        <p>Los campos marcados con <span aria-hidden="true">*</span> son obligatorios.</p>
+      </div>
+      <span class="status-pill">
+        <i class="fas fa-circle" aria-hidden="true"></i>
+        {{ producto.idProducto ? 'Edición' : 'Nuevo registro' }}
+      </span>
+    </div>
 
-                    <div class="form-group">
-
-                        <div class="row">
-                            <div class="col">
-                                <label for="codigo">Código</label>
-                                <input type="text" class="form-control" name="codigo" [(ngModel)]="producto.codProducto"
-                                    placeholder="Código de Producto">
-                                <!-- <div *ngIf="codigo.invalid && (codigo.dirty || codigo.touched)">
-                                    <span class="requerido" *ngIf="codigo.errors.required">
-                                        El código no puede estar vacío.
-                                    </span>
-                                </div> -->
-                            </div>
-
-                            <div class="col">
-                                <label for="nombre">Nombre</label>
-                                <input type="text" class="form-control" name="nombre" [(ngModel)]="producto.nombre"
-                                    required #nombre="ngModel" placeholder="Ingrese nombre del producto">
-                                <div *ngIf="nombre.invalid && (nombre.dirty || nombre.touched)">
-                                    <span class="requerido" *ngIf="nombre.errors.required">
-                                        El nombre no puede estar vacío.
-                                    </span>
-                                </div>
-                            </div>
-
-                            <div class="col">
-                                <label for="stock">Existencias</label>
-                                <input type="number" name="stock" class="form-control" [(ngModel)]="producto.stock"
-                                    required #stock="ngModel"
-                                    placeholder="Ingrese la cantidad de existencias disponibles">
-                                <div *ngIf="stock.invalid && (stock.dirty || stock.touched)">
-                                    <span class="requerido" *ngIf="stock.errors.required">
-                                        El stock no puede ser vacío.
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <br>
-                        <hr>
-                        <div class="row">
-                            <div class="col">
-                                <label for="precio-compra">Precio Compra</label>
-                                <input type="number" id="precio-compra" name="precio-compra" class="form-control"
-                                    [(ngModel)]="producto.precioCompra" required #precioCompra="ngModel"
-                                    placeholder="Ingrese el precio de compra del producto">
-
-                                <div *ngIf="precioCompra.invalid && (precioCompra.dirty || precioCompra.touched)">
-                                    <span class="requerido" *ngIf="precioCompra.errors.required">
-                                        El precio compra no puede estar vacío.
-                                    </span>
-                                </div>
-                            </div>
-
-                            <!-- <div class="col">
-                                <label for="precio-venta">Precio Venta</label>
-                                <input type="number" id="precio-venta" name="precio-venta" class="form-control"
-                                    [(ngModel)]="producto.precioVenta" required #precioVenta="ngModel"
-                                    placeholder="Ingrese el precio de venta para el producto"
-                                    (blur)="calcularPorcentajeGanancia()">
-
-                                <div *ngIf="precioVenta.invalid && (precioVenta.dirty || precioVenta.touched)">
-                                    <span class="requerido" *ngIf="precioVenta.errors.required">
-                                        El precio venta no puede estar vacío.
-                                    </span>
-                                </div>
-                            </div> -->
-
-                            <!-- <div class="col">
-                                <label for="porcentaje-ganancia">% Ganancia</label>
-                                <input [(ngModel)]="producto.porcentajeGanancia" type="number" id="porcentaje-ganancia"
-                                    name="porcentaje-ganancia" class="form-control" readonly>
-                            </div> -->
-
-                            <div class="col">
-                                <label for="porcentaje-ganancia">% Ganancia</label>
-                                <input [(ngModel)]="producto.porcentajeGanancia" type="number" id="porcentaje-ganancia"
-                                    name="porcentaje-ganancia" class="form-control"
-                                    placeholder="Ingrese porcentaje de ganancia deseado" required
-                                    #porcentajeGanancia="ngModel" (blur)="calcularPrecioVenta()">
-
-                                <div
-                                    *ngIf="porcentajeGanancia.invalid && (porcentajeGanancia.dirty || porcentajeGanancia.touched)">
-                                    <span class="requerido" *ngIf="porcentajeGanancia.errors.required">
-                                        El porcentaje de ganancia no puede estar vacío.
-                                    </span>
-                                </div>
-                            </div>
-
-                            <div class="col">
-                                <label for="precio-venta">Precio Venta</label>
-                                <input type="number" id="precio-venta" name="precio-venta" class="form-control"
-                                    [(ngModel)]="producto.precioVenta" required #precioVenta="ngModel" readonly>
-
-                            </div>
-                        </div>
-                        <br>
-                        <hr>
-
-                        <div class="row">
-
-                            <div class="col">
-                                <label for="marca">Marca</label>
-                                <select [compareWith]="compararMarca" name="marca" class="form-control"
-                                    [(ngModel)]="producto.marcaProducto">
-                                    <option [ngValue]="undefined">--- Seleccionar Marca ----</option>
-                                    <option *ngFor="let marca of marcas" [ngValue]="marca">{{marca.marca}}</option>
-                                </select>
-                            </div>
-
-                            <div class="col">
-                                <label for="tipo-producto">Tipo</label>
-                                <select [compareWith]="compararTipo" name="tipo-producto" class="form-control"
-                                    [(ngModel)]="producto.tipoProducto">
-                                    <option [ngValue]="undefined">--- Seleccionar Tipo ----</option>
-                                    <option *ngFor="let tipo of tipos" [ngValue]="tipo">{{tipo.tipoProducto}}</option>
-                                </select>
-                            </div>
-
-                            <div class="col">
-                                <label for="fecha-ingreso">Fecha Ingreso</label>
-                                <input type="date" name="fecha-ingreso" class="form-control"
-                                    [(ngModel)]="producto.fechaIngreso">
-                            </div>
-
-                        </div>
-                        <br>
-                        <hr>
-
-                        <div class="row">
-                            <div class="col">
-                                <label for="descripcion">Descripción</label>
-                                <textarea class="form-control" name="descripcion" id="descripcion"
-                                    placeholder="Ingrese una descripción" [(ngModel)]="producto.descripcion" cols="30"
-                                    rows="5"></textarea>
-                            </div>
-                        </div>
-                        <br>
-                        <div class="row">
-                            <div class="col">
-                                <label for="descripcion">Enlace al Sitio Web</label>
-                                <input type="text" name="link" id="link" class="form-control"
-                                    placeholder="Ingrese link del sitio oficial" [(ngModel)]="producto.link">
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-                <!-- /.card-body -->
-
-                <div class="card-footer">
-                    <button type="submit" role="button" class="btn btn-primary"
-                        *ngIf="!producto.idProducto else elseblock" (click)="create()">
-                        Guardar
-                    </button>
-
-                    <ng-template #elseblock>
-                        <button type="submit" role="button" class="btn btn-primary" (click)="update()">
-                            Actualizar
-                        </button>
-                    </ng-template>
-                </div>
-            </form>
+    <div class="form-content">
+      <section class="form-section" aria-labelledby="general-title">
+        <div class="section-heading">
+          <span class="section-number">01</span>
+          <div>
+            <h3 id="general-title">Información general</h3>
+            <p>Datos principales para identificar el producto.</p>
+          </div>
         </div>
-        <!-- /.card -->
+
+        <div class="form-grid three-columns">
+          <div class="field-group">
+            <label for="codigo">Código</label>
+            <div class="control-with-icon">
+              <i class="fas fa-barcode" aria-hidden="true"></i>
+              <input type="text" id="codigo" class="form-control" name="codigo"
+                [(ngModel)]="producto.codProducto" placeholder="Ej. PROD-001">
+            </div>
+            <small>Si lo dejas vacío, se generará automáticamente.</small>
+          </div>
+
+          <div class="field-group">
+            <label for="nombre">Nombre <span class="required-mark">*</span></label>
+            <div class="control-with-icon">
+              <i class="fas fa-tag" aria-hidden="true"></i>
+              <input type="text" id="nombre" class="form-control" name="nombre" [(ngModel)]="producto.nombre"
+                required #nombre="ngModel" placeholder="Nombre del producto">
+            </div>
+            <div class="validation-message" *ngIf="nombre.invalid && (nombre.dirty || nombre.touched)">
+              <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+              <span *ngIf="nombre.errors.required">El nombre no puede estar vacío.</span>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="stock">Existencias <span class="required-mark">*</span></label>
+            <div class="control-with-icon">
+              <i class="fas fa-boxes" aria-hidden="true"></i>
+              <input type="number" id="stock" name="stock" class="form-control" [(ngModel)]="producto.stock"
+                required #stock="ngModel" placeholder="Cantidad disponible">
+            </div>
+            <div class="validation-message" *ngIf="stock.invalid && (stock.dirty || stock.touched)">
+              <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+              <span *ngIf="stock.errors.required">El stock no puede estar vacío.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section" aria-labelledby="prices-title">
+        <div class="section-heading">
+          <span class="section-number">02</span>
+          <div>
+            <h3 id="prices-title">Precios y rentabilidad</h3>
+            <p>Define el costo y el margen esperado.</p>
+          </div>
+        </div>
+
+        <div class="form-grid three-columns pricing-grid">
+          <div class="field-group">
+            <label for="precio-compra">Precio de compra <span class="required-mark">*</span></label>
+            <div class="control-with-prefix">
+              <span>Q</span>
+              <input type="number" id="precio-compra" name="precio-compra" class="form-control"
+                [(ngModel)]="producto.precioCompra" required #precioCompra="ngModel" placeholder="0.00">
+            </div>
+            <div class="validation-message"
+              *ngIf="precioCompra.invalid && (precioCompra.dirty || precioCompra.touched)">
+              <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+              <span *ngIf="precioCompra.errors.required">El precio de compra no puede estar vacío.</span>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="porcentaje-ganancia">Ganancia esperada <span class="required-mark">*</span></label>
+            <div class="control-with-suffix">
+              <input [(ngModel)]="producto.porcentajeGanancia" type="number" id="porcentaje-ganancia"
+                name="porcentaje-ganancia" class="form-control" placeholder="0" required
+                #porcentajeGanancia="ngModel" (blur)="calcularPrecioVenta()">
+              <span>%</span>
+            </div>
+            <div class="validation-message"
+              *ngIf="porcentajeGanancia.invalid && (porcentajeGanancia.dirty || porcentajeGanancia.touched)">
+              <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+              <span *ngIf="porcentajeGanancia.errors.required">El porcentaje de ganancia no puede estar vacío.</span>
+            </div>
+          </div>
+
+          <div class="field-group sale-price">
+            <label for="precio-venta">Precio de venta calculado</label>
+            <div class="control-with-prefix">
+              <span>Q</span>
+              <input type="number" id="precio-venta" name="precio-venta" class="form-control"
+                [(ngModel)]="producto.precioVenta" required #precioVenta="ngModel" readonly placeholder="0.00">
+              <i class="fas fa-calculator calculation-icon" aria-hidden="true"></i>
+            </div>
+            <small>Se calcula según el porcentaje de ganancia.</small>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section" aria-labelledby="classification-title">
+        <div class="section-heading">
+          <span class="section-number">03</span>
+          <div>
+            <h3 id="classification-title">Clasificación</h3>
+            <p>Organiza el producto dentro de tu inventario.</p>
+          </div>
+        </div>
+
+        <div class="form-grid three-columns">
+          <div class="field-group">
+            <label for="marca">Marca</label>
+            <div class="select-control">
+              <i class="fas fa-copyright" aria-hidden="true"></i>
+              <select id="marca" [compareWith]="compararMarca" name="marca" class="form-control"
+                [(ngModel)]="producto.marcaProducto">
+                <option [ngValue]="undefined">Seleccionar marca</option>
+                <option *ngFor="let marca of marcas" [ngValue]="marca">{{ marca.marca }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="tipo-producto">Tipo de producto</label>
+            <div class="select-control">
+              <i class="fas fa-layer-group" aria-hidden="true"></i>
+              <select id="tipo-producto" [compareWith]="compararTipo" name="tipo-producto" class="form-control"
+                [(ngModel)]="producto.tipoProducto">
+                <option [ngValue]="undefined">Seleccionar tipo</option>
+                <option *ngFor="let tipo of tipos" [ngValue]="tipo">{{ tipo.tipoProducto }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="fecha-ingreso">Fecha de ingreso</label>
+            <div class="control-with-icon">
+              <i class="far fa-calendar-alt" aria-hidden="true"></i>
+              <input type="date" id="fecha-ingreso" name="fecha-ingreso" class="form-control"
+                [(ngModel)]="producto.fechaIngreso">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section last-section" aria-labelledby="details-title">
+        <div class="section-heading">
+          <span class="section-number">04</span>
+          <div>
+            <h3 id="details-title">Detalles adicionales</h3>
+            <p>Agrega información útil para consultar el producto.</p>
+          </div>
+        </div>
+
+        <div class="form-grid details-grid">
+          <div class="field-group description-field">
+            <label for="descripcion">Descripción</label>
+            <textarea class="form-control" name="descripcion" id="descripcion" placeholder="Describe el producto..."
+              [(ngModel)]="producto.descripcion" rows="5"></textarea>
+          </div>
+          <div class="field-group">
+            <label for="link">Sitio web</label>
+            <div class="control-with-icon">
+              <i class="fas fa-link" aria-hidden="true"></i>
+              <input type="text" name="link" id="link" class="form-control" placeholder="https://ejemplo.com"
+                [(ngModel)]="producto.link">
+            </div>
+            <small>Enlace oficial o página de referencia del producto.</small>
+          </div>
+        </div>
+      </section>
     </div>
+
+    <footer class="form-actions">
+      <p><i class="fas fa-shield-alt" aria-hidden="true"></i> Tu información se guardará de forma segura.</p>
+      <button type="submit" class="primary-action" *ngIf="!producto.idProducto else elseblock" (click)="create()">
+        <i class="fas fa-save" aria-hidden="true"></i>
+        Guardar producto
+      </button>
+
+      <ng-template #elseblock>
+        <button type="submit" class="primary-action" (click)="update()">
+          <i class="fas fa-check" aria-hidden="true"></i>
+          Actualizar producto
+        </button>
+      </ng-template>
+    </footer>
+  </form>
 </div>

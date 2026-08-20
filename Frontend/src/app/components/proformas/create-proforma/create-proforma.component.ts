@@ -18,7 +18,11 @@ import swal from 'sweetalert2';
 
 @Component({
   selector: 'app-create-proforma',
-  templateUrl: './create-proforma.component.html'
+  templateUrl: './create-proforma.component.html',
+  styleUrls: [
+    '../../productos/create-producto/create-producto.component.css',
+    './create-proforma.component.css'
+  ]
 })
 export class CreateProformaComponent implements OnInit {
 

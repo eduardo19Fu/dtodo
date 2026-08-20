@@ -10,8 +10,7 @@ import swal from 'sweetalert2';
 @Component({
   selector: 'app-create-cliente',
   templateUrl: './create-cliente.component.html',
-  styles: [
-  ]
+  styleUrls: ['./create-cliente.component.css']
 })
 export class CreateClienteComponent implements OnInit {
 

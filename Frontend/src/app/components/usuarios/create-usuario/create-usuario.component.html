@@ -1,152 +1,192 @@
-<!-- Content Header (Page header) -->
-<div class="content-header">
-    <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-sm-6">
-                <h1 class="m-0 text-dark">{{title}}</h1>
-            </div><!-- /.col -->
-        </div><!-- /.row -->
-    </div><!-- /.container-fluid -->
-</div>
-<!-- /.content-header -->
+<div class="user-form-page">
+  <header class="page-heading">
+    <div>
+      <span class="page-eyebrow">Usuarios y permisos</span>
+      <h1>{{title}}</h1>
+      <p>Configura la identidad, las credenciales y los permisos de acceso.</p>
+    </div>
+    <div class="heading-icon" aria-hidden="true"><i class="fas fa-user-shield"></i></div>
+  </header>
 
-<!--TARJETA DE DATOS DE USUARIO-->
-<div class="row">
-    <div class="col-md-6">
-        <div class="card card-primary">
-            <div class="card-header">
-                <h4>Datos del usuario</h4>
+  <form #usuarioForm="ngForm" class="user-card">
+    <div class="card-hero">
+      <div class="hero-icon" aria-hidden="true"><i class="fas fa-user-cog"></i></div>
+      <div>
+        <h2>{{usuarioAuxiliar.idUsuario ? 'Editar usuario' : 'Nuevo usuario'}}</h2>
+        <p>Completa los datos de acceso y agrega al menos un rol.</p>
+      </div>
+      <span class="status-pill">
+        <i class="fas fa-circle" aria-hidden="true"></i>
+        {{usuarioAuxiliar.idUsuario ? 'Edición' : 'Nuevo registro'}}
+      </span>
+    </div>
+
+    <div class="form-content">
+      <section class="form-section" aria-labelledby="identity-title">
+        <div class="section-heading">
+          <span class="section-number">01</span>
+          <div>
+            <h3 id="identity-title">Información personal</h3>
+            <p>Datos que identifican al responsable de la cuenta.</p>
+          </div>
+        </div>
+
+        <div class="form-grid identity-grid">
+          <div class="field-group">
+            <label for="primerNombre">Primer nombre <span class="required-mark">*</span></label>
+            <div class="control-with-icon">
+              <i class="fas fa-user" aria-hidden="true"></i>
+              <input type="text" name="primerNombre" id="primerNombre"
+                [(ngModel)]="usuarioAuxiliar.primerNombre" class="form-control"
+                placeholder="Primer nombre" required #primerNombre="ngModel">
             </div>
+            <div class="validation-message"
+              *ngIf="primerNombre.invalid && (primerNombre.touched || primerNombre.dirty)">
+              <i class="fas fa-exclamation-circle"></i> El primer nombre no puede estar vacío.
+            </div>
+          </div>
 
-            <div class="card-body">
-                <form #usuarioForm="ngForm">
-                    <div class="row">
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="primerNombre">Primer Nombre</label>
-                                <input type="text" name="primerNombre" id="primerNombre" [(ngModel)]="usuarioAuxiliar.primerNombre"
-                                    class="form-control" placeholder="Ingrese el primer nombre" required
-                                    #primerNombre="ngModel">
+          <div class="field-group">
+            <label for="segundoNombre">Segundo nombre</label>
+            <div class="control-with-icon">
+              <i class="fas fa-user" aria-hidden="true"></i>
+              <input type="text" name="segundoNombre" id="segundoNombre"
+                [(ngModel)]="usuarioAuxiliar.segundoNombre" class="form-control"
+                placeholder="Segundo nombre">
+            </div>
+            <small>Este campo es opcional.</small>
+          </div>
 
-                                <div *ngIf="primerNombre.invalid && (primerNombre.touched || primerNombre.dirty)">
-                                    <span class="requerido">
-                                        El Primer Nombre no puede estar vacío.
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
+          <div class="field-group surnames-field">
+            <label for="apellido">Apellidos <span class="required-mark">*</span></label>
+            <div class="control-with-icon">
+              <i class="fas fa-id-card" aria-hidden="true"></i>
+              <input type="text" name="apellido" id="apellido" [(ngModel)]="usuarioAuxiliar.apellido"
+                class="form-control" placeholder="Apellidos del usuario" required #apellido="ngModel">
+            </div>
+            <div class="validation-message" *ngIf="apellido.invalid && (apellido.touched || apellido.dirty)">
+              <i class="fas fa-exclamation-circle"></i> Los apellidos no pueden estar vacíos.
+            </div>
+          </div>
+        </div>
+      </section>
 
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="segundoNombre">Segundo Nombre</label>
-                                <input type="text" name="segundoNombre" id="segundoNombre" [(ngModel)]="usuarioAuxiliar.segundoNombre"
-                                    class="form-control" placeholder="Ingrese el segundo nombre del usuario">
-                            </div>
-                        </div>
+      <section class="form-section" aria-labelledby="access-title">
+        <div class="section-heading">
+          <span class="section-number">02</span>
+          <div>
+            <h3 id="access-title">Credenciales de acceso</h3>
+            <p>Define cómo ingresará el usuario al sistema.</p>
+          </div>
+        </div>
+
+        <div class="form-grid access-grid">
+          <div class="field-group">
+            <label for="usuario">Usuario <span class="required-mark">*</span></label>
+            <div class="control-with-icon">
+              <i class="fas fa-at" aria-hidden="true"></i>
+              <input type="text" name="usuario" id="usuario" [(ngModel)]="usuarioAuxiliar.usuario"
+                class="form-control" placeholder="Nombre de usuario" required #usuario="ngModel">
+            </div>
+            <div class="validation-message" *ngIf="usuario.invalid && (usuario.touched || usuario.dirty)">
+              <i class="fas fa-exclamation-circle"></i> El usuario no puede estar vacío.
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="password">Contraseña <span class="required-mark">*</span></label>
+            <div class="control-with-icon">
+              <i class="fas fa-lock" aria-hidden="true"></i>
+              <input type="password" name="password" id="password" [(ngModel)]="usuarioAuxiliar.password"
+                class="form-control" required #password="ngModel" placeholder="Contraseña segura">
+            </div>
+            <div class="validation-message" *ngIf="password.invalid && (password.touched || password.dirty)">
+              <i class="fas fa-exclamation-circle"></i> La contraseña es obligatoria.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section last-section" aria-labelledby="roles-title">
+        <div class="section-heading roles-heading">
+          <span class="section-number">03</span>
+          <div>
+            <h3 id="roles-title">Roles y permisos</h3>
+            <p>Agrega los perfiles que determinan las funciones disponibles.</p>
+          </div>
+          <span class="roles-count"><i class="fas fa-shield-alt"></i> {{filas.length}} asignados</span>
+        </div>
+
+        <div class="role-detail">
+          <div class="role-picker">
+            <div class="field-group">
+              <label for="role">Rol disponible</label>
+              <div class="select-control">
+                <i class="fas fa-user-tag" aria-hidden="true"></i>
+                <select id="role" name="role" class="form-control" [(ngModel)]="roleSeleccionado">
+                  <option [ngValue]="null">Selecciona un rol</option>
+                  <option *ngFor="let item of roles" [ngValue]="item.idRole">{{item.role}}</option>
+                </select>
+              </div>
+            </div>
+            <button type="button" class="add-role-action" (click)="agregarRole()"
+              [disabled]="!roleSeleccionado">
+              <i class="fas fa-plus"></i> Agregar rol
+            </button>
+          </div>
+
+          <div class="roles-empty" *ngIf="filas.length === 0">
+            <span><i class="fas fa-user-shield"></i></span>
+            <div>
+              <strong>Sin roles asignados</strong>
+              <p>Selecciona un rol para habilitar la creación del usuario.</p>
+            </div>
+          </div>
+
+          <div class="roles-table-wrap" *ngIf="filas.length > 0">
+            <table class="roles-table">
+              <thead>
+                <tr>
+                  <th class="role-id-column">ID</th>
+                  <th>Rol asignado</th>
+                  <th class="role-action-column">Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let fila of filas; let i = index">
+                  <td class="role-id-column"><span class="role-id">#{{fila.idRole}}</span></td>
+                  <td>
+                    <div class="role-name">
+                      <span><i class="fas fa-shield-alt"></i></span>
+                      <div><strong>{{fila.role}}</strong><small>Permiso activo para este usuario</small></div>
                     </div>
-
-                    <div class="row">
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="apellido">Apellidos</label>
-                                <input type="text" name="apellido" id="apellido" [(ngModel)]="usuarioAuxiliar.apellido" class="form-control"
-                                    placeholder="Ingrese los apellidos del usuario" required #apellido="ngModel">
-
-                                <div *ngIf="apellido.invalid && (apellido.touched || apellido.dirty)">
-                                    <span class="requerido">
-                                        Los Apellidos no puede estar vacío.
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="usuario">Usuario</label>
-                                <input type="text" name="usuario" id="usuario" [(ngModel)]="usuarioAuxiliar.usuario" class="form-control"
-                                    placeholder="Ingrese un usuario" required #usuario="ngModel">
-
-                                <div *ngIf="usuario.invalid && (usuario.touched || usuario.dirty)">
-                                    <span class="requerido">
-                                        El usuario no puede estar vacío.
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="password">Contraseña</label>
-                                <input type="password" name="password" id="password" [(ngModel)]="usuarioAuxiliar.password"
-                                    class="form-control" required #password="ngModel"
-                                    placeholder="Ingrese una contraseña">
-
-                                <div *ngIf="password.invalid && (password.touched || password.dirty)">
-                                    <span class="requerido">
-                                        La contraseña es obligatoria.
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="role">Rol</label>
-                                <select  name="role" (change)="cargarRole($event.target.value)" class="form-control">
-                                    <option value="">---- Elija un Rol ----</option>
-                                    <option *ngFor="let role of roles" value="{{role.idRole}}">{{role.role}}</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button *ngIf="!usuarioAuxiliar.idUsuario else elseblock" type="submit" role="button" class="btn bg-gradient-primary btn-lg" 
-                        (click)="create()" [disabled]="filas.length == 0 || !usuarioForm.form.valid">
-                        Crear Usuario
+                  </td>
+                  <td class="role-action-column">
+                    <button type="button" class="remove-role-action" (click)="eliminarFila(i)"
+                      appTooltip="Quitar rol" aria-label="Quitar rol">
+                      <i class="fas fa-trash-alt"></i>
                     </button>
-
-                    <ng-template #elseblock>
-                        <button class="btn bg-gradient-warning btn-lg" role="button" (click)="update()"
-                            [disabled]="filas.length == 0 || !usuarioForm.form.valid">
-                            Actualizar
-                        </button>
-                    </ng-template>
-                    
-                </form>
-            </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
+      </section>
     </div>
-    <!--TERJETA DE ROLES-->
-    <div class="col-md-6">
-        <div class="card card-warning">
-            <div class="card-header">
-                <h4>Roles</h4>
-            </div>
 
-            <div class="card-body table-responsive">
-                <table class="table" *ngIf="filas">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Role</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        <tr *ngFor="let fila of filas; let i = index">
-                            <td>{{fila.idRole}}</td>
-                            <td>{{fila.role}}</td>
-                            <td>
-                                <button type="button" class="btn bg-gradient-danger"
-                                    (click)="eliminarFila(i)">X</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+    <footer class="form-actions">
+      <p><i class="fas fa-shield-alt"></i> Los permisos se aplicarán al guardar la cuenta.</p>
+      <button *ngIf="!usuarioAuxiliar.idUsuario else updateBlock" type="submit" class="primary-action"
+        (click)="create()" [disabled]="filas.length === 0 || !usuarioForm.form.valid">
+        <i class="fas fa-user-plus"></i> Crear usuario
+      </button>
+      <ng-template #updateBlock>
+        <button type="submit" class="primary-action" (click)="update()"
+          [disabled]="filas.length === 0 || !usuarioForm.form.valid">
+          <i class="fas fa-check"></i> Actualizar usuario
+        </button>
+      </ng-template>
+    </footer>
+  </form>
 </div>
