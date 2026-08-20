@@ -1,4 +1,4 @@
-export interface FacturaDto {
+export class FacturaDto {
   idFactura: number;
   noFactura: number;
   serie: string;

@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import xyz.pangosoft.dtodo.dto.FacturaDto;
 import xyz.pangosoft.dtodo.dto.DetalleDocumentoDto;
+import xyz.pangosoft.dtodo.dto.DocumentoOrigenNotaDto;
 import xyz.pangosoft.dtodo.model.Factura;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +25,13 @@ public interface IFacturaRepository extends JpaRepository<Factura, Long> {
     Optional<Factura> findFacturaByNoFactura(Long noFactura);
 
     Optional<Factura> findFacturaByCorrelativoSatAndSerieSat(String correlativoSat, String serieSat);
+
+    @Query("select new xyz.pangosoft.dtodo.dto.DocumentoOrigenNotaDto(" +
+            "f.idFactura, c.idCliente, c.nombre, f.correlativoSat, f.serieSat) " +
+            "from Factura f join f.cliente c " +
+            "where f.correlativoSat = :correlativo and f.serieSat = :serie")
+    Optional<DocumentoOrigenNotaDto> findOrigenNotaDto(@Param("correlativo") String correlativo,
+                                                        @Param("serie") String serie);
 
     @Query(value = "{call sp_get_facturas(:date1, :date2);}", nativeQuery = true)
     List<Factura> findAllFacturas(@Param("date1") Date date1, @Param("date2") Date date2);
@@ -65,11 +73,12 @@ public interface IFacturaRepository extends JpaRepository<Factura, Long> {
                                               @Param("filtro") String filtro,
                                               Pageable pageable);
 
-    @Query(value = "SELECT d.id_detalle AS idDetalle, p.nombre AS producto, d.cantidad AS cantidad, " +
+    @Query(value = "SELECT d.id_detalle AS idDetalle, p.id_producto AS idProducto, " +
+            "p.cod_producto AS codigoProducto, p.nombre AS producto, d.cantidad AS cantidad, " +
             "d.sub_total AS subTotal, d.descuento AS descuento, d.sub_total_descuento AS subTotalDescuento " +
             "FROM facturas_detalle d INNER JOIN productos p ON p.id_producto = d.id_producto " +
             "WHERE d.id_factura = :idFactura ORDER BY d.id_detalle",
             countQuery = "SELECT COUNT(*) FROM facturas_detalle WHERE id_factura = :idFactura",
             nativeQuery = true)
-    Page<DetalleDocumentoDto> findDetalleDto(@Param("idFactura") Long idFactura, Pageable pageable);
+    Page<Object[]> findDetalleDto(@Param("idFactura") Long idFactura, Pageable pageable);
 }

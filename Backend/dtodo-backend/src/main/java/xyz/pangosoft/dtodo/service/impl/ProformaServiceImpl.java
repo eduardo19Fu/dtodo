@@ -3,6 +3,7 @@ package xyz.pangosoft.dtodo.service.impl;
 import xyz.pangosoft.dtodo.dto.ProformaFechaDto;
 import xyz.pangosoft.dtodo.dto.ProformaDto;
 import xyz.pangosoft.dtodo.dto.DetalleDocumentoDto;
+import xyz.pangosoft.dtodo.dto.DocumentoOrigenNotaDto;
 import xyz.pangosoft.dtodo.dto.UsuarioDto;
 import xyz.pangosoft.dtodo.error.exceptions.DataAccessException;
 import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
@@ -48,6 +49,8 @@ import java.io.FileNotFoundException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
+import java.math.BigDecimal;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -238,11 +241,34 @@ public class ProformaServiceImpl implements IProformaService {
             throw new NotFoundException("La proforma con ID " + idProforma + " no existe");
         }
         try {
-            return proformaRepository.findDetalleDto(idProforma, pageable);
+            return proformaRepository.findDetalleDto(idProforma, pageable).map(this::mapDetalleDocumentoDto);
         } catch (org.springframework.dao.DataAccessException e) {
             log.error("Error al consultar el detalle de la proforma {}: {}", idProforma, e.getMessage());
             throw new DataAccessException("Ha ocurrido un error al consultar el detalle de la proforma", e);
         }
+    }
+
+    private DetalleDocumentoDto mapDetalleDocumentoDto(Object[] fila) {
+        return new DetalleDocumentoDto(
+                ((Number) fila[0]).longValue(),
+                ((Number) fila[1]).intValue(),
+                (String) fila[2],
+                (String) fila[3],
+                ((Number) fila[4]).intValue(),
+                toBigDecimal(fila[5]),
+                (Number) fila[6],
+                toBigDecimal(fila[7]));
+    }
+
+    private BigDecimal toBigDecimal(Object valor) {
+        return valor instanceof BigDecimal ? (BigDecimal) valor : new BigDecimal(valor.toString());
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public DocumentoOrigenNotaDto findOrigenNotaDto(String noProforma) {
+        return proformaRepository.findOrigenNotaDto(noProforma)
+                .orElseThrow(() -> new NotFoundException("No existe proforma con el número: " + noProforma));
     }
 
     private Date[] parseDateRange(String fechaIni, String fechaFin) {

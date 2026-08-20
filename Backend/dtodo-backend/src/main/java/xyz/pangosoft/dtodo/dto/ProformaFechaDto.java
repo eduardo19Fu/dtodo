@@ -3,12 +3,19 @@ package xyz.pangosoft.dtodo.dto;
 import java.math.BigDecimal;
 import java.util.Date;
 
-public interface ProformaFechaDto {
-    Integer getIdProforma();
-    String getNoProforma();
-    Date getFechaEmision();
-    BigDecimal getTotal();
-    String getEstado();
-    String getUsuario();
-    String getCliente();
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class ProformaFechaDto {
+    private Long idProforma;
+    private String noProforma;
+    private Date fechaEmision;
+    private BigDecimal total;
+    private String estado;
+    private String usuario;
+    private String cliente;
 }

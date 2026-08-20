@@ -12,7 +12,9 @@ import swal from 'sweetalert2';
 @Component({
   selector: 'app-create-correlativo',
   templateUrl: './create-correlativo.component.html',
-  styles: [
+  styleUrls: [
+    '../../productos/create-producto/create-producto.component.css',
+    './create-correlativo.component.css'
   ]
 })
 export class CreateCorrelativoComponent implements OnInit {

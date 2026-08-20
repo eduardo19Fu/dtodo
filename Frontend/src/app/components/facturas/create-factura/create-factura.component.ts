@@ -25,13 +25,18 @@ import swal from 'sweetalert2';
 @Component({
   selector: 'app-create-factura',
   templateUrl: './create-factura.component.html',
-  styleUrls: ['./create-factura.component.css']
+  styleUrls: [
+    '../../productos/create-producto/create-producto.component.css',
+    '../../proformas/create-proforma/create-proforma.component.css',
+    './create-factura.component.css'
+  ]
 })
 export class CreateFacturaComponent implements OnInit {
 
   title: string;
   nitIngresado: string;
   pagar = false;
+  isSaving = false;
 
   producto: Producto;
   cliente: Cliente;
@@ -163,14 +168,15 @@ export class CreateFacturaComponent implements OnInit {
               this.producto = new Producto();
               (document.getElementById('cantidad') as HTMLInputElement).value = '';
             } else {
-                item.producto = this.producto;
-                item.subTotalDescuento = item.calcularImporte();
-                item.subTotal = item.calcularImporte();
+              item.producto = this.producto;
+              item.subTotalDescuento = item.calcularImporte();
+              item.subTotal = item.calcularImporte();
 
-                this.factura.itemsFactura.push(item);
-                this.producto = new Producto();
+              this.factura.itemsFactura.push(item);
+              this.producto = new Producto();
 
-                (document.getElementById('cantidad') as HTMLInputElement).value = '';
+              (document.getElementById('cantidad') as HTMLInputElement).value = '';
+              this.calcularCambio();
             }
 
           } else if (item.cantidad === 0) {
@@ -200,16 +206,18 @@ export class CreateFacturaComponent implements OnInit {
       return item;
     });
 
-    this.proforma.itemsProforma = this.proforma.itemsProforma.map((item: DetalleProforma) => {
+    if (this.proforma) {
+      this.proforma.itemsProforma = this.proforma.itemsProforma.map((item: DetalleProforma) => {
+        if (idProducto === item.producto.idProducto) {
+          item.cantidad = cantidad;
+          item.subTotal = item.calcularImporte();
+          item.subTotalDescuento = item.calcularImporteDescuento();
+        }
+        return item;
+      });
+    }
 
-      if (idProducto === item.producto.idProducto) {
-        item.cantidad = cantidad;
-        item.subTotal = item.calcularImporte();
-        item.subTotalDescuento = item.calcularImporteDescuento();
-      }
-
-      return item;
-    });
+    this.calcularCambio();
   }
 
   actualizarCantidadDescuento(idProducto: number, event: any): void {
@@ -224,6 +232,8 @@ export class CreateFacturaComponent implements OnInit {
 
       return item;
     });
+
+    this.calcularCambio();
   }
 
   existeItem(id: number): boolean {
@@ -246,14 +256,24 @@ export class CreateFacturaComponent implements OnInit {
 
       return item;
     });
+
+    this.calcularCambio();
   }
 
   eliminarItem(index: number): void {
     this.factura.itemsFactura.splice(index, 1);
-    this.proforma.itemsProforma.splice(index, 1);
+    if (this.proforma) {
+      this.proforma.itemsProforma.splice(index, 1);
+    }
+    this.calcularCambio();
   }
 
   createFactura(): void {
+    if (!this.pagoSuficiente() || this.isSaving) {
+      return;
+    }
+
+    this.isSaving = true;
     this.factura.noFactura = this.correlativo.correlativoActual;
     this.factura.serie = this.correlativo.serie;
     this.factura.cliente = this.cliente;
@@ -299,6 +319,7 @@ export class CreateFacturaComponent implements OnInit {
 
     this.facturaService.createV2(this.factura).subscribe(
       response => {
+        this.isSaving = false;
         this.cliente = new Cliente();
         this.factura = new Factura();
         this.cargarCorrelativo();
@@ -306,13 +327,14 @@ export class CreateFacturaComponent implements OnInit {
         swal.fire('Venta Realizada', `Factura No. ${response.noFactura} creada con éxito!`, 'success');
         (document.getElementById('buscar') as HTMLInputElement).focus();
         this.cambio = 0;
-        (document.getElementById('efectivo') as HTMLInputElement).value = '';
+        this.efectivo = null;
 
         const url = 'https://report.feel.com.gt/ingfacereport/ingfacereport_documento?uuid=' + response.certificacionSat;
 
         const a = document.createElement('a');
         window.open(url, '_blank').focus();
       }, error => {
+        this.isSaving = false;
         swal.fire(`Error: ${error.error.status} al Crear Factura`, `${error.error.message}`, 'error');
       }
     );
@@ -355,12 +377,16 @@ export class CreateFacturaComponent implements OnInit {
     );
   }
 
-  calcularCambio(event): void {
+  calcularCambio(): void {
     if (this.efectivo) {
       this.cambio = this.efectivo - this.factura.calcularTotal();
     } else {
       this.cambio = 0.00;
     }
+  }
+
+  pagoSuficiente(): boolean {
+    return !!this.efectivo && this.efectivo >= this.factura.calcularTotal();
   }
 
   loadProducto(event): void {
@@ -371,7 +397,6 @@ export class CreateFacturaComponent implements OnInit {
   }
 
   loadCliente(event): void {
-    console.log(event);
     (document.getElementById('buscar') as HTMLInputElement).value = event.nit;
     (document.getElementById('button-2x')).click();
     this.buscarCliente();

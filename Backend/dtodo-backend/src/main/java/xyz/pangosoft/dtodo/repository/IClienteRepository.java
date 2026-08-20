@@ -25,11 +25,13 @@ public interface IClienteRepository extends JpaRepository<Cliente, Integer> {
 	@Query(value = "Select get_cant_clientes()", nativeQuery = true)
 	Integer getCantClientes();
 
-	@Query(value = "{call sp_consultar_clientes()}", nativeQuery = true)
+	@Query("select new xyz.pangosoft.dtodo.dto.ClienteDto(" +
+			"c.idCliente, c.nombre, c.nit, c.direccion, c.fechaRegistro, c.telefono) " +
+			"from Cliente c")
 	List<ClienteDto> consultarClientesDto();
 
-	@Query(value = "SELECT c.idCliente AS idCliente, c.nombre AS nombre, c.nit AS nit, " +
-			"c.direccion AS direccion, c.fechaRegistro AS fechaRegistro, c.telefono AS telefono " +
+	@Query(value = "SELECT new xyz.pangosoft.dtodo.dto.ClienteDto(" +
+			"c.idCliente, c.nombre, c.nit, c.direccion, c.fechaRegistro, c.telefono) " +
 			"FROM Cliente c WHERE (:filtro = '' " +
 			"OR LOWER(COALESCE(c.nombre, '')) LIKE LOWER(CONCAT('%', :filtro, '%')) " +
 			"OR LOWER(COALESCE(c.nit, '')) LIKE LOWER(CONCAT('%', :filtro, '%')) " +

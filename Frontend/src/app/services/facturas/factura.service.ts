@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { Observable, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { Factura } from 'src/app/models/factura';
+import { DocumentoOrigenNotaDto } from 'src/app/dtos/documento-origen-nota-dto';
 
 import { global } from '../global';
 import swal from 'sweetalert2';
@@ -82,6 +83,14 @@ export class FacturaService {
     return this.http.get<any>(`${this.url}/facturas-dto/${idFactura}/detalle/${page}`, { params }).pipe(
       catchError(e => throwError(e))
     );
+  }
+
+  getOrigenNotaDto(correlativo: string, serie: string): Observable<DocumentoOrigenNotaDto> {
+    const params = new HttpParams()
+      .set('correlativo', correlativo)
+      .set('serie', serie);
+    return this.http.get<DocumentoOrigenNotaDto>(`${this.url}/facturas-dto/nota-credito/origen`, { params })
+      .pipe(catchError(e => throwError(e)));
   }
 
   getFactura(id: number): Observable<Factura> {

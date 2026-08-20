@@ -2,12 +2,11 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { UsuarioAuxiliar } from 'src/app/models/auxiliar/usuario-auxiliar';
 import { Cliente } from 'src/app/models/cliente';
-import { DetalleFactura } from 'src/app/models/detalle-factura';
-import { DetalleProforma } from 'src/app/models/detalle-proforma';
-import { Factura } from 'src/app/models/factura';
+import { DetalleDocumentoDto } from 'src/app/dtos/detalleDocumentoDto';
+import { DocumentoOrigenNotaDto } from 'src/app/dtos/documento-origen-nota-dto';
 import { NotaCredito, TipoDocumentoOrigen } from 'src/app/models/nota-credito';
 import { NotaCreditoDetalle } from 'src/app/models/nota-credito-detalle';
-import { Proforma } from 'src/app/models/proforma';
+import { Producto } from 'src/app/models/producto';
 import { AuthService } from 'src/app/services/auth.service';
 import { ClienteService } from 'src/app/services/cliente.service';
 import { ClienteCreateService } from 'src/app/services/facturas/cliente-create.service';
@@ -24,23 +23,26 @@ declare var $: any;
  * documento origen (Factura o Proforma).
  */
 interface ItemSeleccionable {
+  idProducto: number;
   codProducto: string;
   nombreProducto: string;
   cantidadOriginal: number;
   precioVenta: number;
+  precioUnitarioConDescuento: number;
   descuento: number;
   subTotalOriginal: number;
   cantidadSeleccionada: number;
   seleccionado: boolean;
-  // Referencias opcionales al item origen
-  refDetalleFactura?: DetalleFactura;
-  refDetalleProforma?: DetalleProforma;
 }
 
 @Component({
   selector: 'app-create-nota',
   templateUrl: './create-nota.component.html',
-  styleUrls: ['./create-nota.component.css']
+  styleUrls: [
+    '../../productos/create-producto/create-producto.component.css',
+    '../../proformas/create-proforma/create-proforma.component.css',
+    './create-nota.component.css'
+  ]
 })
 export class CreateNotaComponent implements OnInit {
 
@@ -58,10 +60,10 @@ export class CreateNotaComponent implements OnInit {
   tipoOrigen: TipoDocumentoOrigen = 'FACTURA';
 
   // Modal de selección de productos
-  facturaCargada: Factura;
-  proformaCargada: Proforma;
+  documentoOrigenCargado: DocumentoOrigenNotaDto;
   itemsSeleccionables: ItemSeleccionable[] = [];
   mostrarModalProductos: boolean = false;
+  cargandoProductosOrigen: boolean = false;
 
   // Paginación del modal
   paginaActual: number = 0;
@@ -109,12 +111,11 @@ export class CreateNotaComponent implements OnInit {
 
     if (nuevoTipo === 'FACTURA') {
       this.notaCredito.noProforma = null;
-      this.proformaCargada = null;
     } else {
       this.notaCredito.correlativoFacturaSat = null;
       this.notaCredito.serieFacturaSat = null;
-      this.facturaCargada = null;
     }
+    this.documentoOrigenCargado = null;
   }
 
   cargarCliente(event): void {
@@ -180,34 +181,23 @@ export class CreateNotaComponent implements OnInit {
       return;
     }
 
-    this.facturaService.getFacturaByCorrelativoSat(correlativo, serie).subscribe(
-      factura => {
-        if (factura.cliente.idCliente !== this.cliente.idCliente) {
+    this.iniciarCargaProductos('factura');
+    this.facturaService.getOrigenNotaDto(correlativo, serie).subscribe(
+      documento => {
+        if (documento.idCliente !== this.cliente.idCliente) {
+          this.finalizarCargaProductos();
           swal.fire('Cliente No Coincide',
-            `La factura con correlativo ${correlativo} y serie ${serie} pertenece al cliente "${factura.cliente.nombre}", pero el cliente seleccionado es "${this.cliente.nombre}".`,
+            `La factura con correlativo ${correlativo} y serie ${serie} pertenece al cliente "${documento.cliente}", pero el cliente seleccionado es "${this.cliente.nombre}".`,
             'error');
           return;
         }
 
-        this.facturaCargada = factura;
-        this.proformaCargada = null;
-        this.itemsSeleccionables = factura.itemsFactura.map((item: DetalleFactura) => ({
-          codProducto: item.producto.codProducto,
-          nombreProducto: item.producto.nombre,
-          cantidadOriginal: item.cantidad,
-          // Unitario HISTÓRICO antes de descuento, no el precio de catálogo vigente.
-          precioVenta: this.unitarioHistorico(item),
-          descuento: item.descuento,
-          subTotalOriginal: item.subTotalDescuento,
-          cantidadSeleccionada: item.cantidad,
-          seleccionado: false,
-          refDetalleFactura: item
-        }));
-        this.resetEstadoModal();
-        this.mostrarModalProductos = true;
+        this.cargarDetalleDocumento(documento, true);
       },
       () => {
-        // FacturaService ya muestra el Swal de error
+        this.finalizarCargaProductos();
+        swal.fire('Factura no encontrada',
+          'No se encontró una factura con el correlativo y serie ingresados.', 'warning');
       }
     );
   }
@@ -220,37 +210,81 @@ export class CreateNotaComponent implements OnInit {
       return;
     }
 
-    this.proformaService.getProformaByNoProforma(noProforma).subscribe(
-      proforma => {
-        if (!proforma.cliente || proforma.cliente.idCliente !== this.cliente.idCliente) {
-          const nombreCte = proforma.cliente ? proforma.cliente.nombre : 'N/A';
+    this.iniciarCargaProductos('proforma');
+    this.proformaService.getOrigenNotaDto(noProforma).subscribe(
+      documento => {
+        if (documento.idCliente !== this.cliente.idCliente) {
+          this.finalizarCargaProductos();
           swal.fire('Cliente No Coincide',
-            `La proforma ${noProforma} pertenece al cliente "${nombreCte}", pero el cliente seleccionado es "${this.cliente.nombre}".`,
+            `La proforma ${noProforma} pertenece al cliente "${documento.cliente}", pero el cliente seleccionado es "${this.cliente.nombre}".`,
             'error');
           return;
         }
 
-        this.proformaCargada = proforma;
-        this.facturaCargada = null;
-        this.itemsSeleccionables = (proforma.itemsProforma || []).map((item: DetalleProforma) => ({
-          codProducto: item.producto.codProducto,
-          nombreProducto: item.producto.nombre,
-          cantidadOriginal: item.cantidad,
-          // Unitario HISTÓRICO antes de descuento, no el precio de catálogo vigente.
-          precioVenta: this.unitarioHistorico(item),
-          descuento: item.descuento,
-          subTotalOriginal: item.subTotalDescuento,
-          cantidadSeleccionada: item.cantidad,
-          seleccionado: false,
-          refDetalleProforma: item
-        }));
-        this.resetEstadoModal();
-        this.mostrarModalProductos = true;
+        this.cargarDetalleDocumento(documento, false);
       },
       () => {
-        // ProformaService ya muestra el Swal de error
+        this.finalizarCargaProductos();
+        swal.fire('Proforma no encontrada', `No existe una proforma con el número "${noProforma}".`, 'warning');
       }
     );
+  }
+
+  private cargarDetalleDocumento(documento: DocumentoOrigenNotaDto, esFactura: boolean): void {
+    const detalle$ = esFactura
+      ? this.facturaService.getDetalleFacturaDto(documento.idDocumento, 0, 10000)
+      : this.proformaService.getDetalleProformaDto(documento.idDocumento, 0, 10000);
+
+    detalle$.subscribe(
+      response => {
+        const detalles = (response.content || []) as DetalleDocumentoDto[];
+        this.documentoOrigenCargado = documento;
+        this.itemsSeleccionables = detalles.map(detalle => this.crearItemSeleccionable(detalle));
+        this.resetEstadoModal();
+        this.mostrarModalProductos = true;
+        this.finalizarCargaProductos();
+      },
+      () => {
+        this.finalizarCargaProductos();
+        swal.fire('No fue posible cargar el detalle',
+          'Ocurrió un problema al consultar los productos del documento.', 'error');
+      }
+    );
+  }
+
+  private crearItemSeleccionable(detalle: DetalleDocumentoDto): ItemSeleccionable {
+    const cantidad = detalle.cantidad || 1;
+    return {
+      idProducto: detalle.idProducto,
+      codProducto: detalle.codigoProducto,
+      nombreProducto: detalle.producto,
+      cantidadOriginal: detalle.cantidad,
+      precioVenta: this.unitarioHistorico(detalle),
+      precioUnitarioConDescuento: (detalle.subTotalDescuento || 0) / cantidad,
+      descuento: detalle.descuento,
+      subTotalOriginal: detalle.subTotalDescuento,
+      cantidadSeleccionada: detalle.cantidad,
+      seleccionado: false
+    };
+  }
+
+  private iniciarCargaProductos(tipoDocumento: string): void {
+    this.cargandoProductosOrigen = true;
+    swal.fire({
+      toast: true,
+      position: 'top-end',
+      title: 'Buscando productos...',
+      text: `Consultando el detalle de la ${tipoDocumento}.`,
+      showConfirmButton: false,
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      didOpen: () => swal.showLoading()
+    });
+  }
+
+  private finalizarCargaProductos(): void {
+    this.cargandoProductosOrigen = false;
+    swal.close();
   }
 
   /**
@@ -266,7 +300,7 @@ export class CreateNotaComponent implements OnInit {
    * despeje): es lo único que funciona con descuento del 100%, donde el
    * despeje dividiría entre cero.
    */
-  private unitarioHistorico(detalle: DetalleFactura | DetalleProforma): number {
+  private unitarioHistorico(detalle: DetalleDocumentoDto): number {
     const cantidad = detalle.cantidad || 1;
     const subTotal = detalle.subTotal || 0;
     const subTotalDescuento = detalle.subTotalDescuento || 0;
@@ -320,6 +354,10 @@ export class CreateNotaComponent implements OnInit {
 
   hayProductosSeleccionados(): boolean {
     return this.itemsSeleccionables.some(i => i.seleccionado && i.cantidadSeleccionada > 0);
+  }
+
+  get cantidadProductosSeleccionados(): number {
+    return this.itemsSeleccionables.filter(i => i.seleccionado && i.cantidadSeleccionada > 0).length;
   }
 
   // --- Paginación y filtro del modal ---
@@ -394,21 +432,13 @@ export class CreateNotaComponent implements OnInit {
 
     this.notaCredito.items = seleccionados.map(sel => {
       const item = new NotaCreditoDetalle();
-      // Resolver el detalle origen (Factura o Proforma) como única fuente de
-      // verdad: conserva el descuento y el precio HISTÓRICO facturado, no el
-      // precio de catálogo vigente (que puede cambiar con el tiempo).
-      const detalleOrigen = sel.refDetalleFactura ?? sel.refDetalleProforma;
-      const cantidadOrigen = detalleOrigen.cantidad || 1;
-      // Unitarios históricos derivados del detalle guardado. El "sin descuento"
-      // se despeja (no se lee de subTotal, que en BD ya viene descontado).
-      const unitarioSinDescuento = this.unitarioHistorico(detalleOrigen);
-      const unitarioConDescuento = detalleOrigen.subTotalDescuento / cantidadOrigen;
-
-      item.producto = detalleOrigen.producto;
+      const producto = new Producto();
+      producto.idProducto = sel.idProducto;
+      item.producto = producto;
       item.cantidad = sel.cantidadSeleccionada;
-      item.descuento = detalleOrigen.descuento;
-      item.subTotal = unitarioSinDescuento * sel.cantidadSeleccionada;
-      item.subTotalDescuento = unitarioConDescuento * sel.cantidadSeleccionada;
+      item.descuento = sel.descuento;
+      item.subTotal = sel.precioVenta * sel.cantidadSeleccionada;
+      item.subTotalDescuento = sel.precioUnitarioConDescuento * sel.cantidadSeleccionada;
       return item;
     });
 
@@ -465,11 +495,9 @@ export class CreateNotaComponent implements OnInit {
 
   /** Etiqueta a mostrar en el header del modal según el origen. */
   get tituloModal(): string {
-    if (this.tipoOrigen === 'FACTURA' && this.facturaCargada) {
-      return `Productos de Factura No. ${this.facturaCargada.noFactura}`;
-    }
-    if (this.tipoOrigen === 'PROFORMA' && this.proformaCargada) {
-      return `Productos de Proforma No. ${this.proformaCargada.noProforma}`;
+    if (this.documentoOrigenCargado) {
+      const documento = this.tipoOrigen === 'FACTURA' ? 'Factura' : 'Proforma';
+      return `Productos de ${documento} No. ${this.documentoOrigenCargado.numero}`;
     }
     return 'Productos del Documento Origen';
   }

@@ -1,4 +1,4 @@
-export interface UsuarioDto {
+export class UsuarioDto {
   idUsuario: number;
   usuario: string;
   primerNombre: string;

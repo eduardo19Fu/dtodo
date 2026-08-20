@@ -25,6 +25,7 @@ import xyz.pangosoft.dtodo.error.exceptions.NoContentException;
 import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
 import xyz.pangosoft.dtodo.dto.FacturaDto;
 import xyz.pangosoft.dtodo.dto.DetalleDocumentoDto;
+import xyz.pangosoft.dtodo.dto.DocumentoOrigenNotaDto;
 import xyz.pangosoft.dtodo.error.exceptions.NotFoundException;
 import xyz.pangosoft.dtodo.error.exceptions.ReportGenerationException;
 import xyz.pangosoft.dtodo.model.Certificador;
@@ -202,12 +203,36 @@ public class FacturaServiceImpl implements IFacturaService {
 			throw new NotFoundException("La factura con ID " + idFactura + " no existe");
 		}
 		try {
-			return repoFactura.findDetalleDto(idFactura, pageable);
+			return repoFactura.findDetalleDto(idFactura, pageable).map(this::mapDetalleDocumentoDto);
 		} catch (DataAccessException e) {
 			log.error("Error al consultar el detalle de la factura {}: {}", idFactura, e.getMessage());
 			throw new xyz.pangosoft.dtodo.error.exceptions.DataAccessException(
 					"Ha ocurrido un error al consultar el detalle de la factura", e);
 		}
+	}
+
+	private DetalleDocumentoDto mapDetalleDocumentoDto(Object[] fila) {
+		return new DetalleDocumentoDto(
+				((Number) fila[0]).longValue(),
+				((Number) fila[1]).intValue(),
+				(String) fila[2],
+				(String) fila[3],
+				((Number) fila[4]).intValue(),
+				toBigDecimal(fila[5]),
+				(Number) fila[6],
+				toBigDecimal(fila[7]));
+	}
+
+	private BigDecimal toBigDecimal(Object valor) {
+		return valor instanceof BigDecimal ? (BigDecimal) valor : new BigDecimal(valor.toString());
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public DocumentoOrigenNotaDto findOrigenNotaDto(String correlativoSat, String serieSat) {
+		return repoFactura.findOrigenNotaDto(correlativoSat, serieSat)
+				.orElseThrow(() -> new NotFoundException(
+						"No existe una factura con correlativo SAT: " + correlativoSat + " y serie SAT: " + serieSat));
 	}
 
 	private Date[] parseDateRange(String fechaIni, String fechaFin) {

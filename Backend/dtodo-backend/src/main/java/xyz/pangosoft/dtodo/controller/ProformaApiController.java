@@ -4,6 +4,7 @@ import xyz.pangosoft.dtodo.dto.ProformaFechaDto;
 import xyz.pangosoft.dtodo.dto.ProformaDto;
 import xyz.pangosoft.dtodo.dto.UsuarioDto;
 import xyz.pangosoft.dtodo.dto.DetalleDocumentoDto;
+import xyz.pangosoft.dtodo.dto.DocumentoOrigenNotaDto;
 import xyz.pangosoft.dtodo.model.Proforma;
 import xyz.pangosoft.dtodo.service.IEstadoService;
 import xyz.pangosoft.dtodo.service.IProformaService;
@@ -115,6 +116,13 @@ public class ProformaApiController {
             @PathVariable("page") Integer page,
             @RequestParam(value = "size", defaultValue = "5") Integer size) {
         return ResponseEntity.ok(proformaService.findDetalleDto(idProforma, PageRequest.of(page, size)));
+    }
+
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
+    @GetMapping("/proformas-dto/nota-credito/origen/{noProforma}")
+    public ResponseEntity<DocumentoOrigenNotaDto> getOrigenNotaDto(
+            @PathVariable("noProforma") String noProforma) {
+        return ResponseEntity.ok(proformaService.findOrigenNotaDto(noProforma));
     }
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})

@@ -8,6 +8,7 @@ import java.util.List;
 import xyz.pangosoft.dtodo.model.TipoFactura;
 import xyz.pangosoft.dtodo.dto.FacturaDto;
 import xyz.pangosoft.dtodo.dto.DetalleDocumentoDto;
+import xyz.pangosoft.dtodo.dto.DocumentoOrigenNotaDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -30,6 +31,8 @@ public interface IFacturaService {
 	Page<FacturaDto> findUltimasListadoDto(String filtro, Pageable pageable);
 
 	Page<DetalleDocumentoDto> findDetalleDto(Long idFactura, Pageable pageable);
+
+	DocumentoOrigenNotaDto findOrigenNotaDto(String correlativoSat, String serieSat);
 	
 	public Factura findFactura(Long idfactura);
 

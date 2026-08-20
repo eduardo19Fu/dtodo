@@ -5,6 +5,7 @@ import java.util.List;
 import xyz.pangosoft.dtodo.model.Factura;
 import xyz.pangosoft.dtodo.dto.FacturaDto;
 import xyz.pangosoft.dtodo.dto.DetalleDocumentoDto;
+import xyz.pangosoft.dtodo.dto.DocumentoOrigenNotaDto;
 import xyz.pangosoft.dtodo.service.IFacturaService;
 
 import lombok.RequiredArgsConstructor;
@@ -78,13 +79,21 @@ public class FacturaApiController {
         return ResponseEntity.ok(serviceFactura.findUltimasListadoDto(filtro, PageRequest.of(page, size)));
     }
 
-    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @GetMapping(value = "/facturas-dto/{idFactura}/detalle/{page}")
     public ResponseEntity<Page<DetalleDocumentoDto>> getDetalleDto(
             @PathVariable("idFactura") Long idFactura,
             @PathVariable("page") Integer page,
             @RequestParam(value = "size", defaultValue = "5") Integer size) {
         return ResponseEntity.ok(serviceFactura.findDetalleDto(idFactura, PageRequest.of(page, size)));
+    }
+
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
+    @GetMapping(value = "/facturas-dto/nota-credito/origen")
+    public ResponseEntity<DocumentoOrigenNotaDto> getOrigenNotaDto(
+            @RequestParam("correlativo") String correlativo,
+            @RequestParam("serie") String serie) {
+        return ResponseEntity.ok(serviceFactura.findOrigenNotaDto(correlativo, serie));
     }
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})

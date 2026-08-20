@@ -1,4 +1,4 @@
-export interface CorrelativoDto {
+export class CorrelativoDto {
   idCorrelativo: number;
   correlativoInicial: number;
   correlativoFinal: number;

@@ -1,5 +1,7 @@
-export interface DetalleDocumentoDto {
+export class DetalleDocumentoDto {
   idDetalle: number;
+  idProducto: number;
+  codigoProducto: string;
   producto: string;
   cantidad: number;
   subTotal: number;

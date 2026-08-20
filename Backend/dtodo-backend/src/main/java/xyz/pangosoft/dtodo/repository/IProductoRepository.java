@@ -22,8 +22,13 @@ public interface IProductoRepository extends JpaRepository<Producto, Integer> {
 	@Query(value = "{call sp_consultar_productos(:idestado)}", nativeQuery = true)
 	List<Producto> listarPorEstadoSP(Integer idestado);
 
-	@Query(value = "{call sp_consultar_productos_dto(:idestado)}", nativeQuery = true)
-	List<ProductoDto> listarPorEstadoSPDto(Integer idestado);
+	@Query("select new xyz.pangosoft.dtodo.dto.ProductoDto(" +
+			"p.idProducto, p.codProducto, p.nombre, p.precioCompra, p.precioVenta, " +
+			"p.porcentajeGanancia, p.descripcion, p.fechaVencimiento, p.fechaIngreso, " +
+			"p.fechaRegistro, p.stock, m.marca, t.tipoProducto, e.estado) " +
+			"from Producto p join p.marcaProducto m join p.tipoProducto t join p.estado e " +
+			"where (:idestado = 0 or e.idEstado = :idestado) order by p.nombre")
+	List<ProductoDto> listarPorEstadoSPDto(@Param("idestado") Integer idestado);
 
 	// Filtra los productos por nombre y devuelve un listado con las coincidencias
 	// select * from Producto where nombre = /*valor ingresado por usuario*/

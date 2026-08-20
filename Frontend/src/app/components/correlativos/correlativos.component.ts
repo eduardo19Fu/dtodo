@@ -11,7 +11,10 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-correlativos',
   templateUrl: './correlativos.component.html',
-  styleUrls: ['./correlativos.component.css']
+  styleUrls: [
+    '../proformas/proformas.component.css',
+    './correlativos.component.css'
+  ]
 })
 export class CorrelativosComponent implements OnInit, OnDestroy {
 
