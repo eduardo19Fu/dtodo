@@ -3,102 +3,136 @@
 
 <!-- MODAL DE DESPACHO DE PRODUCTOS -->
 <div *ngIf="mostrarModalDespacho" class="abrir-modal animacion fadeIn">
-    <div class="modal" tabindex="-1" style="display: block; overflow-y: auto;">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header bg-info">
-                    <h5 class="modal-title">
-                        <i class="fas fa-truck mr-2"></i>
-                        Despacho de Nota de Cr&eacute;dito No. {{notaDespacho?.idNotaCredito}}
-                    </h5>
-                    <button (click)="cerrarModalDespacho()" type="button" class="close">
-                        <span aria-hidden="true" style="color: white;">&times;</span>
+    <div class="modal dispatch-modal" tabindex="-1" role="dialog" aria-modal="true"
+        aria-labelledby="dispatch-modal-title">
+        <div class="modal-dialog modal-xl dispatch-dialog">
+            <div class="modal-content dispatch-content">
+                <div class="modal-header dispatch-header">
+                    <div class="dispatch-heading">
+                        <span class="dispatch-heading-icon" aria-hidden="true">
+                            <i class="fas fa-truck"></i>
+                        </span>
+                        <div>
+                            <span>Entrega de productos</span>
+                            <h5 class="modal-title" id="dispatch-modal-title">
+                                Despacho de Nota de Cr&eacute;dito No. {{notaDespacho?.idNotaCredito}}
+                            </h5>
+                        </div>
+                    </div>
+                    <button (click)="cerrarModalDespacho()" type="button" class="dispatch-close"
+                        aria-label="Cerrar modal">
+                        <i class="fas fa-times" aria-hidden="true"></i>
                     </button>
                 </div>
-                <div class="card-body">
-                    <div class="modal-body">
-                        <!-- Info de la nota -->
-                        <div class="row mb-3">
-                            <div class="col-md-4">
-                                <strong>Cliente:</strong> {{notaDespacho?.cliente?.nombre}}
+                <div class="modal-body dispatch-body">
+                    <div class="dispatch-summary">
+                        <div class="dispatch-summary-item dispatch-client-summary">
+                            <span class="dispatch-summary-icon"><i class="fas fa-user"></i></span>
+                            <div>
+                                <span>Cliente</span>
+                                <strong>{{notaDespacho?.cliente?.nombre}}</strong>
                             </div>
-                            <div class="col-md-4">
+                        </div>
+                        <div class="dispatch-summary-item">
+                            <span class="dispatch-summary-icon"><i class="fas fa-file-invoice"></i></span>
+                            <div>
+                                <span>Documento de origen</span>
                                 <ng-container *ngIf="(notaDespacho?.tipoDocumentoOrigen || 'FACTURA') === 'FACTURA'">
-                                    <strong>Factura SAT:</strong>
-                                    {{notaDespacho?.serieFacturaSat}}-{{notaDespacho?.correlativoFacturaSat}}
+                                    <strong>Factura SAT {{notaDespacho?.serieFacturaSat}}-{{notaDespacho?.correlativoFacturaSat}}</strong>
                                 </ng-container>
                                 <ng-container *ngIf="notaDespacho?.tipoDocumentoOrigen === 'PROFORMA'">
-                                    <strong>Proforma:</strong> {{notaDespacho?.noProforma}}
+                                    <strong>Proforma {{notaDespacho?.noProforma}}</strong>
                                 </ng-container>
                             </div>
-                            <div class="col-md-4">
-                                <strong>Total:</strong> {{notaDespacho?.total | currency: "Q" : "symbol"}}
+                        </div>
+                        <div class="dispatch-summary-item dispatch-total-summary">
+                            <span class="dispatch-summary-icon"><i class="fas fa-coins"></i></span>
+                            <div>
+                                <span>Total de la nota</span>
+                                <strong>{{notaDespacho?.total | currency: "Q" : "symbol"}}</strong>
                             </div>
                         </div>
+                    </div>
 
-                        <p class="text-muted mb-3">
-                            <i class="fas fa-info-circle mr-1"></i>
-                            Seleccione los productos a despachar e indique la cantidad. Solo se muestran productos con unidades pendientes.
-                        </p>
-
-                        <!-- Spinner de carga -->
-                        <div *ngIf="cargandoDespacho" class="text-center p-3">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="sr-only">Cargando...</span>
-                            </div>
+                    <div class="dispatch-intro">
+                        <span class="dispatch-info-icon" aria-hidden="true"><i class="fas fa-info-circle"></i></span>
+                        <div>
+                            <strong>Selecciona los productos a despachar</strong>
+                            <p>Marca cada producto e indica la cantidad. Solo se muestran artículos con unidades pendientes.</p>
                         </div>
+                        <span class="dispatch-count">
+                            <i class="fas fa-check-circle" aria-hidden="true"></i>
+                            {{cantidadItemsDespachoSeleccionados}} seleccionados
+                        </span>
+                    </div>
 
-                        <table class="table table-hover table-striped table-bordered table-sm"
-                            *ngIf="!cargandoDespacho && itemsDespacho?.length > 0">
+                    <div *ngIf="cargandoDespacho" class="dispatch-loading" role="status">
+                        <div class="spinner-border" aria-hidden="true"></div>
+                        <strong>Preparando el despacho</strong>
+                        <span>Estamos consultando las unidades pendientes.</span>
+                    </div>
+
+                    <div *ngIf="!cargandoDespacho && (!itemsDespacho || itemsDespacho.length === 0)"
+                        class="dispatch-empty">
+                        <i class="fas fa-check-circle" aria-hidden="true"></i>
+                        <strong>No hay productos pendientes</strong>
+                        <span>Todos los productos de esta nota ya fueron despachados.</span>
+                    </div>
+
+                    <div class="dispatch-table-wrap" *ngIf="!cargandoDespacho && itemsDespacho?.length > 0">
+                        <table class="dispatch-table">
                             <thead>
                                 <tr>
-                                    <th class="text-center" style="width: 50px;">
-                                        <i class="fas fa-check-square"></i>
-                                    </th>
+                                    <th class="dispatch-select-column"><i class="fas fa-check" aria-hidden="true"></i></th>
                                     <th>C&oacute;digo</th>
                                     <th>Producto</th>
-                                    <th class="text-center">Total Nota</th>
-                                    <th class="text-center">Despachado</th>
-                                    <th class="text-center">Pendiente</th>
-                                    <th class="text-center" style="width: 150px;">Cant. a Despachar</th>
+                                    <th class="dispatch-numeric-column">Total nota</th>
+                                    <th class="dispatch-numeric-column">Despachado</th>
+                                    <th class="dispatch-numeric-column">Pendiente</th>
+                                    <th class="dispatch-quantity-column">Cant. a despachar</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr *ngFor="let registro of itemsDespacho; let i = index"
-                                    [ngClass]="{'table-success': registro.seleccionado, 'text-muted': getPendiente(registro) === 0}">
-                                    <td class="text-center align-middle">
-                                        <div class="custom-control custom-checkbox" *ngIf="getPendiente(registro) > 0">
-                                            <input type="checkbox" class="custom-control-input"
-                                                [id]="'chk-desp-' + i"
-                                                [checked]="registro.seleccionado"
-                                                (change)="toggleDespacho(i)">
-                                            <label class="custom-control-label" [for]="'chk-desp-' + i"></label>
+                                    [class.is-selected]="registro.seleccionado"
+                                    [class.is-complete]="getPendiente(registro) === 0">
+                                    <td class="dispatch-select-column">
+                                        <label *ngIf="getPendiente(registro) > 0" class="dispatch-checkbox"
+                                            [for]="'chk-desp-' + i">
+                                            <input type="checkbox" [id]="'chk-desp-' + i"
+                                                [checked]="registro.seleccionado" (change)="toggleDespacho(i)">
+                                            <span><i class="fas fa-check" aria-hidden="true"></i></span>
+                                        </label>
+                                        <span *ngIf="getPendiente(registro) === 0" class="dispatch-complete-icon"
+                                            title="Despacho completado"><i class="fas fa-check"></i></span>
+                                    </td>
+                                    <td><span class="dispatch-product-code">{{registro.item.producto.codProducto}}</span></td>
+                                    <td>
+                                        <div class="dispatch-product-name">
+                                            <span class="dispatch-product-icon" aria-hidden="true"><i class="fas fa-box"></i></span>
+                                            <strong>{{registro.item.producto.nombre}}</strong>
                                         </div>
-                                        <i *ngIf="getPendiente(registro) === 0" class="fas fa-check text-success"></i>
                                     </td>
-                                    <td class="align-middle">{{registro.item.producto.codProducto}}</td>
-                                    <td class="align-middle">{{registro.item.producto.nombre}}</td>
-                                    <td class="text-center align-middle">
-                                        <span class="badge badge-primary">{{registro.item.cantidad}}</span>
+                                    <td class="dispatch-numeric-column">
+                                        <span class="dispatch-quantity-badge total">{{registro.item.cantidad}}</span>
                                     </td>
-                                    <td class="text-center align-middle">
-                                        <span class="badge badge-info">{{registro.despachado}}</span>
+                                    <td class="dispatch-numeric-column">
+                                        <span class="dispatch-quantity-badge delivered">{{registro.despachado}}</span>
                                     </td>
-                                    <td class="text-center align-middle">
-                                        <span class="badge" [ngClass]="{'badge-warning': getPendiente(registro) > 0, 'badge-success': getPendiente(registro) === 0}">
+                                    <td class="dispatch-numeric-column">
+                                        <span class="dispatch-quantity-badge"
+                                            [class.pending]="getPendiente(registro) > 0"
+                                            [class.complete]="getPendiente(registro) === 0">
                                             {{getPendiente(registro)}}
                                         </span>
                                     </td>
-                                    <td class="text-center align-middle">
+                                    <td class="dispatch-quantity-column">
                                         <input *ngIf="getPendiente(registro) > 0" type="number"
-                                            class="form-control form-control-sm text-center"
-                                            style="width: 80px; margin: 0 auto;"
+                                            class="form-control dispatch-quantity-input"
                                             [disabled]="!registro.seleccionado"
-                                            [value]="registro.cantidadDespachar"
-                                            [max]="getPendiente(registro)"
-                                            min="1"
-                                            (change)="actualizarCantidadDespacho(i, $event)">
-                                        <span *ngIf="getPendiente(registro) === 0" class="text-success">
+                                            [value]="registro.cantidadDespachar" [max]="getPendiente(registro)"
+                                            min="1" (change)="actualizarCantidadDespacho(i, $event)">
+                                        <span *ngIf="getPendiente(registro) === 0" class="dispatch-complete-label">
                                             <i class="fas fa-check-circle"></i> Completo
                                         </span>
                                     </td>
@@ -107,14 +141,20 @@
                         </table>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button (click)="cerrarModalDespacho()" type="button" class="btn btn-secondary">
-                        <i class="fas fa-times mr-1"></i> Cancelar
-                    </button>
-                    <button (click)="confirmarDespacho()" type="button" class="btn btn-info"
-                        [disabled]="!hayItemsParaDespachar()">
-                        <i class="fas fa-truck mr-1"></i> Registrar Despacho
-                    </button>
+                <div class="modal-footer dispatch-footer">
+                    <div class="dispatch-footer-note">
+                        <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                        Las cantidades no pueden superar las unidades pendientes.
+                    </div>
+                    <div class="dispatch-actions">
+                        <button (click)="cerrarModalDespacho()" type="button" class="dispatch-cancel">
+                            Cancelar
+                        </button>
+                        <button (click)="confirmarDespacho()" type="button" class="dispatch-confirm"
+                            [disabled]="!hayItemsParaDespachar()">
+                            <i class="fas fa-truck" aria-hidden="true"></i> Registrar despacho
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -199,8 +239,8 @@
             <div class="col-sm-6">
                 <h1>{{title}}</h1>
                 <br>
-                <a [routerLink]="['/notas-credito/create']" class="btn bg-gradient-success">
-                    <i class="fas fa-plus-circle"></i>
+                <a [routerLink]="['/notas-credito/create']" class="btn page-action-button primary-action">
+                    <i class="fas fa-plus"></i>
                     Nuevo
                 </a>
             </div>
@@ -245,10 +285,10 @@
                     </div>
                 </div>
                 <div class="col-lg-4 filter-actions">
-                    <button type="submit" class="btn btn-info filter-button">
+                    <button type="submit" class="btn filter-button search-button">
                         <i class="fas fa-search"></i><span>Buscar</span>
                     </button>
-                    <button type="button" class="btn btn-light filter-button clear-button" (click)="limpiar()">
+                    <button type="button" class="btn filter-button clear-button" (click)="limpiar()">
                         <i class="fas fa-undo-alt"></i><span>Restablecer</span>
                     </button>
                 </div>
@@ -257,13 +297,13 @@
     </form>
 </div>
 
-<div class="card">
-    <div class="card-header">
+<div class="card listing-card">
+    <div class="card-header listing-card-header">
         Listado de Notas de Cr&eacute;dito Creadas
     </div>
     <div class="card-body table-responsive">
 
-        <div class="row mb-2 align-items-center">
+        <div class="row mb-2 align-items-center table-controls-row">
             <div class="col-sm-4">
                 <div class="d-inline-flex align-items-center">
                     <label class="mb-0 mr-2">Mostrar</label>
@@ -282,11 +322,16 @@
                 </span>
             </div>
             <div class="col-sm-4">
-                <div class="d-inline-flex align-items-center float-right">
+                <div class="d-inline-flex align-items-center float-right search-control">
                     <label class="mb-0 mr-2">B&uacute;squeda:</label>
-                    <input type="text" class="form-control form-control-sm" [value]="filtro"
-                        (input)="onBuscar($event.target.value)"
-                        placeholder="Cliente, NIT, usuario, referencia o estado">
+                    <div class="input-group input-group-sm search-input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        </div>
+                        <input type="text" class="form-control" [value]="filtro"
+                            (input)="onBuscar($event.target.value)"
+                            placeholder="Cliente, NIT, usuario, referencia o estado">
+                    </div>
                 </div>
             </div>
         </div>
@@ -295,13 +340,12 @@
             <div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div>
         </div>
 
-        <div *ngIf="!cargando && notasCredito.length === 0" class="alert alert-info alert-dismissible">
-            <h5>
-                <i class="icon fas fa-info"></i>
-                Atención!
-            </h5>
-
-            No existe ninguna nota de cr&eacute;dito registrada en la base de datos!
+        <div *ngIf="!cargando && notasCredito.length === 0" class="empty-state">
+            <span class="empty-state-icon"><i class="far fa-file-alt"></i></span>
+            <div>
+                <h5>No se encontraron notas de cr&eacute;dito</h5>
+                <p>Prueba con otro rango de fechas o modifica el criterio de b&uacute;squeda.</p>
+            </div>
         </div>
 
         <table class="table table-hover table-striped table-bordered table-sm mt-0 notas-table"
@@ -333,9 +377,9 @@
                         <small class="cliente-nit">NIT: {{nota.nitCliente || 'C/F'}}</small>
                     </td>
                     <td class="col-origen">
-                        <span class="badge"
-                            [ngClass]="{'badge-warning': (nota.tipoDocumentoOrigen || 'FACTURA') === 'FACTURA',
-                                        'badge-primary': nota.tipoDocumentoOrigen === 'PROFORMA'}">
+                        <span class="document-badge"
+                            [ngClass]="{'document-invoice': (nota.tipoDocumentoOrigen || 'FACTURA') === 'FACTURA',
+                                        'document-proforma': nota.tipoDocumentoOrigen === 'PROFORMA'}">
                             {{nota.tipoDocumentoOrigen || 'FACTURA'}}
                         </span>
                     </td>
@@ -358,10 +402,10 @@
                     </td>
                     <td class="col-fecha-entrega text-nowrap">{{nota.fechaEntregaEstimada | date: 'dd/MM/yyyy'}}</td>
                     <td class="col-estado">
-                        <span class="badge"
-                            [ngClass]="{'badge-warning': nota.estado === 'ENTREGA_PENDIENTE',
-                                        'badge-danger': nota.estado === 'ANULADO',
-                                        'badge-info': nota.estado === 'ENTREGADO'}"
+                        <span class="status-badge"
+                            [ngClass]="{'status-pending': nota.estado === 'ENTREGA_PENDIENTE',
+                                        'status-cancelled': nota.estado === 'ANULADO',
+                                        'status-delivered': nota.estado === 'ENTREGADO'}"
 
                             [ngSwitch]="nota.estado">
 
@@ -373,24 +417,27 @@
                     <td class="col-opciones" *ngIf="puedeOperar">
                         <div class="action-buttons">
 
-                        <button class="btn bg-gradient-success" name="detail" type="button" placement="top" ngbTooltip="Detalle"
+                        <button class="btn btn-sm table-action action-detail" name="detail" type="button"
+                            appTooltip="Ver detalle de la nota de cr&eacute;dito" aria-label="Ver detalle de la nota de cr&eacute;dito"
                             (click)="abrirDetalle(nota)">
-                            <i class="fas fa-asterisk"></i>
+                            <i class="fas fa-eye"></i>
                         </button>
 
-                        <button class="btn bg-gradient-info" name="despachar" type="button" placement="top" ngbTooltip="Despachar Productos"
+                        <button class="btn btn-sm table-action action-dispatch" name="despachar" type="button"
+                            appTooltip="Despachar productos" aria-label="Despachar productos"
                             (click)="despacharProductos(nota)"
                             [disabled]="nota.estado === 'ANULADO' || nota.estado === 'ENTREGADO'">
                             <i class="fas fa-truck"></i>
                         </button>
 
-                        <button class="btn bg-gradient-warning" name="print" type="button" placement="top" ngbTooltip="Imprimir Comprobante"
+                        <button class="btn btn-sm table-action action-print" name="print" type="button"
+                            appTooltip="Imprimir comprobante" aria-label="Imprimir comprobante"
                             (click)="printNote(nota)" [disabled]="nota.estado === 'ANULADO'">
                             <i class="fas fa-print"></i>
                         </button>
 
-                        <!-- Aquí va el botón de anular -->
-                        <button class="btn bg-gradient-danger" name="cancel" type="button" placement="top" ngbTooltip="Anular Nota"
+                        <button class="btn btn-sm table-action action-cancel" name="cancel" type="button"
+                            appTooltip="Anular nota de cr&eacute;dito" aria-label="Anular nota de cr&eacute;dito"
                             (click)="cancel(nota)" *ngIf="auth.hasRole('ROLE_ADMIN')"
                             [disabled]="nota.estado === 'ANULADO'">
                             <i class="fas fa-ban"></i>
@@ -402,16 +449,19 @@
 
         </table>
 
-        <nav *ngIf="!cargando && totalPaginas > 1" aria-label="Paginaci&oacute;n de notas de cr&eacute;dito">
-            <ul class="pagination justify-content-center mt-3">
+        <nav class="document-pagination" *ngIf="!cargando && totalPaginas > 1"
+            aria-label="Paginaci&oacute;n de notas de cr&eacute;dito">
+            <ul class="pagination justify-content-center mt-3 mb-0">
                 <li class="page-item" [ngClass]="{'disabled': isFirst}">
-                    <a class="page-link" href="javascript:void(0)" (click)="irPrimeraPagina()">
-                        <i class="fas fa-angle-double-left"></i>
+                    <a class="page-link" href="javascript:void(0)" (click)="irPrimeraPagina()"
+                        aria-label="Primera p&aacute;gina">
+                        <i class="fas fa-angle-double-left" aria-hidden="true"></i>
                     </a>
                 </li>
                 <li class="page-item" [ngClass]="{'disabled': isFirst}">
-                    <a class="page-link" href="javascript:void(0)" (click)="irPaginaAnterior()">
-                        <i class="fas fa-angle-left"></i>
+                    <a class="page-link" href="javascript:void(0)" (click)="irPaginaAnterior()"
+                        aria-label="P&aacute;gina anterior">
+                        <i class="fas fa-angle-left" aria-hidden="true"></i>
                     </a>
                 </li>
                 <li class="page-item" *ngFor="let pagina of paginasVisibles"
@@ -419,13 +469,15 @@
                     <a class="page-link" href="javascript:void(0)" (click)="irAPagina(pagina)">{{pagina + 1}}</a>
                 </li>
                 <li class="page-item" [ngClass]="{'disabled': isLast}">
-                    <a class="page-link" href="javascript:void(0)" (click)="irPaginaSiguiente()">
-                        <i class="fas fa-angle-right"></i>
+                    <a class="page-link" href="javascript:void(0)" (click)="irPaginaSiguiente()"
+                        aria-label="P&aacute;gina siguiente">
+                        <i class="fas fa-angle-right" aria-hidden="true"></i>
                     </a>
                 </li>
                 <li class="page-item" [ngClass]="{'disabled': isLast}">
-                    <a class="page-link" href="javascript:void(0)" (click)="irUltimaPagina()">
-                        <i class="fas fa-angle-double-right"></i>
+                    <a class="page-link" href="javascript:void(0)" (click)="irUltimaPagina()"
+                        aria-label="&Uacute;ltima p&aacute;gina">
+                        <i class="fas fa-angle-double-right" aria-hidden="true"></i>
                     </a>
                 </li>
             </ul>

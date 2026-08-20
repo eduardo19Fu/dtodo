@@ -109,11 +109,13 @@
                         <span class="cell-ellipsis" [title]="producto.marcaProducto || ''">{{producto.marcaProducto || 'Sin marca'}}</span>
                     </td>
                     <td class="col-estado">
-                        <span class="badge"
-                            [ngClass]="{'badge-primary': producto.estado === 'ACTIVO',
-                                        'badge-dark': producto.estado === 'INACTIVO',
-                                        'badge-warning': producto.estado === 'POR AGOTARSE',
-                                        'badge-danger': producto.estado === 'AGOTADO'}">
+                        <span class="listing-status-pill"
+                            [ngClass]="{'listing-status-success': producto.estado === 'ACTIVO',
+                                        'listing-status-warning': producto.estado === 'POR AGOTARSE',
+                                        'listing-status-danger': producto.estado === 'AGOTADO',
+                                        'listing-status-neutral': producto.estado !== 'ACTIVO'
+                                            && producto.estado !== 'POR AGOTARSE'
+                                            && producto.estado !== 'AGOTADO'}">
                             {{producto.estado}}
                         </span>
                     </td>

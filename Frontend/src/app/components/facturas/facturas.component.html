@@ -139,8 +139,12 @@
           <td class="col-usuario"><span class="cell-ellipsis" [title]="factura.usuario">{{factura.usuario}}</span></td>
           <td class="col-total text-nowrap">{{factura.total | currency: 'Q' : 'symbol'}}</td>
           <td class="col-estado">
-            <span class="badge" [ngClass]="{'badge-success': factura.idEstado === 3,
-                                             'badge-danger': factura.idEstado === 4}">{{factura.estado}}</span>
+            <span class="listing-status-pill"
+                  [ngClass]="{'listing-status-success': factura.idEstado === 3,
+                              'listing-status-danger': factura.idEstado === 4,
+                              'listing-status-neutral': factura.idEstado !== 3 && factura.idEstado !== 4}">
+              {{factura.estado}}
+            </span>
           </td>
           <td class="col-opciones" *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR')">
             <div class="action-buttons">

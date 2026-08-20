@@ -81,10 +81,13 @@
           </td>
           <td class="col-usuario"><span class="cell-ellipsis" [title]="correlativo.usuario || ''">{{correlativo.usuario || 'Sin usuario'}}</span></td>
           <td class="col-estado">
-            <span class="badge"
-                  [ngClass]="{'badge-primary': correlativo.estado === 'ACTIVO',
-                              'badge-danger': correlativo.estado === 'ANULADO',
-                              'badge-secondary': correlativo.estado === 'INACTIVO'}">
+            <span class="listing-status-pill"
+                  [ngClass]="{'listing-status-success': correlativo.estado === 'ACTIVO',
+                              'listing-status-danger': correlativo.estado === 'ANULADO',
+                              'listing-status-info': correlativo.estado === 'FINALIZADO',
+                              'listing-status-neutral': correlativo.estado !== 'ACTIVO'
+                                  && correlativo.estado !== 'ANULADO'
+                                  && correlativo.estado !== 'FINALIZADO'}">
               {{correlativo.estado}}
             </span>
           </td>

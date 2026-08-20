@@ -267,6 +267,10 @@ export class NotasCreditoComponent implements OnInit, OnDestroy {
     return this.itemsDespacho.some(i => i.seleccionado && i.cantidadDespachar > 0);
   }
 
+  get cantidadItemsDespachoSeleccionados(): number {
+    return this.itemsDespacho.filter(i => i.seleccionado).length;
+  }
+
   getPendiente(registro): number {
     return registro.item.cantidad - registro.despachado;
   }

@@ -141,8 +141,13 @@
           <td class="col-usuario"><span class="cell-ellipsis" [title]="proforma.usuario">{{proforma.usuario}}</span></td>
           <td class="col-total text-nowrap">{{proforma.total | currency: 'Q' : 'symbol'}}</td>
           <td class="col-estado">
-            <span class="badge" [ngClass]="{'badge-success': proforma.idEstado === 3,
-                                             'badge-danger': proforma.idEstado === 4}">{{proforma.estado}}</span>
+            <span class="listing-status-pill"
+                  [ngClass]="{'listing-status-success': proforma.estado === 'ACTIVO',
+                              'listing-status-danger': proforma.estado === 'ANULADO',
+                              'listing-status-neutral': proforma.estado !== 'ACTIVO'
+                                  && proforma.estado !== 'ANULADO'}">
+              {{proforma.estado}}
+            </span>
           </td>
           <td class="col-opciones"
               *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR') || auth.hasRole('ROLE_INVENTARIO')">

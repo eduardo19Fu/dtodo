@@ -150,9 +150,15 @@
                     <td class="col-cantidad">{{movimiento.cantidad}}</td>
                     <td class="col-creador"><span class="cell-ellipsis" [title]="movimiento.usuarioNombre">{{movimiento.usuarioNombre}}</span></td>
                     <td class="col-tipo">
-                        <span class="badge"
-                            [ngClass]="{'badge-warning': movimiento.tipoMovimiento === 'ENTRADA', 'badge-danger' : movimiento.tipoMovimiento === 'SALIDA',
-                                        'badge-dark':movimiento.tipoMovimiento === 'ANULACION FACTURA', 'badge-info': movimiento.tipoMovimiento === 'VENTA'}">
+                        <span class="listing-status-pill"
+                            [ngClass]="{'listing-status-success': movimiento.tipoMovimiento === 'ENTRADA',
+                                        'listing-status-warning': movimiento.tipoMovimiento === 'SALIDA',
+                                        'listing-status-danger': movimiento.tipoMovimiento === 'ANULACION FACTURA',
+                                        'listing-status-info': movimiento.tipoMovimiento === 'VENTA',
+                                        'listing-status-neutral': movimiento.tipoMovimiento !== 'ENTRADA'
+                                            && movimiento.tipoMovimiento !== 'SALIDA'
+                                            && movimiento.tipoMovimiento !== 'ANULACION FACTURA'
+                                            && movimiento.tipoMovimiento !== 'VENTA'}">
                             {{movimiento.tipoMovimiento}}
                         </span>
                     </td>

@@ -218,3 +218,49 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   cursor: not-allowed;
   opacity: 1;
 }
+
+/* Etiquetas semánticas compartidas para estados y tipos de registro. */
+.listing-status-pill {
+  align-items: center;
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 0.75rem;
+  font-weight: 700;
+  justify-content: center;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  max-width: 100%;
+  padding: 0.42rem 0.7rem;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.listing-status-success {
+  background: #e5f6ed;
+  color: #147a4b;
+}
+
+.listing-status-warning {
+  background: #fff3d6;
+  color: #9a6500;
+}
+
+.listing-status-danger {
+  background: #fde9e9;
+  color: #bd3434;
+}
+
+.listing-status-info {
+  background: #e4f5f7;
+  color: #087785;
+}
+
+.listing-status-primary {
+  background: #e8f1fd;
+  color: #1559ad;
+}
+
+.listing-status-neutral {
+  background: #edf1f5;
+  color: #58697e;
+}
