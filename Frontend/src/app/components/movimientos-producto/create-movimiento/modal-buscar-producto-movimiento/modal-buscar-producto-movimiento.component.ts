@@ -11,8 +11,7 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-modal-buscar-producto-movimiento',
   templateUrl: './modal-buscar-producto-movimiento.component.html',
-  styles: [
-  ]
+  styleUrls: ['./modal-buscar-producto-movimiento.component.css']
 })
 export class ModalBuscarProductoMovimientoComponent implements OnInit, OnDestroy {
 
@@ -40,7 +39,7 @@ export class ModalBuscarProductoMovimientoComponent implements OnInit, OnDestroy
   constructor(
     private productoService: ProductoService
   ) {
-    this.title = 'Búscar Producto';
+    this.title = 'Buscar producto';
   }
 
   ngOnInit(): void {

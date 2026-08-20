@@ -1,9 +1,123 @@
-.modal-header{
-    background-color: cadetblue;
-    color: #fff;
+.movement-product-grid {
+  grid-template-columns: minmax(260px, 0.9fr) minmax(320px, 1.7fr) minmax(170px, 0.55fr);
 }
 
-#button-x:hover{
-    background-color: red;
-    color: #fff;
+.movement-details-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.product-search-control {
+  display: grid;
+  gap: 9px;
+  grid-template-columns: minmax(0, 1fr) 46px;
+}
+
+.search-product-button {
+  align-items: center;
+  background: linear-gradient(135deg, var(--blue-700), var(--blue-500));
+  border: 0;
+  border-radius: 9px;
+  box-shadow: 0 6px 14px rgba(21, 87, 176, 0.23);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  font-size: 14px;
+  height: 46px;
+  justify-content: center;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.search-product-button:hover,
+.search-product-button:focus {
+  box-shadow: 0 9px 18px rgba(21, 87, 176, 0.32);
+  color: #fff;
+  outline: 0;
+  transform: translateY(-1px);
+}
+
+.field-group .form-control:disabled {
+  background-color: #f2f6fb;
+  color: #40506b;
+  cursor: default;
+  opacity: 1;
+}
+
+.stock-field {
+  background: var(--blue-50);
+  border: 1px solid var(--blue-100);
+  border-radius: 12px;
+  margin: -10px 0;
+  padding: 10px 12px;
+}
+
+.stock-field .form-control:disabled,
+.stock-field .form-control {
+  background: #fff;
+  color: var(--blue-800);
+  font-weight: 700;
+}
+
+.movement-help {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 24px;
+}
+
+.movement-help > div {
+  align-items: center;
+  background: #f8fafe;
+  border: 1px solid #e8eef7;
+  border-radius: 10px;
+  display: flex;
+  gap: 10px;
+  padding: 11px 13px;
+}
+
+.movement-help-icon {
+  align-items: center;
+  border-radius: 8px;
+  display: flex;
+  flex: 0 0 30px;
+  font-size: 11px;
+  height: 30px;
+  justify-content: center;
+}
+
+.entry-icon {
+  background: #e2f5ed;
+  color: #198754;
+}
+
+.exit-icon {
+  background: #fff0e8;
+  color: #d26332;
+}
+
+.movement-help p {
+  color: #65728a;
+  font-size: 11px;
+  margin: 0;
+}
+
+.movement-help strong {
+  color: #2b3952;
+}
+
+@media (max-width: 1199px) {
+  .movement-product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .stock-field {
+    margin: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .movement-product-grid,
+  .movement-details-grid,
+  .movement-help {
+    grid-template-columns: 1fr;
+  }
 }

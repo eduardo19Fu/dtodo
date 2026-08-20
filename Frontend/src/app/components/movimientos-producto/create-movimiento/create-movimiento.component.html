@@ -1,182 +1,145 @@
-<!-- MODAL PRA BUSCAR PRODUCTO -->
-<app-modal-buscar-producto-movimiento (producto)="loadProducto($event)"></app-modal-buscar-producto-movimiento>
+<app-modal-buscar-producto-movimiento
+  (producto)="loadProducto($event)">
+</app-modal-buscar-producto-movimiento>
 
-<div class="container">
-    <!-- Content Header (Page header) -->
-    <div class="content-header">
-        <div class="container-fluid">
-            <div class="row mb-2">
-                <div class="col-sm-6">
-                    <h1 class="m-0 text-dark">{{title}}</h1>
-                </div><!-- /.col -->
-            </div><!-- /.row -->
-        </div><!-- /.container-fluid -->
+<div class="product-form-page">
+  <header class="page-heading">
+    <div>
+      <span class="page-eyebrow">Productos e inventario</span>
+      <h1>{{ title }}</h1>
+      <p>Registra entradas y salidas para mantener las existencias actualizadas.</p>
     </div>
-    <!-- /.content-header -->
+    <div class="heading-icon" aria-hidden="true">
+      <i class="fas fa-exchange-alt"></i>
+    </div>
+  </header>
 
-    <div class="col-md-12">
-        <div class="card card-secondary">
-            <div class="card-header">
-                <h3 class="card-title">Completar formulario</h3>
-            </div>
+  <form #formMovimiento="ngForm" id="form-movimiento" class="product-card">
+    <div class="card-hero">
+      <div class="hero-icon" aria-hidden="true">
+        <i class="fas fa-warehouse"></i>
+      </div>
+      <div>
+        <h2>Nuevo movimiento de inventario</h2>
+        <p>Los campos marcados con <span aria-hidden="true">*</span> son obligatorios.</p>
+      </div>
+      <span class="status-pill">
+        <i class="fas fa-circle" aria-hidden="true"></i>
+        Nuevo registro
+      </span>
+    </div>
 
-            <div class="card-body">
-                <form #formMovimiento="ngForm" id="form-movimiento">
-                    <div class="row">
-                        <div class="form-group col-sm-3">
-                            <label for="cod-producto" style="display: block;">Código</label>
-                            <input type="text" class="form-control" name="cod-producto" id="cod-producto"
-                                [(ngModel)]="producto.codProducto" (keyup.enter)="buscarProducto()"
-                                style="width: 70%; display: inline; margin-right: 10px;" required #codigo="ngModel">
-
-                            <button type="button" class="btn bg-gradient-fuchsia" data-toggle="modal"
-                                data-target="#modal-buscar-producto">
-                                <i class="fas fa-search"></i>
-                            </button>
-
-
-                        </div>
-
-                        <div class="form-group col-lg-7">
-                            <label for="nombre">Producto</label>
-                            <input type="text" class="form-control" name="nombre" id="nombre"
-                                value="{{producto.nombre ? producto.nombre : ''}}" required
-                                [disabled]="producto.nombre">
-                        </div>
-
-                        <div class="form-group col-sm-2">
-                            <label for="stock">Disponible</label>
-                            <input type="number" class="form-control" name="stock" id="stock"
-                                value="{{producto.stock ? producto.stock : ''}}" required [disabled]="producto.stock">
-
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="form-group col">
-                            <label for="cantidad">Cantidad</label>
-                            <input type="number" class="form-control" name="cantidad" id="cantidad" required
-                                #cantidad="ngModel" [(ngModel)]="movimientoProducto.cantidad">
-
-                            <div *ngIf="cantidad.invalid && (cantidad.touched || cantidad.dirty)">
-                                <span class="requerido">
-                                    La cantidad no puede estar vacía.
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="form-group col">
-                            <label for="tipo-movimiento">Tipo Movimiento</label>
-                            <select name="tipo-movimiento" class="form-control" style="width: 100%;" [(ngModel)]="movimientoProducto.tipoMovimiento" 
-                                required #tipo="ngModel">
-
-                                <option selected="selected" [ngValue]="undefined">Elija tipo de movimiento</option>
-                                <option *ngFor="let movimiento of movimientos">
-                                    {{movimiento}}
-                                </option>
-                            </select>
-
-                            <div *ngIf="tipo.invalid && (tipo.touched || tipo.dirty)">
-                                <span class="requerido">
-                                    Elija un movimiento antes de continuar.
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    <br>
-                    <button type="submit" class="btn btn-primary" style="float: right; width: 100%;"
-                        [disabled]="!formMovimiento.form.valid" (click)="create()">
-                        Ingresar
-                    </button>
-                </form>
-            </div>
+    <div class="form-content">
+      <section class="form-section" aria-labelledby="product-selection-title">
+        <div class="section-heading">
+          <span class="section-number">01</span>
+          <div>
+            <h3 id="product-selection-title">Selección del producto</h3>
+            <p>Busca por código o selecciona un producto desde el catálogo.</p>
+          </div>
         </div>
+
+        <div class="form-grid movement-product-grid">
+          <div class="field-group">
+            <label for="cod-producto">Código <span class="required-mark">*</span></label>
+            <div class="product-search-control">
+              <div class="control-with-icon">
+                <i class="fas fa-barcode" aria-hidden="true"></i>
+                <input type="text" class="form-control" name="cod-producto" id="cod-producto"
+                  [(ngModel)]="producto.codProducto" (keyup.enter)="buscarProducto()" required #codigo="ngModel"
+                  placeholder="Código del producto" autocomplete="off">
+              </div>
+              <button type="button" class="search-product-button" data-toggle="modal"
+                data-target="#modal-buscar-producto" aria-label="Buscar producto en el catálogo"
+                title="Buscar producto">
+                <i class="fas fa-search" aria-hidden="true"></i>
+              </button>
+            </div>
+            <small>Presiona Enter o usa el botón para buscar.</small>
+          </div>
+
+          <div class="field-group">
+            <label for="nombre">Producto seleccionado</label>
+            <div class="control-with-icon">
+              <i class="fas fa-box" aria-hidden="true"></i>
+              <input type="text" class="form-control" name="nombre" id="nombre"
+                value="{{ producto.nombre ? producto.nombre : '' }}" required [disabled]="producto.nombre"
+                placeholder="Selecciona un producto para continuar">
+            </div>
+          </div>
+
+          <div class="field-group stock-field">
+            <label for="stock">Disponible</label>
+            <div class="control-with-icon">
+              <i class="fas fa-cubes" aria-hidden="true"></i>
+              <input type="number" class="form-control" name="stock" id="stock"
+                value="{{ producto.stock ? producto.stock : '' }}" required [disabled]="producto.stock"
+                placeholder="0">
+            </div>
+            <small>Existencias actuales.</small>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section last-section" aria-labelledby="movement-detail-title">
+        <div class="section-heading">
+          <span class="section-number">02</span>
+          <div>
+            <h3 id="movement-detail-title">Detalle del movimiento</h3>
+            <p>Indica la cantidad y el tipo de operación que deseas registrar.</p>
+          </div>
+        </div>
+
+        <div class="form-grid movement-details-grid">
+          <div class="field-group">
+            <label for="cantidad">Cantidad <span class="required-mark">*</span></label>
+            <div class="control-with-icon">
+              <i class="fas fa-sort-numeric-up" aria-hidden="true"></i>
+              <input type="number" class="form-control" name="cantidad" id="cantidad" required
+                #cantidad="ngModel" [(ngModel)]="movimientoProducto.cantidad" placeholder="Cantidad a registrar">
+            </div>
+            <div class="validation-message" *ngIf="cantidad.invalid && (cantidad.touched || cantidad.dirty)">
+              <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+              <span>La cantidad no puede estar vacía.</span>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="tipo-movimiento">Tipo de movimiento <span class="required-mark">*</span></label>
+            <div class="select-control">
+              <i class="fas fa-random" aria-hidden="true"></i>
+              <select id="tipo-movimiento" name="tipo-movimiento" class="form-control"
+                [(ngModel)]="movimientoProducto.tipoMovimiento" required #tipo="ngModel">
+                <option selected="selected" [ngValue]="undefined">Seleccionar movimiento</option>
+                <option *ngFor="let movimiento of movimientos">{{ movimiento }}</option>
+              </select>
+            </div>
+            <div class="validation-message" *ngIf="tipo.invalid && (tipo.touched || tipo.dirty)">
+              <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+              <span>Elige un movimiento antes de continuar.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="movement-help">
+          <div>
+            <span class="movement-help-icon entry-icon"><i class="fas fa-arrow-down" aria-hidden="true"></i></span>
+            <p><strong>Entrada</strong> incrementa las existencias.</p>
+          </div>
+          <div>
+            <span class="movement-help-icon exit-icon"><i class="fas fa-arrow-up" aria-hidden="true"></i></span>
+            <p><strong>Salida</strong> descuenta las existencias disponibles.</p>
+          </div>
+        </div>
+      </section>
     </div>
+
+    <footer class="form-actions">
+      <p><i class="fas fa-shield-alt" aria-hidden="true"></i> El inventario se actualizará al confirmar.</p>
+      <button type="submit" class="primary-action" [disabled]="!formMovimiento.form.valid" (click)="create()">
+        <i class="fas fa-check" aria-hidden="true"></i>
+        Registrar movimiento
+      </button>
+    </footer>
+  </form>
 </div>
-
-<!-- <div class="modal fade" id="modal-movimiento">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title">{{title}}</h4>
-                <button id="button-x" type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form #formMovimiento="ngForm" id="form-movimiento">
-                    <div class="row">
-                        <div class="form-group col-sm-3">
-                            <label for="cod-producto" style="display: block;">Código</label>
-                            <input type="text" class="form-control" name="cod-producto" id="cod-producto"
-                                [(ngModel)]="producto.codProducto"
-                                style="width: 70%; display: inline; margin-right: 10px;" required #codigo="ngModel">
-
-                            <button type="button" class="btn bg-gradient-fuchsia" data-toggle="modal"
-                                data-target="modal-buscar-producto">
-                                <i class="fas fa-search"></i>
-                            </button>
-
-
-                        </div>
-
-                        <div class="form-group col-lg-7">
-                            <label for="nombre">Producto</label>
-                            <input type="text" class="form-control" name="nombre" id="nombre"
-                                value="{{producto.nombre ? producto.nombre : ''}}" required
-                                [disabled]="producto.nombre">
-                        </div>
-
-                        <div class="form-group col-sm-2">
-                            <label for="stock">Disponible</label>
-                            <input type="number" class="form-control" name="stock" id="stock"
-                                value="{{producto.stock ? producto.stock : ''}}" required [disabled]="producto.stock">
-
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="form-group col">
-                            <label for="cantidad">Cantidad</label>
-                            <input type="number" class="form-control" name="cantidad" id="cantidad" required
-                                #cantidad="ngModel" [(ngModel)]="movimientoProducto.cantidad">
-
-                            <div *ngIf="cantidad.invalid && (cantidad.touched || cantidad.dirty)">
-                                <span class="requerido">
-                                    La cantidad no puede estar vacía.
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="form-group col">
-                            <label for="tipo-movimiento">Tipo Movimiento</label>
-                            <select name="tipo-movimiento" class="form-control" style="width: 100%;"
-                                [(ngModel)]="movimientoProducto.tipoMovimiento" required #tipo="ngModel">
-
-                                <option selected="selected" value="ENTRADA">Entrada</option>
-                                <option value="SALIDA">Salida</option>
-                            </select>
-
-                            <div *ngIf="tipo.invalid && (tipo.touched || tipo.dirty)">
-                                <span class="requerido">
-                                    Elija un movimiento antes de continuar.
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    <br>
-                    <button type="submit" class="btn btn-primary" style="float: right; width: 100%;"
-                        [disabled]="!formMovimiento.form.valid" (click)="create()">
-                        Ingresar
-                    </button>
-                </form>
-            </div>
-            <div class="modal-footer justify-content-between">
-                <button type="button" class="btn btn-default" id="cerrar-modal" data-dismiss="modal"
-                    style="display: right;">Cerrar</button>
-            </div>
-        </div>
-        
-    </div>
-    
-</div> -->
