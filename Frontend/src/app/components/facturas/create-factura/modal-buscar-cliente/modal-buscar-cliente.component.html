@@ -1,55 +1,148 @@
-<div class="modal fade" id="modal-buscar-cliente">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header header-modal" style="background-color: rebeccapurple;">
-                <h4 class="modal-title" style="color: #ffffff">{{title}}</h4>
-                <button type="button" id="button-2x" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-
-            <div class="card-body">
-                <div class="modal-body table-responsive">
-                    <table id="clientes"
-                        class="table table-hover table-striped table-bordered dataTable dtr-inline table-sm" role="grid"
-                        *ngIf="clientes?.length > 0">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Nombre</th>
-                                <th>NIT</th>
-                                <th>Dirección</th>
-                                <th>Opciones</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            <tr *ngFor="let cliente of clientes">
-                                <td>{{cliente.idCliente}}</td>
-                                <td>{{cliente.nombre}}</td>
-                                <td>{{cliente.nit}}</td>
-                                <td>{{cliente.direccion}}</td>
-                                <td class="center-options">
-                                    <button class="btn bg-gradient-cyan" (click)="chooseCliente(cliente)">
-                                        Elegir
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-
-                        <tfoot>
-                            <tr>
-                                <th>ID</th>
-                                <th>Nombre</th>
-                                <th>NIT</th>
-                                <th>Dirección</th>
-                                <th>Opciones</th>
-                            </tr>
-                        </tfoot>
-
-                    </table>
-                </div>
-            </div>
+<div class="modal fade product-picker-modal client-picker-modal" id="modal-buscar-cliente" tabindex="-1" role="dialog"
+  aria-labelledby="client-picker-title" aria-hidden="true">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+      <header class="modal-header">
+        <div class="modal-heading-icon" aria-hidden="true"><i class="fas fa-users"></i></div>
+        <div>
+          <span class="modal-eyebrow">Directorio de clientes</span>
+          <h4 class="modal-title" id="client-picker-title">{{ title }}</h4>
+          <p>Localiza al cliente y carga sus datos en el documento actual.</p>
         </div>
+        <button type="button" id="button-2x" class="close-modal" data-dismiss="modal" aria-label="Cerrar">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+      </header>
+
+      <div class="modal-body">
+        <section class="search-panel" aria-label="Controles de búsqueda">
+          <div class="search-copy">
+            <span class="search-label">Buscar cliente</span>
+            <p>Busca por nombre, NIT, teléfono o dirección.</p>
+          </div>
+          <div class="search-control">
+            <i class="fas fa-search" aria-hidden="true"></i>
+            <input type="search" id="client-search" class="form-control" [value]="filtro"
+              (input)="onBuscar($event.target.value)" placeholder="Escribe para filtrar clientes..."
+              aria-label="Buscar cliente">
+            <span class="search-shortcut" aria-hidden="true">Buscar</span>
+          </div>
+        </section>
+
+        <div class="results-toolbar">
+          <div class="page-size-control">
+            <label for="client-page-size">Mostrar</label>
+            <div class="compact-select">
+              <select id="client-page-size" class="form-control" [ngModel]="pageSize"
+                (ngModelChange)="cambiarPageSize($event)">
+                <option *ngFor="let opt of pageSizeOptions" [ngValue]="opt">{{ opt }}</option>
+              </select>
+              <i class="fas fa-chevron-down" aria-hidden="true"></i>
+            </div>
+            <span>por página</span>
+          </div>
+
+          <div class="results-summary" *ngIf="clientes?.length > 0">
+            <i class="fas fa-users" aria-hidden="true"></i>
+            <span>
+              Mostrando <strong>{{ paginaActual * pageSize + 1 }}–{{ paginaActual * pageSize + clientes.length }}</strong>
+              de <strong>{{ totalElementos }}</strong> clientes
+            </span>
+          </div>
+        </div>
+
+        <div *ngIf="cargando" class="loading-state" role="status">
+          <div class="spinner-border" aria-hidden="true"></div>
+          <strong>Buscando clientes</strong>
+          <span>Estamos consultando el directorio...</span>
+        </div>
+
+        <div *ngIf="!cargando && clientes?.length === 0" class="empty-state">
+          <div class="empty-icon" aria-hidden="true"><i class="fas fa-user-slash"></i></div>
+          <h5>No encontramos clientes</h5>
+          <p>Prueba con otro nombre, NIT, teléfono o dirección.</p>
+        </div>
+
+        <div class="products-table-wrapper" *ngIf="!cargando && clientes?.length > 0">
+          <table class="products-table clients-table">
+            <thead>
+              <tr>
+                <th class="id-column">ID</th>
+                <th>
+                  <button type="button" class="sort-button" (click)="ordenarPor('nombre')">
+                    Cliente <i [class]="iconoOrden('nombre')" aria-hidden="true"></i>
+                  </button>
+                </th>
+                <th>
+                  <button type="button" class="sort-button" (click)="ordenarPor('nit')">
+                    NIT <i [class]="iconoOrden('nit')" aria-hidden="true"></i>
+                  </button>
+                </th>
+                <th>Dirección</th>
+                <th>Teléfono</th>
+                <th class="action-column"><span class="sr-only">Acción</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let cliente of clientes">
+                <td class="id-column"><span class="id-badge">#{{ cliente.idCliente }}</span></td>
+                <td>
+                  <div class="client-name-cell">
+                    <span class="client-avatar" aria-hidden="true">
+                      {{ cliente.nombre ? (cliente.nombre | slice:0:1) : '?' }}
+                    </span>
+                    <strong>{{ cliente.nombre }}</strong>
+                  </div>
+                </td>
+                <td><span class="nit-value">{{ cliente.nit || 'Sin NIT' }}</span></td>
+                <td><span class="address-value">{{ cliente.direccion || 'Sin dirección' }}</span></td>
+                <td>
+                  <span class="phone-value">
+                    <i class="fas fa-phone-alt" aria-hidden="true"></i>
+                    {{ cliente.telefono || 'Sin teléfono' }}
+                  </span>
+                </td>
+                <td class="action-column">
+                  <button type="button" class="choose-product-button" (click)="chooseCliente(cliente)">
+                    Elegir <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <footer class="results-footer" *ngIf="!cargando && totalPaginas > 1">
+          <span>Página <strong>{{ paginaActual + 1 }}</strong> de <strong>{{ totalPaginas }}</strong></span>
+          <nav aria-label="Paginación de clientes">
+            <ul class="pagination">
+              <li class="page-item" [ngClass]="{'disabled': isFirst}">
+                <a class="page-link" (click)="irPrimeraPagina()" href="javascript:void(0)" aria-label="Primera página">
+                  <i class="fas fa-angle-double-left" aria-hidden="true"></i>
+                </a>
+              </li>
+              <li class="page-item" [ngClass]="{'disabled': isFirst}">
+                <a class="page-link" (click)="irPaginaAnterior()" href="javascript:void(0)" aria-label="Página anterior">
+                  <i class="fas fa-angle-left" aria-hidden="true"></i>
+                </a>
+              </li>
+              <li class="page-item" *ngFor="let pagina of paginasVisibles" [ngClass]="{'active': pagina === paginaActual}">
+                <a class="page-link" (click)="irAPagina(pagina)" href="javascript:void(0)">{{ pagina + 1 }}</a>
+              </li>
+              <li class="page-item" [ngClass]="{'disabled': isLast}">
+                <a class="page-link" (click)="irPaginaSiguiente()" href="javascript:void(0)" aria-label="Página siguiente">
+                  <i class="fas fa-angle-right" aria-hidden="true"></i>
+                </a>
+              </li>
+              <li class="page-item" [ngClass]="{'disabled': isLast}">
+                <a class="page-link" (click)="irUltimaPagina()" href="javascript:void(0)" aria-label="Última página">
+                  <i class="fas fa-angle-double-right" aria-hidden="true"></i>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </footer>
+      </div>
     </div>
+  </div>
 </div>

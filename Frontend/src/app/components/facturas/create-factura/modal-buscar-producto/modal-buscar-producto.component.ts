@@ -11,7 +11,8 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-modal-buscar-producto',
   templateUrl: './modal-buscar-producto.component.html',
-  styles: [
+  styleUrls: [
+    '../../../movimientos-producto/create-movimiento/modal-buscar-producto-movimiento/modal-buscar-producto-movimiento.component.css'
   ]
 })
 export class ModalBuscarProductoComponent implements OnInit, OnDestroy {

@@ -6,12 +6,12 @@
             <div class="col-sm-6">
                 <h1>{{title}}</h1>
                 <br>
-                <a [routerLink]="['/productos/create']" class="btn bg-gradient-success" *ngIf="auth.hasRole('ROLE_ADMIN')">
-                    <i class="fas fa-plus-circle"></i>
+                <a [routerLink]="['/productos/create']" class="btn listing-page-action listing-primary-action" *ngIf="auth.hasRole('ROLE_ADMIN')">
+                    <i class="fas fa-plus"></i>
                     Nuevo
                 </a>
                 <button type="button"
-                        class="btn bg-gradient-info ml-2"
+                        class="btn listing-page-action listing-secondary-action ml-2"
                         *ngIf="auth.hasRole('ROLE_ADMIN')"
                         [disabled]="exportando"
                         (click)="exportarExcel()">
@@ -28,7 +28,7 @@
     <div class="card-body table-responsive">
 
         <!-- Controles superiores: selector de registros y búsqueda -->
-        <div class="row mb-2 align-items-center">
+        <div class="row mb-2 align-items-center table-controls-row">
             <div class="col-sm-4">
                 <div class="d-inline-flex align-items-center">
                     <label class="mb-0 mr-2">Mostrar</label>
@@ -48,7 +48,7 @@
                 </span>
             </div>
             <div class="col-sm-4">
-                <div class="d-inline-flex align-items-center float-right">
+                <div class="listing-search-control float-right">
                     <label class="mb-0 mr-2">Búsqueda:</label>
                     <input type="text" class="form-control form-control-sm"
                            [value]="filtro"
@@ -119,12 +119,14 @@
                     </td>
                     <td class="col-opciones">
                         <div class="action-buttons">
-                        <button class="btn bg-gradient-success btn-sm" placement="top" ngbTooltip="Detalle del Producto"
+                        <button class="btn btn-sm listing-table-action listing-action-view" type="button"
+                            appTooltip="Ver detalle del producto" aria-label="Ver detalle del producto"
                             (click)="abrirModal(producto)">
-                            <i class="fa fa-asterisk"></i>
+                            <i class="fas fa-eye"></i>
                         </button>
 
-                        <button class="btn bg-gradient-info btn-sm" placement="top" ngbTooltip="Editar Producto"
+                        <button class="btn btn-sm listing-table-action listing-action-edit" type="button"
+                            appTooltip="Editar producto" aria-label="Editar producto"
                             [routerLink]="['/productos/create', producto.idProducto]"
                             *ngIf="auth.hasRole('ROLE_ADMIN')">
                             <i class="fas fa-edit"></i>
@@ -137,8 +139,8 @@
         </table>
 
         <!-- Paginación -->
-        <nav *ngIf="!cargando && totalPaginas > 1" aria-label="Paginación de productos">
-            <ul class="pagination justify-content-center mt-3">
+        <nav class="listing-pagination" *ngIf="!cargando && totalPaginas > 1" aria-label="Paginación de productos">
+            <ul class="pagination justify-content-center mt-3 mb-0">
                 <!-- Primera página -->
                 <li class="page-item" [ngClass]="{'disabled': isFirst}">
                     <a class="page-link" (click)="irPrimeraPagina()" href="javascript:void(0)">

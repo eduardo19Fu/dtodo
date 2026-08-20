@@ -4,8 +4,8 @@
       <div class="col-sm-6">
         <h1>{{title}}</h1>
         <br>
-        <a [routerLink]="['/productos/categorias/create']" class="btn bg-gradient-success">
-          <i class="fas fa-plus-circle"></i> Nuevo
+        <a [routerLink]="['/productos/categorias/create']" class="btn listing-page-action listing-primary-action">
+          <i class="fas fa-plus"></i> Nuevo
         </a>
       </div>
     </div>
@@ -34,7 +34,7 @@
         </span>
       </div>
       <div class="col-sm-4">
-        <div class="d-inline-flex align-items-center float-right search-control">
+        <div class="listing-search-control float-right search-control">
           <label class="mb-0 mr-2">B&uacute;squeda:</label>
           <input type="text" class="form-control form-control-sm" [value]="filtro"
                  (input)="onBuscar($event.target.value)" placeholder="Categoría o usuario creador">
@@ -85,11 +85,13 @@
           <td class="col-creador"><span class="cell-ellipsis" [title]="tipo.usuario || ''">{{tipo.usuario || 'Sin usuario'}}</span></td>
           <td class="col-opciones" *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_INVENTARIO')">
             <div class="action-buttons">
-              <button class="btn bg-gradient-info btn-sm" type="button" placement="top" ngbTooltip="Editar"
+              <button class="btn btn-sm listing-table-action listing-action-edit" type="button"
+                      appTooltip="Editar categoría" aria-label="Editar categoría"
                       [routerLink]="['/productos/categorias/create', tipo.idTipoProducto]">
                 <i class="fas fa-edit"></i>
               </button>
-              <button class="btn bg-gradient-danger btn-sm" type="button" placement="top" ngbTooltip="Eliminar"
+              <button class="btn btn-sm listing-table-action listing-action-delete" type="button"
+                      appTooltip="Eliminar categoría" aria-label="Eliminar categoría"
                       (click)="delete(tipo)">
                 <i class="fas fa-trash-alt"></i>
               </button>
@@ -99,8 +101,8 @@
       </tbody>
     </table>
 
-    <nav *ngIf="!cargando && totalPaginas > 1" aria-label="Paginaci&oacute;n de categor&iacute;as">
-      <ul class="pagination justify-content-center mt-3">
+    <nav class="listing-pagination" *ngIf="!cargando && totalPaginas > 1" aria-label="Paginaci&oacute;n de categor&iacute;as">
+      <ul class="pagination justify-content-center mt-3 mb-0">
         <li class="page-item" [ngClass]="{'disabled': isFirst}"><a class="page-link" href="javascript:void(0)" (click)="irPrimeraPagina()"><i class="fas fa-angle-double-left"></i></a></li>
         <li class="page-item" [ngClass]="{'disabled': isFirst}"><a class="page-link" href="javascript:void(0)" (click)="irPaginaAnterior()"><i class="fas fa-angle-left"></i></a></li>
         <li class="page-item" *ngFor="let pagina of paginasVisibles" [ngClass]="{'active': pagina === paginaActual}"><a class="page-link" href="javascript:void(0)" (click)="irAPagina(pagina)">{{pagina + 1}}</a></li>
