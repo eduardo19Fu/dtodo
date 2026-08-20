@@ -12,8 +12,7 @@ import swal from 'sweetalert2';
 @Component({
   selector: 'app-create-usuario',
   templateUrl: './create-usuario.component.html',
-  styles: [
-  ]
+  styleUrls: ['./create-usuario.component.css']
 })
 export class CreateUsuarioComponent implements OnInit {
 
@@ -22,6 +21,7 @@ export class CreateUsuarioComponent implements OnInit {
   role: Role;
   roles: Role[];
   filas: Role[] = [];
+  roleSeleccionado: number = null;
 
   public usuarioAuxiliar: UsuarioAuxiliar;
 
@@ -47,7 +47,7 @@ export class CreateUsuarioComponent implements OnInit {
       if (id) {
         this.usuarioService.getUsuario(id).subscribe(usuario => {
           this.usuarioAuxiliar = usuario;
-          this.filas = this.usuarioAuxiliar.roles;
+          this.filas = this.usuarioAuxiliar.roles || [];
         });
       }
     });
@@ -65,6 +65,7 @@ export class CreateUsuarioComponent implements OnInit {
   }
 
   update(): void {
+    this.usuarioAuxiliar.roles = this.filas;
     this.usuarioService.update(this.usuarioAuxiliar).subscribe(
       response => {
         this.router.navigate(['/usuarios/index']);
@@ -77,13 +78,19 @@ export class CreateUsuarioComponent implements OnInit {
     this.usuarioService.getRoles().subscribe(roles => this.roles = roles);
   }
 
-  cargarRole(event): void {
-    this.roles.forEach(role => {
-      // tslint:disable-next-line: triple-equals
-      if (role.idRole == event){
-        this.filas.push(role);
-      }
-    });
+  agregarRole(): void {
+    if (!this.roleSeleccionado) {
+      return;
+    }
+
+    const role = this.roles.find(item => item.idRole === +this.roleSeleccionado);
+    const yaAsignado = this.filas.some(item => item.idRole === +this.roleSeleccionado);
+
+    if (role && !yaAsignado) {
+      this.filas.push(role);
+    }
+
+    this.roleSeleccionado = null;
   }
 
   eliminarFila(index: number): void{
