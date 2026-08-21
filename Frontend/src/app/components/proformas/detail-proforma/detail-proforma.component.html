@@ -1,121 +1,161 @@
-<div *ngIf="detailService.modal" class="abrir-modal animacion fadeIn">
-    <div class="modal" tabindex="-1" style="display: block; overflow-y: scroll;">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">{{title}}</h5>
-                    <button (click)="cerrarModal()" id="close" type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true" style="color: white;">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="container">
-                        <h4>Datos Generales</h4>
-                        <div class="row">
-                            <div class="col-sm">
-
-                                <ul *ngIf="proformadto" class="list-group mb-3">
-                                    <li class="list-group-item">
-                                        <strong>REGISTRO: </strong>
-                                        {{proformadto.idProforma}}
-                                    </li>
-                                    <li class="list-group-item">
-                                        <strong>NO. Proforma: </strong>
-                                        {{proformadto.noProforma}}
-                                    </li>
-                                    <li class="list-group-item">
-                                        <strong>TOTAL: </strong>
-                                        {{proformadto.total | currency: "Q" : "symbol"}}
-                                    </li>
-                                    <li class="list-group-item">
-                                        <strong>FECHA EMISIÓN: </strong>
-                                        {{proformadto.fechaEmision | date: 'dd/MM/yyyy - hh:mm'}}
-                                    </li>
-                                    <li class="list-group-item">
-                                        <strong>CLIENTE: </strong>
-                                        {{proformadto.cliente}}
-                                    </li>
-                                    <li class="list-group-item">
-                                        <strong>VENDEDOR: </strong>
-                                        {{proformadto.vendedor || proformadto.usuario}}
-                                    </li>
-                                </ul>
-
-                            </div>
-
-
-                        </div>
-                        <hr>
-                        <div>
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h4 class="mb-0">Detalle de Proforma</h4>
-                                <div class="d-inline-flex align-items-center">
-                                    <label class="mb-0 mr-2">Mostrar</label>
-                                    <select class="form-control form-control-sm page-size-select" [ngModel]="pageSize"
-                                            (ngModelChange)="cambiarPageSize($event)">
-                                        <option *ngFor="let opt of pageSizeOptions" [ngValue]="opt">{{opt}}</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div *ngIf="cargando" class="text-center p-3">
-                                <div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div>
-                            </div>
-                            <table class="table table-hover">
-                                <thead class="thead-dark">
-                                    <tr>
-                                        <th>Fila</th>
-                                        <th>Producto</th>
-                                        <th>Cantidad</th>
-                                        <th>SubTotal</th>
-                                        <th>Descuento</th>
-                                        <th>Descuento Aplicado</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    <tr *ngFor="let item of items">
-                                        <td>{{item.idDetalle}}</td>
-                                        <td>{{item.producto}}</td>
-                                        <td>{{item.cantidad}}</td>
-                                        <td>{{item.subTotal | currency : "Q" : "symbol"}}</td>
-                                        <td>{{item.descuento + '%'}}</td>
-                                        <td>{{item.subTotalDescuento | currency: "Q" : "symbol"}}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <div *ngIf="!cargando && totalElementos === 0" class="alert alert-info">
-                                No hay líneas registradas para esta proforma.
-                            </div>
-                            <div *ngIf="totalElementos > 0" class="text-center info-paginacion">
-                                Mostrando {{paginaActual * pageSize + 1}} a
-                                {{paginaActual * pageSize + items.length}} de {{totalElementos}} líneas
-                            </div>
-                            <nav *ngIf="!cargando && totalPaginas > 1" aria-label="Paginación del detalle de proforma">
-                                <ul class="pagination justify-content-center mt-2">
-                                    <li class="page-item" [ngClass]="{'disabled': isFirst}">
-                                        <a class="page-link" href="javascript:void(0)" (click)="irPaginaAnterior()">
-                                            <i class="fas fa-angle-left"></i>
-                                        </a>
-                                    </li>
-                                    <li class="page-item" *ngFor="let pagina of paginasVisibles"
-                                        [ngClass]="{'active': pagina === paginaActual}">
-                                        <a class="page-link" href="javascript:void(0)" (click)="irAPagina(pagina)">{{pagina + 1}}</a>
-                                    </li>
-                                    <li class="page-item" [ngClass]="{'disabled': isLast}">
-                                        <a class="page-link" href="javascript:void(0)" (click)="irPaginaSiguiente()">
-                                            <i class="fas fa-angle-right"></i>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </nav>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button (click)="cerrarModal()" type="button" class="btn btn-secondary"
-                        data-dismiss="modal">Cerrar</button>
-                </div>
-            </div>
+<div *ngIf="detailService.modal" class="document-detail-overlay animacion fadeIn"
+  (click)="cerrarDesdeBackdrop($event)">
+  <section class="document-detail-dialog" tabindex="-1" role="dialog" aria-modal="true"
+    aria-labelledby="proforma-detail-title" (click)="$event.stopPropagation()">
+    <div class="document-detail-content">
+      <header class="document-detail-header">
+        <div class="header-copy">
+          <span class="header-icon" aria-hidden="true"><i class="fas fa-file-alt"></i></span>
+          <div>
+            <span class="header-eyebrow">Documento comercial</span>
+            <h5 id="proforma-detail-title">{{title}}</h5>
+          </div>
         </div>
+        <button (click)="cerrarModal()" type="button" class="close-button"
+          aria-label="Cerrar detalle de proforma">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+      </header>
+
+      <div *ngIf="proformadto" class="document-detail-body">
+        <section class="summary-section">
+          <div class="section-heading">
+            <span class="section-icon"><i class="fas fa-info-circle" aria-hidden="true"></i></span>
+            <div>
+              <strong>Resumen de la proforma</strong>
+              <small>Información general del documento</small>
+            </div>
+          </div>
+
+          <div class="summary-grid">
+            <article class="summary-card total-card">
+              <span class="card-icon"><i class="fas fa-coins" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Total</span>
+                <strong>{{proformadto.total | currency: "Q" : "symbol"}}</strong>
+              </div>
+            </article>
+            <article class="summary-card">
+              <span class="card-icon"><i class="fas fa-hashtag" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">No. de proforma</span>
+                <strong>{{proformadto.noProforma || 'Sin número'}}</strong>
+              </div>
+            </article>
+            <article class="summary-card">
+              <span class="card-icon"><i class="fas fa-fingerprint" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Registro</span>
+                <strong>{{proformadto.idProforma}}</strong>
+              </div>
+            </article>
+            <article class="summary-card">
+              <span class="card-icon"><i class="far fa-calendar-alt" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Fecha de emisión</span>
+                <strong>{{proformadto.fechaEmision | date: 'dd/MM/yyyy - HH:mm'}}</strong>
+              </div>
+            </article>
+            <article class="summary-card wide-card">
+              <span class="card-icon"><i class="fas fa-building" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Cliente</span>
+                <strong>{{proformadto.cliente || 'Consumidor final'}}</strong>
+              </div>
+            </article>
+            <article class="summary-card wide-card">
+              <span class="card-icon"><i class="fas fa-user-tie" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Vendedor</span>
+                <strong>{{proformadto.vendedor || proformadto.usuario || 'Sin vendedor asignado'}}</strong>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="lines-section">
+          <div class="lines-toolbar">
+            <div class="section-heading">
+              <span class="section-icon"><i class="fas fa-list-ul" aria-hidden="true"></i></span>
+              <div>
+                <strong>Detalle de productos</strong>
+                <small>{{totalElementos}} {{totalElementos === 1 ? 'línea registrada' : 'líneas registradas'}}</small>
+              </div>
+            </div>
+            <label class="page-size-control">
+              <span>Mostrar</span>
+              <select class="form-control form-control-sm" [ngModel]="pageSize"
+                (ngModelChange)="cambiarPageSize($event)" aria-label="Líneas por página">
+                <option *ngFor="let opt of pageSizeOptions" [ngValue]="opt">{{opt}}</option>
+              </select>
+            </label>
+          </div>
+
+          <div *ngIf="cargando" class="loading-state">
+            <div class="spinner-border" role="status"><span class="sr-only">Cargando...</span></div>
+            <span>Cargando productos...</span>
+          </div>
+
+          <div *ngIf="!cargando && totalElementos > 0" class="table-shell">
+            <table class="document-lines-table">
+              <thead>
+                <tr>
+                  <th class="line-column">Fila</th>
+                  <th>Producto</th>
+                  <th class="quantity-column">Cantidad</th>
+                  <th class="money-column">Subtotal</th>
+                  <th class="discount-column">Descuento</th>
+                  <th class="money-column">Total con descuento</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of items">
+                  <td><span class="line-badge">{{item.idDetalle}}</span></td>
+                  <td><strong class="product-name">{{item.producto}}</strong></td>
+                  <td class="quantity-cell">{{item.cantidad}}</td>
+                  <td class="money-cell">{{item.subTotal | currency: "Q" : "symbol"}}</td>
+                  <td><span class="discount-badge">{{item.descuento}}%</span></td>
+                  <td class="money-cell final-amount">{{item.subTotalDescuento | currency: "Q" : "symbol"}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div *ngIf="!cargando && totalElementos === 0" class="empty-state">
+            <i class="fas fa-box-open" aria-hidden="true"></i>
+            <strong>Sin productos registrados</strong>
+            <span>Esta proforma todavía no contiene líneas de detalle.</span>
+          </div>
+
+          <div *ngIf="!cargando && totalElementos > 0" class="table-navigation">
+            <span class="pagination-info">
+              Mostrando {{paginaActual * pageSize + 1}} a
+              {{paginaActual * pageSize + items.length}} de {{totalElementos}}
+            </span>
+            <nav *ngIf="totalPaginas > 1" aria-label="Paginación del detalle de proforma">
+              <ul class="pagination">
+                <li class="page-item" [ngClass]="{'disabled': isFirst}">
+                  <button class="page-link" type="button" [disabled]="isFirst" (click)="irPaginaAnterior()"
+                    aria-label="Página anterior"><i class="fas fa-angle-left" aria-hidden="true"></i></button>
+                </li>
+                <li class="page-item" *ngFor="let pagina of paginasVisibles"
+                  [ngClass]="{'active': pagina === paginaActual}">
+                  <button class="page-link" type="button" (click)="irAPagina(pagina)">{{pagina + 1}}</button>
+                </li>
+                <li class="page-item" [ngClass]="{'disabled': isLast}">
+                  <button class="page-link" type="button" [disabled]="isLast" (click)="irPaginaSiguiente()"
+                    aria-label="Página siguiente"><i class="fas fa-angle-right" aria-hidden="true"></i></button>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </section>
+      </div>
+
+      <footer class="document-detail-footer">
+        <span><i class="fas fa-shield-alt" aria-hidden="true"></i> Información de proforma</span>
+        <button (click)="cerrarModal()" type="button" class="btn close-action">Cerrar</button>
+      </footer>
     </div>
+  </section>
 </div>

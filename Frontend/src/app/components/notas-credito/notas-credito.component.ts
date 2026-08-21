@@ -7,6 +7,7 @@ import { NotaCreditoDetalle } from 'src/app/models/nota-credito-detalle';
 import { DespachoNota } from 'src/app/models/despacho-nota';
 import { DespachoNotaDto } from 'src/app/dtos/despacho-nota-dto';
 import { NotaCreditoDto } from 'src/app/dtos/nota-credito-dto';
+import { NotaCreditoDetalleDto } from 'src/app/dtos/nota-credito-detalle-dto';
 import { AuthService } from 'src/app/services/auth.service';
 import { DetailService } from 'src/app/services/facturas/detail.service';
 import { NotasCreditoService } from 'src/app/services/notas-credito.service';
@@ -24,7 +25,7 @@ export class NotasCreditoComponent implements OnInit, OnDestroy {
 
   title: string;
   notasCredito: NotaCreditoDto[] = [];
-  notaSeleccionada: NotaCredito;
+  notaSeleccionada: NotaCreditoDetalleDto;
 
   fechaIni: string;
   fechaFin: string;
@@ -172,9 +173,9 @@ export class NotasCreditoComponent implements OnInit, OnDestroy {
       didOpen: () => swal.showLoading()
     });
 
-    this.notasService.getNotaCredito(nota.idNotaCredito).subscribe(
-      notaCompleta => {
-        this.notaSeleccionada = notaCompleta;
+    this.notasService.getNotaCreditoDetalle(nota.idNotaCredito).subscribe(
+      notaDetalle => {
+        this.notaSeleccionada = notaDetalle;
         swal.close();
         this.detailService.abrirModal();
       },

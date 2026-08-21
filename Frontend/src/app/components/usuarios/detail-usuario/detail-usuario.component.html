@@ -1,81 +1,117 @@
-<div *ngIf="detailUsuarioService.modal" class="abrir-modal animacion fadeIn">
-    <div class="modal" tabindex="-1" style="display: block; overflow-y: scroll;">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">{{title}}</h5>
-                    <button (click)="cerrarModal()" id="close" type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true" style="color: white;">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="container">
-                        <h4>Datos Generales</h4>
-                        <div class="row">
-                            <div class="col-sm">
-
-                                <ul *ngIf="usuario" class="list-group mb-3">
-                                    <li class="list-group-item">
-                                        <strong>Primer Nombre: </strong>
-                                        {{usuario.primerNombre}}
-                                    </li>
-                                    <li class="list-group-item" *ngIf="usuario.segundoNombre">
-                                        <strong>Segundo Nombre: </strong>
-                                        {{usuario.segundoNombre}}
-                                    </li>
-                                    <li class="list-group-item">
-                                        <strong>Apellidos: </strong>
-                                        {{usuario.apellido}}
-                                    </li>
-                                    <li class="list-group-item">
-                                        <strong>Usuario: </strong>
-                                        {{usuario.usuario}}
-                                    </li>
-                                    <li class="list-group-item">
-                                        <strong>Fecha Registro: </strong>
-                                        {{usuario.fechaRegistro | date: 'dd/MM/yyyy - hh:mm'}}
-                                    </li>
-                                    <li class="list-group-item">
-                                        <strong>Estado: </strong>
-                                        <span class="badge badge-success"
-                                            *ngIf="usuario.enabled else elseblock">ACTIVO</span>
-
-                                        <ng-template #elseblock>
-                                            <span class="badge badge-danger">INACTIVO</span>
-                                        </ng-template>
-
-                                    </li>
-                                </ul>
-
-                            </div>
-
-                            <div class="col-sm">
-                                <h4>Roles</h4>&nbsp;
-                                <table class="table table-striped">
-                                    <thead class="thead-dark">
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>ROL</th>
-                                        </tr>
-                                    </thead>
-
-                                    <tbody>
-                                        <tr *ngFor="let rol of usuario.roles">
-                                            <td>{{rol.idRole}}</td>
-                                            <td>{{rol.role}}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button (click)="cerrarModal()" type="button" class="btn btn-secondary"
-                        data-dismiss="modal">Cerrar</button>
-                </div>
-            </div>
+<div *ngIf="detailUsuarioService.modal" class="user-detail-overlay animacion fadeIn"
+  (click)="cerrarDesdeBackdrop($event)">
+  <section class="user-detail-dialog" tabindex="-1" role="dialog" aria-modal="true"
+    aria-labelledby="user-detail-title" (click)="$event.stopPropagation()">
+    <div class="user-detail-content">
+      <header class="user-detail-header">
+        <div class="header-copy">
+          <span class="header-icon" aria-hidden="true"><i class="fas fa-user-shield"></i></span>
+          <div>
+            <span class="header-eyebrow">Usuarios y permisos</span>
+            <h5 id="user-detail-title">{{title}}</h5>
+          </div>
         </div>
+        <button (click)="cerrarModal()" type="button" class="close-button"
+          aria-label="Cerrar detalle de usuario">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+      </header>
+
+      <div *ngIf="usuario" class="user-detail-body">
+        <section class="identity-section">
+          <div class="profile-summary">
+            <span class="profile-avatar" aria-hidden="true">{{iniciales}}</span>
+            <div class="profile-copy">
+              <span class="profile-label">Perfil de usuario</span>
+              <h6>{{nombreCompleto}}</h6>
+              <span class="username"><i class="fas fa-at" aria-hidden="true"></i>{{usuario.usuario}}</span>
+            </div>
+            <span class="status-pill" [ngClass]="usuario.enabled ? 'status-active' : 'status-inactive'">
+              <i class="fas" [ngClass]="usuario.enabled ? 'fa-check-circle' : 'fa-times-circle'"
+                aria-hidden="true"></i>
+              {{usuario.enabled ? 'Activo' : 'Inactivo'}}
+            </span>
+          </div>
+
+          <div class="information-grid">
+            <article class="information-card">
+              <span class="card-icon"><i class="fas fa-id-badge" aria-hidden="true"></i></span>
+              <div>
+                <span class="information-label">Identificador</span>
+                <strong>#{{usuario.idUsuario}}</strong>
+              </div>
+            </article>
+            <article class="information-card">
+              <span class="card-icon"><i class="fas fa-user" aria-hidden="true"></i></span>
+              <div>
+                <span class="information-label">Primer nombre</span>
+                <strong>{{usuario.primerNombre || 'No registrado'}}</strong>
+              </div>
+            </article>
+            <article class="information-card">
+              <span class="card-icon"><i class="far fa-user" aria-hidden="true"></i></span>
+              <div>
+                <span class="information-label">Segundo nombre</span>
+                <strong [class.empty-value]="!usuario.segundoNombre">
+                  {{usuario.segundoNombre || 'No registrado'}}
+                </strong>
+              </div>
+            </article>
+            <article class="information-card">
+              <span class="card-icon"><i class="fas fa-signature" aria-hidden="true"></i></span>
+              <div>
+                <span class="information-label">Apellidos</span>
+                <strong>{{usuario.apellido || 'No registrado'}}</strong>
+              </div>
+            </article>
+            <article class="information-card registration-card">
+              <span class="card-icon"><i class="far fa-calendar-alt" aria-hidden="true"></i></span>
+              <div>
+                <span class="information-label">Fecha de registro</span>
+                <strong>{{usuario.fechaRegistro | date: 'dd/MM/yyyy'}}</strong>
+                <small><i class="far fa-clock" aria-hidden="true"></i>
+                  {{usuario.fechaRegistro | date: 'HH:mm'}} horas
+                </small>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="roles-section">
+          <div class="section-heading">
+            <span class="section-icon"><i class="fas fa-key" aria-hidden="true"></i></span>
+            <div>
+              <strong>Roles asignados</strong>
+              <small>{{usuario.roles?.length || 0}} permisos de acceso configurados</small>
+            </div>
+          </div>
+
+          <div *ngIf="usuario.roles?.length; else sinRoles" class="roles-grid">
+            <article *ngFor="let rol of usuario.roles" class="role-card">
+              <span class="role-icon"><i class="fas fa-shield-alt" aria-hidden="true"></i></span>
+              <div class="role-copy">
+                <span class="role-label">Rol de acceso</span>
+                <strong>{{nombreRol(rol.role)}}</strong>
+                <small>{{rol.role}}</small>
+              </div>
+              <span class="role-id">#{{rol.idRole}}</span>
+            </article>
+          </div>
+
+          <ng-template #sinRoles>
+            <div class="empty-roles">
+              <i class="fas fa-user-lock" aria-hidden="true"></i>
+              <strong>Sin roles asignados</strong>
+              <span>Este usuario no tiene permisos de acceso configurados.</span>
+            </div>
+          </ng-template>
+        </section>
+      </div>
+
+      <footer class="user-detail-footer">
+        <span><i class="fas fa-shield-alt" aria-hidden="true"></i>Información de acceso del usuario</span>
+        <button (click)="cerrarModal()" type="button" class="close-action">Cerrar</button>
+      </footer>
     </div>
+  </section>
 </div>

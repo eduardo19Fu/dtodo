@@ -1,4 +1,7 @@
-import { Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import {
+  AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Inject, Input, OnChanges, OnDestroy, Output
+} from '@angular/core';
 
 import { DetalleDocumentoDto } from '../../../dtos/detalleDocumentoDto';
 import { ProformaDto } from '../../../dtos/proforma-dto';
@@ -12,7 +15,7 @@ import Swal from 'sweetalert2';
   templateUrl: './detail-proforma.component.html',
   styleUrls: ['./detail-proforma.component.css']
 })
-export class DetailProformaComponent implements OnChanges {
+export class DetailProformaComponent implements OnChanges, AfterViewInit, OnDestroy {
 
   @Input() proformadto: ProformaDto;
   @Output() closeModal = new EventEmitter<void>();
@@ -28,11 +31,25 @@ export class DetailProformaComponent implements OnChanges {
   isLast = false;
   cargando = false;
   private cargaInicialPendiente = false;
-
   constructor(
     public detailService: DetailService,
-    private proformaService: ProformaService
+    private proformaService: ProformaService,
+    private elementRef: ElementRef<HTMLElement>,
+    @Inject(DOCUMENT) private document: Document
   ) {}
+
+  ngAfterViewInit(): void {
+    const hostElement = this.elementRef.nativeElement;
+    this.document.body.appendChild(hostElement);
+  }
+
+  ngOnDestroy(): void {
+    const hostElement = this.elementRef.nativeElement;
+
+    if (hostElement.parentNode === this.document.body) {
+      this.document.body.removeChild(hostElement);
+    }
+  }
 
   ngOnChanges(): void {
     if (this.proformadto) {
@@ -72,6 +89,19 @@ export class DetailProformaComponent implements OnChanges {
   cerrarModal(): void {
     this.detailService.cerrarModal();
     this.closeModal.emit();
+  }
+
+  @HostListener('document:keydown.escape')
+  cerrarConEscape(): void {
+    if (this.detailService.modal) {
+      this.cerrarModal();
+    }
+  }
+
+  cerrarDesdeBackdrop(event: MouseEvent): void {
+    if (event.target === event.currentTarget) {
+      this.cerrarModal();
+    }
   }
 
   irPaginaAnterior(): void { if (!this.isFirst) { this.cargarDetalle(this.paginaActual - 1); } }
