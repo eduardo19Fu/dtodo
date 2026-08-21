@@ -131,9 +131,13 @@ export class FacturasComponent implements OnInit, OnDestroy {
     Swal.fire({
       toast: true,
       position: 'top-end',
-      icon: 'warning',
-      title: `Cargando detalle de la factura No. ${facturaDto.noFactura}...`,
+      icon: 'info',
+      title: 'Cargando detalle',
+      text: `Preparando la factura No. ${facturaDto.noFactura}...`,
       showConfirmButton: false,
+      customClass: {
+        popup: 'app-loading-toast'
+      },
       didOpen: () => Swal.showLoading()
     });
 

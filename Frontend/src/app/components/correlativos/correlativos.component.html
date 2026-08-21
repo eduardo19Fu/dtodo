@@ -70,7 +70,7 @@
       </thead>
       <tbody>
         <tr *ngFor="let correlativo of correlativos">
-          <td class="col-id">{{correlativo.idCorrelativo}}</td>
+          <td class="col-id"><span class="listing-id-pill">#{{correlativo.idCorrelativo}}</span></td>
           <td class="col-correlativo">{{correlativo.correlativoInicial}}</td>
           <td class="col-correlativo">{{correlativo.correlativoFinal}}</td>
           <td class="col-correlativo font-weight-bold">{{correlativo.correlativoActual}}</td>

@@ -264,3 +264,55 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   background: #edf1f5;
   color: #58697e;
 }
+
+/* Identificadores internos compartidos por tablas de listados y selección. */
+.listing-id-pill {
+  align-items: center;
+  background: #edf2f7;
+  border-radius: 8px;
+  color: #5d7088;
+  display: inline-flex;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  justify-content: center;
+  line-height: 1;
+  min-height: 2rem;
+  min-width: 2.2rem;
+  padding: 0.42rem 0.55rem;
+  white-space: nowrap;
+}
+
+/* Toast compacto utilizado para operaciones breves de carga. */
+.swal2-popup.app-loading-toast {
+  border-left: 4px solid #5f9ea0;
+  border-radius: 11px;
+  box-shadow: 0 12px 30px rgba(35, 73, 75, 0.2);
+  padding: 0.85rem 1rem;
+}
+
+.app-loading-toast .swal2-icon {
+  border-color: #a9d2d3;
+  color: #4b8587;
+  margin: 0 0.8rem 0 0;
+}
+
+.app-loading-toast .swal2-title {
+  color: #2f4d4f;
+  font-size: 0.93rem;
+  font-weight: 700;
+  margin-bottom: 0.15rem;
+}
+
+.app-loading-toast .swal2-html-container {
+  color: #718486;
+  font-size: 0.75rem;
+  margin: 0;
+}
+
+.app-loading-toast .swal2-loader {
+  border-color: #5f9ea0 transparent #5f9ea0 transparent;
+  height: 1.5rem;
+  margin: 0 0 0 0.8rem;
+  width: 1.5rem;
+}

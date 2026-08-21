@@ -76,7 +76,7 @@
       </thead>
       <tbody>
         <tr *ngFor="let tipo of tipos">
-          <td class="col-id">{{tipo.idTipoProducto}}</td>
+          <td class="col-id"><span class="listing-id-pill">#{{tipo.idTipoProducto}}</span></td>
           <td class="col-nombre"><span class="cell-ellipsis" [title]="tipo.tipoProducto">{{tipo.tipoProducto}}</span></td>
           <td class="col-fecha">
             <span class="fecha-principal">{{tipo.fechaRegistro | date: 'dd/MM/yyyy'}}</span>

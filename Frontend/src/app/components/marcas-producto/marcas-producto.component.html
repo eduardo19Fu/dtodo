@@ -76,7 +76,7 @@
       </thead>
       <tbody>
         <tr *ngFor="let marca of marcas">
-          <td class="col-id">{{marca.idMarcaProducto}}</td>
+          <td class="col-id"><span class="listing-id-pill">#{{marca.idMarcaProducto}}</span></td>
           <td class="col-nombre"><span class="cell-ellipsis" [title]="marca.marca">{{marca.marca}}</span></td>
           <td class="col-fecha">
             <span class="fecha-principal">{{marca.fechaRegistro | date: 'dd/MM/yyyy'}}</span>

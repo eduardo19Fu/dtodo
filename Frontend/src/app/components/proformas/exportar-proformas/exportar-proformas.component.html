@@ -1,0 +1,102 @@
+<div class="export-backdrop">
+  <div class="modal export-modal" tabindex="-1" role="dialog" aria-modal="true"
+    aria-labelledby="export-proformas-title">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content export-content">
+        <header class="modal-header export-header">
+          <div class="export-heading-icon" aria-hidden="true">
+            <i class="fas fa-file-excel"></i>
+          </div>
+          <div class="export-heading-copy">
+            <span>Reportes</span>
+            <h4 class="modal-title" id="export-proformas-title">Exportar proformas</h4>
+            <p>Genera un archivo Excel con las proformas seleccionadas.</p>
+          </div>
+          <button type="button" class="export-close" (click)="cerrar.emit()" aria-label="Cerrar">
+            <i class="fas fa-times" aria-hidden="true"></i>
+          </button>
+        </header>
+
+        <form #exportForm="ngForm" (ngSubmit)="solicitarExportacionRango()">
+          <div class="modal-body export-body">
+            <div class="export-intro">
+              <span class="export-intro-icon" aria-hidden="true"><i class="fas fa-info-circle"></i></span>
+              <div>
+                <strong>Configura el contenido del reporte</strong>
+                <p>Selecciona quién generó las proformas y, si lo deseas, limita los resultados por fecha.</p>
+              </div>
+            </div>
+
+            <div class="export-field user-field">
+              <label for="export-usuario">Usuario <span aria-hidden="true">*</span></label>
+              <div class="select-control">
+                <i class="fas fa-user" aria-hidden="true"></i>
+                <select id="export-usuario" name="export-usuario" class="form-control"
+                  [(ngModel)]="idUsuario" required>
+                  <option [ngValue]="null" disabled>Selecciona un usuario</option>
+                  <option *ngFor="let usuario of usuarios" [ngValue]="usuario.idUsuario">
+                    {{ usuario.usuario }}<ng-container *ngIf="usuario.primerNombre || usuario.apellido">
+                      — {{ usuario.primerNombre }} {{ usuario.segundoNombre }} {{ usuario.apellido }}
+                    </ng-container>
+                  </option>
+                </select>
+                <i class="fas fa-chevron-down select-arrow" aria-hidden="true"></i>
+              </div>
+            </div>
+
+            <div class="date-section-heading">
+              <div>
+                <strong>Rango de fechas</strong>
+                <p>Necesario únicamente para exportar un período específico.</p>
+              </div>
+              <span>Opcional para exportación completa</span>
+            </div>
+
+            <div class="export-date-grid">
+              <div class="export-field">
+                <label for="export-fecha-inicio">Fecha de inicio</label>
+                <div class="date-control">
+                  <i class="far fa-calendar-alt" aria-hidden="true"></i>
+                  <input id="export-fecha-inicio" name="export-fecha-inicio" type="date" class="form-control"
+                    [(ngModel)]="fechaInicio">
+                </div>
+              </div>
+              <div class="export-field">
+                <label for="export-fecha-fin">Fecha de fin</label>
+                <div class="date-control">
+                  <i class="far fa-calendar-check" aria-hidden="true"></i>
+                  <input id="export-fecha-fin" name="export-fecha-fin" type="date" class="form-control"
+                    [(ngModel)]="fechaFin">
+                </div>
+              </div>
+            </div>
+
+            <div class="range-error" *ngIf="rangoInvertido" role="alert">
+              <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+              La fecha final no puede ser anterior a la fecha inicial.
+            </div>
+
+            <div class="export-warning">
+              <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+              <span><strong>Exportación completa</strong> Puede demorar según la cantidad de registros disponibles.</span>
+            </div>
+          </div>
+
+          <footer class="modal-footer export-footer">
+            <span class="required-note"><i class="fas fa-info-circle" aria-hidden="true"></i> El usuario es obligatorio</span>
+            <div class="export-actions">
+              <button type="button" class="export-cancel" (click)="cerrar.emit()">Cancelar</button>
+              <button type="button" class="export-all" [disabled]="!idUsuario"
+                (click)="solicitarExportacionCompleta()">
+                Exportar todas
+              </button>
+              <button type="submit" class="export-range" [disabled]="!exportForm.form.valid || !rangoValido">
+                <i class="fas fa-file-excel" aria-hidden="true"></i> Exportar rango
+              </button>
+            </div>
+          </footer>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

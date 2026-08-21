@@ -140,7 +140,7 @@
 
             <tbody>
                 <tr *ngFor="let movimiento of movimientosDto">
-                    <td class="col-id">{{movimiento.idMovimiento}}</td>
+                    <td class="col-id"><span class="listing-id-pill">#{{movimiento.idMovimiento}}</span></td>
                     <td class="col-fecha">
                         <span class="fecha-principal">{{movimiento.fechaMovimiento | date: 'dd/MM/yyyy'}}</span>
                         <small class="fecha-hora">{{movimiento.fechaMovimiento | date: 'HH:mm'}}</small>
