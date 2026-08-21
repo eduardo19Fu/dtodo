@@ -1,4 +1,7 @@
-import { Component, Input, OnChanges } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import {
+  AfterViewInit, Component, ElementRef, HostListener, Inject, Input, OnChanges, OnDestroy
+} from '@angular/core';
 
 import { DetalleDocumentoDto } from '../../../dtos/detalleDocumentoDto';
 import { FacturaDto } from '../../../dtos/factura-dto';
@@ -12,7 +15,7 @@ import Swal from 'sweetalert2';
   templateUrl: './detail-factura.component.html',
   styleUrls: ['./detail-factura.component.css']
 })
-export class DetailFacturaComponent implements OnChanges {
+export class DetailFacturaComponent implements OnChanges, AfterViewInit, OnDestroy {
 
   title = 'Detalle de Factura';
   @Input() factura: FacturaDto;
@@ -27,11 +30,25 @@ export class DetailFacturaComponent implements OnChanges {
   isLast = false;
   cargando = false;
   private cargaInicialPendiente = false;
-
   constructor(
     public detailService: DetailService,
-    private facturaService: FacturaService
+    private facturaService: FacturaService,
+    private elementRef: ElementRef<HTMLElement>,
+    @Inject(DOCUMENT) private document: Document
   ) {}
+
+  ngAfterViewInit(): void {
+    const hostElement = this.elementRef.nativeElement;
+    this.document.body.appendChild(hostElement);
+  }
+
+  ngOnDestroy(): void {
+    const hostElement = this.elementRef.nativeElement;
+
+    if (hostElement.parentNode === this.document.body) {
+      this.document.body.removeChild(hostElement);
+    }
+  }
 
   ngOnChanges(): void {
     if (this.factura) {
@@ -70,6 +87,19 @@ export class DetailFacturaComponent implements OnChanges {
 
   cerrarModal(): void {
     this.detailService.cerrarModal();
+  }
+
+  @HostListener('document:keydown.escape')
+  cerrarConEscape(): void {
+    if (this.detailService.modal) {
+      this.cerrarModal();
+    }
+  }
+
+  cerrarDesdeBackdrop(event: MouseEvent): void {
+    if (event.target === event.currentTarget) {
+      this.cerrarModal();
+    }
   }
 
   irPaginaAnterior(): void { if (!this.isFirst) { this.cargarDetalle(this.paginaActual - 1); } }

@@ -1,6 +1,7 @@
 package xyz.pangosoft.dtodo.controller;
 
 import xyz.pangosoft.dtodo.dto.NotaCreditoDto;
+import xyz.pangosoft.dtodo.dto.NotaCreditoDetalleDto;
 import xyz.pangosoft.dtodo.model.NotaCredito;
 import xyz.pangosoft.dtodo.model.enums.EstadoNotaCreditoEnum;
 import xyz.pangosoft.dtodo.service.INotaCreditoService;
@@ -72,6 +73,13 @@ public class NotaCreditoApiController {
     public ResponseEntity<NotaCredito> getNotaCredito(@PathVariable("id") Long idnota) {
         log.info("Buscando Nota de Credito con ID: {}", idnota);
         return ResponseEntity.ok(notaCreditoService.findNota(idnota));
+    }
+
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
+    @GetMapping(value = "/notas-credito/{id}/detalle")
+    public ResponseEntity<NotaCreditoDetalleDto> getDetalleNotaCredito(@PathVariable("id") Long idnota) {
+        log.info("Buscando detalle DTO de Nota de Credito con ID: {}", idnota);
+        return ResponseEntity.ok(notaCreditoService.findDetalle(idnota));
     }
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})

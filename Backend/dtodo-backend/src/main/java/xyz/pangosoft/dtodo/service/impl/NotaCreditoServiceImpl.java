@@ -1,6 +1,8 @@
 package xyz.pangosoft.dtodo.service.impl;
 
 import xyz.pangosoft.dtodo.dto.NotaCreditoDto;
+import xyz.pangosoft.dtodo.dto.NotaCreditoDetalleDto;
+import xyz.pangosoft.dtodo.dto.NotaCreditoDetalleItemDto;
 import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
 import xyz.pangosoft.dtodo.error.exceptions.DuplicateNotaCreditoException;
 import xyz.pangosoft.dtodo.error.exceptions.NotFoundException;
@@ -169,6 +171,45 @@ public class NotaCreditoServiceImpl implements INotaCreditoService {
         } finally {
             log.debug("{} Exit", __method);
         }
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public NotaCreditoDetalleDto findDetalle(Long idNota) {
+        NotaCredito nota = findNota(idNota);
+        List<NotaCreditoDetalleItemDto> items = nota.getItems() == null
+                ? java.util.Collections.emptyList()
+                : nota.getItems().stream()
+                        .map(this::mapDetalleItemDto)
+                        .collect(Collectors.toList());
+
+        return new NotaCreditoDetalleDto(
+                nota.getIdNotaCredito(),
+                nota.getCorrelativoFacturaSat(),
+                nota.getSerieFacturaSat(),
+                nota.getTipoDocumentoOrigen(),
+                nota.getNoProforma(),
+                nota.getTotal(),
+                nota.getObservaciones(),
+                nota.getFechaCreacion(),
+                nota.getFechaEntregaEstimada(),
+                nota.getEstado(),
+                nota.getCliente() == null ? null : nota.getCliente().getNombre(),
+                nota.getUsuario() == null ? null : nota.getUsuario().getUsuario(),
+                items);
+    }
+
+    private NotaCreditoDetalleItemDto mapDetalleItemDto(NotaCreditoDetalle item) {
+        Producto producto = item.getProducto();
+        return new NotaCreditoDetalleItemDto(
+                item.getIdNotaDetalle(),
+                producto == null ? null : producto.getIdProducto(),
+                producto == null ? null : producto.getCodProducto(),
+                producto == null ? null : producto.getNombre(),
+                item.getSubTotal(),
+                item.getCantidad(),
+                item.getDescuento(),
+                item.getSubTotalDescuento());
     }
 
     @Transactional

@@ -1,5 +1,6 @@
+import { DOCUMENT } from '@angular/common';
 import { HttpEventType } from '@angular/common/http';
-import { Component, Input, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, Inject, Input, OnDestroy, OnInit } from '@angular/core';
 import { Producto } from 'src/app/models/producto';
 import { AuthService } from 'src/app/services/auth.service';
 import { ProductoService } from 'src/app/services/producto.service';
@@ -12,7 +13,7 @@ import swal from 'sweetalert2';
   templateUrl: './detail-producto.component.html',
   styleUrls: ['./detail-producto.component.css']
 })
-export class DetailProductoComponent implements OnInit {
+export class DetailProductoComponent implements OnInit, AfterViewInit, OnDestroy {
 
   title: string;
 
@@ -24,7 +25,9 @@ export class DetailProductoComponent implements OnInit {
   constructor(
     public modalService: ModalService,
     private serviceProducto: ProductoService,
-    public auth: AuthService
+    public auth: AuthService,
+    private elementRef: ElementRef<HTMLElement>,
+    @Inject(DOCUMENT) private document: Document
   ) {
     this.title = 'Detalle del Producto';
     this.progreso = 0;
@@ -32,6 +35,32 @@ export class DetailProductoComponent implements OnInit {
 
   ngOnInit(): void {
     // this.getProducto();
+  }
+
+  ngAfterViewInit(): void {
+    const hostElement = this.elementRef.nativeElement;
+    this.document.body.appendChild(hostElement);
+  }
+
+  ngOnDestroy(): void {
+    const hostElement = this.elementRef.nativeElement;
+
+    if (hostElement.parentNode === this.document.body) {
+      this.document.body.removeChild(hostElement);
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  cerrarConEscape(): void {
+    if (this.modalService.modal) {
+      this.cerrarModal();
+    }
+  }
+
+  cerrarDesdeBackdrop(event: MouseEvent): void {
+    if (event.target === event.currentTarget) {
+      this.cerrarModal();
+    }
   }
 
   /*getProducto(): void {

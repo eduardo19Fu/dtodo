@@ -1,6 +1,7 @@
 package xyz.pangosoft.dtodo.service;
 
 import xyz.pangosoft.dtodo.dto.NotaCreditoDto;
+import xyz.pangosoft.dtodo.dto.NotaCreditoDetalleDto;
 import xyz.pangosoft.dtodo.model.NotaCredito;
 import xyz.pangosoft.dtodo.model.enums.EstadoNotaCreditoEnum;
 
@@ -19,6 +20,8 @@ public interface INotaCreditoService {
     Page<NotaCreditoDto> findPorFechas(String fechaIni, String fechaFin, String filtro, Pageable pageable);
 
     public NotaCredito findNota(Long idNota);
+
+    NotaCreditoDetalleDto findDetalle(Long idNota);
 
     public NotaCredito save(NotaCredito notaCredito, EstadoNotaCreditoEnum estado);
 

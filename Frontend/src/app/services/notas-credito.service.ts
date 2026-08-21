@@ -8,6 +8,7 @@ import { DespachoNota } from '../models/despacho-nota';
 import { DespachoNotaDto } from '../dtos/despacho-nota-dto';
 import { DespachoRequest } from '../dtos/despacho-request';
 import { NotaCreditoDto } from '../dtos/nota-credito-dto';
+import { NotaCreditoDetalleDto } from '../dtos/nota-credito-detalle-dto';
 
 import Swal from 'sweetalert2';
 
@@ -71,10 +72,21 @@ export class NotasCreditoService {
     );
   }
 
-  getNotaCredito(id: number): Observable<any> {
-    return this.httpClient.get<any>(`${this.url}/notas-credito/${id}`).pipe(
+  getNotaCredito(id: number): Observable<NotaCredito> {
+    return this.httpClient.get<NotaCredito>(`${this.url}/notas-credito/${id}`).pipe(
       catchError(e => {
         const mensaje = e.error?.mensaje || e.error?.message || 'Error al cargar nota de crédito';
+        const detalle = e.error?.error || e.error?.status || '';
+        Swal.fire(mensaje, `${detalle}`, 'error');
+        return throwError(e);
+      })
+    );
+  }
+
+  getNotaCreditoDetalle(id: number): Observable<NotaCreditoDetalleDto> {
+    return this.httpClient.get<NotaCreditoDetalleDto>(`${this.url}/notas-credito/${id}/detalle`).pipe(
+      catchError(e => {
+        const mensaje = e.error?.mensaje || e.error?.message || 'Error al cargar el detalle de la nota de crédito';
         const detalle = e.error?.error || e.error?.status || '';
         Swal.fire(mensaje, `${detalle}`, 'error');
         return throwError(e);

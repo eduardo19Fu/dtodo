@@ -1,218 +1,276 @@
-<div *ngIf="detailService.modal" class="abrir-modal animacion fadeIn">
-    <div class="modal" tabindex="-1" style="display: block; overflow-y: scroll;">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">{{title}}</h5>
-                    <button (click)="cerrarModal()" id="close" type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true" style="color: white;">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="container">
-
-                        <!-- DATOS GENERALES -->
-                        <h4>Datos Generales</h4>
-                        <div class="row">
-                            <div class="col-sm">
-                                <ul *ngIf="notaCredito" class="list-group mb-3">
-                                    <li class="list-group-item">
-                                        <strong>TOTAL: </strong>
-                                        {{notaCredito.total | currency: "Q" : "symbol"}}
-                                    </li>
-                                    <li class="list-group-item">
-                                        <strong>ESTADO: </strong>
-                                        <span class="badge"
-                                            [ngClass]="{'badge-warning': notaCredito.estado === 'ENTREGA_PENDIENTE',
-                                                        'badge-danger': notaCredito.estado === 'ANULADO',
-                                                        'badge-info': notaCredito.estado === 'ENTREGADO'}">
-                                            {{notaCredito.estado}}
-                                        </span>
-                                    </li>
-                                    <li class="list-group-item">
-                                        <strong>CORRELATIVO SAT: </strong>
-                                        {{notaCredito.correlativoFacturaSat}}
-                                    </li>
-                                    <li class="list-group-item">
-                                        <strong>SERIE SAT: </strong>
-                                        {{notaCredito.serieFacturaSat}}
-                                    </li>
-                                    <li class="list-group-item">
-                                        <strong>FECHA EMISIÓN: </strong>
-                                        {{notaCredito.fechaCreacion | date: 'dd/MM/yyyy - hh:mm'}}
-                                    </li>
-                                    <li class="list-group-item">
-                                        <strong>FECHA ESTIMADA DE ENTREGA: </strong>
-                                        {{notaCredito.fechaEntregaEstimada | date: 'dd/MM/yyyy'}}
-                                    </li>
-                                    <li class="list-group-item">
-                                        <strong>CLIENTE: </strong>
-                                        {{notaCredito.cliente?.nombre}}
-                                    </li>
-                                    <li class="list-group-item">
-                                        <strong>VENDEDOR: </strong>
-                                        {{notaCredito.usuario?.usuario}}
-                                    </li>
-                                    <li class="list-group-item" *ngIf="notaCredito.observaciones">
-                                        <strong>OBSERVACIONES: </strong>
-                                        {{notaCredito.observaciones}}
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <!-- ACORDEÓN -->
-                        <div id="accordion-detalle-nota">
-
-                            <!-- Sección: Productos de la Nota -->
-                            <div class="card card-outline card-primary mb-1">
-                                <div class="card-header p-2" style="cursor: pointer;" (click)="toggleSeccion('productos')">
-                                    <h3 class="card-title">
-                                        <i class="fas fa-boxes mr-2"></i>
-                                        Detalle de Productos
-                                        <span class="badge badge-secondary ml-2">{{notaCredito.items?.length}}</span>
-                                    </h3>
-                                    <div class="card-tools">
-                                        <i class="fas fa-chevron-down" [ngClass]="{'fa-chevron-up': seccionProductos}"></i>
-                                    </div>
-                                </div>
-                                <div class="accordion-body-wrapper" [ngClass]="{'open': seccionProductos}">
-                                <div class="card-body p-2 table-responsive">
-                                    <table class="table table-hover table-bordered table-sm mb-0">
-                                        <thead class="thead-dark">
-                                            <tr>
-                                                <th>Producto</th>
-                                                <th class="text-center">Cantidad</th>
-                                                <th class="text-center">Despachado</th>
-                                                <th class="text-center">Pendiente</th>
-                                                <th class="text-right">SubTotal</th>
-                                                <th class="text-center">Descuento</th>
-                                                <th class="text-right">Total</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr *ngFor="let item of itemsPaginados">
-                                                <td>{{item.producto.nombre}}</td>
-                                                <td class="text-center">
-                                                    <span class="badge badge-primary">{{item.cantidad}}</span>
-                                                </td>
-                                                <td class="text-center">
-                                                    <span class="badge badge-info">{{getDespachado(item.producto.idProducto)}}</span>
-                                                </td>
-                                                <td class="text-center">
-                                                    <span class="badge"
-                                                        [ngClass]="{'badge-warning': getPendiente(item.producto.idProducto, item.cantidad) > 0,
-                                                                    'badge-success': getPendiente(item.producto.idProducto, item.cantidad) === 0}">
-                                                        {{getPendiente(item.producto.idProducto, item.cantidad)}}
-                                                    </span>
-                                                </td>
-                                                <td class="text-right">{{item.subTotal | currency : "Q" : "symbol"}}</td>
-                                                <td class="text-center">{{item.descuento + '%'}}</td>
-                                                <td class="text-right">{{item.subTotalDescuento | currency: "Q" : "symbol"}}</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-
-                                    <!-- Paginación productos -->
-                                    <nav *ngIf="totalPaginasItems > 1" class="mt-2">
-                                        <ul class="pagination pagination-sm justify-content-center mb-0">
-                                            <li class="page-item" [ngClass]="{'disabled': paginaItems === 0}">
-                                                <a class="page-link" (click)="paginaItems = paginaItems - 1" href="javascript:void(0)">
-                                                    <i class="fas fa-angle-left"></i>
-                                                </a>
-                                            </li>
-                                            <li class="page-item" *ngFor="let p of [].constructor(totalPaginasItems); let idx = index"
-                                                [ngClass]="{'active': idx === paginaItems}">
-                                                <a class="page-link" (click)="paginaItems = idx" href="javascript:void(0)">{{idx + 1}}</a>
-                                            </li>
-                                            <li class="page-item" [ngClass]="{'disabled': paginaItems >= totalPaginasItems - 1}">
-                                                <a class="page-link" (click)="paginaItems = paginaItems + 1" href="javascript:void(0)">
-                                                    <i class="fas fa-angle-right"></i>
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </nav>
-                                </div>
-                                </div>
-                            </div>
-
-                            <!-- Sección: Historial de Despachos -->
-                            <div class="card card-outline card-info mb-1" *ngIf="despachos?.length > 0">
-                                <div class="card-header p-2" style="cursor: pointer;" (click)="toggleSeccion('despachos')">
-                                    <h3 class="card-title">
-                                        <i class="fas fa-truck mr-2"></i>
-                                        Historial de Despachos
-                                        <span class="badge badge-secondary ml-2">{{despachos.length}}</span>
-                                    </h3>
-                                    <div class="card-tools">
-                                        <i class="fas fa-chevron-down" [ngClass]="{'fa-chevron-up': seccionDespachos}"></i>
-                                    </div>
-                                </div>
-                                <div class="accordion-body-wrapper" [ngClass]="{'open': seccionDespachos}">
-                                <div class="card-body p-2 table-responsive">
-                                    <table class="table table-hover table-bordered table-sm mb-0">
-                                        <thead class="thead-light">
-                                            <tr>
-                                                <th>Fecha</th>
-                                                <th>C&oacute;digo</th>
-                                                <th>Producto</th>
-                                                <th class="text-center">Cantidad</th>
-                                                <th class="text-right">Total</th>
-                                                <th>Usuario</th>
-                                                <th class="text-center">Comprobante</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr *ngFor="let despacho of despachosPaginados; let i = index">
-                                                <td>{{despacho.fechaDespacho | date: 'dd/MM/yyyy HH:mm'}}</td>
-                                                <td>{{despacho.codProducto}}</td>
-                                                <td>{{despacho.productoNombre}}</td>
-                                                <td class="text-center">{{despacho.cantidad}}</td>
-                                                <td class="text-right">{{despacho.totalDespacho | currency: "Q" : "symbol"}}</td>
-                                                <td>{{despacho.usuario}}</td>
-                                                <td class="text-center">
-                                                    <button *ngIf="esPrimeraFilaDelEvento(despacho, i)"
-                                                        type="button" class="btn btn-sm btn-outline-primary"
-                                                        placement="top" ngbTooltip="Imprimir comprobante del evento ({{countItemsEvento(despacho.idEvento)}} producto(s))"
-                                                        (click)="imprimirComprobante(despacho.idEvento)">
-                                                        <i class="fas fa-print"></i>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-
-                                    <!-- Paginación despachos -->
-                                    <nav *ngIf="totalPaginasDespachos > 1" class="mt-2">
-                                        <ul class="pagination pagination-sm justify-content-center mb-0">
-                                            <li class="page-item" [ngClass]="{'disabled': paginaDespachos === 0}">
-                                                <a class="page-link" (click)="paginaDespachos = paginaDespachos - 1" href="javascript:void(0)">
-                                                    <i class="fas fa-angle-left"></i>
-                                                </a>
-                                            </li>
-                                            <li class="page-item" *ngFor="let p of [].constructor(totalPaginasDespachos); let idx = index"
-                                                [ngClass]="{'active': idx === paginaDespachos}">
-                                                <a class="page-link" (click)="paginaDespachos = idx" href="javascript:void(0)">{{idx + 1}}</a>
-                                            </li>
-                                            <li class="page-item" [ngClass]="{'disabled': paginaDespachos >= totalPaginasDespachos - 1}">
-                                                <a class="page-link" (click)="paginaDespachos = paginaDespachos + 1" href="javascript:void(0)">
-                                                    <i class="fas fa-angle-right"></i>
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </nav>
-                                </div>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button (click)="cerrarModal()" type="button" class="btn btn-secondary"
-                        data-dismiss="modal">Cerrar</button>
-                </div>
-            </div>
+<div *ngIf="detailService.modal" class="credit-note-overlay animacion fadeIn"
+  (click)="cerrarDesdeBackdrop($event)">
+  <section class="credit-note-dialog" tabindex="-1" role="dialog" aria-modal="true"
+    aria-labelledby="credit-note-detail-title" (click)="$event.stopPropagation()">
+    <div class="credit-note-content">
+      <header class="credit-note-header">
+        <div class="header-copy">
+          <span class="header-icon" aria-hidden="true"><i class="fas fa-file-invoice"></i></span>
+          <div>
+            <span class="header-eyebrow">Documento comercial</span>
+            <h5 id="credit-note-detail-title">{{title}}</h5>
+          </div>
         </div>
+        <button (click)="cerrarModal()" type="button" class="close-button"
+          aria-label="Cerrar detalle de nota de crédito">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+      </header>
+
+      <div *ngIf="notaCredito" class="credit-note-body">
+        <section class="summary-section">
+          <div class="section-heading">
+            <span class="section-icon"><i class="fas fa-info-circle" aria-hidden="true"></i></span>
+            <div>
+              <strong>Resumen de la nota de crédito</strong>
+              <small>Información general, fiscal y de entrega</small>
+            </div>
+          </div>
+
+          <div class="summary-grid">
+            <article class="summary-card total-card">
+              <span class="card-icon"><i class="fas fa-coins" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Total</span>
+                <strong>{{notaCredito.total | currency: "Q" : "symbol"}}</strong>
+              </div>
+            </article>
+            <article class="summary-card">
+              <span class="card-icon"><i class="fas fa-tasks" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Estado</span>
+                <span class="status-pill"
+                  [ngClass]="{'status-warning': notaCredito.estado === 'ENTREGA_PENDIENTE',
+                              'status-danger': notaCredito.estado === 'ANULADO',
+                              'status-success': notaCredito.estado === 'ENTREGADO'}">
+                  {{estadoLegible}}
+                </span>
+              </div>
+            </article>
+            <article class="summary-card">
+              <span class="card-icon"><i class="fas fa-hashtag" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Correlativo SAT</span>
+                <strong>{{notaCredito.correlativoFacturaSat || 'Sin correlativo'}}</strong>
+              </div>
+            </article>
+            <article class="summary-card">
+              <span class="card-icon"><i class="fas fa-barcode" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Serie SAT</span>
+                <strong>{{notaCredito.serieFacturaSat || 'Sin serie'}}</strong>
+              </div>
+            </article>
+            <article class="summary-card">
+              <span class="card-icon"><i class="far fa-calendar-alt" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Fecha de emisión</span>
+                <strong>{{notaCredito.fechaCreacion | date: 'dd/MM/yyyy - HH:mm'}}</strong>
+              </div>
+            </article>
+            <article class="summary-card">
+              <span class="card-icon"><i class="fas fa-truck-loading" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Entrega estimada</span>
+                <strong>{{notaCredito.fechaEntregaEstimada | date: 'dd/MM/yyyy'}}</strong>
+              </div>
+            </article>
+            <article class="summary-card wide-card">
+              <span class="card-icon"><i class="fas fa-building" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Cliente</span>
+                <strong>{{notaCredito.cliente || 'Consumidor final'}}</strong>
+              </div>
+            </article>
+            <article class="summary-card">
+              <span class="card-icon"><i class="fas fa-user-tie" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Vendedor</span>
+                <strong>{{notaCredito.vendedor || 'Sin vendedor asignado'}}</strong>
+              </div>
+            </article>
+            <article *ngIf="notaCredito.observaciones" class="summary-card observations-card">
+              <span class="card-icon"><i class="fas fa-comment-alt" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Observaciones</span>
+                <strong>{{notaCredito.observaciones}}</strong>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="accordion-section">
+          <button type="button" class="accordion-trigger" (click)="toggleSeccion('productos')"
+            [attr.aria-expanded]="seccionProductos" aria-controls="credit-note-products">
+            <span class="accordion-heading">
+              <span class="section-icon"><i class="fas fa-boxes" aria-hidden="true"></i></span>
+              <span>
+                <strong>Detalle de productos</strong>
+                <small>{{notaCredito.items?.length || 0}}
+                  {{notaCredito.items?.length === 1 ? 'producto registrado' : 'productos registrados'}}</small>
+              </span>
+            </span>
+            <i class="fas fa-chevron-down accordion-chevron" [ngClass]="{'expanded': seccionProductos}"
+              aria-hidden="true"></i>
+          </button>
+
+          <div *ngIf="seccionProductos" id="credit-note-products" class="accordion-panel fadeInContent">
+            <div *ngIf="notaCredito.items?.length > 0" class="table-shell">
+              <table class="document-table products-table">
+                <thead>
+                  <tr>
+                    <th>Producto</th>
+                    <th class="quantity-column">Cantidad</th>
+                    <th class="quantity-column">Despachado</th>
+                    <th class="quantity-column">Pendiente</th>
+                    <th class="money-column">Subtotal</th>
+                    <th class="discount-column">Descuento</th>
+                    <th class="money-column">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of itemsPaginados">
+                    <td><strong class="product-name">{{item.producto}}</strong></td>
+                    <td class="quantity-cell"><span class="quantity-badge">{{item.cantidad}}</span></td>
+                    <td class="quantity-cell"><span class="dispatched-badge">
+                      {{getDespachado(item.idProducto)}}</span></td>
+                    <td class="quantity-cell">
+                      <span class="pending-badge"
+                        [ngClass]="{'completed': getPendiente(item.idProducto, item.cantidad) === 0}">
+                        {{getPendiente(item.idProducto, item.cantidad)}}
+                      </span>
+                    </td>
+                    <td class="money-cell">{{item.subTotal | currency: "Q" : "symbol"}}</td>
+                    <td class="quantity-cell"><span class="discount-badge">{{item.descuento}}%</span></td>
+                    <td class="money-cell final-amount">{{item.subTotalDescuento | currency: "Q" : "symbol"}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div *ngIf="!notaCredito.items?.length" class="empty-state">
+              <i class="fas fa-box-open" aria-hidden="true"></i>
+              <strong>Sin productos registrados</strong>
+            </div>
+
+            <nav *ngIf="totalPaginasItems > 1" class="table-navigation"
+              aria-label="Paginación de productos de la nota de crédito">
+              <span>Página {{paginaItems + 1}} de {{totalPaginasItems}}</span>
+              <ul class="pagination">
+                <li class="page-item" [ngClass]="{'disabled': paginaItems === 0}">
+                  <button class="page-link" type="button" [disabled]="paginaItems === 0"
+                    (click)="paginaItems = paginaItems - 1" aria-label="Página anterior">
+                    <i class="fas fa-angle-left" aria-hidden="true"></i>
+                  </button>
+                </li>
+                <li class="page-item" *ngFor="let p of [].constructor(totalPaginasItems); let idx = index"
+                  [ngClass]="{'active': idx === paginaItems}">
+                  <button class="page-link" type="button" (click)="paginaItems = idx">{{idx + 1}}</button>
+                </li>
+                <li class="page-item" [ngClass]="{'disabled': paginaItems >= totalPaginasItems - 1}">
+                  <button class="page-link" type="button" [disabled]="paginaItems >= totalPaginasItems - 1"
+                    (click)="paginaItems = paginaItems + 1" aria-label="Página siguiente">
+                    <i class="fas fa-angle-right" aria-hidden="true"></i>
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </section>
+
+        <section class="accordion-section">
+          <button type="button" class="accordion-trigger" (click)="toggleSeccion('despachos')"
+            [attr.aria-expanded]="seccionDespachos" aria-controls="credit-note-dispatches">
+            <span class="accordion-heading">
+              <span class="section-icon"><i class="fas fa-truck" aria-hidden="true"></i></span>
+              <span>
+                <strong>Historial de despachos</strong>
+                <small>{{totalEventosDespacho}} {{totalEventosDespacho === 1 ? 'despacho' : 'despachos'}} ·
+                  {{despachos.length}} {{despachos.length === 1 ? 'producto entregado' : 'productos entregados'}}</small>
+              </span>
+            </span>
+            <i class="fas fa-chevron-down accordion-chevron" [ngClass]="{'expanded': seccionDespachos}"
+              aria-hidden="true"></i>
+          </button>
+
+          <div *ngIf="seccionDespachos" id="credit-note-dispatches" class="accordion-panel fadeInContent">
+            <div *ngIf="despachos.length > 0" class="table-shell">
+              <table class="document-table dispatch-table">
+                <thead>
+                  <tr>
+                    <th class="dispatch-number-column">No. despacho</th>
+                    <th>Fecha</th>
+                    <th>Código</th>
+                    <th>Producto</th>
+                    <th class="quantity-column">Cantidad</th>
+                    <th class="money-column">Total</th>
+                    <th>Usuario</th>
+                    <th class="action-column">Comprobante</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let despacho of despachosPaginados; let i = index"
+                    [ngClass]="{'dispatch-group-start': esPrimeraFilaDelEvento(despacho, i)}">
+                    <td>
+                      <span class="dispatch-number-badge" [title]="despacho.idEvento || ''">
+                        #{{getNumeroDespacho(despacho)}}
+                      </span>
+                    </td>
+                    <td class="date-cell">{{despacho.fechaDespacho | date: 'dd/MM/yyyy HH:mm'}}</td>
+                    <td><span class="code-badge">{{despacho.codProducto}}</span></td>
+                    <td><strong class="product-name">{{despacho.productoNombre}}</strong></td>
+                    <td class="quantity-cell">{{despacho.cantidad}}</td>
+                    <td class="money-cell final-amount">{{despacho.totalDespacho | currency: "Q" : "symbol"}}</td>
+                    <td>{{despacho.usuario}}</td>
+                    <td class="action-cell">
+                      <button *ngIf="esPrimeraFilaDelEvento(despacho, i)" type="button" class="print-button"
+                        placement="top"
+                        ngbTooltip="Imprimir comprobante del evento ({{countItemsEvento(despacho.idEvento)}} producto(s))"
+                        (click)="imprimirComprobante(despacho.idEvento)" aria-label="Imprimir comprobante">
+                        <i class="fas fa-print" aria-hidden="true"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div *ngIf="despachos.length === 0" class="empty-state">
+              <i class="fas fa-truck-loading" aria-hidden="true"></i>
+              <strong>Sin despachos registrados</strong>
+              <span>Los movimientos de entrega aparecerán en esta sección.</span>
+            </div>
+
+            <nav *ngIf="totalPaginasDespachos > 1" class="table-navigation"
+              aria-label="Paginación del historial de despachos">
+              <span>Página {{paginaDespachos + 1}} de {{totalPaginasDespachos}}</span>
+              <ul class="pagination">
+                <li class="page-item" [ngClass]="{'disabled': paginaDespachos === 0}">
+                  <button class="page-link" type="button" [disabled]="paginaDespachos === 0"
+                    (click)="paginaDespachos = paginaDespachos - 1" aria-label="Página anterior">
+                    <i class="fas fa-angle-left" aria-hidden="true"></i>
+                  </button>
+                </li>
+                <li class="page-item" *ngFor="let p of [].constructor(totalPaginasDespachos); let idx = index"
+                  [ngClass]="{'active': idx === paginaDespachos}">
+                  <button class="page-link" type="button" (click)="paginaDespachos = idx">{{idx + 1}}</button>
+                </li>
+                <li class="page-item" [ngClass]="{'disabled': paginaDespachos >= totalPaginasDespachos - 1}">
+                  <button class="page-link" type="button" [disabled]="paginaDespachos >= totalPaginasDespachos - 1"
+                    (click)="paginaDespachos = paginaDespachos + 1" aria-label="Página siguiente">
+                    <i class="fas fa-angle-right" aria-hidden="true"></i>
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </section>
+      </div>
+
+      <footer class="credit-note-footer">
+        <span><i class="fas fa-shield-alt" aria-hidden="true"></i> Información de nota de crédito</span>
+        <button (click)="cerrarModal()" type="button" class="btn close-action">Cerrar</button>
+      </footer>
     </div>
+  </section>
 </div>
