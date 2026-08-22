@@ -92,7 +92,7 @@
             <tbody>
                 <tr *ngFor="let producto of productosDto">
                     <td class="col-codigo">
-                        <span class="cell-ellipsis" [title]="producto.codProducto">{{producto.codProducto}}</span>
+                        <span class="listing-id-pill" [title]="producto.codProducto">#{{producto.codProducto}}</span>
                     </td>
                     <td class="col-nombre">
                         <span class="producto-nombre" [title]="producto.nombre">{{producto.nombre || 'Sin nombre'}}</span>

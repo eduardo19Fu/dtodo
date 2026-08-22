@@ -45,6 +45,7 @@ import { ModalBuscarProductoMovimientoComponent } from './components/movimientos
 import { ProformasComponent } from './components/proformas/proformas.component';
 import { DetailProformaComponent } from './components/proformas/detail-proforma/detail-proforma.component';
 import { CreateProformaComponent } from './components/proformas/create-proforma/create-proforma.component';
+import { ExportarProformasComponent } from './components/proformas/exportar-proformas/exportar-proformas.component';
 import { NotasCreditoComponent } from './components/notas-credito/notas-credito.component';
 import { CreateNotaComponent } from './components/notas-credito/create-nota/create-nota.component';
 import { DetailNotaComponent } from './components/notas-credito/detail-nota/detail-nota.component';
@@ -93,6 +94,7 @@ import { TooltipDirective } from './directives/tooltip.directive';
     ProformasComponent,
     DetailProformaComponent,
     CreateProformaComponent,
+    ExportarProformasComponent,
     NotasCreditoComponent,
     CreateNotaComponent,
     DetailNotaComponent,

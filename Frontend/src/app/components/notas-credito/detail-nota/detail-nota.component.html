@@ -217,7 +217,7 @@
                       </span>
                     </td>
                     <td class="date-cell">{{despacho.fechaDespacho | date: 'dd/MM/yyyy HH:mm'}}</td>
-                    <td><span class="code-badge">{{despacho.codProducto}}</span></td>
+                    <td><span class="listing-id-pill">#{{despacho.codProducto}}</span></td>
                     <td><strong class="product-name">{{despacho.productoNombre}}</strong></td>
                     <td class="quantity-cell">{{despacho.cantidad}}</td>
                     <td class="money-cell final-amount">{{despacho.totalDespacho | currency: "Q" : "symbol"}}</td>

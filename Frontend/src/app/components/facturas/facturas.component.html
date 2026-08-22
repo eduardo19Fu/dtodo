@@ -125,7 +125,7 @@
       </thead>
       <tbody>
         <tr *ngFor="let factura of facturasDto">
-          <td class="col-numero text-nowrap">{{factura.noFactura}}</td>
+          <td class="col-numero text-nowrap"><span class="listing-id-pill">#{{factura.noFactura}}</span></td>
           <td class="col-serie text-nowrap">{{factura.serie || ''}}</td>
           <td class="col-fecha">
             <span class="fecha-principal">{{factura.fecha | date: 'dd/MM/yyyy'}}</span>

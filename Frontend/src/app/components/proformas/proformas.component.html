@@ -1,6 +1,11 @@
 <app-detail-proforma *ngIf="proformaSeleccionada" [proformadto]="proformaSeleccionada"
                      (closeModal)="cerrarDetalle()"></app-detail-proforma>
 
+<app-exportar-proformas *ngIf="modalExportacionVisible" [usuarios]="usuariosExportacion"
+  (cerrar)="cerrarModalExportacion()" (exportarRango)="exportarProformasPorRango($event)"
+  (exportarTodas)="exportarTodasLasProformas($event)">
+</app-exportar-proformas>
+
 <section class="content-header">
   <div class="container-fluid">
     <div class="row mb-2">
@@ -128,7 +133,7 @@
       </thead>
       <tbody>
         <tr *ngFor="let proforma of proformasDto">
-          <td class="col-numero text-nowrap">{{proforma.noProforma}}</td>
+          <td class="col-numero text-nowrap"><span class="listing-id-pill">#{{proforma.noProforma}}</span></td>
           <td class="col-fecha">
             <span class="fecha-principal">{{proforma.fechaEmision | date: 'dd/MM/yyyy'}}</span>
             <small class="fecha-hora">{{proforma.fechaEmision | date: 'HH:mm'}}</small>

@@ -28,7 +28,7 @@
 
                         <tbody>
                             <tr *ngFor="let nota of notasCredito">
-                                <td>{{nota.idNotaCredito}}</td>
+                                <td><span class="listing-id-pill">#{{nota.idNotaCredito}}</span></td>
                                 <td>{{nota.total | currency: "Q" : "symbol"}}</td>
                                 <td>{{nota.usuario}}</td>
                                 <td>{{nota.fechaCreacion | date: 'dd/MM/yyyy - hh:mm'}}</td>

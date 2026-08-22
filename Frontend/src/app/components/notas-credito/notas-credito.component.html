@@ -106,7 +106,7 @@
                                         <span *ngIf="getPendiente(registro) === 0" class="dispatch-complete-icon"
                                             title="Despacho completado"><i class="fas fa-check"></i></span>
                                     </td>
-                                    <td><span class="dispatch-product-code">{{registro.item.producto.codProducto}}</span></td>
+                                    <td><span class="listing-id-pill">#{{registro.item.producto.codProducto}}</span></td>
                                     <td>
                                         <div class="dispatch-product-name">
                                             <span class="dispatch-product-icon" aria-hidden="true"><i class="fas fa-box"></i></span>
@@ -163,35 +163,37 @@
 
 <!-- MODAL DE AUTORIZACION POR CONTRASEÑA -->
 <div *ngIf="mostrarModalPassword" class="abrir-modal modal-autorizacion animacion fadeIn">
-    <div class="modal" tabindex="-1" style="display: block; overflow-y: auto;">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header bg-warning">
-                    <h5 class="modal-title">
-                        <i class="fas fa-lock mr-2"></i>
-                        Autorizaci&oacute;n Requerida
-                    </h5>
-                    <button (click)="cerrarModalPassword()" type="button" class="close" [disabled]="autorizando">
-                        <span aria-hidden="true">&times;</span>
+    <div class="modal authorization-modal" tabindex="-1" role="dialog" aria-modal="true"
+        aria-labelledby="authorization-title">
+        <div class="modal-dialog modal-dialog-centered authorization-dialog" role="document">
+            <div class="modal-content authorization-content">
+                <header class="modal-header authorization-header">
+                    <div class="authorization-heading">
+                        <span class="authorization-heading-icon" aria-hidden="true"><i class="fas fa-lock"></i></span>
+                        <h5 class="modal-title" id="authorization-title">Autorizaci&oacute;n requerida</h5>
+                    </div>
+                    <button (click)="cerrarModalPassword()" type="button" class="authorization-close"
+                        [disabled]="autorizando" aria-label="Cerrar">
+                        <i class="fas fa-times" aria-hidden="true"></i>
                     </button>
-                </div>
+                </header>
 
                 <form (ngSubmit)="autorizarDespacho()">
-                    <div class="modal-body">
-                        <p class="mb-3">
+                    <div class="modal-body authorization-body">
+                        <p class="authorization-copy">
                             Confirme su identidad para registrar el despacho de la nota de cr&eacute;dito
-                            No. <strong>{{notaDespacho?.idNotaCredito}}</strong>.
+                            <span class="authorization-note-id">#{{notaDespacho?.idNotaCredito}}</span>.
                         </p>
 
-                        <div class="form-group mb-2">
+                        <div class="form-group authorization-field">
                             <label for="password-despacho">
                                 Contrase&ntilde;a de <strong>{{auth.usuario.usuario}}</strong>
                             </label>
-                            <div class="input-group">
+                            <div class="input-group authorization-input-group"
+                                [class.has-error]="errorPassword">
                                 <input id="password-despacho" name="passwordAutorizacion"
                                     [type]="passwordVisible ? 'text' : 'password'"
-                                    class="form-control"
-                                    [ngClass]="{'is-invalid': errorPassword}"
+                                    class="form-control authorization-password-control"
                                     [(ngModel)]="passwordAutorizacion"
                                     (ngModelChange)="errorPassword = ''"
                                     [disabled]="autorizando"
@@ -199,33 +201,36 @@
                                     placeholder="Ingrese su contrase&ntilde;a"
                                     #passwordInput>
                                 <div class="input-group-append">
-                                    <button type="button" class="btn btn-outline-secondary"
+                                    <button type="button" class="authorization-password-toggle"
                                         (click)="togglePasswordVisible()" [disabled]="autorizando"
                                         [attr.aria-label]="passwordVisible ? 'Ocultar contraseña' : 'Mostrar contraseña'">
-                                        <i class="fas" [ngClass]="passwordVisible ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                        <i class="fas" [ngClass]="passwordVisible ? 'fa-eye-slash' : 'fa-eye'"
+                                            aria-hidden="true"></i>
                                     </button>
                                 </div>
                             </div>
                         </div>
 
-                        <div *ngIf="errorPassword" class="alert alert-danger py-2 mb-0">
-                            <i class="fas fa-exclamation-triangle mr-1"></i>
+                        <div *ngIf="errorPassword" class="authorization-error" role="alert">
+                            <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
                             {{errorPassword}}
                         </div>
                     </div>
 
-                    <div class="modal-footer">
-                        <button (click)="cerrarModalPassword()" type="button" class="btn btn-secondary"
+                    <footer class="modal-footer authorization-footer">
+                        <div class="authorization-actions">
+                        <button (click)="cerrarModalPassword()" type="button" class="authorization-cancel"
                             [disabled]="autorizando">
-                            <i class="fas fa-times mr-1"></i> Cancelar
+                            Cancelar
                         </button>
-                        <button type="submit" class="btn btn-warning"
+                        <button type="submit" class="authorization-confirm"
                             [disabled]="autorizando || !passwordAutorizacion">
-                            <span *ngIf="autorizando" class="spinner-border spinner-border-sm mr-1" role="status"></span>
-                            <i *ngIf="!autorizando" class="fas fa-check mr-1"></i>
+                            <span *ngIf="autorizando" class="spinner-border spinner-border-sm" role="status"></span>
+                            <i *ngIf="!autorizando" class="fas fa-check" aria-hidden="true"></i>
                             {{autorizando ? 'Verificando...' : 'Autorizar y Despachar'}}
                         </button>
-                    </div>
+                        </div>
+                    </footer>
                 </form>
             </div>
         </div>
@@ -367,7 +372,7 @@
 
             <tbody>
                 <tr *ngFor="let nota of notasCredito">
-                    <td class="col-id">{{nota.idNotaCredito}}</td>
+                    <td class="col-id"><span class="listing-id-pill">#{{nota.idNotaCredito}}</span></td>
                     <td class="col-total text-nowrap">{{nota.total | currency: "Q" : "symbol"}}</td>
                     <td class="col-emisor">
                         <span class="cell-ellipsis" [title]="nota.usuario">{{nota.usuario}}</span>
@@ -384,15 +389,15 @@
                         </span>
                     </td>
                     <td class="col-referencia">
-                        <span class="cell-ellipsis"
+                        <span class="listing-id-pill"
                             [title]="(nota.tipoDocumentoOrigen || 'FACTURA') === 'FACTURA'
                                 ? (nota.serieFacturaSat + '-' + nota.correlativoFacturaSat)
                                 : nota.noProforma">
                             <ng-container *ngIf="(nota.tipoDocumentoOrigen || 'FACTURA') === 'FACTURA'">
-                                {{nota.serieFacturaSat}}-{{nota.correlativoFacturaSat}}
+                                #{{nota.serieFacturaSat}}-{{nota.correlativoFacturaSat}}
                             </ng-container>
                             <ng-container *ngIf="nota.tipoDocumentoOrigen === 'PROFORMA'">
-                                {{nota.noProforma}}
+                                #{{nota.noProforma}}
                             </ng-container>
                         </span>
                     </td>

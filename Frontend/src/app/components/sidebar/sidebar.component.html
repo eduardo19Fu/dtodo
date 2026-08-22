@@ -145,22 +145,13 @@
                 <li class="nav-header" *ngIf="authService.hasRole('ROLE_ADMIN')">Usuarios y Permisos</li>
                 <li class="nav-item"  *ngIf="authService.hasRole('ROLE_ADMIN')"
                     [ngClass]="{'menu-open': router.url.startsWith('/usuarios')}">
-                    <a href="" class="nav-link" [ngClass]="{'active' : router.url.startsWith('/usuarios')}">
-                        <i class="fas fa-users nav-icon"></i>
+                    <a [routerLink]="['/usuarios/index']" class="nav-link"
+                        [ngClass]="{'active' : router.url.startsWith('/usuarios')}">
                         <p>
+                            <i class="fas fa-users nav-icon"></i>
                             Usuarios
-                            <i class="right fas fa-angle-left"></i>
                         </p>
                     </a>
-
-                    <ul class="nav nav-treeview">
-                        <li class="nav-item">
-                            <a [routerLink]="['/usuarios/index']" class="nav-link" [ngClass]="{'active' : router.url.startsWith('/usuarios')}">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Usuarios</p>
-                            </a>
-                        </li>
-                    </ul>
                 </li> <!-- MENU DE USUARIOS FINAL -->
 
                 <li class="nav-header">Sesión</li>

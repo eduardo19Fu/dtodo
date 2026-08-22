@@ -167,9 +167,13 @@ export class NotasCreditoComponent implements OnInit, OnDestroy {
     swal.fire({
       toast: true,
       position: 'top-end',
-      icon: 'warning',
-      title: `Cargando detalle de la nota No. ${nota.idNotaCredito}...`,
+      icon: 'info',
+      title: 'Cargando detalle',
+      text: `Preparando la nota de crédito No. ${nota.idNotaCredito}...`,
       showConfirmButton: false,
+      customClass: {
+        popup: 'app-loading-toast'
+      },
       didOpen: () => swal.showLoading()
     });
 

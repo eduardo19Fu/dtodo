@@ -54,16 +54,6 @@
 .usuarios-table .col-estado { text-align: center; width: 120px; }
 .usuarios-table .col-opciones { text-align: center; width: 155px; }
 
-.user-id {
-  background: #edf2f7;
-  border-radius: 8px;
-  color: #5d7088;
-  display: inline-flex;
-  font-size: 0.78rem;
-  font-weight: 700;
-  padding: 0.38rem 0.52rem;
-}
-
 .usuario-principal {
   display: block;
   font-weight: 700;

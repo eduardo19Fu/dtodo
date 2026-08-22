@@ -1,44 +1,63 @@
-<div class="modal fade" id="modal-busqueda">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title">{{title}}</h4>
-                <button id="button-x" type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <h4>Ingrese rango de fechas para generar informe</h4>
-                <br>
-                <form #formBusqueda="ngForm" id="form-busqueda">
-
-                    <div class="row">
-                        <div class="form-group col">
-                            <label for="fecha-inicio">Fecha Inicial</label>
-                            <input type="date" class="form-control" name="fecha-inicio" id="fecha-inicio" [(ngModel)]="fechaIni">
-                        </div>
-                        
-                        <div class="form-group col">
-                            <label for="fecha-fin">Fecha Final</label>
-                            <input type="date" name="fecha-fin" id="fecha-fin" class="form-control" [(ngModel)]="fechaFin">
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn bg-gradient-warning" style="width: 100%;"
-                        [disabled]="!formBusqueda.form.valid" (click)="onSubmit()">
-                        <i class="fas fa-print"></i>
-                        Imprimir
-                    </button>
-
-                </form>
-            </div>
-            <div class="modal-footer justify-content-between">
-                <button type="button" class="btn btn-default" id="cerrar-modal" data-dismiss="modal"
-                    style="display: right;">Cerrar</button>
-            </div>
+<div class="modal fade inventory-report-modal" id="modal-busqueda" tabindex="-1" role="dialog"
+  aria-labelledby="inventory-report-title" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content inventory-report-content">
+      <header class="modal-header inventory-report-header">
+        <div class="report-heading-icon" aria-hidden="true">
+          <i class="fas fa-file-alt"></i>
         </div>
-        <!-- /.modal-content -->
+        <div class="report-heading-copy">
+          <span>Reportes</span>
+          <h4 class="modal-title" id="inventory-report-title">{{ title }}</h4>
+          <p>Selecciona el período que deseas consultar.</p>
+        </div>
+        <button id="button-x" type="button" class="report-close" data-dismiss="modal" aria-label="Cerrar">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+      </header>
+
+      <form #formBusqueda="ngForm" id="form-busqueda" (ngSubmit)="onSubmit()">
+        <div class="modal-body inventory-report-body">
+          <div class="report-intro">
+            <span class="report-intro-icon" aria-hidden="true"><i class="far fa-calendar-alt"></i></span>
+            <div>
+              <strong>Define el rango de fechas</strong>
+              <p>El reporte incluirá todos los movimientos de inventario registrados durante este período.</p>
+            </div>
+          </div>
+
+          <div class="report-date-grid">
+            <div class="report-field">
+              <label for="fecha-inicio">Fecha inicial <span aria-hidden="true">*</span></label>
+              <div class="date-control">
+                <i class="far fa-calendar" aria-hidden="true"></i>
+                <input type="date" class="form-control" name="fecha-inicio" id="fecha-inicio"
+                  [(ngModel)]="fechaIni" required aria-required="true">
+              </div>
+            </div>
+
+            <div class="report-field">
+              <label for="fecha-fin">Fecha final <span aria-hidden="true">*</span></label>
+              <div class="date-control">
+                <i class="far fa-calendar-check" aria-hidden="true"></i>
+                <input type="date" class="form-control" name="fecha-fin" id="fecha-fin"
+                  [(ngModel)]="fechaFin" required aria-required="true">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer class="modal-footer inventory-report-footer">
+          <span class="required-note"><i class="fas fa-info-circle" aria-hidden="true"></i> Ambos campos son obligatorios</span>
+          <div class="report-actions">
+            <button type="button" class="report-cancel" id="cerrar-modal" data-dismiss="modal">Cancelar</button>
+            <button type="submit" class="report-submit" [disabled]="!formBusqueda.form.valid">
+              <i class="fas fa-file-pdf" aria-hidden="true"></i>
+              Generar reporte
+            </button>
+          </div>
+        </footer>
+      </form>
     </div>
-    <!-- /.modal-dialog -->
+  </div>
 </div>
-<!-- /.modal -->
