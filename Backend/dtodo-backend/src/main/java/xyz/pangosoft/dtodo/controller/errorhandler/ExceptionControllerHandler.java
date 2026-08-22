@@ -159,9 +159,15 @@ public class ExceptionControllerHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(value = ReportGenerationException.class)
-    public ResponseEntity<Object> reportGenerationException(ReportGenerationException ex, WebRequest request) {
-        log.error("An exception ocurred while generating the report in path: {}, Exception: {}", request.getContextPath(), ex.getMessage());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al generar reporte".concat(ex.getMessage()));
+    public ResponseEntity<ErrorDTO> reportGenerationException(ReportGenerationException ex, WebRequest request) {
+        log.error("Error al generar reporte en {}: {}", request.getDescription(false), ex.getMessage(), ex);
+        ErrorDTO errorDTO = new ErrorDTO();
+        errorDTO.setMessage(ex.getMessage());
+        errorDTO.setCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        errorDTO.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+        errorDTO.setInstant(Instant.now());
+        errorDTO.setPath(request.getDescription(false).replace("uri=", ""));
+        return new ResponseEntity<>(errorDTO, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(value = {DuplicateNotaCreditoException.class})
@@ -201,6 +207,7 @@ public class ExceptionControllerHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler
     public ResponseEntity<ErrorDTO> handlerException(Exception exception) {
+        log.error("Excepción no controlada", exception);
         ErrorDTO errorDTO = new ErrorDTO();
         errorDTO.setMessage(exception.getMessage());
         errorDTO.setCode(HttpStatus.INTERNAL_SERVER_ERROR.value());

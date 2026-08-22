@@ -318,8 +318,34 @@ export class CreateProformaComponent implements OnInit {
       location.reload();
     },
       error => {
-        swal.fire(`Error: ${error.error.status}`, `${error.error.message}`, error);
+        this.mostrarErrorGeneracionPdf(error);
       });
+  }
+
+  private mostrarErrorGeneracionPdf(error: any): void {
+    const mostrar = (detalle: any): void => {
+      const estado = detalle && (detalle.status || detalle.code) || error.status || 500;
+      const mensaje = detalle && detalle.message
+        ? detalle.message
+        : 'No fue posible generar el PDF de la proforma.';
+      swal.fire(`Error ${estado}`, mensaje, 'error');
+    };
+
+    if (error && error.error instanceof Blob) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          mostrar(JSON.parse(reader.result as string));
+        } catch (_) {
+          mostrar({ message: reader.result as string });
+        }
+      };
+      reader.onerror = () => mostrar(null);
+      reader.readAsText(error.error);
+      return;
+    }
+
+    mostrar(error && error.error);
   }
 
   update(): void {
