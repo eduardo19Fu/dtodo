@@ -71,8 +71,7 @@ public interface INotaCreditoRepository extends JpaRepository<NotaCredito, Long>
             "OR lower(coalesce(nc.noProforma, '')) LIKE lower(concat('%', :filtro, '%')) " +
             "OR lower(str(nc.idNotaCredito)) LIKE lower(concat('%', :filtro, '%')) " +
             "OR lower(str(nc.tipoDocumentoOrigen)) LIKE lower(concat('%', :filtro, '%')) " +
-            "OR lower(str(nc.estado)) LIKE lower(concat('%', :filtro, '%'))) " +
-            "ORDER BY nc.fechaCreacion DESC")
+            "OR lower(str(nc.estado)) LIKE lower(concat('%', :filtro, '%')))")
     Page<NotaCreditoDto> findByFechasAsDto(@Param("fechaIni") LocalDateTime fechaIni,
                                                 @Param("fechaFin") LocalDateTime fechaFin,
                                                 @Param("filtro") String filtro,

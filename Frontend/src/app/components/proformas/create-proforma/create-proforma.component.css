@@ -447,6 +447,10 @@
   width: 31px;
 }
 
+.remove-line-label {
+  display: none;
+}
+
 .remove-line-button:hover,
 .remove-line-button:focus {
   background: #cf564e;
@@ -726,6 +730,12 @@
     display: none;
   }
 
+  .detail-table td.detail-action-cell {
+    grid-column: 1 / -1;
+    grid-row: 4;
+    position: static;
+  }
+
   .table-product-name {
     gap: 7px;
     min-width: 0;
@@ -779,7 +789,14 @@
   }
 
   .remove-line-button {
-    height: 27px;
-    width: 27px;
+    gap: 7px;
+    height: 38px;
+    width: 100%;
+  }
+
+  .remove-line-label {
+    display: inline;
+    font-size: 9px;
+    font-weight: 700;
   }
 }

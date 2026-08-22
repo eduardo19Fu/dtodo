@@ -881,6 +881,26 @@
 .notas-table .col-estado { text-align: center; width: 165px; }
 .notas-table .col-opciones { text-align: center; width: 200px; }
 
+.sort-header {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    color: inherit;
+    cursor: pointer;
+    display: flex;
+    font: inherit;
+    font-weight: inherit;
+    justify-content: space-between;
+    padding: 0;
+    text-align: left;
+    width: 100%;
+}
+
+.sort-header i { color: #adb5bd; margin-left: 0.45rem; }
+.sort-header .fa-sort-up,
+.sort-header .fa-sort-down { color: #fff; }
+.sort-header:focus { outline: 2px solid rgba(255, 255, 255, 0.65); outline-offset: 2px; }
+
 .cell-ellipsis {
     display: block;
     overflow: hidden;

@@ -15,7 +15,7 @@ import Swal from 'sweetalert2';
 })
 export class TiposProductoComponent implements OnInit, OnDestroy {
 
-  title = 'Listado de Categorías';
+  title = 'Categorías';
   tipos: TipoProductoDto[] = [];
   paginaActual = 0;
   totalPaginas = 0;

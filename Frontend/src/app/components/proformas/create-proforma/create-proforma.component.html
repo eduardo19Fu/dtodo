@@ -254,10 +254,11 @@
                 </td>
                 <td data-label="Nuevo precio"><span class="new-price">{{ item.calcularNuevoPrecioVenta() | currency: "Q" : "symbol" }}</span></td>
                 <td data-label="Total"><strong class="line-total">{{ item.subTotalDescuento | currency: "Q" : "symbol" }}</strong></td>
-                <td data-label="Acciones">
+                <td data-label="Acciones" class="detail-action-cell">
                   <button type="button" class="remove-line-button" (click)="eliminarItem(i)"
                     aria-label="Eliminar producto" title="Eliminar producto">
                     <i class="fas fa-trash-alt" aria-hidden="true"></i>
+                    <span class="remove-line-label">Eliminar producto</span>
                   </button>
                 </td>
               </tr>

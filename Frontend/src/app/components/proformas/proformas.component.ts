@@ -17,7 +17,7 @@ import Swal from 'sweetalert2';
 })
 export class ProformasComponent implements OnInit, OnDestroy {
 
-  title = 'Listado de Proformas';
+  title = 'Proformas';
   fechaIni: string;
   fechaFin: string;
   proformaSeleccionada: ProformaDto;

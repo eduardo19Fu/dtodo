@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -53,9 +54,11 @@ public class FacturaApiController {
             @PathVariable("page") Integer page,
             @RequestParam("fechaIni") String fechaIni,
             @RequestParam("fechaFin") String fechaFin,
-            @RequestParam(value = "size", defaultValue = "5") Integer size) {
+            @RequestParam(value = "size", defaultValue = "5") Integer size,
+            @RequestParam(value = "orden", defaultValue = "fecha") String orden,
+            @RequestParam(value = "direccion", defaultValue = "desc") String direccion) {
         return ResponseEntity.ok(serviceFactura.findAllListadoDto(
-                fechaIni, fechaFin, PageRequest.of(page, size)));
+                fechaIni, fechaFin, PageRequest.of(page, size, obtenerOrden(orden, direccion))));
     }
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
@@ -65,9 +68,11 @@ public class FacturaApiController {
             @RequestParam("fechaIni") String fechaIni,
             @RequestParam("fechaFin") String fechaFin,
             @RequestParam(value = "filtro", defaultValue = "") String filtro,
-            @RequestParam(value = "size", defaultValue = "5") Integer size) {
+            @RequestParam(value = "size", defaultValue = "5") Integer size,
+            @RequestParam(value = "orden", defaultValue = "fecha") String orden,
+            @RequestParam(value = "direccion", defaultValue = "desc") String direccion) {
         return ResponseEntity.ok(serviceFactura.searchListadoDto(
-                fechaIni, fechaFin, filtro, PageRequest.of(page, size)));
+                fechaIni, fechaFin, filtro, PageRequest.of(page, size, obtenerOrden(orden, direccion))));
     }
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
@@ -75,8 +80,26 @@ public class FacturaApiController {
     public ResponseEntity<Page<FacturaDto>> getUltimasListadoDto(
             @PathVariable("page") Integer page,
             @RequestParam(value = "filtro", defaultValue = "") String filtro,
-            @RequestParam(value = "size", defaultValue = "5") Integer size) {
-        return ResponseEntity.ok(serviceFactura.findUltimasListadoDto(filtro, PageRequest.of(page, size)));
+            @RequestParam(value = "size", defaultValue = "5") Integer size,
+            @RequestParam(value = "orden", defaultValue = "fecha") String orden,
+            @RequestParam(value = "direccion", defaultValue = "desc") String direccion) {
+        return ResponseEntity.ok(serviceFactura.findUltimasListadoDto(
+                filtro, PageRequest.of(page, size, obtenerOrden(orden, direccion))));
+    }
+
+    private Sort obtenerOrden(String orden, String direccion) {
+        Sort.Direction sentido = "desc".equalsIgnoreCase(direccion)
+                ? Sort.Direction.DESC : Sort.Direction.ASC;
+        switch (orden == null ? "" : orden.toLowerCase()) {
+            case "numero": return Sort.by(sentido, "noFactura");
+            case "serie": return Sort.by(sentido, "serie");
+            case "cliente": return Sort.by(sentido, "cliente.nombre");
+            case "vendedor": return Sort.by(sentido, "usuario.primerNombre", "usuario.apellido");
+            case "usuario": return Sort.by(sentido, "usuario.usuario");
+            case "total": return Sort.by(sentido, "total");
+            case "estado": return Sort.by(sentido, "estado.estado");
+            default: return Sort.by(sentido, "fecha");
+        }
     }
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})

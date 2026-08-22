@@ -31,6 +31,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +40,7 @@ import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -103,6 +105,7 @@ public class NotaCreditoServiceImpl implements INotaCreditoService {
                         .filter(nota -> coincideFiltro(nota, filtroNormalizado))
                         .collect(Collectors.toList());
             }
+            ordenarNotas(notas, pageable.getSort());
             int inicio = Math.min((int) pageable.getOffset(), notas.size());
             int fin = Math.min(inicio + pageable.getPageSize(), notas.size());
             return new PageImpl<>(notas.subList(inicio, fin), pageable, notas.size());
@@ -149,6 +152,55 @@ public class NotaCreditoServiceImpl implements INotaCreditoService {
 
     private boolean contiene(Object valor, String filtro) {
         return valor != null && valor.toString().toLowerCase().contains(filtro);
+    }
+
+    private void ordenarNotas(List<NotaCreditoDto> notas, Sort sort) {
+        Comparator<NotaCreditoDto> comparador = null;
+        for (Sort.Order order : sort) {
+            Comparator<NotaCreditoDto> comparadorCampo = (primera, segunda) -> compararValores(
+                    obtenerValorOrden(primera, order.getProperty()),
+                    obtenerValorOrden(segunda, order.getProperty()));
+            if (order.isDescending()) {
+                comparadorCampo = comparadorCampo.reversed();
+            }
+            comparador = comparador == null ? comparadorCampo : comparador.thenComparing(comparadorCampo);
+        }
+        if (comparador != null) {
+            notas.sort(comparador);
+        }
+    }
+
+    private Comparable<?> obtenerValorOrden(NotaCreditoDto nota, String propiedad) {
+        switch (propiedad) {
+            case "idNotaCredito": return nota.getIdNotaCredito();
+            case "total": return nota.getTotal();
+            case "usuario.usuario": return normalizar(nota.getUsuario());
+            case "cliente.nombre": return normalizar(nota.getCliente());
+            case "tipoDocumentoOrigen": return nota.getTipoDocumentoOrigen();
+            case "correlativoFacturaSat": return normalizar(nota.getCorrelativoFacturaSat());
+            case "noProforma": return normalizar(nota.getNoProforma());
+            case "fechaEntregaEstimada": return nota.getFechaEntregaEstimada();
+            case "estado": return nota.getEstado();
+            default: return nota.getFechaCreacion();
+        }
+    }
+
+    private String normalizar(String valor) {
+        return valor == null ? null : valor.toLowerCase();
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private int compararValores(Comparable primero, Comparable segundo) {
+        if (primero == null && segundo == null) {
+            return 0;
+        }
+        if (primero == null) {
+            return 1;
+        }
+        if (segundo == null) {
+            return -1;
+        }
+        return primero.compareTo(segundo);
     }
 
     @Override

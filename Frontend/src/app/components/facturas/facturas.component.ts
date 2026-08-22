@@ -34,6 +34,8 @@ export class FacturasComponent implements OnInit, OnDestroy {
   cargando = false;
   busquedaRealizada = false;
   mostrandoUltimas = true;
+  orden = 'fecha';
+  direccion: 'asc' | 'desc' = 'desc';
 
   private busquedaSubject = new Subject<string>();
   private busquedaSubscription: Subscription;
@@ -94,10 +96,13 @@ export class FacturasComponent implements OnInit, OnDestroy {
   cargarFacturas(page: number): void {
     this.cargando = true;
     const request = this.mostrandoUltimas
-      ? this.facturaService.getUltimasFacturasDto(page, this.filtro, this.pageSize)
+      ? this.facturaService.getUltimasFacturasDto(
+          page, this.filtro, this.pageSize, this.orden, this.direccion)
       : this.filtro.trim()
-        ? this.facturaService.buscarFacturasDto(page, this.fechaIni, this.fechaFin, this.filtro, this.pageSize)
-        : this.facturaService.getFacturasDtoPaginadas(page, this.fechaIni, this.fechaFin, this.pageSize);
+        ? this.facturaService.buscarFacturasDto(
+            page, this.fechaIni, this.fechaFin, this.filtro, this.pageSize, this.orden, this.direccion)
+        : this.facturaService.getFacturasDtoPaginadas(
+            page, this.fechaIni, this.fechaFin, this.pageSize, this.orden, this.direccion);
 
     request.subscribe(
       response => {
@@ -125,6 +130,23 @@ export class FacturasComponent implements OnInit, OnDestroy {
     this.mostrandoUltimas = true;
     this.busquedaRealizada = true;
     this.cargarFacturas(0);
+  }
+
+  ordenarPor(campo: string): void {
+    if (this.orden === campo) {
+      this.direccion = this.direccion === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.orden = campo;
+      this.direccion = 'asc';
+    }
+    this.cargarFacturas(0);
+  }
+
+  iconoOrden(campo: string): string {
+    if (this.orden !== campo) {
+      return 'fas fa-sort';
+    }
+    return this.direccion === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down';
   }
 
   abrirDetalle(facturaDto: FacturaDto): void {

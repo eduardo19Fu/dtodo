@@ -1,47 +1,66 @@
-<div class="modal fade" id="modal-poliza">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title">{{title}}</h4>
-                <button id="button-x" type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <h4>Ingrese datos requeridos</h4>
-                <br>
-                <form #formBusqueda="ngForm" id="form-busqueda">
-
-                    <div class="row">
-                        <div class="form-group col">
-                            <label for="usuario">Cajero</label>
-                            <select class="form-control" name="usuario" (change)="getUsuario($event.target.value)">
-                                <option value="null">Seleccione un Cajero</option>
-                                <option *ngFor="let cajero of cajeros" value="{{cajero.idUsuario}}">{{cajero.usuario}}</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group col">
-                            <label for="fecha-inicio">Fecha</label>
-                            <input type="date" class="form-control" name="fecha-inicio" id="fecha-inicio" [(ngModel)]="fecha">
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn bg-gradient-warning" style="width: 100%;"
-                        [disabled]="!formBusqueda.form.valid" (click)="onSubmit()">
-                        <i class="fas fa-print"></i>
-                        Imprimir
-                    </button>
-
-                </form>
-            </div>
-            <div class="modal-footer justify-content-between">
-                <button type="button" class="btn btn-default" id="cerrar-modal" data-dismiss="modal"
-                    style="display: right;">Cerrar</button>
-            </div>
+<div class="modal fade policy-report-modal" id="modal-poliza" tabindex="-1" role="dialog"
+  aria-labelledby="policy-report-title" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content policy-report-content">
+      <header class="modal-header policy-report-header">
+        <div class="report-heading-icon" aria-hidden="true">
+          <i class="fas fa-file-invoice-dollar"></i>
         </div>
-        <!-- /.modal-content -->
+        <div class="report-heading-copy">
+          <span>Reportes</span>
+          <h4 class="modal-title" id="policy-report-title">{{ title }}</h4>
+          <p>Selecciona el cajero y la fecha que deseas consultar.</p>
+        </div>
+        <button type="button" class="report-close" data-dismiss="modal" aria-label="Cerrar">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+      </header>
+
+      <form #formBusqueda="ngForm" id="form-poliza" (ngSubmit)="onSubmit()">
+        <div class="modal-body policy-report-body">
+          <div class="report-intro">
+            <span class="report-intro-icon" aria-hidden="true"><i class="fas fa-cash-register"></i></span>
+            <div>
+              <strong>Define los datos de la póliza</strong>
+              <p>El reporte incluirá las ventas registradas por el cajero durante la fecha seleccionada.</p>
+            </div>
+          </div>
+
+          <div class="report-field-grid">
+            <div class="report-field">
+              <label for="poliza-cajero">Cajero <span aria-hidden="true">*</span></label>
+              <div class="field-control select-control">
+                <i class="fas fa-user" aria-hidden="true"></i>
+                <select class="form-control" name="cajero" id="poliza-cajero"
+                  [(ngModel)]="idCajero" required aria-required="true">
+                  <option [ngValue]="null" disabled>Selecciona un cajero</option>
+                  <option *ngFor="let cajero of cajeros" [ngValue]="cajero.idUsuario">{{ cajero.usuario }}</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="report-field">
+              <label for="poliza-fecha">Fecha <span aria-hidden="true">*</span></label>
+              <div class="field-control date-control">
+                <i class="far fa-calendar-check" aria-hidden="true"></i>
+                <input type="date" class="form-control" name="fecha" id="poliza-fecha"
+                  [(ngModel)]="fecha" required aria-required="true">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer class="modal-footer policy-report-footer">
+          <span class="required-note"><i class="fas fa-info-circle" aria-hidden="true"></i> Ambos campos son obligatorios</span>
+          <div class="report-actions">
+            <button type="button" class="report-cancel" data-dismiss="modal">Cancelar</button>
+            <button type="submit" class="report-submit" [disabled]="formBusqueda.form.invalid">
+              <i class="fas fa-file-pdf" aria-hidden="true"></i>
+              Generar reporte
+            </button>
+          </div>
+        </footer>
+      </form>
     </div>
-    <!-- /.modal-dialog -->
+  </div>
 </div>
-<!-- /.modal -->

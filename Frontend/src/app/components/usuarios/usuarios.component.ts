@@ -17,7 +17,7 @@ import Swal from 'sweetalert2';
 })
 export class UsuariosComponent implements OnInit, OnDestroy {
 
-  title = 'Listado de Usuarios';
+  title = 'Usuarios';
   usuarios: UsuarioDto[] = [];
   usuarioSeleccionado: UsuarioAuxiliar;
   detalleCargandoId: number = null;

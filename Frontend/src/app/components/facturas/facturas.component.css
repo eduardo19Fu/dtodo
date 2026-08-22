@@ -148,6 +148,26 @@
 .document-table .col-estado { text-align: center; width: 105px; }
 .document-table .col-opciones { text-align: center; width: 160px; }
 
+.sort-header {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  font-weight: inherit;
+  justify-content: space-between;
+  padding: 0;
+  text-align: left;
+  width: 100%;
+}
+
+.sort-header i { color: #adb5bd; margin-left: 0.45rem; }
+.sort-header .fa-sort-up,
+.sort-header .fa-sort-down { color: #fff; }
+.sort-header:focus { outline: 2px solid rgba(255, 255, 255, 0.65); outline-offset: 2px; }
+
 .cell-ellipsis { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cliente-nombre { display: -webkit-box; font-weight: 600; line-height: 1.35; max-height: 2.7em; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .cliente-nit, .fecha-hora { color: #6c757d; display: block; font-size: 0.78rem; margin-top: 0.2rem; white-space: nowrap; }

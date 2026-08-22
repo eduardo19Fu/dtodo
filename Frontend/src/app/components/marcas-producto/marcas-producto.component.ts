@@ -15,7 +15,7 @@ import Swal from 'sweetalert2';
 })
 export class MarcasProductoComponent implements OnInit, OnDestroy {
 
-  title = 'Listado de Marcas de Productos';
+  title = 'Marcas de Producto';
   marcas: MarcaProductoDto[] = [];
   paginaActual = 0;
   totalPaginas = 0;

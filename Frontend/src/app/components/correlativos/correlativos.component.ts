@@ -18,7 +18,7 @@ import Swal from 'sweetalert2';
 })
 export class CorrelativosComponent implements OnInit, OnDestroy {
 
-  title = 'Listado de Correlativos';
+  title = 'Correlativos';
   correlativos: CorrelativoDto[] = [];
   paginaActual = 0;
   totalPaginas = 0;

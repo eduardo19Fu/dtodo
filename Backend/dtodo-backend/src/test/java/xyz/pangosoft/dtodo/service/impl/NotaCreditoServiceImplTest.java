@@ -2,6 +2,7 @@ package xyz.pangosoft.dtodo.service.impl;
 
 import xyz.pangosoft.dtodo.dto.NotaCreditoDetalleDto;
 import xyz.pangosoft.dtodo.dto.NotaCreditoDetalleItemDto;
+import xyz.pangosoft.dtodo.dto.NotaCreditoDto;
 import xyz.pangosoft.dtodo.model.Cliente;
 import xyz.pangosoft.dtodo.model.NotaCredito;
 import xyz.pangosoft.dtodo.model.NotaCreditoDetalle;
@@ -12,19 +13,44 @@ import xyz.pangosoft.dtodo.model.enums.TipoDocumentoOrigenEnum;
 import xyz.pangosoft.dtodo.repository.INotaCreditoRepository;
 import xyz.pangosoft.dtodo.service.IMovimientoProductoService;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 class NotaCreditoServiceImplTest {
+
+    @Test
+    void ordenaLasUltimasNotasAntesDePaginar() {
+        INotaCreditoRepository repository = mock(INotaCreditoRepository.class);
+        NotaCreditoServiceImpl service = new NotaCreditoServiceImpl(
+                repository, mock(IMovimientoProductoService.class), mock(DataSource.class));
+        NotaCreditoDto segunda = new NotaCreditoDto();
+        segunda.setIdNotaCredito(20L);
+        NotaCreditoDto primera = new NotaCreditoDto();
+        primera.setIdNotaCredito(10L);
+        when(repository.findUltimasAsDto(any()))
+                .thenReturn(new ArrayList<>(Arrays.asList(segunda, primera)));
+
+        Page<NotaCreditoDto> resultado = service.findUltimas("",
+                PageRequest.of(0, 5, Sort.by(Sort.Direction.ASC, "idNotaCredito")));
+
+        assertEquals(10L, resultado.getContent().get(0).getIdNotaCredito());
+        assertEquals(20L, resultado.getContent().get(1).getIdNotaCredito());
+    }
 
     @Test
     void findDetalleMapeaSoloLosDatosNecesariosParaVisualizacion() {

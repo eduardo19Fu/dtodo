@@ -76,7 +76,6 @@ export class CreateProformaComponent implements OnInit {
     (document.getElementById('codigo') as HTMLInputElement).value = event.codProducto;
     (document.getElementById('button-x')).click();
     this.buscarProducto();
-    (document.getElementById('cantidad') as HTMLInputElement).focus();
   }
 
   loadCliente(event): void {
@@ -95,7 +94,7 @@ export class CreateProformaComponent implements OnInit {
     this.productoService.getProductoByCode(codigo).subscribe(
       producto => {
         this.producto = producto;
-        (document.getElementById('cantidad') as HTMLInputElement).focus();
+        this.enfocarCantidad();
       },
       error => {
         const status = error.status;
@@ -105,6 +104,10 @@ export class CreateProformaComponent implements OnInit {
         swal.fire(`Error: ${error.error?.status || status}`, message, 'error');
       }
     );
+  }
+
+  private enfocarCantidad(): void {
+    setTimeout(() => (document.getElementById('cantidad') as HTMLInputElement)?.focus(), 350);
   }
 
   buscarCliente(): void {

@@ -47,7 +47,7 @@ export class ListadoProductosMejoradoComponent implements OnInit, OnDestroy {
     private productoService: ProductoService,
     public auth: AuthService
   ) {
-    this.title = 'Listado de Productos';
+    this.title = 'Productos';
   }
 
   ngOnInit(): void {
