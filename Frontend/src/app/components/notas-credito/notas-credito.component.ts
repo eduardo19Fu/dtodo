@@ -39,6 +39,8 @@ export class NotasCreditoComponent implements OnInit, OnDestroy {
   filtro = '';
   cargando = false;
   mostrandoUltimas = true;
+  orden = 'fecha';
+  direccion: 'asc' | 'desc' = 'desc';
   private busquedaSubject = new Subject<string>();
   private busquedaSubscription: Subscription;
 
@@ -104,9 +106,10 @@ export class NotasCreditoComponent implements OnInit, OnDestroy {
   cargarNotasCredito(page: number): void {
     this.cargando = true;
     const request = this.mostrandoUltimas
-      ? this.notasService.getUltimasNotasCredito(page, this.filtro, this.pageSize)
+      ? this.notasService.getUltimasNotasCredito(
+          page, this.filtro, this.pageSize, this.orden, this.direccion)
       : this.notasService.getNotasCreditoPorFechas(
-        page, this.fechaIni, this.fechaFin, this.filtro, this.pageSize);
+        page, this.fechaIni, this.fechaFin, this.filtro, this.pageSize, this.orden, this.direccion);
 
     request.subscribe(response => {
       this.notasCredito = response.content;
@@ -146,6 +149,24 @@ export class NotasCreditoComponent implements OnInit, OnDestroy {
   }
 
   onBuscar(valor: string): void { this.busquedaSubject.next(valor); }
+
+  ordenarPor(campo: string): void {
+    if (this.orden === campo) {
+      this.direccion = this.direccion === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.orden = campo;
+      this.direccion = 'asc';
+    }
+    this.cargarNotasCredito(0);
+  }
+
+  iconoOrden(campo: string): string {
+    if (this.orden !== campo) {
+      return 'fas fa-sort';
+    }
+    return this.direccion === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down';
+  }
+
   irPrimeraPagina(): void { this.cargarNotasCredito(0); }
   irUltimaPagina(): void { this.cargarNotasCredito(this.totalPaginas - 1); }
   irPaginaAnterior(): void { if (!this.isFirst) { this.cargarNotasCredito(this.paginaActual - 1); } }

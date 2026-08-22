@@ -15,7 +15,7 @@ import Swal from 'sweetalert2';
 })
 export class ClientesComponent implements OnInit, OnDestroy {
 
-  title = 'Listado de clientes';
+  title = 'Clientes';
   clientes: Cliente[] = [];
   paginaActual = 0;
   totalPaginas = 0;

@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 
@@ -45,8 +46,11 @@ public class NotaCreditoApiController {
     public ResponseEntity<Page<NotaCreditoDto>> getUltimasNotas(
             @PathVariable("page") Integer page,
             @RequestParam(value = "filtro", defaultValue = "") String filtro,
-            @RequestParam(value = "size", defaultValue = "5") Integer size) {
-        return ResponseEntity.ok(notaCreditoService.findUltimas(filtro, PageRequest.of(page, size)));
+            @RequestParam(value = "size", defaultValue = "5") Integer size,
+            @RequestParam(value = "orden", defaultValue = "fecha") String orden,
+            @RequestParam(value = "direccion", defaultValue = "desc") String direccion) {
+        return ResponseEntity.ok(notaCreditoService.findUltimas(
+                filtro, PageRequest.of(page, size, obtenerOrden(orden, direccion))));
     }
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
@@ -56,9 +60,27 @@ public class NotaCreditoApiController {
             @RequestParam("fechaIni") String fechaIni,
             @RequestParam("fechaFin") String fechaFin,
             @RequestParam(value = "filtro", defaultValue = "") String filtro,
-            @RequestParam(value = "size", defaultValue = "5") Integer size) {
+            @RequestParam(value = "size", defaultValue = "5") Integer size,
+            @RequestParam(value = "orden", defaultValue = "fecha") String orden,
+            @RequestParam(value = "direccion", defaultValue = "desc") String direccion) {
         return ResponseEntity.ok(notaCreditoService.findPorFechas(
-                fechaIni, fechaFin, filtro, PageRequest.of(page, size)));
+                fechaIni, fechaFin, filtro, PageRequest.of(page, size, obtenerOrden(orden, direccion))));
+    }
+
+    private Sort obtenerOrden(String orden, String direccion) {
+        Sort.Direction sentido = "desc".equalsIgnoreCase(direccion)
+                ? Sort.Direction.DESC : Sort.Direction.ASC;
+        switch (orden == null ? "" : orden.toLowerCase()) {
+            case "id": return Sort.by(sentido, "idNotaCredito");
+            case "total": return Sort.by(sentido, "total");
+            case "emisor": return Sort.by(sentido, "usuario.usuario");
+            case "cliente": return Sort.by(sentido, "cliente.nombre");
+            case "origen": return Sort.by(sentido, "tipoDocumentoOrigen");
+            case "referencia": return Sort.by(sentido, "correlativoFacturaSat", "noProforma");
+            case "entrega": return Sort.by(sentido, "fechaEntregaEstimada");
+            case "estado": return Sort.by(sentido, "estado");
+            default: return Sort.by(sentido, "fechaCreacion");
+        }
     }
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})

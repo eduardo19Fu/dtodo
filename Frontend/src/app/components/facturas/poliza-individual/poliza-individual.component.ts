@@ -2,8 +2,6 @@ import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { Usuario } from 'src/app/models/usuario';
 import { UsuarioService } from '../../../services/usuarios/usuario.service';
 import { FacturaService } from '../../../services/facturas/factura.service';
-import { AuthService } from '../../../services/auth.service';
-import { UsuarioAuxiliar } from '../../../models/auxiliar/usuario-auxiliar';
 
 @Component({
   selector: 'app-poliza-individual',
@@ -16,16 +14,14 @@ export class PolizaIndividualComponent implements OnInit, AfterViewInit {
 
   fecha: Date;
 
-  usuario: UsuarioAuxiliar;
+  idCajero: number = null;
   cajeros: Usuario[];
 
   constructor(
     private usuarioService: UsuarioService,
-    private facturaService: FacturaService,
-    private authService: AuthService
+    private facturaService: FacturaService
   ) {
-    this.title = 'Poliza Individual';
-    this.usuario = new UsuarioAuxiliar();
+    this.title = 'Póliza Individual';
   }
 
   ngOnInit(): void {
@@ -35,14 +31,8 @@ export class PolizaIndividualComponent implements OnInit, AfterViewInit {
     this.getCajeros();
   }
 
-  getUsuario(event): void{
-    this.usuarioService.getUsuario(event).subscribe(
-      usuario => this.usuario = usuario
-    );
-  }
-
   onSubmit(): void {
-    this.facturaService.getSellsDaillyReportPDF(this.usuario.idUsuario, this.fecha).subscribe(response => {
+    this.facturaService.getSellsDaillyReportPDF(this.idCajero, this.fecha).subscribe(response => {
       const url = window.URL.createObjectURL(response.data);
       const a = document.createElement('a');
       document.body.appendChild(a);

@@ -134,7 +134,7 @@ export class CreateFacturaComponent implements OnInit {
       this.productoService.getProductoByCode(codigo).subscribe(
         producto => {
           this.producto = producto;
-          (document.getElementById('cantidad') as HTMLInputElement).focus();
+          this.enfocarCantidad();
         },
         error => {
           if (error.status === 400) {
@@ -386,7 +386,10 @@ export class CreateFacturaComponent implements OnInit {
     (document.getElementById('codigo') as HTMLInputElement).value = event.codProducto;
     (document.getElementById('button-x')).click();
     this.buscarProducto();
-    (document.getElementById('cantidad') as HTMLInputElement).focus();
+  }
+
+  private enfocarCantidad(): void {
+    setTimeout(() => (document.getElementById('cantidad') as HTMLInputElement)?.focus(), 350);
   }
 
   loadCliente(event): void {

@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -173,6 +174,7 @@ public class FacturaServiceImpl implements IFacturaService {
 						.filter(factura -> coincideFiltro(factura, filtroNormalizado))
 						.collect(java.util.stream.Collectors.toList());
 			}
+			ordenarFacturas(facturas, pageable.getSort());
 			int inicio = Math.min((int) pageable.getOffset(), facturas.size());
 			int fin = Math.min(inicio + pageable.getPageSize(), facturas.size());
 			return new PageImpl<>(facturas.subList(inicio, fin), pageable, facturas.size());
@@ -194,6 +196,54 @@ public class FacturaServiceImpl implements IFacturaService {
 
 	private boolean contiene(Object valor, String filtro) {
 		return valor != null && valor.toString().toLowerCase().contains(filtro);
+	}
+
+	private void ordenarFacturas(List<FacturaDto> facturas, Sort sort) {
+		Comparator<FacturaDto> comparador = null;
+		for (Sort.Order order : sort) {
+			Comparator<FacturaDto> comparadorCampo = (primera, segunda) -> compararValores(
+					obtenerValorOrden(primera, order.getProperty()),
+					obtenerValorOrden(segunda, order.getProperty()));
+			if (order.isDescending()) {
+				comparadorCampo = comparadorCampo.reversed();
+			}
+			comparador = comparador == null ? comparadorCampo : comparador.thenComparing(comparadorCampo);
+		}
+		if (comparador != null) {
+			facturas.sort(comparador);
+		}
+	}
+
+	private Comparable<?> obtenerValorOrden(FacturaDto factura, String propiedad) {
+		switch (propiedad) {
+			case "noFactura": return factura.getNoFactura();
+			case "serie": return normalizar(factura.getSerie());
+			case "cliente.nombre": return normalizar(factura.getCliente());
+			case "usuario.primerNombre":
+			case "usuario.apellido": return normalizar(factura.getVendedor());
+			case "usuario.usuario": return normalizar(factura.getUsuario());
+			case "total": return factura.getTotal();
+			case "estado.estado": return normalizar(factura.getEstado());
+			default: return factura.getFecha();
+		}
+	}
+
+	private String normalizar(String valor) {
+		return valor == null ? null : valor.toLowerCase();
+	}
+
+	@SuppressWarnings({"rawtypes", "unchecked"})
+	private int compararValores(Comparable primero, Comparable segundo) {
+		if (primero == null && segundo == null) {
+			return 0;
+		}
+		if (primero == null) {
+			return 1;
+		}
+		if (segundo == null) {
+			return -1;
+		}
+		return primero.compareTo(segundo);
 	}
 
 	@Transactional(readOnly = true)

@@ -357,15 +357,15 @@
             *ngIf="!cargando && notasCredito.length > 0">
             <thead>
                 <tr>
-                    <th class="col-id">ID</th>
-                    <th class="col-total">Total</th>
-                    <th class="col-emisor">Emisor</th>
-                    <th class="col-cliente">Cliente / NIT</th>
-                    <th class="col-origen">Origen</th>
-                    <th class="col-referencia">Referencia</th>
-                    <th class="col-fecha">Fecha Creaci&oacute;n</th>
-                    <th class="col-fecha-entrega">Fecha Estimada de Entrega</th>
-                    <th class="col-estado">Estado</th>
+                    <th class="col-id"><button type="button" class="sort-header" (click)="ordenarPor('id')">ID <i [class]="iconoOrden('id')"></i></button></th>
+                    <th class="col-total"><button type="button" class="sort-header" (click)="ordenarPor('total')">Total <i [class]="iconoOrden('total')"></i></button></th>
+                    <th class="col-emisor"><button type="button" class="sort-header" (click)="ordenarPor('emisor')">Emisor <i [class]="iconoOrden('emisor')"></i></button></th>
+                    <th class="col-cliente"><button type="button" class="sort-header" (click)="ordenarPor('cliente')">Cliente / NIT <i [class]="iconoOrden('cliente')"></i></button></th>
+                    <th class="col-origen"><button type="button" class="sort-header" (click)="ordenarPor('origen')">Origen <i [class]="iconoOrden('origen')"></i></button></th>
+                    <th class="col-referencia"><button type="button" class="sort-header" (click)="ordenarPor('referencia')">Referencia <i [class]="iconoOrden('referencia')"></i></button></th>
+                    <th class="col-fecha"><button type="button" class="sort-header" (click)="ordenarPor('fecha')">Fecha Creaci&oacute;n <i [class]="iconoOrden('fecha')"></i></button></th>
+                    <th class="col-fecha-entrega"><button type="button" class="sort-header" (click)="ordenarPor('entrega')">Fecha Estimada de Entrega <i [class]="iconoOrden('entrega')"></i></button></th>
+                    <th class="col-estado"><button type="button" class="sort-header" (click)="ordenarPor('estado')">Estado <i [class]="iconoOrden('estado')"></i></button></th>
                     <th class="col-opciones" *ngIf="puedeOperar">Opciones</th>
                 </tr>
             </thead>

@@ -49,8 +49,7 @@ public interface IFacturaRepository extends JpaRepository<Factura, Long> {
             "u.usuario, concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, '')), " +
             "c.nombre, c.nit, f.certificacionSat) " +
             "from Factura f join f.estado e join f.usuario u join f.cliente c " +
-            "where f.fecha >= :fechaIni and f.fecha < :fechaFin " +
-            "order by f.fecha desc")
+            "where f.fecha >= :fechaIni and f.fecha < :fechaFin")
     Page<FacturaDto> findAllListadoDto(@Param("fechaIni") Date fechaIni,
                                                @Param("fechaFin") Date fechaFin,
                                                Pageable pageable);
@@ -66,8 +65,7 @@ public interface IFacturaRepository extends JpaRepository<Factura, Long> {
             "lower(u.usuario) like lower(concat('%', :filtro, '%')) or " +
             "lower(concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, ''))) like lower(concat('%', :filtro, '%')) or " +
             "lower(coalesce(f.serie, '')) like lower(concat('%', :filtro, '%')) or " +
-            "str(f.noFactura) like concat('%', :filtro, '%')) " +
-            "order by f.fecha desc")
+            "str(f.noFactura) like concat('%', :filtro, '%'))")
     Page<FacturaDto> searchListadoDto(@Param("fechaIni") Date fechaIni,
                                               @Param("fechaFin") Date fechaFin,
                                               @Param("filtro") String filtro,

@@ -37,22 +37,28 @@ export class NotasCreditoService {
     );
   }
 
-  getUltimasNotasCredito(page: number, filtro: string = '', size: number = 5): Observable<any> {
+  getUltimasNotasCredito(page: number, filtro: string = '', size: number = 5,
+                         orden: string = 'fecha', direccion: string = 'desc'): Observable<any> {
     const params = new HttpParams()
       .set('filtro', filtro)
-      .set('size', size.toString());
+      .set('size', size.toString())
+      .set('orden', orden)
+      .set('direccion', direccion);
     return this.httpClient.get<any>(`${this.url}/notas-credito-dto/ultimas/${page}`, { params }).pipe(
       catchError(e => throwError(e))
     );
   }
 
   getNotasCreditoPorFechas(page: number, fechaIni: string, fechaFin: string,
-                           filtro: string = '', size: number = 5): Observable<any> {
+                           filtro: string = '', size: number = 5,
+                           orden: string = 'fecha', direccion: string = 'desc'): Observable<any> {
     const params = new HttpParams()
       .set('fechaIni', fechaIni)
       .set('fechaFin', fechaFin)
       .set('filtro', filtro)
-      .set('size', size.toString());
+      .set('size', size.toString())
+      .set('orden', orden)
+      .set('direccion', direccion);
     return this.httpClient.get<any>(`${this.url}/notas-credito-dto/fechas/${page}`, { params }).pipe(
       catchError(e => throwError(e))
     );
