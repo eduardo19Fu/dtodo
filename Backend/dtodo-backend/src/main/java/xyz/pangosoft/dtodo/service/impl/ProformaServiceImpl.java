@@ -488,30 +488,71 @@ public class ProformaServiceImpl implements IProformaService {
 
     @Override
     public byte[] showProforma(Long idproforma) {
+        long inicio = System.currentTimeMillis();
+        String etapa = "obtener conexión a la base de datos";
+        log.info("Iniciando generación del reporte de proforma. idProforma={}", idproforma);
+
         try (Connection con = dataSource.getConnection()) {
+            log.info("Conexión obtenida para reporte de proforma. idProforma={}, motor={} {}",
+                    idproforma,
+                    con.getMetaData().getDatabaseProductName(),
+                    con.getMetaData().getDatabaseProductVersion());
+
             Map<String, Object> params = new HashMap<>();
             params.put("proformaId", idproforma);
 
-            InputStream file = this.getClass().getResourceAsStream("/reports/proforma.jrxml");
-            if(file == null) {
-                log.error("El archivo no se encuentra en la ruta especificada");
-                throw new ReportGenerationException("El archivo no se encuentra en la ruta especificada", null);
+            etapa = "cargar plantilla /reports/proforma.jrxml";
+            try (InputStream file = this.getClass().getResourceAsStream("/reports/proforma.jrxml")) {
+                if (file == null) {
+                    throw new ReportGenerationException(
+                            "No se encontró la plantilla /reports/proforma.jrxml", null);
+                }
+
+                etapa = "compilar plantilla Jasper";
+                JasperReport jasperReport = JasperCompileManager.compileReport(file);
+
+                etapa = "ejecutar consulta y llenar reporte Jasper";
+                JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, params, con);
+
+                etapa = "exportar reporte a PDF";
+                byte[] pdf = JasperExportManager.exportReportToPdf(jasperPrint);
+                log.info("Reporte de proforma finalizado. idProforma={}, paginas={}, bytes={}, duracionMs={}",
+                        idproforma, jasperPrint.getPages().size(), pdf.length,
+                        System.currentTimeMillis() - inicio);
+                return pdf;
             }
-
-            JasperReport jasperReport = JasperCompileManager.compileReport(file);
-            JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, params, con);
-
-            return JasperExportManager.exportReportToPdf(jasperPrint);
+        } catch (ReportGenerationException e) {
+            log.error("No fue posible generar la proforma. idProforma={}, etapa={}, duracionMs={}",
+                    idproforma, etapa, System.currentTimeMillis() - inicio, e);
+            throw e;
         } catch (JRException e) {
-            log.error("Ha ocurrido un error durante la generación de la proforma: {}", e.getMessage());
-            throw new ReportGenerationException(e.getMessage(), e.getCause());
+            log.error("Error Jasper generando proforma. idProforma={}, etapa={}, causaRaiz={}, duracionMs={}",
+                    idproforma, etapa, obtenerMensajeCausaRaiz(e),
+                    System.currentTimeMillis() - inicio, e);
+            throw new ReportGenerationException(
+                    "No se pudo generar la proforma durante la etapa: " + etapa, e);
         } catch (SQLException e) {
-            log.error("Ha ocurrido un error al intentar ejecutar una instucción SQL: {}", e.getMessage());
-            throw new xyz.pangosoft.dtodo.error.exceptions.SQLException(e.getMessage(), e.getCause());
+            log.error("Error SQL generando proforma. idProforma={}, etapa={}, sqlState={}, errorCode={}, "
+                            + "causaRaiz={}, duracionMs={}",
+                    idproforma, etapa, e.getSQLState(), e.getErrorCode(), obtenerMensajeCausaRaiz(e),
+                    System.currentTimeMillis() - inicio, e);
+            throw new xyz.pangosoft.dtodo.error.exceptions.SQLException(
+                    "No se pudo generar la proforma durante la etapa: " + etapa, e);
         } catch (Exception e) {
-            log.error("Ha ocurrido un error inesperado: {}", e);
-            throw new RuntimeException("Ha ocurrido un error inesperado: " + e.getMessage());
+            log.error("Error inesperado generando proforma. idProforma={}, etapa={}, causaRaiz={}, duracionMs={}",
+                    idproforma, etapa, obtenerMensajeCausaRaiz(e),
+                    System.currentTimeMillis() - inicio, e);
+            throw new ReportGenerationException(
+                    "No se pudo generar la proforma durante la etapa: " + etapa, e);
         }
+    }
+
+    private String obtenerMensajeCausaRaiz(Throwable error) {
+        Throwable causa = error;
+        while (causa.getCause() != null && causa.getCause() != causa) {
+            causa = causa.getCause();
+        }
+        return causa.getClass().getSimpleName() + ": " + causa.getMessage();
     }
 
     @Transactional(readOnly = true)

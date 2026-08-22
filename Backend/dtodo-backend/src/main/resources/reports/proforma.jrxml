@@ -15,7 +15,7 @@
 		pr.no_proforma,
         pr.total,
 --        IF(prd.descuento > 0, ROUND(p.precio_venta-((prd.descuento/100)*p.precio_venta), 2), p.precio_venta) as precio_venta,
-		IF(prd.descuento > 0, prd.nuevo_precio_venta, p.precio_venta) as precio_venta,
+		CAST(IF(prd.descuento > 0, prd.nuevo_precio_venta, p.precio_venta) AS DECIMAL(19,2)) as precio_venta,
         p.nombre AS producto,
         prd.cantidad,
         prd.descuento,
@@ -63,7 +63,7 @@ ORDER BY p.nombre ASC]]>
 		<property name="com.jaspersoft.studio.field.label" value="total"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="proformas"/>
 	</field>
-	<field name="precio_venta" class="java.lang.Double">
+	<field name="precio_venta" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.name" value="precio_venta"/>
 		<property name="com.jaspersoft.studio.field.label" value="precio_venta"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="productos"/>

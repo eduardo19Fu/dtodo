@@ -202,8 +202,19 @@ public class ProformaApiController {
 
     @GetMapping("/proformas/generate/{id}")
     public ResponseEntity<byte[]> showProforma(@PathVariable("id") Long idproforma) {
-        byte[] proformaPdf = proformaService.showProforma(idproforma);
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_PDF).body(proformaPdf);
+        long inicio = System.currentTimeMillis();
+        log.info("Iniciando GET /api/proformas/generate/{}", idproforma);
+
+        try {
+            byte[] proformaPdf = proformaService.showProforma(idproforma);
+            log.info("Proforma PDF generada. idProforma={}, bytes={}, duracionMs={}",
+                    idproforma, proformaPdf.length, System.currentTimeMillis() - inicio);
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_PDF).body(proformaPdf);
+        } catch (RuntimeException e) {
+            log.error("Fallo GET /api/proformas/generate/{}. duracionMs={}",
+                    idproforma, System.currentTimeMillis() - inicio, e);
+            throw e;
+        }
     }
 
     @Secured(value = "ROLE_ADMIN")
