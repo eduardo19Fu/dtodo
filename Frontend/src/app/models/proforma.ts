@@ -8,7 +8,7 @@ export class Proforma {
 
     idProforma: number;
     noProforma: string;
-    total: number;
+    total = 0;
     fechaEmision: Date;
 
     estado: Estado;
@@ -27,9 +27,9 @@ export class Proforma {
     }
 
     generarNoProforma(): string {
-        let min = 0;
-        let max = 10000000000;
-        let noProforma = Math.floor(Math.random() * (max - min + 1) + min) + 'P';
+        const min = 0;
+        const max = 10000000000;
+        const noProforma = Math.floor(Math.random() * (max - min + 1) + min) + 'P';
         return noProforma;
     }
 }

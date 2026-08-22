@@ -15,7 +15,8 @@
     </div><!-- /.container-fluid -->
 </section>
 
-<div class="card">
+<div class="card listing-card">
+    <div class="card-header listing-card-header">Listado de Productos</div>
     <div class="card-body table-responsive">
 
         <div *ngIf="productos?.length == 0" class="alert alert-info alert-dismissible">
@@ -27,7 +28,7 @@
             No existe ningún producto registrado en la base de datos!
         </div>
 
-        <table id="productos" class="table table-hover table-striped table-bordered dataTable dtr-inline table-sm"
+        <table id="productos" class="table table-hover table-striped table-bordered dataTable dtr-inline table-sm mobile-data-table"
             role="grid" *ngIf="productos?.length > 0">
             <thead>
                 <tr>
@@ -46,7 +47,7 @@
 
             <tbody>
                 <tr *ngFor="let producto of productos">
-                    <td>
+                    <td data-label="Imagen">
                         <!-- <img (click)="abrirModal(producto)" *ngIf="producto?.imagen"
                             src="http://localhost:8282/api/uploads/img/{{producto.imagen}}" alt="{{producto.imagen}}"
                             class="img-thumbnail rounded" style="width: 45px; height: 48px; cursor: pointer;"> -->
@@ -71,20 +72,20 @@
                             src="https://dimsa-new.herokuapp.com/images/no-image.jpg" alt="{{producto.imagen}}"
                             class="img-thumbnail rounded" style="width: 45px; height: 48px; cursor: pointer;"> -->
                     </td>
-                    <td><span class="listing-id-pill">#{{producto.codProducto}}</span></td>
-                    <td>{{producto.nombre}}</td>
-                    <td>{{producto.precioVenta}}</td>
-                    <td *ngIf="auth.hasRole('ROLE_ADMIN')">{{producto.precioCompra}}</td>
-                    <td>{{producto.stock}}</td>
-                    <td>{{producto.tipoProducto}}</td>
-                    <td>{{producto.marcaProducto}}</td>
-                    <td>
+                    <td data-label="Código"><span class="listing-id-pill">#{{producto.codProducto}}</span></td>
+                    <td class="mobile-primary-cell" data-label="Producto">{{producto.nombre}}</td>
+                    <td data-label="Precio venta">{{producto.precioVenta}}</td>
+                    <td data-label="Precio costo" *ngIf="auth.hasRole('ROLE_ADMIN')">{{producto.precioCompra}}</td>
+                    <td data-label="Stock">{{producto.stock}}</td>
+                    <td data-label="Tipo">{{producto.tipoProducto}}</td>
+                    <td data-label="Marca">{{producto.marcaProducto}}</td>
+                    <td data-label="Estado">
                         <span class="badge"
                             [ngClass]="{'badge-primary': producto.estado === 'ACTIVO', 'badge-danger': producto.estado === 'INACTIVO'}">
                             {{producto.estado}}
                         </span>
                     </td>
-                    <td class="center-options">
+                    <td class="center-options mobile-actions-cell" data-label="Opciones">
                         <button class="btn bg-gradient-success" data-toggle="modal" (click)="abrirModal(producto)">
                             <i class="fa fa-asterisk"></i>
                         </button>

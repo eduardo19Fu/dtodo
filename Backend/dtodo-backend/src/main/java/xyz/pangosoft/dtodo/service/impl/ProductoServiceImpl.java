@@ -10,11 +10,14 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
@@ -31,17 +34,26 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import xyz.pangosoft.dtodo.error.exceptions.NotFoundException;
 import xyz.pangosoft.dtodo.model.Estado;
+import xyz.pangosoft.dtodo.model.MarcaProducto;
 import xyz.pangosoft.dtodo.model.Producto;
+import xyz.pangosoft.dtodo.model.TipoProducto;
 import xyz.pangosoft.dtodo.repository.IProductoRepository;
 import xyz.pangosoft.dtodo.service.IProductoService;
 
 import org.springframework.web.multipart.MultipartFile;
+
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
 
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRParameter;
@@ -137,16 +149,113 @@ public class ProductoServiceImpl implements IProductoService {
 
 		try {
 			log.debug("Consultando productos desde la base de datos que conicidan con la busqueda...");
-			String filtroAdaptado = filtro == null ? "" : filtro.trim().replaceAll("\\s+", "%");
-			Page<Object[]> results = repoProducto.searchProductosDto(filtroAdaptado, orden, direccion, pageable);
+			List<String> terminos = obtenerTerminosBusqueda(filtro);
+			Page<Producto> results = repoProducto.findAll(
+					crearEspecificacionBusqueda(terminos), crearPageableOrdenado(pageable, orden, direccion));
 
-			return mapPageToProductoDtoMejorado(results);
+			return results.map(this::mapProductoToProductoDtoMejorado);
 		} catch (DataAccessException dax) {
 			log.error("Ha ocurrido un error al intentar consultar los productos con busqueda {}: {}", filtro, dax.getMessage());
 			throw new xyz.pangosoft.dtodo.error.exceptions.DataAccessException("Ha ocurrido un error al consultar los productos => ", dax);
 		} finally {
 			log.debug("{} Exit", __method);
 		}
+	}
+
+	static List<String> obtenerTerminosBusqueda(String filtro) {
+		if (filtro == null || filtro.trim().isEmpty()) {
+			return new ArrayList<>();
+		}
+
+		return Arrays.stream(filtro.trim().toLowerCase(Locale.ROOT).split("\\s+"))
+				.distinct()
+				.collect(Collectors.toList());
+	}
+
+	private Specification<Producto> crearEspecificacionBusqueda(List<String> terminos) {
+		return (root, query, criteriaBuilder) -> {
+			if (terminos.isEmpty()) {
+				return criteriaBuilder.conjunction();
+			}
+
+			Join<Producto, MarcaProducto> marca = root.join("marcaProducto", JoinType.LEFT);
+			Join<Producto, TipoProducto> tipo = root.join("tipoProducto", JoinType.LEFT);
+			Join<Producto, Estado> estado = root.join("estado", JoinType.LEFT);
+			List<Predicate> coincidencias = new ArrayList<>();
+
+			for (String termino : terminos) {
+				String patron = "%" + escaparLike(termino) + "%";
+				coincidencias.add(criteriaBuilder.or(
+						criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(root.get("nombre"), "")), patron, '\\'),
+						criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(root.get("codProducto"), "")), patron, '\\'),
+						criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(marca.get("marca"), "")), patron, '\\'),
+						criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(tipo.get("tipoProducto"), "")), patron, '\\'),
+						criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(estado.get("estado"), "")), patron, '\\')));
+			}
+
+			return criteriaBuilder.and(coincidencias.toArray(new Predicate[0]));
+		};
+	}
+
+	private String escaparLike(String valor) {
+		return valor.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
+	}
+
+	private Pageable crearPageableOrdenado(Pageable pageable, String orden, String direccion) {
+		Sort.Direction sentido = "desc".equalsIgnoreCase(direccion) ? Sort.Direction.DESC : Sort.Direction.ASC;
+		String propiedad;
+
+		switch (orden == null ? "" : orden) {
+			case "codigo":
+				propiedad = "codProducto";
+				break;
+			case "precioCompra":
+				propiedad = "precioCompra";
+				break;
+			case "precioVenta":
+				propiedad = "precioVenta";
+				break;
+			case "stock":
+				propiedad = "stock";
+				break;
+			case "tipo":
+				propiedad = "tipoProducto.tipoProducto";
+				break;
+			case "marca":
+				propiedad = "marcaProducto.marca";
+				break;
+			case "estado":
+				propiedad = "estado.estado";
+				break;
+			default:
+				propiedad = "nombre";
+		}
+
+		Sort sort = Sort.by(sentido, propiedad).and(Sort.by(Sort.Direction.ASC, "idProducto"));
+		return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+	}
+
+	private ProductoDtoMejorado mapProductoToProductoDtoMejorado(Producto producto) {
+		return ProductoDtoMejorado.builder()
+				.idProducto(producto.getIdProducto())
+				.codProducto(producto.getCodProducto())
+				.nombre(producto.getNombre())
+				.precioCompra(producto.getPrecioCompra())
+				.precioVenta(producto.getPrecioVenta())
+				.porcentajeGanancia(producto.getPorcentajeGanancia())
+				.descripcion(producto.getDescripcion())
+				.fechaVencimiento(producto.getFechaVencimiento() == null ? null
+						: new java.sql.Date(producto.getFechaVencimiento().getTime()).toLocalDate())
+				.fechaIngreso(producto.getFechaIngreso() == null ? null
+						: new java.sql.Date(producto.getFechaIngreso().getTime()).toLocalDate())
+				.fechaRegistro(producto.getFechaRegistro())
+				.stock(producto.getStock())
+				.imagen(producto.getImagen())
+				.idestado(producto.getEstado() == null ? 0 : producto.getEstado().getIdEstado())
+				.marcaProducto(producto.getMarcaProducto() == null ? null : producto.getMarcaProducto().getMarca())
+				.tipoProducto(producto.getTipoProducto() == null ? null : producto.getTipoProducto().getTipoProducto())
+				.estado(producto.getEstado() == null ? null : producto.getEstado().getEstado())
+				.build();
 	}
 
 	@Transactional(readOnly = true)

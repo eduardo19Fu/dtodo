@@ -33,10 +33,21 @@
       </span>
     </div>
 
+    <div class="mobile-document-total invoice-mobile-total" aria-live="polite">
+      <div>
+        <span>Total de la factura</span>
+        <small>
+          {{ factura.itemsFactura.length }}
+          {{ factura.itemsFactura.length === 1 ? 'producto' : 'productos' }}
+        </small>
+      </div>
+      <strong>{{ factura.total | currency: "Q" : "symbol" }}</strong>
+    </div>
+
     <section class="invoice-checkout-bar" aria-label="Cobro de la factura">
       <div class="checkout-total">
         <span>Total de la factura</span>
-        <strong>{{ factura.calcularTotal() | currency: "Q" : "symbol" }}</strong>
+        <strong>{{ factura.total | currency: "Q" : "symbol" }}</strong>
         <small>
           {{ factura.itemsFactura.length }}
           {{ factura.itemsFactura.length === 1 ? 'producto' : 'productos' }}
@@ -59,7 +70,7 @@
 
       <div class="checkout-action">
         <button type="button" class="checkout-pay-button"
-          [disabled]="!cliente.idCliente || factura.itemsFactura.length <= 0 || !pagoSuficiente() || isSaving"
+          [disabled]="!cliente.idCliente || factura.itemsFactura.length <= 0 || !cantidadesValidas() || !pagoSuficiente() || isSaving"
           (click)="createFactura()">
           <i class="fas" [ngClass]="isSaving ? 'fa-spinner fa-spin' : 'fa-check-circle'" aria-hidden="true"></i>
           {{ isSaving ? 'Procesando...' : 'Confirmar pago' }}
@@ -193,7 +204,8 @@
               <div class="control-with-icon">
                 <i class="fas fa-sort-numeric-up" aria-hidden="true"></i>
                 <input type="number" name="cantidad" id="cantidad" class="form-control"
-                  min="1" step="1" (keyup.enter)="agregarLinea()" placeholder="0">
+                  min="1" step="1" [(ngModel)]="cantidadProducto" autocomplete="off"
+                  (keyup.enter)="agregarLinea()" placeholder="0">
               </div>
               <button type="button" class="add-line-button" (click)="agregarLinea()"
                 aria-label="Agregar producto" title="Agregar producto">
@@ -240,21 +252,22 @@
             </thead>
             <tbody>
               <tr *ngFor="let item of factura.itemsFactura; let i = index">
-                <td><span class="listing-id-pill">#{{ item.producto.codProducto }}</span></td>
-                <td>
+                <td data-label="Código"><span class="listing-id-pill">#{{ item.producto.codProducto }}</span></td>
+                <td data-label="Producto">
                   <div class="table-product-name">
                     <span aria-hidden="true"><i class="fas fa-box"></i></span>
                     <strong>{{ item.producto.nombre }}</strong>
                   </div>
                 </td>
-                <td><span class="price-value">{{ item.producto.precioVenta | currency: "Q" : "symbol" }}</span></td>
-                <td>
-                  <input type="number" id="cant{{ i }}" name="cant{{ i }}" min="1" step="1"
-                    value="{{ item.cantidad }}" class="table-control quantity-control"
-                    (change)="actualizarCantidad(item.producto.idProducto, $event)"
-                    (keyup)="actualizarCantidad(item.producto.idProducto, $event)">
+                <td data-label="Precio"><span class="price-value">{{ item.producto.precioVenta | currency: "Q" : "symbol" }}</span></td>
+                <td data-label="Cantidad">
+                  <input type="number" id="cant{{ i }}" name="cant{{ i }}" min="1" step="1" required
+                    class="table-control quantity-control" [(ngModel)]="item.cantidad" #cantidadItem="ngModel"
+                    [class.is-invalid]="cantidadItem.invalid"
+                    (ngModelChange)="actualizarCantidad(item.producto.idProducto, $event)">
+                  <small *ngIf="cantidadItem.invalid" class="table-error">Ingresa una cantidad válida.</small>
                 </td>
-                <td>
+                <td data-label="Descuento">
                   <div class="discount-control">
                     <input type="number" id="descuento{{ i }}" name="descuento{{ i }}"
                       value="{{ item.descuento }}" class="table-control"
@@ -263,9 +276,9 @@
                     <span>%</span>
                   </div>
                 </td>
-                <td><span class="new-price">{{ item.calcularPrecioDescuento() | currency: "Q" : "symbol" }}</span></td>
-                <td><strong class="line-total">{{ item.subTotalDescuento | currency: "Q" : "symbol" }}</strong></td>
-                <td>
+                <td data-label="Nuevo precio"><span class="new-price">{{ item.calcularPrecioDescuento() | currency: "Q" : "symbol" }}</span></td>
+                <td data-label="Total"><strong class="line-total">{{ item.subTotalDescuento | currency: "Q" : "symbol" }}</strong></td>
+                <td data-label="Acciones">
                   <button type="button" class="remove-line-button" (click)="eliminarItem(i)"
                     aria-label="Eliminar producto" title="Eliminar producto">
                     <i class="fas fa-trash-alt" aria-hidden="true"></i>

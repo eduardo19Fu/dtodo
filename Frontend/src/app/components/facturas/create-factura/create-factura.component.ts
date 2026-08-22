@@ -39,6 +39,7 @@ export class CreateFacturaComponent implements OnInit {
   isSaving = false;
 
   producto: Producto;
+  cantidadProducto: number = null;
   cliente: Cliente;
   usuario: UsuarioAuxiliar;
   factura: Factura;
@@ -113,7 +114,7 @@ export class CreateFacturaComponent implements OnInit {
       this.correlativoService.getCorrelativoPorUsuario(this.usuario.idUsuario).subscribe(
         correlativo => {
           if (correlativo) {
-            this.correlativo = correlativo; 
+            this.correlativo = correlativo;
           } else {
             swal.fire('¡Error al Cargar Correlativo!', 'El usuario no cuenta con un correlativo activo', 'error');
           }
@@ -142,7 +143,7 @@ export class CreateFacturaComponent implements OnInit {
           if (error.status === 404) {
             swal.fire(`Error: ${error.error.status}`, error.error.message, 'error');
           }
-        })
+        });
     } else {
       swal.fire('Código Inválido', 'Ingrese un código de producto válido para realizar la búsqueda.', 'warning');
     }
@@ -155,7 +156,7 @@ export class CreateFacturaComponent implements OnInit {
       if (this.producto) { // comprueba que el producto exista
         const item = new DetalleFactura();
 
-        item.cantidad = +((document.getElementById('cantidad') as HTMLInputElement)).value; // valor obtenido del formulario de cantidad
+        item.cantidad = Number(this.cantidadProducto);
         item.descuento = 0; // valor obtenido del input de descuento
 
         if (item.cantidad > this.producto.stock) {
@@ -166,16 +167,15 @@ export class CreateFacturaComponent implements OnInit {
             if (this.existeItem(this.producto.idProducto)) {
               this.incrementaCantidad(this.producto.idProducto, item.cantidad);
               this.producto = new Producto();
-              (document.getElementById('cantidad') as HTMLInputElement).value = '';
+              this.cantidadProducto = null;
             } else {
               item.producto = this.producto;
               item.subTotalDescuento = item.calcularImporte();
               item.subTotal = item.calcularImporte();
 
-              this.factura.itemsFactura.push(item);
+              this.factura.itemsFactura = [...this.factura.itemsFactura, item];
               this.producto = new Producto();
-
-              (document.getElementById('cantidad') as HTMLInputElement).value = '';
+              this.cantidadProducto = null;
               this.calcularCambio();
             }
 
@@ -189,15 +189,15 @@ export class CreateFacturaComponent implements OnInit {
     }
   }
 
-  actualizarCantidad(idProducto: number, event: any): void {
-    const cantidad = event.target.value as number;
+  actualizarCantidad(idProducto: number, cantidad: number): void {
+    const cantidadNumerica = Number(cantidad);
 
     this.factura.itemsFactura = this.factura.itemsFactura.map((item: DetalleFactura) => {
       if (idProducto === item.producto.idProducto) {
-        if (cantidad > item.producto.stock) {
+        if (cantidadNumerica > item.producto.stock) {
           swal.fire('Stock Insuficiente', 'No existen las suficientes existencias de este producto.', 'warning');
-        } else {
-          item.cantidad = cantidad;
+        } else if (cantidadNumerica >= 1) {
+          item.cantidad = cantidadNumerica;
           item.subTotal = item.calcularImporte();
           item.subTotalDescuento = item.calcularImporteDescuento();
         }
@@ -209,7 +209,7 @@ export class CreateFacturaComponent implements OnInit {
     if (this.proforma) {
       this.proforma.itemsProforma = this.proforma.itemsProforma.map((item: DetalleProforma) => {
         if (idProducto === item.producto.idProducto) {
-          item.cantidad = cantidad;
+          item.cantidad = cantidadNumerica;
           item.subTotal = item.calcularImporte();
           item.subTotalDescuento = item.calcularImporteDescuento();
         }
@@ -261,9 +261,9 @@ export class CreateFacturaComponent implements OnInit {
   }
 
   eliminarItem(index: number): void {
-    this.factura.itemsFactura.splice(index, 1);
+    this.factura.itemsFactura = this.factura.itemsFactura.filter((item, itemIndex) => itemIndex !== index);
     if (this.proforma) {
-      this.proforma.itemsProforma.splice(index, 1);
+      this.proforma.itemsProforma = this.proforma.itemsProforma.filter((item, itemIndex) => itemIndex !== index);
     }
     this.calcularCambio();
   }
@@ -342,7 +342,7 @@ export class CreateFacturaComponent implements OnInit {
 
   cargarProforma(): void {
     this.activatedRoute.params.subscribe(params => {
-      const id = params['proformaId'];
+      const id = params.proformaId;
 
       if (id) {
         this.buscarProformaPorId(id);
@@ -361,16 +361,17 @@ export class CreateFacturaComponent implements OnInit {
         this.factura.total = this.proforma.total;
 
         this.proforma.itemsProforma.forEach((itemProforma) => {
-          let item: DetalleFactura = new DetalleFactura();
+          const item: DetalleFactura = new DetalleFactura();
 
           item.cantidad = itemProforma.cantidad;
           item.subTotal = itemProforma.subTotal;
           item.subTotalDescuento = itemProforma.subTotalDescuento;
           item.producto = itemProforma.producto;
           item.descuento = itemProforma.descuento;
-          
-          this.factura.itemsFactura.push(item);
+
+          this.factura.itemsFactura = [...this.factura.itemsFactura, item];
         });
+        this.recalcularTotal();
       }, error => {
         swal.fire(`Ha ocurrido un error: ${error.error.status}`, `${error.error.message}`, 'error');
       }
@@ -378,15 +379,28 @@ export class CreateFacturaComponent implements OnInit {
   }
 
   calcularCambio(): void {
+    this.recalcularTotal();
     if (this.efectivo) {
-      this.cambio = this.efectivo - this.factura.calcularTotal();
+      this.cambio = this.efectivo - this.factura.total;
     } else {
       this.cambio = 0.00;
     }
   }
 
   pagoSuficiente(): boolean {
-    return !!this.efectivo && this.efectivo >= this.factura.calcularTotal();
+    return !!this.efectivo && this.efectivo >= this.factura.total;
+  }
+
+  cantidadesValidas(): boolean {
+    return this.factura.itemsFactura.every((item: DetalleFactura) =>
+      Number.isInteger(Number(item.cantidad))
+      && Number(item.cantidad) > 0
+      && Number(item.cantidad) <= item.producto.stock
+    );
+  }
+
+  private recalcularTotal(): void {
+    this.factura.total = this.factura.calcularTotal();
   }
 
   loadProducto(event): void {

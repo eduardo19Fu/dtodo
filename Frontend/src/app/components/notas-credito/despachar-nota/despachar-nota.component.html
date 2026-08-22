@@ -54,7 +54,7 @@
 
             <!-- LISTADO DE PRODUCTOS DE LA NOTA -->
             <div class="card-body table-responsive p-0">
-                <table class="table table-hover table-sm">
+                <table class="table table-hover table-sm mobile-data-table">
                     <thead class="thead-dark">
                         <tr>
                             <th style="width: 50px;">
@@ -72,21 +72,21 @@
                     <tbody>
                         <tr *ngFor="let registro of itemsADespachar; let i = index"
                             [ngClass]="{'table-success': registro.seleccionado}">
-                            <td>
+                            <td data-label="Seleccionar">
                                 <div class="form-check">
                                     <input type="checkbox" class="form-check-input"
                                         [checked]="registro.seleccionado"
                                         (change)="toggleSeleccion(i)">
                                 </div>
                             </td>
-                            <td><span class="listing-id-pill">#{{registro.item.producto.codProducto}}</span></td>
-                            <td>{{registro.item.producto.nombre}}</td>
-                            <td>
+                            <td data-label="Código"><span class="listing-id-pill">#{{registro.item.producto.codProducto}}</span></td>
+                            <td class="mobile-primary-cell" data-label="Producto">{{registro.item.producto.nombre}}</td>
+                            <td data-label="Cantidad en nota">
                                 <span class="badge badge-primary">{{registro.item.cantidad}}</span>
                             </td>
-                            <td>{{registro.item.producto.precioVenta | currency: "Q" : "symbol"}}</td>
-                            <td>{{registro.item.subTotalDescuento | currency: "Q" : "symbol"}}</td>
-                            <td>
+                            <td data-label="Precio unitario">{{registro.item.producto.precioVenta | currency: "Q" : "symbol"}}</td>
+                            <td data-label="Subtotal">{{registro.item.subTotalDescuento | currency: "Q" : "symbol"}}</td>
+                            <td data-label="Cantidad a despachar">
                                 <input type="number" class="form-control form-control-sm"
                                     [disabled]="!registro.seleccionado"
                                     [value]="registro.cantidadDespachar"

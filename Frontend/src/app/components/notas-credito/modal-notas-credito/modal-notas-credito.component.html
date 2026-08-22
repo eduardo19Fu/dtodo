@@ -12,7 +12,7 @@
             <div class="card-body">
                 <div class="modal-body table-responsive">
                     <table id="notas-credito-modal"
-                        class="table table-hover table-striped table-bordered dataTable dtr-inline table-sm" role="grid"
+                        class="table table-hover table-striped table-bordered dataTable dtr-inline table-sm mobile-data-table" role="grid"
                         *ngIf="notasCredito?.length > 0">
                         <thead>
                             <tr>
@@ -28,15 +28,15 @@
 
                         <tbody>
                             <tr *ngFor="let nota of notasCredito">
-                                <td><span class="listing-id-pill">#{{nota.idNotaCredito}}</span></td>
-                                <td>{{nota.total | currency: "Q" : "symbol"}}</td>
-                                <td>{{nota.usuario}}</td>
-                                <td>{{nota.fechaCreacion | date: 'dd/MM/yyyy - hh:mm'}}</td>
-                                <td>{{nota.fechaEntregaEstimada | date: 'dd/MM/yyyy'}}</td>
-                                <td>
+                                <td data-label="ID"><span class="listing-id-pill">#{{nota.idNotaCredito}}</span></td>
+                                <td data-label="Total">{{nota.total | currency: "Q" : "symbol"}}</td>
+                                <td data-label="Emisor">{{nota.usuario}}</td>
+                                <td data-label="Fecha de creación">{{nota.fechaCreacion | date: 'dd/MM/yyyy - hh:mm'}}</td>
+                                <td data-label="Entrega estimada">{{nota.fechaEntregaEstimada | date: 'dd/MM/yyyy'}}</td>
+                                <td data-label="Estado">
                                     <span class="badge badge-warning">Pendiente</span>
                                 </td>
-                                <td class="center-options">
+                                <td class="center-options mobile-actions-cell" data-label="Opciones">
                                     <button class="btn bg-gradient-cyan" (click)="chooseNotaCredito(nota)"
                                         data-dismiss="modal">
                                         Elegir

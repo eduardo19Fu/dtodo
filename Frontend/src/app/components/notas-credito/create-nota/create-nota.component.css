@@ -959,22 +959,36 @@
 
 @media (max-width: 767.98px) {
     .credit-note-action-bar {
-        grid-template-columns: 1fr;
-        margin: 10px 10px 0;
-        position: static;
+        align-items: stretch;
+        grid-template-columns: minmax(0, 1fr) auto;
+        margin: 8px 10px 0;
+        position: sticky;
+        top: 8px;
+        z-index: 35;
     }
 
     .credit-note-action-title {
-        min-height: 72px;
+        min-height: 58px;
+        padding: 10px 13px;
+    }
+
+    .credit-note-action-title strong {
+        font-size: 15px;
+    }
+
+    .credit-note-action-summary {
+        display: none;
     }
 
     .credit-note-action-footer {
-        border-left: 0;
-        border-top: 1px solid #e6ebf2;
+        border-left: 1px solid #e6ebf2;
+        border-top: 0;
+        padding: 9px;
     }
 
     .credit-note-save-button {
-        width: 100%;
+        min-width: 150px;
+        width: auto;
     }
 
     .credit-note-form-body {

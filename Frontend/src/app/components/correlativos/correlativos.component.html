@@ -13,8 +13,8 @@
   </div>
 </section>
 
-<div class="card">
-  <div class="card-header">Listado de Correlativos</div>
+<div class="card listing-card">
+  <div class="card-header listing-card-header">Listado de Correlativos</div>
   <div class="card-body table-responsive">
     <div class="row mb-2 align-items-center table-controls table-controls-row">
       <div class="col-sm-4">
@@ -35,7 +35,7 @@
         </span>
       </div>
       <div class="col-sm-4">
-        <div class="d-inline-flex align-items-center float-right search-control">
+        <div class="d-inline-flex align-items-center float-right search-control listing-search-control">
           <label class="mb-0 mr-2">Búsqueda:</label>
           <input type="text" class="form-control form-control-sm" [value]="filtro"
                  (input)="onBuscar($event.target.value)"
@@ -53,7 +53,7 @@
       No se encontraron correlativos con el filtro indicado.
     </div>
 
-    <table class="table table-hover table-striped table-bordered table-sm mt-0 correlativos-table"
+    <table class="table table-hover table-striped table-bordered table-sm mt-0 correlativos-table mobile-data-table"
            *ngIf="!cargando && correlativos.length > 0">
       <thead>
         <tr>
@@ -70,17 +70,17 @@
       </thead>
       <tbody>
         <tr *ngFor="let correlativo of correlativos">
-          <td class="col-id"><span class="listing-id-pill">#{{correlativo.idCorrelativo}}</span></td>
-          <td class="col-correlativo">{{correlativo.correlativoInicial}}</td>
-          <td class="col-correlativo">{{correlativo.correlativoFinal}}</td>
-          <td class="col-correlativo font-weight-bold">{{correlativo.correlativoActual}}</td>
-          <td class="col-serie"><span class="cell-ellipsis" [title]="correlativo.serie || ''">{{correlativo.serie || 'Sin serie'}}</span></td>
-          <td class="col-fecha">
+          <td class="col-id" data-label="ID"><span class="listing-id-pill">#{{correlativo.idCorrelativo}}</span></td>
+          <td class="col-correlativo" data-label="Inicial">{{correlativo.correlativoInicial}}</td>
+          <td class="col-correlativo" data-label="Final">{{correlativo.correlativoFinal}}</td>
+          <td class="col-correlativo font-weight-bold" data-label="Actual">{{correlativo.correlativoActual}}</td>
+          <td class="col-serie" data-label="Serie"><span class="cell-ellipsis" [title]="correlativo.serie || ''">{{correlativo.serie || 'Sin serie'}}</span></td>
+          <td class="col-fecha" data-label="Fecha de creación">
             <span class="fecha-principal">{{correlativo.fechaCreacion | date: 'dd/MM/yyyy'}}</span>
             <small class="fecha-hora">{{correlativo.fechaCreacion | date: 'HH:mm'}}</small>
           </td>
-          <td class="col-usuario"><span class="cell-ellipsis" [title]="correlativo.usuario || ''">{{correlativo.usuario || 'Sin usuario'}}</span></td>
-          <td class="col-estado">
+          <td class="col-usuario" data-label="Usuario"><span class="cell-ellipsis" [title]="correlativo.usuario || ''">{{correlativo.usuario || 'Sin usuario'}}</span></td>
+          <td class="col-estado" data-label="Estado">
             <span class="listing-status-pill"
                   [ngClass]="{'listing-status-success': correlativo.estado === 'ACTIVO',
                               'listing-status-danger': correlativo.estado === 'ANULADO',
@@ -91,7 +91,7 @@
               {{correlativo.estado}}
             </span>
           </td>
-          <td class="col-opciones" *ngIf="authService.hasRole('ROLE_ADMIN')">
+          <td class="col-opciones mobile-actions-cell" data-label="Opciones" *ngIf="authService.hasRole('ROLE_ADMIN')">
             <div class="action-buttons">
               <button class="btn btn-sm table-action action-edit" type="button"
                       appTooltip="Editar correlativo" aria-label="Editar correlativo"

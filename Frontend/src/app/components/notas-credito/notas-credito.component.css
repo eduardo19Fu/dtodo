@@ -844,22 +844,6 @@
     transform: translateY(-1px);
 }
 
-.listing-card {
-    border: 1px solid #e5eaf0;
-    border-radius: 0.55rem;
-    box-shadow: 0 3px 12px rgba(33, 48, 68, 0.08);
-    overflow: hidden;
-}
-
-.listing-card-header {
-    background: #fff;
-    border-bottom: 1px solid #e5eaf0;
-    color: #24344d;
-    font-size: 1rem;
-    font-weight: 650;
-    padding: 1rem 1.25rem;
-}
-
 .notas-table {
     min-width: 1425px;
     table-layout: fixed;

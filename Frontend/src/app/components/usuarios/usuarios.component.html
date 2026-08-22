@@ -15,7 +15,8 @@
   </div>
 </section>
 
-<div class="card users-list-card">
+<div class="card users-list-card listing-card">
+  <div class="card-header listing-card-header">Listado de Usuarios</div>
   <div class="card-body table-responsive">
     <div class="row mb-2 align-items-center table-controls-row">
       <div class="col-sm-4">
@@ -57,7 +58,7 @@
       No se encontraron usuarios con el filtro indicado.
     </div>
 
-    <table class="table table-hover table-striped table-bordered table-sm mt-0 usuarios-table"
+    <table class="table table-hover table-striped table-bordered table-sm mt-0 usuarios-table mobile-data-table"
       *ngIf="!cargando && usuarios.length > 0">
       <thead>
         <tr>
@@ -96,31 +97,31 @@
       </thead>
       <tbody>
         <tr *ngFor="let usuario of usuarios">
-          <td class="col-id"><span class="listing-id-pill">#{{usuario.idUsuario}}</span></td>
-          <td class="col-usuario">
+          <td class="col-id" data-label="ID"><span class="listing-id-pill">#{{usuario.idUsuario}}</span></td>
+          <td class="col-usuario" data-label="Usuario">
             <span class="usuario-principal" [title]="usuario.usuario">{{usuario.usuario}}</span>
           </td>
-          <td class="col-nombre">
+          <td class="col-nombre mobile-primary-cell" data-label="Nombres">
             <span class="cell-ellipsis" [title]="usuario.primerNombre + ' ' + (usuario.segundoNombre || '')">
               {{usuario.primerNombre}} {{usuario.segundoNombre || ''}}
             </span>
           </td>
-          <td class="col-apellido">
+          <td class="col-apellido" data-label="Apellido">
             <span class="cell-ellipsis" [title]="usuario.apellido || ''">
               {{usuario.apellido || 'Sin apellido'}}
             </span>
           </td>
-          <td class="col-fecha">
+          <td class="col-fecha" data-label="Fecha de registro">
             <span class="fecha-principal">{{usuario.fechaRegistro | date: 'dd/MM/yyyy'}}</span>
             <small class="fecha-hora"><i class="far fa-clock"></i> {{usuario.fechaRegistro | date: 'HH:mm'}}</small>
           </td>
-          <td class="col-estado">
+          <td class="col-estado" data-label="Estado">
             <span class="listing-status-pill"
               [ngClass]="usuario.enabled ? 'listing-status-success' : 'listing-status-danger'">
               {{usuario.enabled ? 'ACTIVO' : 'INACTIVO'}}
             </span>
           </td>
-          <td class="col-opciones">
+          <td class="col-opciones mobile-actions-cell" data-label="Opciones">
             <div class="action-buttons">
               <button class="btn btn-sm listing-table-action listing-action-edit" type="button"
                 appTooltip="Editar usuario" aria-label="Editar usuario"

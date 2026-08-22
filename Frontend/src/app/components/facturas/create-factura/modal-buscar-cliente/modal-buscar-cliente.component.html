@@ -85,8 +85,8 @@
             </thead>
             <tbody>
               <tr *ngFor="let cliente of clientes">
-                <td class="id-column"><span class="listing-id-pill">#{{ cliente.idCliente }}</span></td>
-                <td>
+                <td class="id-column" data-label="ID"><span class="listing-id-pill">#{{ cliente.idCliente }}</span></td>
+                <td data-label="Cliente">
                   <div class="client-name-cell">
                     <span class="client-avatar" aria-hidden="true">
                       {{ cliente.nombre ? (cliente.nombre | slice:0:1) : '?' }}
@@ -94,15 +94,15 @@
                     <strong>{{ cliente.nombre }}</strong>
                   </div>
                 </td>
-                <td><span class="nit-value">{{ cliente.nit || 'Sin NIT' }}</span></td>
-                <td><span class="address-value">{{ cliente.direccion || 'Sin dirección' }}</span></td>
-                <td>
+                <td data-label="NIT"><span class="nit-value">{{ cliente.nit || 'Sin NIT' }}</span></td>
+                <td data-label="Dirección"><span class="address-value">{{ cliente.direccion || 'Sin dirección' }}</span></td>
+                <td data-label="Teléfono">
                   <span class="phone-value">
                     <i class="fas fa-phone-alt" aria-hidden="true"></i>
                     {{ cliente.telefono || 'Sin teléfono' }}
                   </span>
                 </td>
-                <td class="action-column">
+                <td class="action-column" data-label="Acción">
                   <button type="button" class="choose-product-button" (click)="chooseCliente(cliente)">
                     Elegir <i class="fas fa-arrow-right" aria-hidden="true"></i>
                   </button>

@@ -80,7 +80,7 @@
                     </div>
 
                     <div class="dispatch-table-wrap" *ngIf="!cargandoDespacho && itemsDespacho?.length > 0">
-                        <table class="dispatch-table">
+                        <table class="dispatch-table mobile-data-table">
                             <thead>
                                 <tr>
                                     <th class="dispatch-select-column"><i class="fas fa-check" aria-hidden="true"></i></th>
@@ -96,7 +96,7 @@
                                 <tr *ngFor="let registro of itemsDespacho; let i = index"
                                     [class.is-selected]="registro.seleccionado"
                                     [class.is-complete]="getPendiente(registro) === 0">
-                                    <td class="dispatch-select-column">
+                                    <td class="dispatch-select-column" data-label="Seleccionar">
                                         <label *ngIf="getPendiente(registro) > 0" class="dispatch-checkbox"
                                             [for]="'chk-desp-' + i">
                                             <input type="checkbox" [id]="'chk-desp-' + i"
@@ -106,27 +106,27 @@
                                         <span *ngIf="getPendiente(registro) === 0" class="dispatch-complete-icon"
                                             title="Despacho completado"><i class="fas fa-check"></i></span>
                                     </td>
-                                    <td><span class="listing-id-pill">#{{registro.item.producto.codProducto}}</span></td>
-                                    <td>
+                                    <td data-label="Código"><span class="listing-id-pill">#{{registro.item.producto.codProducto}}</span></td>
+                                    <td class="mobile-primary-cell" data-label="Producto">
                                         <div class="dispatch-product-name">
                                             <span class="dispatch-product-icon" aria-hidden="true"><i class="fas fa-box"></i></span>
                                             <strong>{{registro.item.producto.nombre}}</strong>
                                         </div>
                                     </td>
-                                    <td class="dispatch-numeric-column">
+                                    <td class="dispatch-numeric-column" data-label="Total">
                                         <span class="dispatch-quantity-badge total">{{registro.item.cantidad}}</span>
                                     </td>
-                                    <td class="dispatch-numeric-column">
+                                    <td class="dispatch-numeric-column" data-label="Despachado">
                                         <span class="dispatch-quantity-badge delivered">{{registro.despachado}}</span>
                                     </td>
-                                    <td class="dispatch-numeric-column">
+                                    <td class="dispatch-numeric-column" data-label="Pendiente">
                                         <span class="dispatch-quantity-badge"
                                             [class.pending]="getPendiente(registro) > 0"
                                             [class.complete]="getPendiente(registro) === 0">
                                             {{getPendiente(registro)}}
                                         </span>
                                     </td>
-                                    <td class="dispatch-quantity-column">
+                                    <td class="dispatch-quantity-column" data-label="A despachar">
                                         <input *ngIf="getPendiente(registro) > 0" type="number"
                                             class="form-control dispatch-quantity-input"
                                             [disabled]="!registro.seleccionado"
@@ -327,7 +327,7 @@
                 </span>
             </div>
             <div class="col-sm-4">
-                <div class="d-inline-flex align-items-center float-right search-control">
+                <div class="d-inline-flex align-items-center float-right search-control listing-search-control">
                     <label class="mb-0 mr-2">B&uacute;squeda:</label>
                     <div class="input-group input-group-sm search-input-group">
                         <div class="input-group-prepend">
@@ -353,7 +353,7 @@
             </div>
         </div>
 
-        <table class="table table-hover table-striped table-bordered table-sm mt-0 notas-table"
+        <table class="table table-hover table-striped table-bordered table-sm mt-0 notas-table mobile-data-table"
             *ngIf="!cargando && notasCredito.length > 0">
             <thead>
                 <tr>
@@ -372,23 +372,23 @@
 
             <tbody>
                 <tr *ngFor="let nota of notasCredito">
-                    <td class="col-id"><span class="listing-id-pill">#{{nota.idNotaCredito}}</span></td>
-                    <td class="col-total text-nowrap">{{nota.total | currency: "Q" : "symbol"}}</td>
-                    <td class="col-emisor">
+                    <td class="col-id" data-label="ID"><span class="listing-id-pill">#{{nota.idNotaCredito}}</span></td>
+                    <td class="col-total text-nowrap" data-label="Total">{{nota.total | currency: "Q" : "symbol"}}</td>
+                    <td class="col-emisor" data-label="Emisor">
                         <span class="cell-ellipsis" [title]="nota.usuario">{{nota.usuario}}</span>
                     </td>
-                    <td class="col-cliente">
+                    <td class="col-cliente mobile-primary-cell" data-label="Cliente / NIT">
                         <span class="cliente-nombre" [title]="nota.cliente">{{nota.cliente}}</span>
                         <small class="cliente-nit">NIT: {{nota.nitCliente || 'C/F'}}</small>
                     </td>
-                    <td class="col-origen">
+                    <td class="col-origen" data-label="Documento origen">
                         <span class="document-badge"
                             [ngClass]="{'document-invoice': (nota.tipoDocumentoOrigen || 'FACTURA') === 'FACTURA',
                                         'document-proforma': nota.tipoDocumentoOrigen === 'PROFORMA'}">
                             {{nota.tipoDocumentoOrigen || 'FACTURA'}}
                         </span>
                     </td>
-                    <td class="col-referencia">
+                    <td class="col-referencia" data-label="Referencia">
                         <span class="listing-id-pill"
                             [title]="(nota.tipoDocumentoOrigen || 'FACTURA') === 'FACTURA'
                                 ? (nota.serieFacturaSat + '-' + nota.correlativoFacturaSat)
@@ -401,12 +401,12 @@
                             </ng-container>
                         </span>
                     </td>
-                    <td class="col-fecha">
+                    <td class="col-fecha" data-label="Fecha">
                         <span class="fecha-principal">{{nota.fechaCreacion | date: 'dd/MM/yyyy'}}</span>
                         <small class="fecha-hora">{{nota.fechaCreacion | date: 'HH:mm'}}</small>
                     </td>
-                    <td class="col-fecha-entrega text-nowrap">{{nota.fechaEntregaEstimada | date: 'dd/MM/yyyy'}}</td>
-                    <td class="col-estado">
+                    <td class="col-fecha-entrega text-nowrap" data-label="Entrega estimada">{{nota.fechaEntregaEstimada | date: 'dd/MM/yyyy'}}</td>
+                    <td class="col-estado" data-label="Estado">
                         <span class="status-badge"
                             [ngClass]="{'status-pending': nota.estado === 'ENTREGA_PENDIENTE',
                                         'status-cancelled': nota.estado === 'ANULADO',
@@ -419,7 +419,7 @@
                             <span *ngSwitchCase="'ENTREGADO'">Entregado</span>
                         </span>
                     </td>
-                    <td class="col-opciones" *ngIf="puedeOperar">
+                    <td class="col-opciones mobile-actions-cell" data-label="Opciones" *ngIf="puedeOperar">
                         <div class="action-buttons">
 
                         <button class="btn btn-sm table-action action-detail" name="detail" type="button"

@@ -78,16 +78,16 @@
             </thead>
             <tbody>
               <tr *ngFor="let producto of productosDto">
-                <td class="id-column"><span class="listing-id-pill">#{{ producto.idProducto }}</span></td>
-                <td><span class="listing-id-pill">#{{ producto.codProducto }}</span></td>
-                <td>
+                <td class="id-column" data-label="ID"><span class="listing-id-pill">#{{ producto.idProducto }}</span></td>
+                <td data-label="Código"><span class="listing-id-pill">#{{ producto.codProducto }}</span></td>
+                <td data-label="Producto">
                   <div class="product-name-cell">
                     <span class="product-icon" aria-hidden="true"><i class="fas fa-box"></i></span>
                     <strong>{{ producto.nombre }}</strong>
                   </div>
                 </td>
-                <td><span class="price-value">{{ producto.precioVenta | currency: "Q" : "symbol" }}</span></td>
-                <td>
+                <td data-label="Precio"><span class="price-value">{{ producto.precioVenta | currency: "Q" : "symbol" }}</span></td>
+                <td data-label="Stock">
                   <span class="stock-badge" [ngClass]="{
                     'low-stock': producto.stock <= 3,
                     'medium-stock': producto.stock > 3 && producto.stock <= 10,
@@ -97,8 +97,8 @@
                     {{ producto.stock }}
                   </span>
                 </td>
-                <td><span class="brand-value">{{ producto.marcaProducto ? producto.marcaProducto : 'Sin marca' }}</span></td>
-                <td class="action-column">
+                <td data-label="Marca"><span class="brand-value">{{ producto.marcaProducto ? producto.marcaProducto : 'Sin marca' }}</span></td>
+                <td class="action-column" data-label="Acción">
                   <button type="button" class="choose-product-button" (click)="chooseProducto(producto)">
                     Elegir <i class="fas fa-arrow-right" aria-hidden="true"></i>
                   </button>

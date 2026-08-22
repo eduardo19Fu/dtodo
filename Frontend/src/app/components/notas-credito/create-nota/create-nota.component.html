@@ -69,7 +69,7 @@
                     </div>
 
                     <div class="credit-products-table-wrap" *ngIf="itemsFiltrados.length > 0">
-                        <table class="credit-products-table">
+                        <table class="credit-products-table mobile-data-table">
                             <thead>
                                 <tr>
                                     <th class="select-column"><i class="fas fa-check" aria-hidden="true"></i></th>
@@ -85,7 +85,7 @@
                             <tbody>
                                 <tr *ngFor="let registro of itemsPaginados; let i = index"
                                     [class.is-selected]="registro.seleccionado">
-                                    <td class="select-column">
+                                    <td class="select-column" data-label="Seleccionar">
                                         <label class="credit-product-checkbox" [for]="'chk-prod-' + i">
                                             <input type="checkbox" [id]="'chk-prod-' + i"
                                                 [checked]="registro.seleccionado"
@@ -93,18 +93,18 @@
                                             <span><i class="fas fa-check" aria-hidden="true"></i></span>
                                         </label>
                                     </td>
-                                    <td><span class="listing-id-pill">#{{registro.codProducto}}</span></td>
-                                    <td>
+                                    <td data-label="Código"><span class="listing-id-pill">#{{registro.codProducto}}</span></td>
+                                    <td class="mobile-primary-cell" data-label="Producto">
                                         <div class="product-name-cell">
                                             <span class="product-cube" aria-hidden="true"><i class="fas fa-box"></i></span>
                                             <strong>{{registro.nombreProducto}}</strong>
                                         </div>
                                     </td>
-                                    <td class="numeric-column"><span class="original-quantity">{{registro.cantidadOriginal}}</span></td>
-                                    <td class="numeric-column price-cell">{{registro.precioVenta | currency: "Q" : "symbol"}}</td>
-                                    <td class="numeric-column">{{registro.descuento | number: "1.0-2"}}%</td>
-                                    <td class="numeric-column subtotal-cell">{{registro.subTotalOriginal | currency: "Q" : "symbol"}}</td>
-                                    <td class="quantity-column">
+                                    <td class="numeric-column" data-label="Cantidad original"><span class="original-quantity">{{registro.cantidadOriginal}}</span></td>
+                                    <td class="numeric-column price-cell" data-label="Precio unitario">{{registro.precioVenta | currency: "Q" : "symbol"}}</td>
+                                    <td class="numeric-column" data-label="Descuento">{{registro.descuento | number: "1.0-2"}}%</td>
+                                    <td class="numeric-column subtotal-cell" data-label="Subtotal">{{registro.subTotalOriginal | currency: "Q" : "symbol"}}</td>
+                                    <td class="quantity-column" data-label="Cantidad pendiente">
                                         <input type="number" class="form-control pending-quantity"
                                             [disabled]="!registro.seleccionado"
                                             [value]="registro.cantidadSeleccionada"

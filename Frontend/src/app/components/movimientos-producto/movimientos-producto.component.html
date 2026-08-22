@@ -75,7 +75,8 @@
     </form>
 </div>
 
-<div class="card">
+<div class="card listing-card">
+    <div class="card-header listing-card-header">Listado de Movimientos de Producto</div>
     <div class="card-body table-responsive">
 
         <!-- Controles superiores: selector de registros y búsqueda -->
@@ -124,7 +125,7 @@
             No existe ningún movimiento registrado en la base de datos!
         </div>
 
-        <table class="table table-hover table-striped table-bordered table-sm mt-0 movimientos-table"
+        <table class="table table-hover table-striped table-bordered table-sm mt-0 movimientos-table mobile-data-table"
             *ngIf="!cargando && movimientosDto?.length > 0">
             <thead>
                 <tr>
@@ -140,16 +141,16 @@
 
             <tbody>
                 <tr *ngFor="let movimiento of movimientosDto">
-                    <td class="col-id"><span class="listing-id-pill">#{{movimiento.idMovimiento}}</span></td>
-                    <td class="col-fecha">
+                    <td class="col-id" data-label="ID"><span class="listing-id-pill">#{{movimiento.idMovimiento}}</span></td>
+                    <td class="col-fecha" data-label="Fecha">
                         <span class="fecha-principal">{{movimiento.fechaMovimiento | date: 'dd/MM/yyyy'}}</span>
                         <small class="fecha-hora">{{movimiento.fechaMovimiento | date: 'HH:mm'}}</small>
                     </td>
-                    <td class="col-producto"><span class="producto-nombre" [title]="movimiento.productoNombre">{{movimiento.productoNombre}}</span></td>
-                    <td class="col-stock">{{movimiento.stockInicial}}</td>
-                    <td class="col-cantidad">{{movimiento.cantidad}}</td>
-                    <td class="col-creador"><span class="cell-ellipsis" [title]="movimiento.usuarioNombre">{{movimiento.usuarioNombre}}</span></td>
-                    <td class="col-tipo">
+                    <td class="col-producto mobile-primary-cell" data-label="Producto"><span class="producto-nombre" [title]="movimiento.productoNombre">{{movimiento.productoNombre}}</span></td>
+                    <td class="col-stock" data-label="Stock inicial">{{movimiento.stockInicial}}</td>
+                    <td class="col-cantidad" data-label="Cantidad">{{movimiento.cantidad}}</td>
+                    <td class="col-creador" data-label="Creador"><span class="cell-ellipsis" [title]="movimiento.usuarioNombre">{{movimiento.usuarioNombre}}</span></td>
+                    <td class="col-tipo" data-label="Movimiento">
                         <span class="listing-status-pill"
                             [ngClass]="{'listing-status-success': movimiento.tipoMovimiento === 'ENTRADA',
                                         'listing-status-warning': movimiento.tipoMovimiento === 'SALIDA',

@@ -68,8 +68,8 @@
   </form>
 </div>
 
-<div class="card">
-  <div class="card-header">Listado de Facturas</div>
+<div class="card listing-card">
+  <div class="card-header listing-card-header">Listado de Facturas</div>
   <div class="card-body table-responsive">
     <div class="row mb-2 align-items-center table-controls-row" *ngIf="busquedaRealizada">
       <div class="col-sm-4">
@@ -90,7 +90,7 @@
         </span>
       </div>
       <div class="col-sm-4">
-        <div class="d-inline-flex align-items-center float-right">
+        <div class="d-inline-flex align-items-center float-right listing-search-control">
           <label class="mb-0 mr-2">Búsqueda:</label>
           <input type="text" class="form-control form-control-sm" [value]="filtro"
                  (input)="onBuscar($event.target.value)"
@@ -108,7 +108,7 @@
       No se encontraron facturas con los filtros indicados.
     </div>
 
-    <table class="table table-hover table-striped table-bordered table-sm mt-0 document-table"
+    <table class="table table-hover table-striped table-bordered table-sm mt-0 document-table mobile-data-table"
            *ngIf="!cargando && facturasDto.length > 0">
       <thead>
         <tr>
@@ -125,20 +125,20 @@
       </thead>
       <tbody>
         <tr *ngFor="let factura of facturasDto">
-          <td class="col-numero text-nowrap"><span class="listing-id-pill">#{{factura.noFactura}}</span></td>
-          <td class="col-serie text-nowrap">{{factura.serie || ''}}</td>
-          <td class="col-fecha">
+          <td class="col-numero text-nowrap" data-label="No. factura"><span class="listing-id-pill">#{{factura.noFactura}}</span></td>
+          <td class="col-serie text-nowrap" data-label="Serie">{{factura.serie || ''}}</td>
+          <td class="col-fecha" data-label="Fecha">
             <span class="fecha-principal">{{factura.fecha | date: 'dd/MM/yyyy'}}</span>
             <small class="fecha-hora">{{factura.fecha | date: 'HH:mm'}}</small>
           </td>
-          <td class="col-cliente">
+          <td class="col-cliente mobile-primary-cell" data-label="Cliente / NIT">
             <span class="cliente-nombre" [title]="factura.cliente">{{factura.cliente}}</span>
             <small class="cliente-nit">NIT: {{factura.nitCliente || 'C/F'}}</small>
           </td>
-          <td class="col-vendedor"><span class="cell-ellipsis" [title]="factura.vendedor">{{factura.vendedor}}</span></td>
-          <td class="col-usuario"><span class="cell-ellipsis" [title]="factura.usuario">{{factura.usuario}}</span></td>
-          <td class="col-total text-nowrap">{{factura.total | currency: 'Q' : 'symbol'}}</td>
-          <td class="col-estado">
+          <td class="col-vendedor" data-label="Vendedor"><span class="cell-ellipsis" [title]="factura.vendedor">{{factura.vendedor}}</span></td>
+          <td class="col-usuario" data-label="Usuario"><span class="cell-ellipsis" [title]="factura.usuario">{{factura.usuario}}</span></td>
+          <td class="col-total text-nowrap" data-label="Total">{{factura.total | currency: 'Q' : 'symbol'}}</td>
+          <td class="col-estado" data-label="Estado">
             <span class="listing-status-pill"
                   [ngClass]="{'listing-status-success': factura.idEstado === 3,
                               'listing-status-danger': factura.idEstado === 4,
@@ -146,7 +146,7 @@
               {{factura.estado}}
             </span>
           </td>
-          <td class="col-opciones" *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR')">
+          <td class="col-opciones mobile-actions-cell" data-label="Opciones" *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR')">
             <div class="action-buttons">
             <button class="btn btn-sm table-action action-detail" type="button"
                     appTooltip="Ver detalle de la factura" aria-label="Ver detalle de la factura"

@@ -13,7 +13,8 @@
   </div>
 </section>
 
-<div class="card">
+<div class="card listing-card">
+  <div class="card-header listing-card-header">Listado de Clientes</div>
   <div class="card-body table-responsive">
     <div class="row mb-2 align-items-center table-controls-row">
       <div class="col-sm-4">
@@ -53,7 +54,7 @@
       No se encontraron clientes con el filtro indicado.
     </div>
 
-    <table class="table table-hover table-striped table-bordered table-sm mt-0 clientes-table"
+    <table class="table table-hover table-striped table-bordered table-sm mt-0 clientes-table mobile-data-table"
       *ngIf="!cargando && clientes.length > 0">
       <thead>
         <tr>
@@ -93,24 +94,24 @@
       </thead>
       <tbody>
         <tr *ngFor="let cliente of clientes">
-          <td class="col-id"><span class="listing-id-pill">#{{cliente.idCliente}}</span></td>
-          <td class="col-nombre">
+          <td class="col-id" data-label="ID"><span class="listing-id-pill">#{{cliente.idCliente}}</span></td>
+          <td class="col-nombre mobile-primary-cell" data-label="Cliente">
             <span class="cliente-nombre" [title]="cliente.nombre">{{cliente.nombre}}</span>
           </td>
-          <td class="col-nit">
+          <td class="col-nit" data-label="NIT">
             <span class="cell-ellipsis" [title]="cliente.nit || ''">{{cliente.nit || 'Sin NIT'}}</span>
           </td>
-          <td class="col-telefono">
+          <td class="col-telefono" data-label="Teléfono">
             <span class="cell-ellipsis" [title]="cliente.telefono || ''">{{cliente.telefono || 'Sin teléfono'}}</span>
           </td>
-          <td class="col-direccion">
+          <td class="col-direccion mobile-primary-cell" data-label="Dirección">
             <span class="cell-ellipsis" [title]="cliente.direccion || ''">{{cliente.direccion || 'Sin dirección'}}</span>
           </td>
-          <td class="col-fecha">
+          <td class="col-fecha" data-label="Fecha de registro">
             <span class="fecha-principal">{{cliente.fechaRegistro | date: 'dd/MM/yyyy'}}</span>
             <small class="fecha-hora">{{cliente.fechaRegistro | date: 'HH:mm'}}</small>
           </td>
-          <td class="col-opciones"
+          <td class="col-opciones mobile-actions-cell" data-label="Opciones"
             *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR')">
             <div class="action-buttons">
               <button class="btn btn-sm listing-table-action listing-action-edit" type="button"
