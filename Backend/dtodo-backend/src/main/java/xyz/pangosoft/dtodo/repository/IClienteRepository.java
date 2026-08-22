@@ -7,12 +7,13 @@ import xyz.pangosoft.dtodo.dto.ClienteDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import xyz.pangosoft.dtodo.model.Cliente;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface IClienteRepository extends JpaRepository<Cliente, Integer> {
+public interface IClienteRepository extends JpaRepository<Cliente, Integer>, JpaSpecificationExecutor<Cliente> {
 	
 	// Busqueda de cliente por nombre
 	// Consulta = 'Select * from Cliente where nombre = /*parametro dado*/

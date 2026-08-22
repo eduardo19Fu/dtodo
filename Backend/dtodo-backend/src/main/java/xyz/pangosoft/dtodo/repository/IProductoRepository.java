@@ -8,13 +8,14 @@ import xyz.pangosoft.dtodo.dto.ProductoDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import xyz.pangosoft.dtodo.model.Estado;
 import xyz.pangosoft.dtodo.model.Producto;
 
-public interface IProductoRepository extends JpaRepository<Producto, Integer> {
+public interface IProductoRepository extends JpaRepository<Producto, Integer>, JpaSpecificationExecutor<Producto> {
 	
 	// Buscar listado de productos por estado
 	List<Producto> findByEstado(Estado estado);

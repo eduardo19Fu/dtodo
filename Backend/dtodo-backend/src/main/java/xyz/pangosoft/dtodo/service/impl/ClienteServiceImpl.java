@@ -2,8 +2,11 @@ package xyz.pangosoft.dtodo.service.impl;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import xyz.pangosoft.dtodo.dto.ClienteDto;
 import xyz.pangosoft.dtodo.error.exceptions.NoContentException;
@@ -15,12 +18,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import xyz.pangosoft.dtodo.model.Cliente;
 import xyz.pangosoft.dtodo.repository.IClienteRepository;
 import xyz.pangosoft.dtodo.service.IClienteService;
 import org.springframework.transaction.annotation.Transactional;
+
+import jakarta.persistence.criteria.Predicate;
 
 @Service
 @RequiredArgsConstructor
@@ -79,12 +85,59 @@ public class ClienteServiceImpl implements IClienteService {
 	public Page<ClienteDto> findListado(String filtro, Pageable pageable) {
 		try {
 			log.info("Listando clientes paginados con filtro");
-			return clienteRepository.findListado(filtro == null ? "" : filtro.trim(), pageable);
+			List<String> terminos = obtenerTerminosBusqueda(filtro);
+			Page<Cliente> clientes = clienteRepository.findAll(
+					crearEspecificacionBusqueda(terminos), pageable);
+			return clientes.map(this::mapClienteToDto);
 		} catch (DataAccessException e) {
 			log.error("Error al consultar el listado paginado de clientes", e);
 			throw new xyz.pangosoft.dtodo.error.exceptions.DataAccessException(
 					"Ha ocurrido un error al consultar los clientes", e);
 		}
+	}
+
+	static List<String> obtenerTerminosBusqueda(String filtro) {
+		if (filtro == null || filtro.trim().isEmpty()) {
+			return new ArrayList<>();
+		}
+
+		return Arrays.stream(filtro.trim().toLowerCase(Locale.ROOT).split("\\s+"))
+				.distinct()
+				.collect(Collectors.toList());
+	}
+
+	private Specification<Cliente> crearEspecificacionBusqueda(List<String> terminos) {
+		return (root, query, criteriaBuilder) -> {
+			if (terminos.isEmpty()) {
+				return criteriaBuilder.conjunction();
+			}
+
+			List<Predicate> coincidencias = new ArrayList<>();
+			for (String termino : terminos) {
+				String patron = "%" + escaparLike(termino) + "%";
+				coincidencias.add(criteriaBuilder.or(
+						criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(root.get("nombre"), "")), patron, '\\'),
+						criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(root.get("nit"), "")), patron, '\\'),
+						criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(root.get("telefono"), "")), patron, '\\'),
+						criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(root.get("direccion"), "")), patron, '\\')));
+			}
+
+			return criteriaBuilder.and(coincidencias.toArray(new Predicate[0]));
+		};
+	}
+
+	private String escaparLike(String valor) {
+		return valor.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
+	}
+
+	private ClienteDto mapClienteToDto(Cliente cliente) {
+		return new ClienteDto(
+				cliente.getIdCliente(),
+				cliente.getNombre(),
+				cliente.getNit(),
+				cliente.getDireccion(),
+				cliente.getFechaRegistro(),
+				cliente.getTelefono());
 	}
 
 	@Transactional(readOnly = true)

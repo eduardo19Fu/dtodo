@@ -7,7 +7,7 @@ import { TipoFactura } from './tipo-factura';
 export class Factura {
     idFactura: number;
     noFactura: number;
-    total: number;
+    total = 0;
     fecha: Date;
     serie: string;
     iva: number;

@@ -39,6 +39,8 @@ export class CreateFacturaComponent implements OnInit {
   isSaving = false;
 
   producto: Producto;
+  cantidadProducto: number = null;
+  descuentoProducto = 0;
   cliente: Cliente;
   usuario: UsuarioAuxiliar;
   factura: Factura;
@@ -113,7 +115,7 @@ export class CreateFacturaComponent implements OnInit {
       this.correlativoService.getCorrelativoPorUsuario(this.usuario.idUsuario).subscribe(
         correlativo => {
           if (correlativo) {
-            this.correlativo = correlativo; 
+            this.correlativo = correlativo;
           } else {
             swal.fire('¡Error al Cargar Correlativo!', 'El usuario no cuenta con un correlativo activo', 'error');
           }
@@ -142,7 +144,7 @@ export class CreateFacturaComponent implements OnInit {
           if (error.status === 404) {
             swal.fire(`Error: ${error.error.status}`, error.error.message, 'error');
           }
-        })
+        });
     } else {
       swal.fire('Código Inválido', 'Ingrese un código de producto válido para realizar la búsqueda.', 'warning');
     }
@@ -155,8 +157,18 @@ export class CreateFacturaComponent implements OnInit {
       if (this.producto) { // comprueba que el producto exista
         const item = new DetalleFactura();
 
-        item.cantidad = +((document.getElementById('cantidad') as HTMLInputElement)).value; // valor obtenido del formulario de cantidad
-        item.descuento = 0; // valor obtenido del input de descuento
+        item.cantidad = Number(this.cantidadProducto);
+        item.descuento = Number(this.descuentoProducto || 0);
+
+        if (!Number.isInteger(item.cantidad) || item.cantidad <= 0) {
+          swal.fire('Cantidad Inválida', 'La cantidad debe ser un número entero mayor a 0.', 'warning');
+          return;
+        }
+
+        if (!Number.isFinite(item.descuento) || item.descuento < 0 || item.descuento > 100) {
+          swal.fire('Descuento Inválido', 'El descuento debe estar entre 0% y 100%.', 'warning');
+          return;
+        }
 
         if (item.cantidad > this.producto.stock) {
           swal.fire('Stock Insuficiente', 'No existen las suficientes existencias de este producto.', 'warning');
@@ -164,18 +176,19 @@ export class CreateFacturaComponent implements OnInit {
         } else {
           if (item.cantidad && item.cantidad !== 0) {
             if (this.existeItem(this.producto.idProducto)) {
-              this.incrementaCantidad(this.producto.idProducto, item.cantidad);
+              this.incrementaCantidad(this.producto.idProducto, item.cantidad, item.descuento);
               this.producto = new Producto();
-              (document.getElementById('cantidad') as HTMLInputElement).value = '';
+              this.cantidadProducto = null;
+              this.descuentoProducto = 0;
             } else {
               item.producto = this.producto;
-              item.subTotalDescuento = item.calcularImporte();
+              item.subTotalDescuento = item.calcularImporteDescuento();
               item.subTotal = item.calcularImporte();
 
-              this.factura.itemsFactura.push(item);
+              this.factura.itemsFactura = [...this.factura.itemsFactura, item];
               this.producto = new Producto();
-
-              (document.getElementById('cantidad') as HTMLInputElement).value = '';
+              this.cantidadProducto = null;
+              this.descuentoProducto = 0;
               this.calcularCambio();
             }
 
@@ -189,53 +202,6 @@ export class CreateFacturaComponent implements OnInit {
     }
   }
 
-  actualizarCantidad(idProducto: number, event: any): void {
-    const cantidad = event.target.value as number;
-
-    this.factura.itemsFactura = this.factura.itemsFactura.map((item: DetalleFactura) => {
-      if (idProducto === item.producto.idProducto) {
-        if (cantidad > item.producto.stock) {
-          swal.fire('Stock Insuficiente', 'No existen las suficientes existencias de este producto.', 'warning');
-        } else {
-          item.cantidad = cantidad;
-          item.subTotal = item.calcularImporte();
-          item.subTotalDescuento = item.calcularImporteDescuento();
-        }
-      }
-
-      return item;
-    });
-
-    if (this.proforma) {
-      this.proforma.itemsProforma = this.proforma.itemsProforma.map((item: DetalleProforma) => {
-        if (idProducto === item.producto.idProducto) {
-          item.cantidad = cantidad;
-          item.subTotal = item.calcularImporte();
-          item.subTotalDescuento = item.calcularImporteDescuento();
-        }
-        return item;
-      });
-    }
-
-    this.calcularCambio();
-  }
-
-  actualizarCantidadDescuento(idProducto: number, event: any): void {
-    const descuento = event.target.value as number;
-
-    this.factura.itemsFactura = this.factura.itemsFactura.map((item: DetalleFactura) => {
-      if (idProducto === item.producto.idProducto) {
-        item.descuento = descuento;
-        item.subTotal = item.calcularImporte();
-        item.subTotalDescuento = item.calcularImporteDescuento();
-      }
-
-      return item;
-    });
-
-    this.calcularCambio();
-  }
-
   existeItem(id: number): boolean {
     let existe = false;
     this.factura.itemsFactura.forEach((item: DetalleFactura) => {
@@ -246,10 +212,11 @@ export class CreateFacturaComponent implements OnInit {
     return existe;
   }
 
-  incrementaCantidad(idProducto: number, cantidad: number): void {
+  incrementaCantidad(idProducto: number, cantidad: number, descuento: number): void {
     this.factura.itemsFactura = this.factura.itemsFactura.map((item: DetalleFactura) => {
       if (idProducto === item.producto.idProducto) {
         item.cantidad = item.cantidad + cantidad;
+        item.descuento = descuento;
         item.subTotal = item.calcularImporte();
         item.subTotalDescuento = item.calcularImporteDescuento();
       }
@@ -257,13 +224,25 @@ export class CreateFacturaComponent implements OnInit {
       return item;
     });
 
+    if (this.proforma) {
+      this.proforma.itemsProforma = this.proforma.itemsProforma.map((item: DetalleProforma) => {
+        if (idProducto === item.producto.idProducto) {
+          item.cantidad = item.cantidad + cantidad;
+          item.descuento = descuento;
+          item.subTotal = item.calcularImporte();
+          item.subTotalDescuento = item.calcularImporteDescuento();
+        }
+        return item;
+      });
+    }
+
     this.calcularCambio();
   }
 
   eliminarItem(index: number): void {
-    this.factura.itemsFactura.splice(index, 1);
+    this.factura.itemsFactura = this.factura.itemsFactura.filter((item, itemIndex) => itemIndex !== index);
     if (this.proforma) {
-      this.proforma.itemsProforma.splice(index, 1);
+      this.proforma.itemsProforma = this.proforma.itemsProforma.filter((item, itemIndex) => itemIndex !== index);
     }
     this.calcularCambio();
   }
@@ -342,7 +321,7 @@ export class CreateFacturaComponent implements OnInit {
 
   cargarProforma(): void {
     this.activatedRoute.params.subscribe(params => {
-      const id = params['proformaId'];
+      const id = params.proformaId;
 
       if (id) {
         this.buscarProformaPorId(id);
@@ -361,16 +340,17 @@ export class CreateFacturaComponent implements OnInit {
         this.factura.total = this.proforma.total;
 
         this.proforma.itemsProforma.forEach((itemProforma) => {
-          let item: DetalleFactura = new DetalleFactura();
+          const item: DetalleFactura = new DetalleFactura();
 
           item.cantidad = itemProforma.cantidad;
           item.subTotal = itemProforma.subTotal;
           item.subTotalDescuento = itemProforma.subTotalDescuento;
           item.producto = itemProforma.producto;
           item.descuento = itemProforma.descuento;
-          
-          this.factura.itemsFactura.push(item);
+
+          this.factura.itemsFactura = [...this.factura.itemsFactura, item];
         });
+        this.recalcularTotal();
       }, error => {
         swal.fire(`Ha ocurrido un error: ${error.error.status}`, `${error.error.message}`, 'error');
       }
@@ -378,15 +358,28 @@ export class CreateFacturaComponent implements OnInit {
   }
 
   calcularCambio(): void {
+    this.recalcularTotal();
     if (this.efectivo) {
-      this.cambio = this.efectivo - this.factura.calcularTotal();
+      this.cambio = this.efectivo - this.factura.total;
     } else {
       this.cambio = 0.00;
     }
   }
 
   pagoSuficiente(): boolean {
-    return !!this.efectivo && this.efectivo >= this.factura.calcularTotal();
+    return !!this.efectivo && this.efectivo >= this.factura.total;
+  }
+
+  cantidadesValidas(): boolean {
+    return this.factura.itemsFactura.every((item: DetalleFactura) =>
+      Number.isInteger(Number(item.cantidad))
+      && Number(item.cantidad) > 0
+      && Number(item.cantidad) <= item.producto.stock
+    );
+  }
+
+  private recalcularTotal(): void {
+    this.factura.total = this.factura.calcularTotal();
   }
 
   loadProducto(event): void {

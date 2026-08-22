@@ -43,7 +43,7 @@
 
       <div class="total-summary">
         <span>Total de la proforma</span>
-        <strong>{{ proforma.calcularTotal() | currency: "Q" : "symbol" }}</strong>
+        <strong>{{ proforma.total | currency: "Q" : "symbol" }}</strong>
       </div>
 
       <button *ngIf="!proforma.idProforma; else elseBlock" type="button" class="primary-action"
@@ -142,7 +142,7 @@
           <span class="section-number">02</span>
           <div>
             <h3 id="products-section-title">Agregar productos</h3>
-            <p>Busca un producto, define la cantidad y agrégalo a la cotización.</p>
+            <p>Busca un producto, define la cantidad y el descuento, y agrégalo a la cotización.</p>
           </div>
         </div>
 
@@ -174,12 +174,24 @@
           </div>
 
           <div class="field-group quantity-field">
-            <label for="cantidad">Cantidad</label>
             <div class="quantity-add-control">
-              <div class="control-with-icon">
-                <i class="fas fa-sort-numeric-up" aria-hidden="true"></i>
-                <input type="number" name="cantidad" id="cantidad" class="form-control"
-                  min="1" step="1" (keyup.enter)="agregarLinea()" placeholder="0">
+              <div class="line-entry-field">
+                <label for="cantidad">Cantidad</label>
+                <div class="control-with-icon">
+                  <i class="fas fa-sort-numeric-up" aria-hidden="true"></i>
+                  <input type="number" name="cantidad" id="cantidad" class="form-control"
+                    min="1" step="1" [(ngModel)]="cantidadProducto" autocomplete="off"
+                    (keyup.enter)="agregarLinea()" placeholder="0">
+                </div>
+              </div>
+              <div class="line-entry-field">
+                <label for="descuento-producto">Descuento</label>
+                <div class="control-with-icon discount-entry-control">
+                  <i class="fas fa-percent" aria-hidden="true"></i>
+                  <input type="number" name="descuento-producto" id="descuento-producto" class="form-control"
+                    min="0" max="100" step="0.01" [(ngModel)]="descuentoProducto" autocomplete="off"
+                    (keyup.enter)="agregarLinea()" placeholder="0">
+                </div>
               </div>
               <button type="button" class="add-line-button" (click)="agregarLinea()" aria-label="Agregar producto"
                 title="Agregar producto">
@@ -226,32 +238,23 @@
             </thead>
             <tbody>
               <tr *ngFor="let item of proforma.itemsProforma; let i = index">
-                <td><span class="listing-id-pill">#{{ item.producto.codProducto }}</span></td>
-                <td>
+                <td data-label="Código"><span class="listing-id-pill">#{{ item.producto.codProducto }}</span></td>
+                <td data-label="Producto">
                   <div class="table-product-name">
                     <span aria-hidden="true"><i class="fas fa-box"></i></span>
                     <strong>{{ item.producto.nombre }}</strong>
                   </div>
                 </td>
-                <td><span class="price-value">{{ item.producto.precioVenta | currency: "Q" : "symbol" }}</span></td>
-                <td>
-                  <input type="number" id="cant{{ i }}" name="cant{{ i }}" min="1" step="1" required
-                    class="table-control quantity-control" [(ngModel)]="item.cantidad" #cantidadItem="ngModel"
-                    [class.is-invalid]="cantidadItem.invalid"
-                    (ngModelChange)="actualizarCantidad(item.producto.idProducto, $event)">
-                  <small *ngIf="cantidadItem.invalid" class="table-error">Ingresa una cantidad válida.</small>
+                <td data-label="Precio"><span class="price-value">{{ item.producto.precioVenta | currency: "Q" : "symbol" }}</span></td>
+                <td data-label="Cantidad">
+                  <span class="detail-readonly-value">{{ item.cantidad }}</span>
                 </td>
-                <td>
-                  <div class="discount-control">
-                    <input type="number" id="descuento{{ i }}" name="descuento{{ i }}" value="{{ item.descuento }}"
-                      class="table-control" (change)="actualizarCantidadDescuento(item.producto.idProducto, $event)"
-                      (keyup)="actualizarCantidadDescuento(item.producto.idProducto, $event)">
-                    <span>%</span>
-                  </div>
+                <td data-label="Descuento">
+                  <span class="detail-readonly-value">{{ item.descuento || 0 }} <small>%</small></span>
                 </td>
-                <td><span class="new-price">{{ item.calcularNuevoPrecioVenta() | currency: "Q" : "symbol" }}</span></td>
-                <td><strong class="line-total">{{ item.subTotalDescuento | currency: "Q" : "symbol" }}</strong></td>
-                <td>
+                <td data-label="Nuevo precio"><span class="new-price">{{ item.calcularNuevoPrecioVenta() | currency: "Q" : "symbol" }}</span></td>
+                <td data-label="Total"><strong class="line-total">{{ item.subTotalDescuento | currency: "Q" : "symbol" }}</strong></td>
+                <td data-label="Acciones">
                   <button type="button" class="remove-line-button" (click)="eliminarItem(i)"
                     aria-label="Eliminar producto" title="Eliminar producto">
                     <i class="fas fa-trash-alt" aria-hidden="true"></i>

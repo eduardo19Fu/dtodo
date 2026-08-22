@@ -24,7 +24,8 @@
     </div>
 </section>
 
-<div class="card">
+<div class="card listing-card">
+    <div class="card-header listing-card-header">Listado de Productos</div>
     <div class="card-body table-responsive">
 
         <!-- Controles superiores: selector de registros y búsqueda -->
@@ -73,7 +74,7 @@
             No se encontraron productos.
         </div>
 
-        <table class="table table-hover table-striped table-bordered table-sm mt-0 productos-table"
+        <table class="table table-hover table-striped table-bordered table-sm mt-0 productos-table mobile-data-table"
             *ngIf="!cargando && productosDto?.length > 0">
             <thead>
                 <tr>
@@ -91,24 +92,24 @@
 
             <tbody>
                 <tr *ngFor="let producto of productosDto">
-                    <td class="col-codigo">
+                    <td class="col-codigo" data-label="Código">
                         <span class="listing-id-pill" [title]="producto.codProducto">#{{producto.codProducto}}</span>
                     </td>
-                    <td class="col-nombre">
+                    <td class="col-nombre mobile-primary-cell" data-label="Producto">
                         <span class="producto-nombre" [title]="producto.nombre">{{producto.nombre || 'Sin nombre'}}</span>
                     </td>
-                    <td class="col-precio text-nowrap" *ngIf="auth.hasRole('ROLE_ADMIN')">
+                    <td class="col-precio text-nowrap" data-label="Precio compra" *ngIf="auth.hasRole('ROLE_ADMIN')">
                         {{producto.precioCompra | currency: "Q" : "symbol"}}
                     </td>
-                    <td class="col-precio text-nowrap">{{producto.precioVenta | currency: "Q" : "symbol"}}</td>
-                    <td class="col-stock">{{producto.stock}}</td>
-                    <td class="col-tipo">
+                    <td class="col-precio text-nowrap" data-label="Precio venta">{{producto.precioVenta | currency: "Q" : "symbol"}}</td>
+                    <td class="col-stock" data-label="Stock">{{producto.stock}}</td>
+                    <td class="col-tipo" data-label="Tipo">
                         <span class="cell-ellipsis" [title]="producto.tipoProducto || ''">{{producto.tipoProducto || 'Sin tipo'}}</span>
                     </td>
-                    <td class="col-marca">
+                    <td class="col-marca" data-label="Marca">
                         <span class="cell-ellipsis" [title]="producto.marcaProducto || ''">{{producto.marcaProducto || 'Sin marca'}}</span>
                     </td>
-                    <td class="col-estado">
+                    <td class="col-estado" data-label="Estado">
                         <span class="listing-status-pill"
                             [ngClass]="{'listing-status-success': producto.estado === 'ACTIVO',
                                         'listing-status-warning': producto.estado === 'POR AGOTARSE',
@@ -119,7 +120,7 @@
                             {{producto.estado}}
                         </span>
                     </td>
-                    <td class="col-opciones">
+                    <td class="col-opciones mobile-actions-cell" data-label="Opciones">
                         <div class="action-buttons">
                         <button class="btn btn-sm listing-table-action listing-action-view" type="button"
                             appTooltip="Ver detalle del producto" aria-label="Ver detalle del producto"

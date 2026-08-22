@@ -116,7 +116,7 @@
 
           <div *ngIf="seccionProductos" id="credit-note-products" class="accordion-panel fadeInContent">
             <div *ngIf="notaCredito.items?.length > 0" class="table-shell">
-              <table class="document-table products-table">
+              <table class="document-table products-table mobile-data-table">
                 <thead>
                   <tr>
                     <th>Producto</th>
@@ -130,19 +130,19 @@
                 </thead>
                 <tbody>
                   <tr *ngFor="let item of itemsPaginados">
-                    <td><strong class="product-name">{{item.producto}}</strong></td>
-                    <td class="quantity-cell"><span class="quantity-badge">{{item.cantidad}}</span></td>
-                    <td class="quantity-cell"><span class="dispatched-badge">
+                    <td class="mobile-primary-cell" data-label="Producto"><strong class="product-name">{{item.producto}}</strong></td>
+                    <td class="quantity-cell" data-label="Cantidad"><span class="quantity-badge">{{item.cantidad}}</span></td>
+                    <td class="quantity-cell" data-label="Despachado"><span class="dispatched-badge">
                       {{getDespachado(item.idProducto)}}</span></td>
-                    <td class="quantity-cell">
+                    <td class="quantity-cell" data-label="Pendiente">
                       <span class="pending-badge"
                         [ngClass]="{'completed': getPendiente(item.idProducto, item.cantidad) === 0}">
                         {{getPendiente(item.idProducto, item.cantidad)}}
                       </span>
                     </td>
-                    <td class="money-cell">{{item.subTotal | currency: "Q" : "symbol"}}</td>
-                    <td class="quantity-cell"><span class="discount-badge">{{item.descuento}}%</span></td>
-                    <td class="money-cell final-amount">{{item.subTotalDescuento | currency: "Q" : "symbol"}}</td>
+                    <td class="money-cell" data-label="Subtotal">{{item.subTotal | currency: "Q" : "symbol"}}</td>
+                    <td class="quantity-cell" data-label="Descuento"><span class="discount-badge">{{item.descuento}}%</span></td>
+                    <td class="money-cell final-amount" data-label="Total">{{item.subTotalDescuento | currency: "Q" : "symbol"}}</td>
                   </tr>
                 </tbody>
               </table>
@@ -195,7 +195,7 @@
 
           <div *ngIf="seccionDespachos" id="credit-note-dispatches" class="accordion-panel fadeInContent">
             <div *ngIf="despachos.length > 0" class="table-shell">
-              <table class="document-table dispatch-table">
+              <table class="document-table dispatch-table mobile-data-table">
                 <thead>
                   <tr>
                     <th class="dispatch-number-column">No. despacho</th>
@@ -211,18 +211,18 @@
                 <tbody>
                   <tr *ngFor="let despacho of despachosPaginados; let i = index"
                     [ngClass]="{'dispatch-group-start': esPrimeraFilaDelEvento(despacho, i)}">
-                    <td>
+                    <td data-label="No. despacho">
                       <span class="dispatch-number-badge" [title]="despacho.idEvento || ''">
                         #{{getNumeroDespacho(despacho)}}
                       </span>
                     </td>
-                    <td class="date-cell">{{despacho.fechaDespacho | date: 'dd/MM/yyyy HH:mm'}}</td>
-                    <td><span class="listing-id-pill">#{{despacho.codProducto}}</span></td>
-                    <td><strong class="product-name">{{despacho.productoNombre}}</strong></td>
-                    <td class="quantity-cell">{{despacho.cantidad}}</td>
-                    <td class="money-cell final-amount">{{despacho.totalDespacho | currency: "Q" : "symbol"}}</td>
-                    <td>{{despacho.usuario}}</td>
-                    <td class="action-cell">
+                    <td class="date-cell" data-label="Fecha">{{despacho.fechaDespacho | date: 'dd/MM/yyyy HH:mm'}}</td>
+                    <td data-label="Código"><span class="listing-id-pill">#{{despacho.codProducto}}</span></td>
+                    <td class="mobile-primary-cell" data-label="Producto"><strong class="product-name">{{despacho.productoNombre}}</strong></td>
+                    <td class="quantity-cell" data-label="Cantidad">{{despacho.cantidad}}</td>
+                    <td class="money-cell final-amount" data-label="Total">{{despacho.totalDespacho | currency: "Q" : "symbol"}}</td>
+                    <td data-label="Usuario">{{despacho.usuario}}</td>
+                    <td class="action-cell mobile-actions-cell" data-label="Comprobante">
                       <button *ngIf="esPrimeraFilaDelEvento(despacho, i)" type="button" class="print-button"
                         placement="top"
                         ngbTooltip="Imprimir comprobante del evento ({{countItemsEvento(despacho.idEvento)}} producto(s))"

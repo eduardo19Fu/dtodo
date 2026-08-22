@@ -30,7 +30,7 @@
             No existe ningún producto registrado en la base de datos!
         </div>
 
-        <table id="productos" class="table table-hover table-striped table-bordered dataTable dtr-inline table-sm" role="grid"
+        <table id="productos" class="table table-hover table-striped table-bordered dataTable dtr-inline table-sm mobile-data-table" role="grid"
             *ngIf="productos?.length > 0">
             <thead>
                 <tr>
@@ -47,7 +47,7 @@
 
             <tbody>
                 <tr *ngFor="let producto of productos">
-                    <td>
+                    <td data-label="Imagen">
                         <!-- <img (click)="abrirModal(producto)" *ngIf="producto?.imagen"
                             src="http://localhost:8281/api/uploads/img/{{producto.imagen}}" alt="{{producto.imagen}}"
                             class="img-thumbnail rounded" style="width: 45px; height: 48px; cursor: pointer;"> -->
@@ -72,18 +72,18 @@
                             src="https://dimsa-new.herokuapp.com/images/no-image.jpg" alt="{{producto.imagen}}"
                             class="img-thumbnail rounded" style="width: 45px; height: 48px; cursor: pointer;">
                     </td>
-                    <td><span class="listing-id-pill">#{{producto.codProducto}}</span></td>
-                    <td>{{producto.nombre}}</td>
-                    <td>{{producto.precioVenta}}</td>
-                    <td>{{producto.tipoProducto.tipoProducto}}</td>
-                    <td>{{producto.marcaProducto.marca}}</td>
-                    <td>
+                    <td data-label="Código"><span class="listing-id-pill">#{{producto.codProducto}}</span></td>
+                    <td class="mobile-primary-cell" data-label="Producto">{{producto.nombre}}</td>
+                    <td data-label="Precio">{{producto.precioVenta}}</td>
+                    <td data-label="Tipo">{{producto.tipoProducto.tipoProducto}}</td>
+                    <td data-label="Marca">{{producto.marcaProducto.marca}}</td>
+                    <td data-label="Estado">
                         <span class="badge"
                             [ngClass]="{'badge-primary': producto.estado.estado === 'ACTIVO', 'badge-danger': producto.estado.estado === 'INACTIVO'}">
                             {{producto.estado.estado}}
                         </span>
                     </td>
-                    <td class="center-options">
+                    <td class="center-options mobile-actions-cell" data-label="Opciones">
                         <button class="btn bg-gradient-success" data-toggle="modal" (click)="abrirModal(producto)">
                             <i class="fa fa-asterisk"></i>
                         </button>

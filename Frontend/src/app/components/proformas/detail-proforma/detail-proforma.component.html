@@ -97,7 +97,7 @@
           </div>
 
           <div *ngIf="!cargando && totalElementos > 0" class="table-shell">
-            <table class="document-lines-table">
+            <table class="document-lines-table mobile-data-table">
               <thead>
                 <tr>
                   <th class="line-column">Fila</th>
@@ -110,12 +110,12 @@
               </thead>
               <tbody>
                 <tr *ngFor="let item of items">
-                  <td><span class="line-badge">{{item.idDetalle}}</span></td>
-                  <td><strong class="product-name">{{item.producto}}</strong></td>
-                  <td class="quantity-cell">{{item.cantidad}}</td>
-                  <td class="money-cell">{{item.subTotal | currency: "Q" : "symbol"}}</td>
-                  <td><span class="discount-badge">{{item.descuento}}%</span></td>
-                  <td class="money-cell final-amount">{{item.subTotalDescuento | currency: "Q" : "symbol"}}</td>
+                  <td data-label="Fila"><span class="line-badge">{{item.idDetalle}}</span></td>
+                  <td class="mobile-primary-cell" data-label="Producto"><strong class="product-name">{{item.producto}}</strong></td>
+                  <td class="quantity-cell" data-label="Cantidad">{{item.cantidad}}</td>
+                  <td class="money-cell" data-label="Subtotal">{{item.subTotal | currency: "Q" : "symbol"}}</td>
+                  <td data-label="Descuento"><span class="discount-badge">{{item.descuento}}%</span></td>
+                  <td class="money-cell final-amount" data-label="Total con descuento">{{item.subTotalDescuento | currency: "Q" : "symbol"}}</td>
                 </tr>
               </tbody>
             </table>

@@ -29,7 +29,9 @@ export class CreateProformaComponent implements OnInit {
   title: string;
   nitIngresado: string;
   noProforma: string;
-  isSaving: boolean = false;
+  cantidadProducto: number = null;
+  descuentoProducto = 0;
+  isSaving = false;
 
   producto: Producto;
   cliente: Cliente;
@@ -136,8 +138,19 @@ export class CreateProformaComponent implements OnInit {
       if (this.producto) { // comprueba que el producto exista
         const itemProforma = new DetalleProforma();
 
-        itemProforma.cantidad = +((document.getElementById('cantidad') as HTMLInputElement)).value;
-        itemProforma.descuento = 0;
+        itemProforma.cantidad = Number(this.cantidadProducto);
+        itemProforma.descuento = Number(this.descuentoProducto || 0);
+
+        if (!Number.isInteger(itemProforma.cantidad) || itemProforma.cantidad <= 0) {
+          swal.fire('Cantidad Inválida', 'La cantidad debe ser un número entero mayor a 0.', 'warning');
+          return;
+        }
+
+        if (!Number.isFinite(itemProforma.descuento)
+          || itemProforma.descuento < 0 || itemProforma.descuento > 100) {
+          swal.fire('Descuento Inválido', 'El descuento debe estar entre 0% y 100%.', 'warning');
+          return;
+        }
 
         if (itemProforma.cantidad > this.producto.stock) {
           swal.fire('Stock Insuficiente', 'No existen las suficientes existencias de este producto.', 'warning');
@@ -145,18 +158,21 @@ export class CreateProformaComponent implements OnInit {
         } else {
           if (itemProforma.cantidad && itemProforma.cantidad !== 0) {
             if (this.existeItem(this.producto.idProducto)) {
-              this.incrementaCantidad(this.producto.idProducto, itemProforma.cantidad);
+              this.incrementaCantidad(this.producto.idProducto, itemProforma.cantidad, itemProforma.descuento);
               this.producto = new Producto();
-              (document.getElementById('cantidad') as HTMLInputElement).value = '';
+              this.cantidadProducto = null;
+              this.descuentoProducto = 0;
             } else {
                 itemProforma.producto = this.producto;
-                itemProforma.subTotalDescuento = itemProforma.calcularImporte();
+                itemProforma.subTotalDescuento = itemProforma.calcularImporteDescuento();
                 itemProforma.subTotal = itemProforma.calcularImporte();
+                itemProforma.nuevoPrecioVenta = itemProforma.calcularNuevoPrecioVenta();
 
-                this.proforma.itemsProforma.push(itemProforma);
+                this.proforma.itemsProforma = [...this.proforma.itemsProforma, itemProforma];
+                this.recalcularTotal();
                 this.producto = new Producto();
-
-                (document.getElementById('cantidad') as HTMLInputElement).value = '';
+                this.cantidadProducto = null;
+                this.descuentoProducto = 0;
             }
 
           } else if (itemProforma.cantidad === 0) {
@@ -180,31 +196,23 @@ export class CreateProformaComponent implements OnInit {
   }
 
   eliminarItem(index: number): void {
-    this.proforma.itemsProforma.splice(index, 1);
+    this.proforma.itemsProforma = this.proforma.itemsProforma.filter((item, itemIndex) => itemIndex !== index);
+    this.recalcularTotal();
   }
 
-  incrementaCantidad(idProducto: number, cantidad: number): void {
+  incrementaCantidad(idProducto: number, cantidad: number, descuento: number): void {
     this.proforma.itemsProforma = this.proforma.itemsProforma.map((item: DetalleProforma) => {
       if (idProducto === item.producto.idProducto) {
         item.cantidad = item.cantidad + cantidad;
+        item.descuento = descuento;
         item.subTotal = item.calcularImporte();
         item.subTotalDescuento = item.calcularImporteDescuento();
+        item.nuevoPrecioVenta = item.calcularNuevoPrecioVenta();
       }
 
       return item;
     });
-  }
-
-  actualizarCantidad(idProducto: number, cantidad: number): void {
-    const item = this.proforma.itemsProforma.find((detalle: DetalleProforma) =>
-      idProducto === detalle.producto.idProducto
-    );
-
-    if (item) {
-      item.cantidad = cantidad;
-      item.subTotal = item.calcularImporte();
-      item.subTotalDescuento = item.calcularImporteDescuento();
-    }
+    this.recalcularTotal();
   }
 
   cantidadesValidas(): boolean {
@@ -213,19 +221,8 @@ export class CreateProformaComponent implements OnInit {
     );
   }
 
-  actualizarCantidadDescuento(idProducto: number, event: any): void {
-    const descuento = event.target.value as number;
-
-    this.proforma.itemsProforma = this.proforma.itemsProforma.map((itemProforma: DetalleProforma) => {
-      if (idProducto === itemProforma.producto.idProducto) {
-        itemProforma.descuento = descuento;
-        itemProforma.subTotal = itemProforma.calcularImporte();
-        itemProforma.subTotalDescuento = itemProforma.calcularImporteDescuento();
-        itemProforma.nuevoPrecioVenta = itemProforma.calcularNuevoPrecioVenta();
-      }
-      
-      return itemProforma;
-    });
+  recalcularTotal(): void {
+    this.proforma.total = this.proforma.calcularTotal();
   }
 
   createProforma(): void {
@@ -255,9 +252,9 @@ export class CreateProformaComponent implements OnInit {
 
   cargarProforma(): void {
     this.activatedRoute.params.subscribe(params => {
-      const id = params['proformaId'];
+      const id = params.proformaId;
 
-      if(id) {
+      if (id) {
         this.buscarProformaPorId(id);
       }
     });
@@ -268,7 +265,7 @@ export class CreateProformaComponent implements OnInit {
       response => {
         if (!response.mensaje) {
           this.proformaCargada = response;
-          
+
           this.cliente = response.cliente;
 
           this.proforma.idProforma = response.idProforma;
@@ -280,8 +277,8 @@ export class CreateProformaComponent implements OnInit {
           this.proforma.total = response.total;
 
 
-          response.itemsProforma.forEach((itemProforma: DetalleProforma) => {
-            let item = new DetalleProforma();
+          this.proforma.itemsProforma = response.itemsProforma.map((itemProforma: DetalleProforma) => {
+            const item = new DetalleProforma();
 
             item.cantidad = itemProforma.cantidad;
             item.subTotal = itemProforma.subTotal;
@@ -290,8 +287,9 @@ export class CreateProformaComponent implements OnInit {
             item.descuento = itemProforma.descuento;
             item.nuevoPrecioVenta = itemProforma.nuevoPrecioVenta;
 
-            this.proforma.itemsProforma.push(item);
+            return item;
           });
+          this.recalcularTotal();
         }
       }, error => {
         swal.fire(`Error: ${error.error.status}`, `${error.error.message}`, 'error');

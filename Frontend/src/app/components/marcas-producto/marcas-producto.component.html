@@ -12,8 +12,8 @@
   </div>
 </section>
 
-<div class="card">
-  <div class="card-header">Listado de Marcas de Producto</div>
+<div class="card listing-card">
+  <div class="card-header listing-card-header">Listado de Marcas de Producto</div>
   <div class="card-body table-responsive">
     <div class="row mb-2 align-items-center table-controls">
       <div class="col-sm-4">
@@ -51,7 +51,7 @@
       No se encontraron marcas con el filtro indicado.
     </div>
 
-    <table class="table table-hover table-striped table-bordered table-sm mt-0 catalog-table"
+    <table class="table table-hover table-striped table-bordered table-sm mt-0 catalog-table mobile-data-table"
            *ngIf="!cargando && marcas.length > 0">
       <thead>
         <tr>
@@ -76,14 +76,14 @@
       </thead>
       <tbody>
         <tr *ngFor="let marca of marcas">
-          <td class="col-id"><span class="listing-id-pill">#{{marca.idMarcaProducto}}</span></td>
-          <td class="col-nombre"><span class="cell-ellipsis" [title]="marca.marca">{{marca.marca}}</span></td>
-          <td class="col-fecha">
+          <td class="col-id" data-label="ID"><span class="listing-id-pill">#{{marca.idMarcaProducto}}</span></td>
+          <td class="col-nombre mobile-primary-cell" data-label="Marca"><span class="cell-ellipsis" [title]="marca.marca">{{marca.marca}}</span></td>
+          <td class="col-fecha" data-label="Fecha de registro">
             <span class="fecha-principal">{{marca.fechaRegistro | date: 'dd/MM/yyyy'}}</span>
             <small class="fecha-hora">{{marca.fechaRegistro | date: 'HH:mm'}}</small>
           </td>
-          <td class="col-creador"><span class="cell-ellipsis" [title]="marca.usuario || ''">{{marca.usuario || 'Sin usuario'}}</span></td>
-          <td class="col-opciones" *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_INVENTARIO')">
+          <td class="col-creador" data-label="Creador"><span class="cell-ellipsis" [title]="marca.usuario || ''">{{marca.usuario || 'Sin usuario'}}</span></td>
+          <td class="col-opciones mobile-actions-cell" data-label="Opciones" *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_INVENTARIO')">
             <div class="action-buttons">
               <button class="btn btn-sm listing-table-action listing-action-edit" type="button"
                       appTooltip="Editar marca" aria-label="Editar marca"

@@ -77,8 +77,8 @@
   </form>
 </div>
 
-<div class="card">
-  <div class="card-header">Listado de Proformas</div>
+<div class="card listing-card">
+  <div class="card-header listing-card-header">Listado de Proformas</div>
   <div class="card-body table-responsive">
     <div class="row mb-2 align-items-center table-controls-row" *ngIf="busquedaRealizada">
       <div class="col-sm-4">
@@ -99,7 +99,7 @@
         </span>
       </div>
       <div class="col-sm-4">
-        <div class="d-inline-flex align-items-center float-right">
+        <div class="d-inline-flex align-items-center float-right listing-search-control">
           <label class="mb-0 mr-2">Búsqueda:</label>
           <input type="text" class="form-control form-control-sm" [value]="filtro"
                  (input)="onBuscar($event.target.value)"
@@ -117,7 +117,7 @@
       No se encontraron proformas con los filtros indicados.
     </div>
 
-    <table class="table table-hover table-striped table-bordered table-sm mt-0 document-table"
+    <table class="table table-hover table-striped table-bordered table-sm mt-0 document-table mobile-data-table"
            *ngIf="!cargando && proformasDto.length > 0">
       <thead>
         <tr>
@@ -133,19 +133,19 @@
       </thead>
       <tbody>
         <tr *ngFor="let proforma of proformasDto">
-          <td class="col-numero text-nowrap"><span class="listing-id-pill">#{{proforma.noProforma}}</span></td>
-          <td class="col-fecha">
+          <td class="col-numero text-nowrap" data-label="No. proforma"><span class="listing-id-pill">#{{proforma.noProforma}}</span></td>
+          <td class="col-fecha" data-label="Fecha">
             <span class="fecha-principal">{{proforma.fechaEmision | date: 'dd/MM/yyyy'}}</span>
             <small class="fecha-hora">{{proforma.fechaEmision | date: 'HH:mm'}}</small>
           </td>
-          <td class="col-cliente">
+          <td class="col-cliente mobile-primary-cell" data-label="Cliente / NIT">
             <span class="cliente-nombre" [title]="proforma.cliente">{{proforma.cliente}}</span>
             <small class="cliente-nit">NIT: {{proforma.nitCliente || 'C/F'}}</small>
           </td>
-          <td class="col-vendedor"><span class="cell-ellipsis" [title]="proforma.vendedor">{{proforma.vendedor}}</span></td>
-          <td class="col-usuario"><span class="cell-ellipsis" [title]="proforma.usuario">{{proforma.usuario}}</span></td>
-          <td class="col-total text-nowrap">{{proforma.total | currency: 'Q' : 'symbol'}}</td>
-          <td class="col-estado">
+          <td class="col-vendedor" data-label="Vendedor"><span class="cell-ellipsis" [title]="proforma.vendedor">{{proforma.vendedor}}</span></td>
+          <td class="col-usuario" data-label="Usuario"><span class="cell-ellipsis" [title]="proforma.usuario">{{proforma.usuario}}</span></td>
+          <td class="col-total text-nowrap" data-label="Total">{{proforma.total | currency: 'Q' : 'symbol'}}</td>
+          <td class="col-estado" data-label="Estado">
             <span class="listing-status-pill"
                   [ngClass]="{'listing-status-success': proforma.estado === 'ACTIVO',
                               'listing-status-danger': proforma.estado === 'ANULADO',
@@ -154,7 +154,7 @@
               {{proforma.estado}}
             </span>
           </td>
-          <td class="col-opciones"
+          <td class="col-opciones mobile-actions-cell" data-label="Opciones"
               *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR') || auth.hasRole('ROLE_INVENTARIO')">
             <div class="action-buttons">
             <button class="btn btn-sm table-action action-detail" type="button"
