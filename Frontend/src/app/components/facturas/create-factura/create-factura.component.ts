@@ -22,6 +22,8 @@ import { DetalleProforma } from '../../../models/detalle-proforma';
 
 import swal from 'sweetalert2';
 
+type CampoDetalleEditable = 'cantidad' | 'descuento';
+
 @Component({
   selector: 'app-create-factura',
   templateUrl: './create-factura.component.html',
@@ -37,6 +39,15 @@ export class CreateFacturaComponent implements OnInit {
   nitIngresado: string;
   pagar = false;
   isSaving = false;
+
+  edicionDetalleAbierta = false;
+  campoDetalleEdicion: CampoDetalleEditable = null;
+  indiceDetalleEdicion = -1;
+  valorDetalleAnterior: number = null;
+  valorDetalleNuevo: number = null;
+  errorEdicionDetalle = '';
+
+  private elementoOrigenEdicion: HTMLElement;
 
   producto: Producto;
   cantidadProducto: number = null;
@@ -240,11 +251,138 @@ export class CreateFacturaComponent implements OnInit {
   }
 
   eliminarItem(index: number): void {
-    this.factura.itemsFactura = this.factura.itemsFactura.filter((item, itemIndex) => itemIndex !== index);
-    if (this.proforma) {
-      this.proforma.itemsProforma = this.proforma.itemsProforma.filter((item, itemIndex) => itemIndex !== index);
+    const item = this.factura.itemsFactura[index];
+    if (!item) {
+      return;
     }
+
+    swal.fire({
+      title: '¿Eliminar producto?',
+      text: `Se eliminará ${item.producto.nombre} del detalle de la factura.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      reverseButtons: true,
+      focusCancel: true
+    }).then(result => {
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      this.factura.itemsFactura = this.factura.itemsFactura.filter((detalle, itemIndex) => itemIndex !== index);
+      if (this.proforma) {
+        this.proforma.itemsProforma = this.proforma.itemsProforma.filter((detalle, itemIndex) => itemIndex !== index);
+        this.proforma.total = this.proforma.calcularTotal();
+      }
+      this.calcularCambio();
+    });
+  }
+
+  abrirEdicionDetalle(index: number, campo: CampoDetalleEditable, origen: EventTarget): void {
+    const item = this.factura.itemsFactura[index];
+    if (!item) {
+      return;
+    }
+
+    this.indiceDetalleEdicion = index;
+    this.campoDetalleEdicion = campo;
+    this.valorDetalleAnterior = campo === 'cantidad' ? Number(item.cantidad) : Number(item.descuento || 0);
+    this.valorDetalleNuevo = null;
+    this.errorEdicionDetalle = '';
+    this.elementoOrigenEdicion = origen as HTMLElement;
+    this.edicionDetalleAbierta = true;
+
+    setTimeout(() => (document.getElementById('factura-nuevo-valor-detalle') as HTMLInputElement)?.focus());
+  }
+
+  confirmarEdicionDetalle(): void {
+    const item = this.factura.itemsFactura[this.indiceDetalleEdicion];
+    const valorVacio = this.valorDetalleNuevo === null || this.valorDetalleNuevo === undefined
+      || String(this.valorDetalleNuevo).trim() === '';
+
+    if (!item || valorVacio) {
+      this.errorEdicionDetalle = 'Ingresa un valor nuevo.';
+      return;
+    }
+
+    const nuevoValor = Number(this.valorDetalleNuevo);
+    if (!Number.isFinite(nuevoValor)) {
+      this.errorEdicionDetalle = 'Ingresa un valor numérico válido.';
+      return;
+    }
+
+    if (this.campoDetalleEdicion === 'cantidad') {
+      if (!Number.isInteger(nuevoValor) || nuevoValor <= 0) {
+        this.errorEdicionDetalle = 'La cantidad debe ser un número entero mayor a 0.';
+        return;
+      }
+      if (nuevoValor > Number(item.producto.stock)) {
+        this.errorEdicionDetalle = `La cantidad no puede superar el stock disponible (${item.producto.stock}).`;
+        return;
+      }
+      item.cantidad = nuevoValor;
+    } else {
+      if (nuevoValor < 0 || nuevoValor > 100) {
+        this.errorEdicionDetalle = 'El descuento debe estar entre 0% y 100%.';
+        return;
+      }
+      item.descuento = nuevoValor;
+    }
+
+    item.subTotal = item.calcularImporte();
+    item.subTotalDescuento = item.calcularImporteDescuento();
+    this.factura.itemsFactura = [...this.factura.itemsFactura];
+    this.sincronizarDetalleProforma(item);
     this.calcularCambio();
+    this.cerrarEdicionDetalle();
+  }
+
+  cancelarEdicionDetalle(): void {
+    this.cerrarEdicionDetalle();
+  }
+
+  evitarCambioConRueda(event: WheelEvent): void {
+    (event.target as HTMLInputElement).blur();
+  }
+
+  get tituloEdicionDetalle(): string {
+    return this.campoDetalleEdicion === 'cantidad' ? 'Editar cantidad' : 'Editar descuento';
+  }
+
+  get stockDetalleEdicion(): number {
+    const item = this.factura.itemsFactura[this.indiceDetalleEdicion];
+    return item ? Number(item.producto.stock) : 0;
+  }
+
+  private sincronizarDetalleProforma(itemFactura: DetalleFactura): void {
+    if (!this.proforma) {
+      return;
+    }
+
+    this.proforma.itemsProforma = this.proforma.itemsProforma.map((item: DetalleProforma) => {
+      if (item.producto.idProducto === itemFactura.producto.idProducto) {
+        item.cantidad = itemFactura.cantidad;
+        item.descuento = itemFactura.descuento;
+        item.subTotal = item.calcularImporte();
+        item.subTotalDescuento = item.calcularImporteDescuento();
+        item.nuevoPrecioVenta = item.calcularNuevoPrecioVenta();
+      }
+      return item;
+    });
+    this.proforma.total = this.proforma.calcularTotal();
+  }
+
+  private cerrarEdicionDetalle(): void {
+    const elementoOrigen = this.elementoOrigenEdicion;
+    this.edicionDetalleAbierta = false;
+    this.campoDetalleEdicion = null;
+    this.indiceDetalleEdicion = -1;
+    this.valorDetalleAnterior = null;
+    this.valorDetalleNuevo = null;
+    this.errorEdicionDetalle = '';
+    this.elementoOrigenEdicion = null;
+    setTimeout(() => elementoOrigen?.focus());
   }
 
   createFactura(): void {

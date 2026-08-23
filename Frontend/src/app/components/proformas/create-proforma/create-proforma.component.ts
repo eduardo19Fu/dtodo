@@ -13,8 +13,9 @@ import { ClienteService } from '../../../services/cliente.service';
 import { ClienteCreateService } from '../../../services/facturas/cliente-create.service';
 import { UsuarioService } from '../../../services/usuarios/usuario.service';
 import { ProformaService } from '../../../services/proformas/proforma.service';
-
 import swal from 'sweetalert2';
+
+type CampoDetalleEditable = 'cantidad' | 'descuento';
 
 @Component({
   selector: 'app-create-proforma',
@@ -32,6 +33,15 @@ export class CreateProformaComponent implements OnInit {
   cantidadProducto: number = null;
   descuentoProducto = 0;
   isSaving = false;
+
+  edicionDetalleAbierta = false;
+  campoDetalleEdicion: CampoDetalleEditable = null;
+  indiceDetalleEdicion = -1;
+  valorDetalleAnterior: number = null;
+  valorDetalleNuevo: number = null;
+  errorEdicionDetalle = '';
+
+  private elementoOrigenEdicion: HTMLElement;
 
   producto: Producto;
   cliente: Cliente;
@@ -199,8 +209,116 @@ export class CreateProformaComponent implements OnInit {
   }
 
   eliminarItem(index: number): void {
-    this.proforma.itemsProforma = this.proforma.itemsProforma.filter((item, itemIndex) => itemIndex !== index);
+    const item = this.proforma.itemsProforma[index];
+    if (!item) {
+      return;
+    }
+
+    swal.fire({
+      title: '¿Eliminar producto?',
+      text: `Se eliminará ${item.producto.nombre} del detalle de la proforma.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      reverseButtons: true,
+      focusCancel: true
+    }).then(result => {
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      this.proforma.itemsProforma = this.proforma.itemsProforma.filter((detalle, itemIndex) => itemIndex !== index);
+      this.recalcularTotal();
+    });
+  }
+
+  abrirEdicionDetalle(index: number, campo: CampoDetalleEditable, origen: EventTarget): void {
+    const item = this.proforma.itemsProforma[index];
+    if (!item) {
+      return;
+    }
+
+    this.indiceDetalleEdicion = index;
+    this.campoDetalleEdicion = campo;
+    this.valorDetalleAnterior = campo === 'cantidad' ? Number(item.cantidad) : Number(item.descuento || 0);
+    this.valorDetalleNuevo = null;
+    this.errorEdicionDetalle = '';
+    this.elementoOrigenEdicion = origen as HTMLElement;
+    this.edicionDetalleAbierta = true;
+
+    setTimeout(() => (document.getElementById('nuevo-valor-detalle') as HTMLInputElement)?.focus());
+  }
+
+  confirmarEdicionDetalle(): void {
+    const item = this.proforma.itemsProforma[this.indiceDetalleEdicion];
+    const valorVacio = this.valorDetalleNuevo === null || this.valorDetalleNuevo === undefined
+      || String(this.valorDetalleNuevo).trim() === '';
+
+    if (!item || valorVacio) {
+      this.errorEdicionDetalle = 'Ingresa un valor nuevo.';
+      return;
+    }
+
+    const nuevoValor = Number(this.valorDetalleNuevo);
+    if (!Number.isFinite(nuevoValor)) {
+      this.errorEdicionDetalle = 'Ingresa un valor numérico válido.';
+      return;
+    }
+
+    if (this.campoDetalleEdicion === 'cantidad') {
+      if (!Number.isInteger(nuevoValor) || nuevoValor <= 0) {
+        this.errorEdicionDetalle = 'La cantidad debe ser un número entero mayor a 0.';
+        return;
+      }
+      if (nuevoValor > Number(item.producto.stock)) {
+        this.errorEdicionDetalle = `La cantidad no puede superar el stock disponible (${item.producto.stock}).`;
+        return;
+      }
+      item.cantidad = nuevoValor;
+    } else {
+      if (nuevoValor < 0 || nuevoValor > 100) {
+        this.errorEdicionDetalle = 'El descuento debe estar entre 0% y 100%.';
+        return;
+      }
+      item.descuento = nuevoValor;
+    }
+
+    item.subTotal = item.calcularImporte();
+    item.subTotalDescuento = item.calcularImporteDescuento();
+    item.nuevoPrecioVenta = item.calcularNuevoPrecioVenta();
+    this.proforma.itemsProforma = [...this.proforma.itemsProforma];
     this.recalcularTotal();
+    this.cerrarEdicionDetalle();
+  }
+
+  cancelarEdicionDetalle(): void {
+    this.cerrarEdicionDetalle();
+  }
+
+  evitarCambioConRueda(event: WheelEvent): void {
+    (event.target as HTMLInputElement).blur();
+  }
+
+  get tituloEdicionDetalle(): string {
+    return this.campoDetalleEdicion === 'cantidad' ? 'Editar cantidad' : 'Editar descuento';
+  }
+
+  get stockDetalleEdicion(): number {
+    const item = this.proforma.itemsProforma[this.indiceDetalleEdicion];
+    return item ? Number(item.producto.stock) : 0;
+  }
+
+  private cerrarEdicionDetalle(): void {
+    const elementoOrigen = this.elementoOrigenEdicion;
+    this.edicionDetalleAbierta = false;
+    this.campoDetalleEdicion = null;
+    this.indiceDetalleEdicion = -1;
+    this.valorDetalleAnterior = null;
+    this.valorDetalleNuevo = null;
+    this.errorEdicionDetalle = '';
+    this.elementoOrigenEdicion = null;
+    setTimeout(() => elementoOrigen?.focus());
   }
 
   incrementaCantidad(idProducto: number, cantidad: number, descuento: number): void {

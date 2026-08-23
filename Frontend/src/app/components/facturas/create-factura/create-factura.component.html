@@ -272,10 +272,24 @@
                 </td>
                 <td data-label="Precio"><span class="price-value">{{ item.producto.precioVenta | currency: "Q" : "symbol" }}</span></td>
                 <td data-label="Cantidad">
-                  <span class="detail-readonly-value">{{ item.cantidad }}</span>
+                  <div class="detail-value-with-action">
+                    <span class="detail-readonly-value">{{ item.cantidad }}</span>
+                    <button type="button" class="edit-detail-button"
+                      (click)="abrirEdicionDetalle(i, 'cantidad', $event.currentTarget)"
+                      [attr.aria-label]="'Editar cantidad de ' + item.producto.nombre" title="Editar cantidad">
+                      <i class="fas fa-pencil-alt" aria-hidden="true"></i>
+                    </button>
+                  </div>
                 </td>
                 <td data-label="Descuento">
-                  <span class="detail-readonly-value">{{ item.descuento || 0 }} <small>%</small></span>
+                  <div class="detail-value-with-action">
+                    <span class="detail-readonly-value">{{ item.descuento || 0 }} <small>%</small></span>
+                    <button type="button" class="edit-detail-button"
+                      (click)="abrirEdicionDetalle(i, 'descuento', $event.currentTarget)"
+                      [attr.aria-label]="'Editar descuento de ' + item.producto.nombre" title="Editar descuento">
+                      <i class="fas fa-pencil-alt" aria-hidden="true"></i>
+                    </button>
+                  </div>
                 </td>
                 <td data-label="Nuevo precio"><span class="new-price">{{ item.calcularPrecioDescuento() | currency: "Q" : "symbol" }}</span></td>
                 <td data-label="Total"><strong class="line-total">{{ item.subTotalDescuento | currency: "Q" : "symbol" }}</strong></td>
@@ -298,4 +312,65 @@
       </section>
     </div>
   </form>
+</div>
+
+<div *ngIf="edicionDetalleAbierta" class="detail-edit-backdrop" (click)="cancelarEdicionDetalle()"
+  (keydown.escape)="cancelarEdicionDetalle()">
+  <section class="detail-edit-dialog" role="dialog" aria-modal="true" aria-labelledby="invoice-detail-edit-title"
+    (click)="$event.stopPropagation()">
+    <header class="detail-edit-header">
+      <span class="detail-edit-icon" aria-hidden="true"><i class="fas fa-pencil-alt"></i></span>
+      <div>
+        <span class="detail-edit-eyebrow">Detalle de factura</span>
+        <h3 id="invoice-detail-edit-title">{{ tituloEdicionDetalle }}</h3>
+      </div>
+      <button type="button" class="detail-edit-close" (click)="cancelarEdicionDetalle()" aria-label="Cancelar edición">
+        <i class="fas fa-times" aria-hidden="true"></i>
+      </button>
+    </header>
+
+    <div class="detail-edit-body">
+      <p>El cambio se aplicará únicamente al confirmar.</p>
+      <div class="detail-edit-fields">
+        <div class="detail-edit-field">
+          <label for="factura-valor-detalle-anterior">
+            {{ campoDetalleEdicion === 'cantidad' ? 'Cantidad anterior' : 'Descuento anterior' }}
+          </label>
+          <div class="detail-edit-input-wrap readonly">
+            <input id="factura-valor-detalle-anterior" type="number" class="form-control"
+              [value]="valorDetalleAnterior" readonly tabindex="-1">
+            <span *ngIf="campoDetalleEdicion === 'descuento'">%</span>
+          </div>
+        </div>
+
+        <div class="detail-edit-field">
+          <label for="factura-nuevo-valor-detalle">
+            {{ campoDetalleEdicion === 'cantidad' ? 'Cantidad nueva' : 'Descuento nuevo' }}
+          </label>
+          <div class="detail-edit-input-wrap">
+            <input id="factura-nuevo-valor-detalle" name="factura-nuevo-valor-detalle" type="number"
+              class="form-control" [(ngModel)]="valorDetalleNuevo"
+              [min]="campoDetalleEdicion === 'cantidad' ? 1 : 0"
+              [max]="campoDetalleEdicion === 'cantidad' ? stockDetalleEdicion : 100"
+              [step]="campoDetalleEdicion === 'cantidad' ? 1 : 0.01" autocomplete="off"
+              (wheel)="evitarCambioConRueda($event)" (keyup.enter)="confirmarEdicionDetalle()">
+            <span *ngIf="campoDetalleEdicion === 'descuento'">%</span>
+          </div>
+        </div>
+      </div>
+
+      <p *ngIf="errorEdicionDetalle" class="detail-edit-error" role="alert">
+        <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+        {{ errorEdicionDetalle }}
+      </p>
+    </div>
+
+    <footer class="detail-edit-actions">
+      <button type="button" class="detail-edit-cancel" (click)="cancelarEdicionDetalle()">Cancelar</button>
+      <button type="button" class="detail-edit-confirm" (click)="confirmarEdicionDetalle()">
+        <i class="fas fa-check" aria-hidden="true"></i>
+        Confirmar
+      </button>
+    </footer>
+  </section>
 </div>
