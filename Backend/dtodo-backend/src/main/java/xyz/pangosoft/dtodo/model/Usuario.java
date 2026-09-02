@@ -18,8 +18,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Data
 @AllArgsConstructor
@@ -46,6 +49,11 @@ public class Usuario implements Serializable {
 	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(name = "usuarios_roles", joinColumns = @JoinColumn(name = "usuario_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
 	private List<Role> roles;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "id_sucursal")
+	@JsonIgnoreProperties({ "usuario", "hibernateLazyInitializer", "handler" })
+	private Sucursal sucursal;
 
 	@PrePersist
 	void configurarFechaRegistro() {

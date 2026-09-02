@@ -192,6 +192,7 @@ public class UsuarioServiceImpl implements UserDetailsService, IUsuarioService {
 			usuarioActual.setApellido(usuario.getApellido());
 			usuarioActual.setUsuario(usuario.getUsuario());
 			usuarioActual.setRoles(usuario.getRoles());
+			usuarioActual.setSucursal(usuario.getSucursal());
 
 			// Solo se recodifica la contraseña si cambió respecto a la almacenada
 			if (!usuarioActual.getPassword().equals(usuario.getPassword())) {

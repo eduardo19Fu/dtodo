@@ -23,6 +23,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtValidationException;
 
+import xyz.pangosoft.dtodo.model.Sucursal;
 import xyz.pangosoft.dtodo.model.Usuario;
 import xyz.pangosoft.dtodo.service.IUsuarioService;
 
@@ -88,6 +89,36 @@ class JwtTokenServiceTest {
         assertThat(accessToken.getAudience()).containsExactly(CLIENT_ID);
         assertThat(accessToken.getExpiresAt()).isAfter(accessToken.getIssuedAt());
         assertThat(tokens.expiresIn()).isEqualTo(Duration.ofMinutes(15).toSeconds());
+    }
+
+    @Test
+    void accessTokenIncludesSucursalClaimsWhenUserHasSucursal() {
+        Usuario usuarioConSucursal = Usuario.builder()
+                .idUsuario(8)
+                .usuario("pedro")
+                .enabled(true)
+                .sucursal(Sucursal.builder().idSucursal(3).nombre("Sucursal Norte").build())
+                .build();
+        when(usuarioService.findByUsuario("pedro")).thenReturn(usuarioConSucursal);
+
+        Authentication authentication = UsernamePasswordAuthenticationToken.authenticated(
+                "pedro", null, List.of(new SimpleGrantedAuthority("ROLE_COBRADOR")));
+
+        JwtTokenService.TokenPair tokens = tokenService.issueTokens(authentication);
+        Jwt accessToken = jwtDecoder.decode(tokens.accessToken());
+
+        assertThat(accessToken.getClaimAsString("id_sucursal")).isEqualTo("3");
+        assertThat(accessToken.getClaimAsString("sucursal")).isEqualTo("Sucursal Norte");
+    }
+
+    @Test
+    void accessTokenOmitsSucursalClaimsWhenUserHasNoSucursal() {
+        JwtTokenService.TokenPair tokens = tokenService.issueTokens(
+                UsernamePasswordAuthenticationToken.authenticated(
+                        "maria", null, List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))));
+        Jwt accessToken = jwtDecoder.decode(tokens.accessToken());
+
+        assertThat(accessToken.getClaimAsString("id_sucursal")).isNull();
     }
 
     @Test
