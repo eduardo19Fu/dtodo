@@ -47,6 +47,7 @@ import xyz.pangosoft.dtodo.model.MarcaProducto;
 import xyz.pangosoft.dtodo.model.Producto;
 import xyz.pangosoft.dtodo.model.TipoProducto;
 import xyz.pangosoft.dtodo.repository.IProductoRepository;
+import xyz.pangosoft.dtodo.service.IInventarioSucursalService;
 import xyz.pangosoft.dtodo.service.IProductoService;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -77,18 +78,20 @@ public class ProductoServiceImpl implements IProductoService {
 
 	private final IEstadoService estadoService;
 
+	private final IInventarioSucursalService inventarioSucursalService;
+
 	protected final DataSource localDataSource;
 
 	@Transactional(readOnly = true)
 	@Override
-	public List<Producto> findAll() {
+	public List<Producto> findAll(Integer idSucursal) {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
 		log.debug("Enter {}", __method);
 
 		List<Producto> productos = new ArrayList<>();
 
 		try {
-			productos = repoProducto.listarPorEstadoSP(0);
+			productos = repoProducto.listarPorEstadoSP(0, idSucursal);
 			log.info("Devolviendo listado de productos disponibles");
 			return productos;
 		} catch (DataAccessException e) {
@@ -104,11 +107,11 @@ public class ProductoServiceImpl implements IProductoService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public List<ProductoDto> findAllDto() {
+	public List<ProductoDto> findAllDto(Integer idSucursal) {
 		List<ProductoDto> productos = new ArrayList<>();
 		try {
 			log.info("Devolviendo productos con dtos");
-			productos = repoProducto.listarPorEstadoSPDto(0);
+			productos = repoProducto.listarPorEstadoSPDto(0, idSucursal);
 			return productos;
 		} catch (DataAccessException e) {
 			log.error("Ha ocurrido un error a nivel de base de datos al consultar productos desde procedimiento almacenado: {}", e.getMessage());
@@ -118,13 +121,13 @@ public class ProductoServiceImpl implements IProductoService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public Page<ProductoDtoMejorado> findAllDtoMejorado(String orden, String direccion, Pageable pageable) {
+	public Page<ProductoDtoMejorado> findAllDtoMejorado(String orden, String direccion, Integer idSucursal, Pageable pageable) {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
 		log.debug("Enter {}", __method);
 
 		try {
 			log.debug("Consultando productos desde la base de datos...");
-			Page<Object[]> results = repoProducto.findAllProductosDto(orden, direccion, pageable);
+			Page<Object[]> results = repoProducto.findAllProductosDto(orden, direccion, idSucursal, pageable);
 
 			if (results.isEmpty()) {
 				log.warn("No existen productos registrados");
@@ -143,7 +146,7 @@ public class ProductoServiceImpl implements IProductoService {
 	@Transactional(readOnly = true)
 	@Override
 	public Page<ProductoDtoMejorado> searchProductoDtoMejorado(
-			String filtro, String orden, String direccion, Pageable pageable) {
+			String filtro, String orden, String direccion, Integer idSucursal, Pageable pageable) {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
 		log.debug("Enter {}", __method);
 
@@ -153,7 +156,7 @@ public class ProductoServiceImpl implements IProductoService {
 			Page<Producto> results = repoProducto.findAll(
 					crearEspecificacionBusqueda(terminos), crearPageableOrdenado(pageable, orden, direccion));
 
-			return results.map(this::mapProductoToProductoDtoMejorado);
+			return results.map(producto -> mapProductoToProductoDtoMejorado(producto, idSucursal));
 		} catch (DataAccessException dax) {
 			log.error("Ha ocurrido un error al intentar consultar los productos con busqueda {}: {}", filtro, dax.getMessage());
 			throw new xyz.pangosoft.dtodo.error.exceptions.DataAccessException("Ha ocurrido un error al consultar los productos => ", dax);
@@ -235,7 +238,7 @@ public class ProductoServiceImpl implements IProductoService {
 		return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
 	}
 
-	private ProductoDtoMejorado mapProductoToProductoDtoMejorado(Producto producto) {
+	private ProductoDtoMejorado mapProductoToProductoDtoMejorado(Producto producto, Integer idSucursal) {
 		return ProductoDtoMejorado.builder()
 				.idProducto(producto.getIdProducto())
 				.codProducto(producto.getCodProducto())
@@ -249,7 +252,7 @@ public class ProductoServiceImpl implements IProductoService {
 				.fechaIngreso(producto.getFechaIngreso() == null ? null
 						: new java.sql.Date(producto.getFechaIngreso().getTime()).toLocalDate())
 				.fechaRegistro(producto.getFechaRegistro())
-				.stock(producto.getStock())
+				.stock(inventarioSucursalService.obtenerStock(idSucursal, producto.getIdProducto()))
 				.imagen(producto.getImagen())
 				.idestado(producto.getEstado() == null ? 0 : producto.getEstado().getIdEstado())
 				.marcaProducto(producto.getMarcaProducto() == null ? null : producto.getMarcaProducto().getMarca())
@@ -425,14 +428,14 @@ public class ProductoServiceImpl implements IProductoService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public List<ProductoDto> findAllByEstado(Estado estado) {
+	public List<ProductoDto> findAllByEstado(Estado estado, Integer idSucursal) {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
 		log.debug("Enter {}", __method);
 
 		List<ProductoDto> productos = new ArrayList<>();
 
 		try {
-			productos = repoProducto.listarPorEstadoSPDto(estado.getIdEstado());
+			productos = repoProducto.listarPorEstadoSPDto(estado.getIdEstado(), idSucursal);
 
 			log.info("Listando productos con estado Activo");
 			return productos;

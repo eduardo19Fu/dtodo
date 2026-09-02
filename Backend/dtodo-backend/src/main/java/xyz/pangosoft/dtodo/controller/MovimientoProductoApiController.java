@@ -33,8 +33,10 @@ import org.springframework.web.bind.annotation.RestController;
 import xyz.pangosoft.dtodo.dto.MovimientoProductoDto;
 import xyz.pangosoft.dtodo.model.MovimientoProducto;
 import xyz.pangosoft.dtodo.model.Producto;
+import xyz.pangosoft.dtodo.model.Usuario;
 import xyz.pangosoft.dtodo.service.IMovimientoProductoService;
 import xyz.pangosoft.dtodo.service.IProductoService;
+import xyz.pangosoft.dtodo.service.IUsuarioService;
 
 import net.sf.jasperreports.engine.JRException;
 
@@ -48,6 +50,8 @@ public class MovimientoProductoApiController {
 	private final IMovimientoProductoService serviceMove;
 
 	private final IProductoService serviceProducto;
+
+	private final IUsuarioService serviceUsuario;
 
 	@GetMapping(value = "/movimientos")
 	public ResponseEntity<List<MovimientoProducto>> index() {
@@ -118,6 +122,12 @@ public class MovimientoProductoApiController {
 	@PostMapping(value = "/movimientos")
 	public ResponseEntity<?> create(@RequestBody MovimientoProducto movimientoProducto, BindingResult result) {
 		log.info("Creando nuevo movimiento para el producto: {}", movimientoProducto.getProducto().getCodProducto());
+
+		if (movimientoProducto.getSucursal() == null && movimientoProducto.getUsuario() != null) {
+			Usuario usuario = serviceUsuario.findById(movimientoProducto.getUsuario().getIdUsuario());
+			movimientoProducto.setSucursal(usuario.getSucursal());
+		}
+
 		MovimientoProducto newMovimiento = null;
 		newMovimiento = serviceMove.save(movimientoProducto);
 		return ResponseEntity.status(HttpStatus.CREATED).body(newMovimiento);

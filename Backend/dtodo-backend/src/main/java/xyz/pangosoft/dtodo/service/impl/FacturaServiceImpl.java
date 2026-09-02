@@ -824,7 +824,7 @@ public class FacturaServiceImpl implements IFacturaService {
 				.tipoMovimiento(tipoMovimiento)
 				.usuario(usuario)
 				.producto(producto)
-				.stockInicial(producto.getStock())
+				.sucursal(usuario.getSucursal())
 				.cantidad(cantidad)
 				.build();
 	}

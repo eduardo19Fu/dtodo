@@ -1,7 +1,9 @@
 package xyz.pangosoft.dtodo.controller;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import jakarta.validation.Valid;
 
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import xyz.pangosoft.dtodo.dto.SucursalDto;
 import xyz.pangosoft.dtodo.model.Sucursal;
+import xyz.pangosoft.dtodo.service.IInventarioSucursalService;
 import xyz.pangosoft.dtodo.service.ISucursalService;
 
 @CrossOrigin(origins = { "http://localhost:4200", "https://dtodojalapa.xyz" })
@@ -37,6 +40,8 @@ import xyz.pangosoft.dtodo.service.ISucursalService;
 public class SucursalApiController {
 
 	private final ISucursalService serviceSucursal;
+
+	private final IInventarioSucursalService serviceInventarioSucursal;
 
 	@Secured(value = {"ROLE_ADMIN"})
 	@GetMapping(value = "/sucursales")
@@ -121,6 +126,21 @@ public class SucursalApiController {
 
 		Sucursal sucursalUpdated = serviceSucursal.save(sucursal);
 		return new ResponseEntity<>(sucursalUpdated, HttpStatus.CREATED);
+	}
+
+	@Secured(value = {"ROLE_ADMIN"})
+	@PostMapping(value = "/sucursales/{id}/clonar-inventario/{idOrigen}")
+	public ResponseEntity<Map<String, Object>> clonarInventario(
+			@PathVariable("id") Integer idSucursalDestino,
+			@PathVariable("idOrigen") Integer idSucursalOrigen) {
+		log.info("Clonando inventario de la sucursal {} hacia la sucursal {}", idSucursalOrigen, idSucursalDestino);
+
+		serviceInventarioSucursal.clonarInventario(idSucursalOrigen, idSucursalDestino);
+
+		Map<String, Object> response = new HashMap<>();
+		response.put("mensaje", "Inventario clonado con éxito");
+		response.put("idSucursal", idSucursalDestino);
+		return ResponseEntity.ok(response);
 	}
 
 }

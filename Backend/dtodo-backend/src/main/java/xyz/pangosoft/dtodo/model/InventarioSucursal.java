@@ -4,8 +4,6 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -15,7 +13,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
-import xyz.pangosoft.dtodo.model.enums.TipoMovimientoEnum;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,39 +26,32 @@ import lombok.ToString;
 @Builder
 @ToString
 @Entity
-@Table(name = "movimientos_producto")
-public class MovimientoProducto implements Serializable {
+@Table(name = "inventario_sucursal")
+public class InventarioSucursal implements Serializable {
 
-	private static final long serialVersionUID = 776971246070242035L;
+	private static final long serialVersionUID = 4517558968823920262L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long idMovimiento;
-	private Integer cantidad;
-	private Integer stockInicial;
-	private LocalDateTime fechaMovimiento;
+	private Long idInventarioSucursal;
 
-	@Enumerated(EnumType.STRING)
-	private TipoMovimientoEnum tipoMovimiento;
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "id_producto")
-	@JsonIgnoreProperties({ "movimientos", "hibernateLazyInitializer", "handler" })
-	private Producto producto;
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "id_usuario")
-	@JsonIgnoreProperties({"password", "roles", "hibernateLazyInitializer", "handler" })
-	private Usuario usuario;
+	private int stock;
+	private Integer stockMinimo;
+	private LocalDateTime fechaActualizacion;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "id_sucursal")
 	@JsonIgnoreProperties({ "usuario", "hibernateLazyInitializer", "handler" })
 	private Sucursal sucursal;
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "id_producto")
+	@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
+	private Producto producto;
+
 	@PrePersist
-	public void configFecha() {
-		this.fechaMovimiento = LocalDateTime.now();
+	public void configFechaActualizacion() {
+		this.fechaActualizacion = LocalDateTime.now();
 	}
 
 }

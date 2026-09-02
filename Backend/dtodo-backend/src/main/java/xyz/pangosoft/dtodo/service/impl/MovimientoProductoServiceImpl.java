@@ -16,12 +16,13 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import xyz.pangosoft.dtodo.dto.MovimientoProductoDto;
-import xyz.pangosoft.dtodo.error.exceptions.DataAccessException;
 import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
+import xyz.pangosoft.dtodo.error.exceptions.DataAccessException;
 import xyz.pangosoft.dtodo.error.exceptions.NoContentException;
-import xyz.pangosoft.dtodo.model.Estado;
+import xyz.pangosoft.dtodo.model.InventarioSucursal;
 import xyz.pangosoft.dtodo.model.enums.TipoMovimientoEnum;
 import xyz.pangosoft.dtodo.service.IEstadoService;
+import xyz.pangosoft.dtodo.service.IInventarioSucursalService;
 import xyz.pangosoft.dtodo.service.IProductoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -54,6 +55,7 @@ public class MovimientoProductoServiceImpl implements IMovimientoProductoService
 	private final IMovimientoProductoRepository repoMovimiento;
 	private final IEstadoService estadoService;
 	private final IProductoService productoService;
+	private final IInventarioSucursalService inventarioSucursalService;
 
 	private final DataSource localDateSource;
 	
@@ -253,21 +255,20 @@ public class MovimientoProductoServiceImpl implements IMovimientoProductoService
 
 	/**
 	 * Método encargado de llevar a cabo la suma o resta de existencias dependiendo del tipo de movimiento que se
-	 * esté llevando a cabo.
+	 * esté llevando a cabo. Las existencias se manejan por sucursal (tabla inventario_sucursal); el movimiento
+	 * debe traer la sucursal a la que pertenece (@link MovimientoProducto#getSucursal()).
 	 * @param movimientoProducto Objeto de tipo MovimientoProducto que guarda los datos a operar
 	 * @return boolean Devuelve un valor verdadero si el procedimiento de guardado de las nuevas existencias del producto se ha
 	 *         llevado a cabo con éxito.
 	 *
 	 * */
 	public boolean calcularStock(MovimientoProducto movimientoProducto) {
-		int tmpStock = 0;
-		Producto producto = null;
-		Producto productoSaved = null;
-		Estado estado = null;
+		InventarioSucursal inventarioSaved = null;
 
 		try {
-			tmpStock = movimientoProducto.getProducto().getStock();
-			producto = movimientoProducto.getProducto();
+			InventarioSucursal inventario = inventarioSucursalService.obtenerOCrear(
+					movimientoProducto.getSucursal(), movimientoProducto.getProducto());
+			int tmpStock = inventario.getStock();
 			movimientoProducto.setStockInicial(tmpStock);
 
 			switch (movimientoProducto.getTipoMovimiento()) {
@@ -276,41 +277,25 @@ public class MovimientoProductoServiceImpl implements IMovimientoProductoService
 				case ELIMINAR_COMPRA:
 				case ENTREGA_PRODUCTO_NOTA:
 					log.debug("Operando salidas al stock por operaciones de tipo VENTA, SALIDA");
-					producto.setStock(tmpStock - movimientoProducto.getCantidad());
-
-//					if(producto.getStock() <= 12 && producto.getStock() > 0)
-//						estado = estadoService.findByEstado("POR AGOTARSE");
-//					else if(producto.getStock() == 0)
-//						estado = estadoService.findByEstado("AGOTADO");
-//					else
-//						estado = estadoService.findByEstado("ACTIVO");
-
-//					producto.setEstado(estado);
+					inventario.setStock(tmpStock - movimientoProducto.getCantidad());
 					break;
 				case COMPRA:
 				case ENTRADA:
 				case ANULACION_FACTURA:
 				case ANULACION_NOTA:
 					log.debug("Operando suma al stock por operaciones de tipo COMPRA, ENTRADA");
-					producto.setStock(tmpStock + movimientoProducto.getCantidad());
-
-//					if(producto.getStock() > 12)
-//						estado = estadoService.findByEstado("ACTIVO");
-//					else if(producto.getStock() > 0)
-//						estado = estadoService.findByEstado("POR AGOTARSE");
-
-//					producto.setEstado(estado);
+					inventario.setStock(tmpStock + movimientoProducto.getCantidad());
 					break;
 				default:
 					log.debug("No existe la operación deseada");
 					break;
 			}
 
-			productoSaved = productoService.save(producto);
+			inventarioSaved = inventarioSucursalService.guardar(inventario);
 		} catch (Exception ex) {
 			log.error("Error: {}", ex.getMessage());
 		}
-		return (productoSaved != null);
+		return (inventarioSaved != null);
 	}
 
 	/********* PDF REPORTS SERVICES ***********/

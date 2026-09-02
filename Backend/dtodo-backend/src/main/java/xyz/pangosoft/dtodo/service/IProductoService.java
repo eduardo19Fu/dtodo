@@ -15,16 +15,16 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface IProductoService {
 	
-	public List<Producto> findAll();
+	public List<Producto> findAll(Integer idSucursal);
 
-	public List<ProductoDto> findAllDto();
+	public List<ProductoDto> findAllDto(Integer idSucursal);
 
-	public Page<ProductoDtoMejorado> findAllDtoMejorado(String orden, String direccion, Pageable pageable);
+	public Page<ProductoDtoMejorado> findAllDtoMejorado(String orden, String direccion, Integer idSucursal, Pageable pageable);
 
 	public Page<ProductoDtoMejorado> searchProductoDtoMejorado(
-			String filtro, String orden, String direccion, Pageable pageable);
-	
-	public List<ProductoDto> findAllByEstado(Estado estado);
+			String filtro, String orden, String direccion, Integer idSucursal, Pageable pageable);
+
+	public List<ProductoDto> findAllByEstado(Estado estado, Integer idSucursal);
 	
 	public Page<Producto> findAll(Pageable pageable);
 	

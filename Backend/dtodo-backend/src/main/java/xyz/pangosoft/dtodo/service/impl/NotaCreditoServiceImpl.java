@@ -407,10 +407,10 @@ public class NotaCreditoServiceImpl implements INotaCreditoService {
 
     private MovimientoProducto buildMovimiento(Producto producto, int cantidad, TipoMovimientoEnum tipoMovimiento, Usuario usuario) {
         return MovimientoProducto.builder()
-                .stockInicial(producto.getStock())
                 .cantidad(cantidad)
                 .producto(producto)
                 .usuario(usuario)
+                .sucursal(usuario.getSucursal())
                 .tipoMovimiento(tipoMovimiento)
                 .build();
     }
