@@ -1,4 +1,5 @@
 import { Correlativo } from './correlativo';
+import { Sucursal } from './sucursal';
 export class Usuario {
 
     idUsuario: number;
@@ -12,4 +13,5 @@ export class Usuario {
     roles: string[] = [];
 
     correlativos: Correlativo[] = [];
+    sucursal: Sucursal;
 }

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Usuario } from '../models/usuario';
+import { Sucursal } from '../models/sucursal';
 
 @Injectable({
   providedIn: 'root'
@@ -113,6 +114,13 @@ export class AuthService {
     this._usuario.apellido = payload.apellido;
     this._usuario.usuario = payload.user_name;
     this._usuario.roles = payload.authorities;
+
+    if (payload.id_sucursal) {
+      const sucursal = new Sucursal();
+      sucursal.idSucursal = Number(payload.id_sucursal);
+      sucursal.nombre = payload.sucursal;
+      this._usuario.sucursal = sucursal;
+    }
 
     sessionStorage.setItem('usuario', JSON.stringify(this._usuario));
   }

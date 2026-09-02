@@ -1,0 +1,150 @@
+<div class="product-form-page">
+  <header class="page-heading">
+    <div>
+      <span class="page-eyebrow">Sucursales</span>
+      <h1>{{ title }}</h1>
+      <p>Administra los datos generales, el establecimiento SAT y el inventario inicial de la sucursal.</p>
+    </div>
+    <div class="heading-icon" aria-hidden="true">
+      <i class="fas fa-store"></i>
+    </div>
+  </header>
+
+  <form #sucursalForm="ngForm" class="product-card">
+    <div class="card-hero">
+      <div class="hero-icon" aria-hidden="true">
+        <i class="fas fa-store-alt"></i>
+      </div>
+      <div>
+        <h2>{{ esNueva ? 'Nueva sucursal' : 'Editar sucursal' }}</h2>
+        <p>Los campos marcados con <span aria-hidden="true">*</span> son obligatorios.</p>
+      </div>
+      <span class="status-pill">
+        <i class="fas fa-circle" aria-hidden="true"></i>
+        {{ esNueva ? 'Nuevo registro' : 'Edición' }}
+      </span>
+    </div>
+
+    <div class="form-content">
+      <section class="form-section" aria-labelledby="datos-sucursal-title">
+        <div class="section-heading">
+          <span class="section-number">01</span>
+          <div>
+            <h3 id="datos-sucursal-title">Datos de la sucursal</h3>
+            <p>Nombre y ubicaci&oacute;n con la que se identificar&aacute; en todo el sistema.</p>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="nombre">Nombre de la sucursal <span class="required-mark">*</span></label>
+          <div class="control-with-icon">
+            <i class="fas fa-signature" aria-hidden="true"></i>
+            <input type="text" class="form-control" id="nombre" name="nombre" [(ngModel)]="sucursal.nombre"
+              placeholder="Ej. Sucursal Norte, Sucursal Centro..." required #nombre="ngModel" autocomplete="off">
+          </div>
+          <div class="validation-message" *ngIf="nombre.invalid && (nombre.dirty || nombre.touched)">
+            <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+            <span *ngIf="nombre.errors.required">El nombre no puede estar vac&iacute;o.</span>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="direccion">Direcci&oacute;n <span class="required-mark">*</span></label>
+          <div class="control-with-icon">
+            <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+            <input type="text" class="form-control" id="direccion" name="direccion" [(ngModel)]="sucursal.direccion"
+              placeholder="Direcci&oacute;n exacta de la sucursal" required #direccion="ngModel" autocomplete="off">
+          </div>
+          <div class="validation-message" *ngIf="direccion.invalid && (direccion.dirty || direccion.touched)">
+            <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+            <span *ngIf="direccion.errors.required">La direcci&oacute;n no puede estar vac&iacute;a.</span>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="telefono">Tel&eacute;fono</label>
+          <div class="control-with-icon">
+            <i class="fas fa-phone" aria-hidden="true"></i>
+            <input type="text" class="form-control" id="telefono" name="telefono" [(ngModel)]="sucursal.telefono"
+              placeholder="Opcional" autocomplete="off">
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="encargado">Encargado</label>
+          <div class="control-with-icon">
+            <i class="fas fa-user-tie" aria-hidden="true"></i>
+            <input type="text" class="form-control" id="encargado" name="encargado" [(ngModel)]="sucursal.encargado"
+              placeholder="Nombre de la persona a cargo (opcional)" autocomplete="off">
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section" [class.last-section]="esNueva" aria-labelledby="fel-title">
+        <div class="section-heading">
+          <span class="section-number">02</span>
+          <div>
+            <h3 id="fel-title">Facturaci&oacute;n electr&oacute;nica (FEL)</h3>
+            <p>C&oacute;digo de establecimiento asignado por la SAT para esta sucursal.</p>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="codigoEstablecimientoSat">C&oacute;digo de establecimiento SAT <span class="required-mark">*</span></label>
+          <div class="control-with-icon">
+            <i class="fas fa-file-invoice" aria-hidden="true"></i>
+            <input type="number" min="1" class="form-control" id="codigoEstablecimientoSat" name="codigoEstablecimientoSat"
+              [(ngModel)]="sucursal.codigoEstablecimientoSat" placeholder="Ej. 1, 2, 3..."
+              required #codigoEstablecimientoSat="ngModel">
+          </div>
+          <small>Debe coincidir con el establecimiento registrado ante la SAT para que la certificaci&oacute;n FEL de esta sucursal sea v&aacute;lida.</small>
+          <div class="validation-message" *ngIf="codigoEstablecimientoSat.invalid && (codigoEstablecimientoSat.dirty || codigoEstablecimientoSat.touched)">
+            <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+            <span *ngIf="codigoEstablecimientoSat.errors.required">El c&oacute;digo de establecimiento no puede estar vac&iacute;o.</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section last-section" aria-labelledby="inventario-title" *ngIf="esNueva">
+        <div class="section-heading">
+          <span class="section-number">03</span>
+          <div>
+            <h3 id="inventario-title">Inventario inicial</h3>
+            <p>Copia el inventario de una sucursal existente hacia esta sucursal nueva. A partir de ese momento cada una se administra por separado.</p>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="origenInventario">Copiar inventario desde</label>
+          <div class="control-with-icon">
+            <i class="fas fa-boxes" aria-hidden="true"></i>
+            <select class="form-control" id="origenInventario" name="origenInventario"
+              [(ngModel)]="idSucursalOrigenInventario">
+              <option [ngValue]="null">No copiar inventario (queda en cero)</option>
+              <option *ngFor="let origen of sucursalesExistentes" [ngValue]="origen.idSucursal">
+                {{origen.nombre}}{{origen.esPrincipal ? ' (Principal)' : ''}}
+              </option>
+            </select>
+          </div>
+          <small>El inventario se copia una sola vez al crear la sucursal; despu&eacute;s cada sucursal se actualiza manualmente.</small>
+        </div>
+      </section>
+    </div>
+
+    <footer class="form-actions">
+      <p><i class="fas fa-shield-alt" aria-hidden="true"></i> Tu informaci&oacute;n se guardar&aacute; de forma segura.</p>
+      <button type="submit" class="primary-action" (click)="create()"
+        *ngIf="esNueva else elseBlock" [disabled]="!sucursalForm.form.valid || guardando">
+        <i class="fas fa-save" aria-hidden="true"></i>
+        Guardar sucursal
+      </button>
+
+      <ng-template #elseBlock>
+        <button type="submit" class="primary-action" (click)="update()" [disabled]="!sucursalForm.form.valid || guardando">
+          <i class="fas fa-check" aria-hidden="true"></i>
+          Actualizar sucursal
+        </button>
+      </ng-template>
+    </footer>
+  </form>
+</div>

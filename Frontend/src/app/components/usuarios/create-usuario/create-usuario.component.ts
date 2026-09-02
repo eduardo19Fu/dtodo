@@ -4,8 +4,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Role } from 'src/app/models/role';
 import { Usuario } from 'src/app/models/usuario';
 import { UsuarioAuxiliar } from 'src/app/models/auxiliar/usuario-auxiliar';
+import { Sucursal } from 'src/app/models/sucursal';
 
 import { UsuarioService } from 'src/app/services/usuarios/usuario.service';
+import { SucursalService } from 'src/app/services/sucursal.service';
 
 import swal from 'sweetalert2';
 
@@ -24,10 +26,12 @@ export class CreateUsuarioComponent implements OnInit {
   roleSeleccionado: number = null;
 
   public usuarioAuxiliar: UsuarioAuxiliar;
+  sucursales: Sucursal[] = [];
 
   constructor(
     private router: Router,
     private usuarioService: UsuarioService,
+    private sucursalService: SucursalService,
     private activatedRoute: ActivatedRoute
   ) {
     this.title = 'Crear Usuario';
@@ -38,6 +42,11 @@ export class CreateUsuarioComponent implements OnInit {
   ngOnInit(): void {
     this.cargarUsuario();
     this.cargarRoles();
+    this.cargarSucursales();
+  }
+
+  cargarSucursales(): void {
+    this.sucursalService.getSucursales().subscribe(sucursales => this.sucursales = sucursales);
   }
 
   cargarUsuario(): void {

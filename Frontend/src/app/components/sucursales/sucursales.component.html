@@ -1,0 +1,118 @@
+<section class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1>{{title}}</h1>
+        <br>
+        <a [routerLink]="['/sucursales/create']" class="btn listing-page-action listing-primary-action">
+          <i class="fas fa-plus"></i> Nueva
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="card listing-card">
+  <div class="card-header listing-card-header">Listado de Sucursales</div>
+  <div class="card-body table-responsive">
+    <div class="row mb-2 align-items-center table-controls">
+      <div class="col-sm-4">
+        <div class="d-inline-flex align-items-center">
+          <label class="mb-0 mr-2">Mostrar</label>
+          <select class="form-control form-control-sm page-size-select"
+                  [ngModel]="pageSize" (ngModelChange)="cambiarPageSize($event)">
+            <option *ngFor="let opt of pageSizeOptions" [ngValue]="opt">{{opt}}</option>
+          </select>
+          <label class="mb-0 ml-2">registros</label>
+        </div>
+      </div>
+      <div class="col-sm-4 text-center">
+        <span *ngIf="sucursales.length > 0" class="info-paginacion">
+          Mostrando registros del <strong>{{paginaActual * pageSize + 1}}</strong>
+          al <strong>{{paginaActual * pageSize + sucursales.length}}</strong>
+          de un total de <strong>{{totalElementos}}</strong> registros
+        </span>
+      </div>
+      <div class="col-sm-4">
+        <div class="listing-search-control float-right search-control">
+          <label class="mb-0 mr-2">B&uacute;squeda:</label>
+          <input type="text" class="form-control form-control-sm" [value]="filtro"
+                 (input)="onBuscar($event.target.value)" placeholder="Nombre, direcci&oacute;n o encargado">
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="cargando" class="text-center p-4">
+      <div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div>
+    </div>
+
+    <div *ngIf="!cargando && sucursales.length === 0" class="alert alert-info">
+      <h5><i class="icon fas fa-info"></i> Atenci&oacute;n!</h5>
+      No se encontraron sucursales con el filtro indicado.
+    </div>
+
+    <table class="table table-hover table-striped table-bordered table-sm mt-0 catalog-table mobile-data-table"
+           *ngIf="!cargando && sucursales.length > 0">
+      <thead>
+        <tr>
+          <th class="col-id">
+            <button type="button" class="sort-header" (click)="ordenarPor('id')">
+              ID <i [class]="iconoOrden('id')"></i>
+            </button>
+          </th>
+          <th class="col-nombre">
+            <button type="button" class="sort-header" (click)="ordenarPor('nombre')">
+              Nombre <i [class]="iconoOrden('nombre')"></i>
+            </button>
+          </th>
+          <th class="col-direccion">
+            <button type="button" class="sort-header" (click)="ordenarPor('direccion')">
+              Direcci&oacute;n <i [class]="iconoOrden('direccion')"></i>
+            </button>
+          </th>
+          <th class="col-establecimiento">Cod. Establecimiento</th>
+          <th class="col-estado">Estado</th>
+          <th class="col-fecha">Fecha de Registro</th>
+          <th class="col-opciones" *ngIf="auth.hasRole('ROLE_ADMIN')">Opciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let sucursal of sucursales">
+          <td class="col-id" data-label="ID"><span class="listing-id-pill">#{{sucursal.idSucursal}}</span></td>
+          <td class="col-nombre mobile-primary-cell" data-label="Nombre">
+            <span class="cell-ellipsis" [title]="sucursal.nombre">{{sucursal.nombre}}</span>
+            <span *ngIf="sucursal.esPrincipal" class="badge badge-info principal-badge">Principal</span>
+          </td>
+          <td class="col-direccion" data-label="Direcci&oacute;n"><span class="cell-ellipsis" [title]="sucursal.direccion">{{sucursal.direccion}}</span></td>
+          <td class="col-establecimiento" data-label="Cod. Establecimiento">{{sucursal.codigoEstablecimientoSat}}</td>
+          <td class="col-estado" data-label="Estado">
+            <span class="badge" [ngClass]="sucursal.estado === 'ACTIVO' ? 'badge-success' : 'badge-secondary'">{{sucursal.estado}}</span>
+          </td>
+          <td class="col-fecha" data-label="Fecha de registro">
+            <span class="fecha-principal">{{sucursal.fechaRegistro | date: 'dd/MM/yyyy'}}</span>
+            <small class="fecha-hora">{{sucursal.fechaRegistro | date: 'HH:mm'}}</small>
+          </td>
+          <td class="col-opciones mobile-actions-cell" data-label="Opciones" *ngIf="auth.hasRole('ROLE_ADMIN')">
+            <div class="action-buttons">
+              <button class="btn btn-sm listing-table-action listing-action-edit" type="button"
+                      appTooltip="Editar sucursal" aria-label="Editar sucursal"
+                      [routerLink]="['/sucursales/create', sucursal.idSucursal]">
+                <i class="fas fa-edit"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <nav class="listing-pagination" *ngIf="!cargando && totalPaginas > 1" aria-label="Paginaci&oacute;n de sucursales">
+      <ul class="pagination justify-content-center mt-3 mb-0">
+        <li class="page-item" [ngClass]="{'disabled': isFirst}"><a class="page-link" href="javascript:void(0)" (click)="irPrimeraPagina()"><i class="fas fa-angle-double-left"></i></a></li>
+        <li class="page-item" [ngClass]="{'disabled': isFirst}"><a class="page-link" href="javascript:void(0)" (click)="irPaginaAnterior()"><i class="fas fa-angle-left"></i></a></li>
+        <li class="page-item" *ngFor="let pagina of paginasVisibles" [ngClass]="{'active': pagina === paginaActual}"><a class="page-link" href="javascript:void(0)" (click)="irAPagina(pagina)">{{pagina + 1}}</a></li>
+        <li class="page-item" [ngClass]="{'disabled': isLast}"><a class="page-link" href="javascript:void(0)" (click)="irPaginaSiguiente()"><i class="fas fa-angle-right"></i></a></li>
+        <li class="page-item" [ngClass]="{'disabled': isLast}"><a class="page-link" href="javascript:void(0)" (click)="irUltimaPagina()"><i class="fas fa-angle-double-right"></i></a></li>
+      </ul>
+    </nav>
+  </div>
+</div>

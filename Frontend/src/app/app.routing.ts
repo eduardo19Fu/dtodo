@@ -28,6 +28,9 @@ import { CreateProformaComponent } from './components/proformas/create-proforma/
 import { NotasCreditoComponent } from './components/notas-credito/notas-credito.component';
 import { CreateNotaComponent } from './components/notas-credito/create-nota/create-nota.component';
 import { ListadoProductosMejoradoComponent } from './components/productos/listado-productos-mejorado/listado-productos-mejorado.component';
+import { SucursalesComponent } from './components/sucursales/sucursales.component';
+import { CreateSucursalComponent } from './components/sucursales/create-sucursal/create-sucursal.component';
+import { InventarioSucursalComponent } from './components/inventario-sucursal/inventario-sucursal.component';
 
 const appRoutes: Routes = [
     { path: '', component: LoginComponent },
@@ -46,6 +49,12 @@ const appRoutes: Routes = [
     { path: 'productos/categorias/create/:id', component: CreateTipoComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_INVENTARIO'] } },
     { path: 'productos/inventario/index', component: MovimientosProductoComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_INVENTARIO'] } },
     { path: 'productos/inventario/create', component: CreateMovimientoComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_INVENTARIO'] } },
+    {
+        path: 'productos/inventario-sucursal/index',
+        component: InventarioSucursalComponent,
+        canActivate: [AuthGuard, RoleGuard],
+        data: { role: ['ROLE_ADMIN', 'ROLE_INVENTARIO'] }
+    },
 
     /****** MENUS DE PROFORMAS ******/
     { path: 'proformas/index', component: ProformasComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_COBRADOR', 'ROLE_INVENTARIO'] } },
@@ -96,6 +105,16 @@ const appRoutes: Routes = [
     /****** MENUS DE USUARIOS ******/
     {path: 'notas-credito/index', component: NotasCreditoComponent, canActivate: [AuthGuard, RoleGuard], data: {role: ['ROLE_ADMIN', 'ROLE_COBRADOR', 'ROLE_INVENTARIO']}},
     {path: 'notas-credito/create', component: CreateNotaComponent, canActivate: [AuthGuard, RoleGuard], data: {role: ['ROLE_ADMIN', 'ROLE_COBRADOR', 'ROLE_INVENTARIO']}},
+
+    /****** MENUS DE SUCURSALES ******/
+    { path: 'sucursales/index', component: SucursalesComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN'] } },
+    { path: 'sucursales/create', component: CreateSucursalComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN'] } },
+    {
+        path: 'sucursales/create/:id',
+        component: CreateSucursalComponent,
+        canActivate: [AuthGuard, RoleGuard],
+        data: { role: ['ROLE_ADMIN'] }
+    },
 
     { path: '**', component: ErrorComponent }
 ];
