@@ -35,5 +35,5 @@ public interface IMovimientoProductoService {
 
 	/********* PDF REPORTS SERVICES ***********/
 
-	public byte[] inventory(Date fechaIni, Date fechaFin) throws JRException, FileNotFoundException, SQLException;
+	public byte[] inventory(Date fechaIni, Date fechaFin, Integer idSucursal) throws JRException, FileNotFoundException, SQLException;
 }

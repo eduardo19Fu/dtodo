@@ -37,6 +37,7 @@
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="quitapenas"/>
 		<parameter name="fechaIni" class="java.util.Date"/>
 		<parameter name="fechaFin" class="java.util.Date"/>
+		<parameter name="idSucursal" class="java.lang.Integer"/>
 		<queryString language="SQL">
 			<![CDATA[SELECT 	p.id_producto AS no_articulo,
 		p.cod_producto AS codigo,
@@ -46,23 +47,23 @@
 		IFNULL((
 			SELECT mp.stock_inicial
             FROM movimientos_producto AS mp
-            WHERE DATE(mp.fecha_movimiento) BETWEEN $P{fechaIni} AND $P{fechaFin} AND mp.id_producto = p.id_producto
+            WHERE DATE(mp.fecha_movimiento) BETWEEN $P{fechaIni} AND $P{fechaFin} AND mp.id_producto = p.id_producto AND mp.id_sucursal = $P{idSucursal}
             ORDER BY mp.fecha_movimiento ASC
             LIMIT 1
         ),(
-			SELECT pr.stock
-            FROM productos AS pr
-            WHERE pr.id_producto = p.id_producto
+			SELECT IFNULL(inv.stock, 0)
+            FROM inventario_sucursal AS inv
+            WHERE inv.id_producto = p.id_producto AND inv.id_sucursal = $P{idSucursal}
         )) AS stock_inicial,
 		(
 			SELECT IFNULL(SUM(mp.cantidad),0)
             FROM movimientos_producto AS mp
-            WHERE mp.tipo_movimiento IN ('ENTRADA','ANULACION FACTURA') AND DATE(mp.fecha_movimiento) BETWEEN $P{fechaIni} AND $P{fechaFin} AND mp.id_producto = p.id_producto
-        ) AS entradas, 
+            WHERE mp.tipo_movimiento IN ('ENTRADA','ANULACION FACTURA') AND DATE(mp.fecha_movimiento) BETWEEN $P{fechaIni} AND $P{fechaFin} AND mp.id_producto = p.id_producto AND mp.id_sucursal = $P{idSucursal}
+        ) AS entradas,
         (
 			SELECT IFNULL(SUM(mp.cantidad),0)
             FROM movimientos_producto AS mp
-            WHERE mp.tipo_movimiento IN ('SALIDA','VENTA') AND DATE(mp.fecha_movimiento) BETWEEN $P{fechaIni} AND $P{fechaFin} AND mp.id_producto = p.id_producto
+            WHERE mp.tipo_movimiento IN ('SALIDA','VENTA') AND DATE(mp.fecha_movimiento) BETWEEN $P{fechaIni} AND $P{fechaFin} AND mp.id_producto = p.id_producto AND mp.id_sucursal = $P{idSucursal}
         ) AS salidas,
         (
 			SELECT IFNULL((STOCK_INICIAL + ENTRADAS) - SALIDAS,0)
@@ -106,6 +107,7 @@ INNER JOIN marcas_producto AS map ON map.id_marca_producto = p.id_marca_producto
 	</subDataset>
 	<parameter name="fechaIni" class="java.util.Date"/>
 	<parameter name="fechaFin" class="java.util.Date"/>
+	<parameter name="idSucursal" class="java.lang.Integer"/>
 	<queryString>
 		<![CDATA[SELECT 	p.id_producto AS no_articulo,
 		p.cod_producto AS codigo,
@@ -115,23 +117,23 @@ INNER JOIN marcas_producto AS map ON map.id_marca_producto = p.id_marca_producto
 		IFNULL((
 			SELECT mp.stock_inicial
             FROM movimientos_producto AS mp
-            WHERE DATE(mp.fecha_movimiento) BETWEEN $P{fechaIni} AND $P{fechaFin} AND mp.id_producto = p.id_producto
+            WHERE DATE(mp.fecha_movimiento) BETWEEN $P{fechaIni} AND $P{fechaFin} AND mp.id_producto = p.id_producto AND mp.id_sucursal = $P{idSucursal}
             ORDER BY mp.fecha_movimiento ASC
             LIMIT 1
         ),(
-			SELECT pr.stock
-            FROM productos AS pr
-            WHERE pr.id_producto = p.id_producto
+			SELECT IFNULL(inv.stock, 0)
+            FROM inventario_sucursal AS inv
+            WHERE inv.id_producto = p.id_producto AND inv.id_sucursal = $P{idSucursal}
         )) AS stock_inicial,
 		(
 			SELECT IFNULL(SUM(mp.cantidad),0)
             FROM movimientos_producto AS mp
-            WHERE mp.tipo_movimiento IN ('ENTRADA','ANULACION FACTURA') AND DATE(mp.fecha_movimiento) BETWEEN $P{fechaIni} AND $P{fechaFin} AND mp.id_producto = p.id_producto
-        ) AS entradas, 
+            WHERE mp.tipo_movimiento IN ('ENTRADA','ANULACION FACTURA') AND DATE(mp.fecha_movimiento) BETWEEN $P{fechaIni} AND $P{fechaFin} AND mp.id_producto = p.id_producto AND mp.id_sucursal = $P{idSucursal}
+        ) AS entradas,
         (
 			SELECT IFNULL(SUM(mp.cantidad),0)
             FROM movimientos_producto AS mp
-            WHERE mp.tipo_movimiento IN ('SALIDA','VENTA') AND DATE(mp.fecha_movimiento) BETWEEN $P{fechaIni} AND $P{fechaFin} AND mp.id_producto = p.id_producto
+            WHERE mp.tipo_movimiento IN ('SALIDA','VENTA') AND DATE(mp.fecha_movimiento) BETWEEN $P{fechaIni} AND $P{fechaFin} AND mp.id_producto = p.id_producto AND mp.id_sucursal = $P{idSucursal}
         ) AS salidas,
         (
 			SELECT IFNULL((STOCK_INICIAL + ENTRADAS) - SALIDAS,0)
@@ -268,6 +270,9 @@ INNER JOIN marcas_producto AS map ON map.id_marca_producto = p.id_marca_producto
 						</datasetParameter>
 						<datasetParameter name="fechaFin">
 							<datasetParameterExpression><![CDATA[$P{fechaFin}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="idSucursal">
+							<datasetParameterExpression><![CDATA[$P{idSucursal}]]></datasetParameterExpression>
 						</datasetParameter>
 						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 					</datasetRun>

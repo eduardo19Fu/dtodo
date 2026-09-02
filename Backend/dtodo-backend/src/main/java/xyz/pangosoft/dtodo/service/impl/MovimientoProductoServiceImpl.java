@@ -301,15 +301,16 @@ public class MovimientoProductoServiceImpl implements IMovimientoProductoService
 	/********* PDF REPORTS SERVICES ***********/
 	
 	@Override
-	public byte[] inventory(Date fechaIni, Date fechaFin) 
+	public byte[] inventory(Date fechaIni, Date fechaFin, Integer idSucursal)
 			throws JRException, FileNotFoundException, SQLException { // REPORTE DE INVENTARIO
-		
+
 		Connection con = localDateSource.getConnection();
 		Map<String, Object> params = new HashMap<>();
 		InputStream file = getClass().getResourceAsStream("/reports/rpt_inventario.jrxml");
 
 		params.put("fechaIni", fechaIni);
 		params.put("fechaFin", fechaFin);
+		params.put("idSucursal", idSucursal);
 		
 		JasperReport jasperReport = JasperCompileManager.compileReport(file);
 		JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, params, con);

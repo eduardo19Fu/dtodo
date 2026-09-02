@@ -266,9 +266,9 @@ public class ProductoApiController {
 
 	@Secured(value = {"ROLE_ADMIN"})
 	@GetMapping(value = "/productos/excel")
-	public ResponseEntity<byte[]> generarProductosExcel() {
+	public ResponseEntity<byte[]> generarProductosExcel(@RequestParam(value = "idSucursal", required = false) Integer idSucursal) {
 		log.info("Generando reporte Excel de productos");
-		byte[] reporte = serviceProducto.productosExcel();
+		byte[] reporte = serviceProducto.productosExcel(resolverSucursal(idSucursal));
 
 		return ResponseEntity.ok()
 				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=productos.xlsx")

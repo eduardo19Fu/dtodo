@@ -36,6 +36,7 @@ import xyz.pangosoft.dtodo.model.Producto;
 import xyz.pangosoft.dtodo.model.Usuario;
 import xyz.pangosoft.dtodo.service.IMovimientoProductoService;
 import xyz.pangosoft.dtodo.service.IProductoService;
+import xyz.pangosoft.dtodo.service.ISucursalService;
 import xyz.pangosoft.dtodo.service.IUsuarioService;
 
 import net.sf.jasperreports.engine.JRException;
@@ -52,6 +53,8 @@ public class MovimientoProductoApiController {
 	private final IProductoService serviceProducto;
 
 	private final IUsuarioService serviceUsuario;
+
+	private final ISucursalService serviceSucursal;
 
 	@GetMapping(value = "/movimientos")
 	public ResponseEntity<List<MovimientoProducto>> index() {
@@ -140,16 +143,18 @@ public class MovimientoProductoApiController {
 	 * @throws FileNotFoundException *****************/
 	
 	@PostMapping(value = "/movimientos/inventario")
-	public void inventario(@RequestParam("fechaIni") String paramFechaIni, @RequestParam("fechaFin") String paramFechaFin, 
-			HttpServletResponse httpServletResponse) 
+	public void inventario(@RequestParam("fechaIni") String paramFechaIni, @RequestParam("fechaFin") String paramFechaFin,
+			@RequestParam(value = "idSucursal", required = false) Integer idSucursal,
+			HttpServletResponse httpServletResponse)
 			throws ParseException, FileNotFoundException, JRException, SQLException{
-		
+
 		Date fechaIni, fechaFin;
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 		fechaIni = format.parse(paramFechaIni);
 		fechaFin = format.parse(paramFechaFin);
-		
-		byte[] bytesInventoryReport = serviceMove.inventory(fechaIni, fechaFin);
+
+		Integer sucursalResuelta = idSucursal != null ? idSucursal : serviceSucursal.findPrincipal().getIdSucursal();
+		byte[] bytesInventoryReport = serviceMove.inventory(fechaIni, fechaFin, sucursalResuelta);
 		ByteArrayOutputStream out = new ByteArrayOutputStream(bytesInventoryReport.length);
 		out.write(bytesInventoryReport, 0, bytesInventoryReport.length);
 		

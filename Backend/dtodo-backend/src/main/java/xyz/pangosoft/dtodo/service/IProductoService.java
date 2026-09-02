@@ -50,5 +50,5 @@ public interface IProductoService {
 
 	public byte[] inventarioPDF(String fechaIni, String fechaFin);
 
-	public byte[] productosExcel();
+	public byte[] productosExcel(Integer idSucursal);
 }

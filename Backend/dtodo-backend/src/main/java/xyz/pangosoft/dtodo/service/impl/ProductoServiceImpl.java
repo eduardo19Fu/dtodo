@@ -546,7 +546,7 @@ public class ProductoServiceImpl implements IProductoService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public byte[] productosExcel() {
+	public byte[] productosExcel(Integer idSucursal) {
 		try (Connection connection = localDataSource.getConnection();
 			 InputStream template = getClass().getResourceAsStream("/reports/productos_excel.jrxml");
 			 ByteArrayOutputStream output = new ByteArrayOutputStream()) {
@@ -557,6 +557,7 @@ public class ProductoServiceImpl implements IProductoService {
 
 			Map<String, Object> parameters = new HashMap<>();
 			parameters.put(JRParameter.IS_IGNORE_PAGINATION, true);
+			parameters.put("idSucursal", idSucursal);
 
 			JasperReport report = JasperCompileManager.compileReport(template);
 			JasperPrint print = JasperFillManager.fillReport(report, parameters, connection);
