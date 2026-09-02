@@ -11,6 +11,7 @@ import xyz.pangosoft.dtodo.model.MovimientoProducto;
 import xyz.pangosoft.dtodo.model.NotaCredito;
 import xyz.pangosoft.dtodo.model.NotaCreditoDetalle;
 import xyz.pangosoft.dtodo.model.Producto;
+import xyz.pangosoft.dtodo.model.Sucursal;
 import xyz.pangosoft.dtodo.model.Usuario;
 import xyz.pangosoft.dtodo.model.enums.EstadoNotaCreditoEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoDocumentoOrigenEnum;
@@ -18,6 +19,7 @@ import xyz.pangosoft.dtodo.model.enums.TipoMovimientoEnum;
 import xyz.pangosoft.dtodo.repository.INotaCreditoRepository;
 import xyz.pangosoft.dtodo.service.IMovimientoProductoService;
 import xyz.pangosoft.dtodo.service.INotaCreditoService;
+import xyz.pangosoft.dtodo.service.IUsuarioService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jasperreports.engine.JRException;
@@ -55,6 +57,7 @@ public class NotaCreditoServiceImpl implements INotaCreditoService {
 
     private final INotaCreditoRepository notaCreditoRepository;
     private final IMovimientoProductoService movimientoProductoService;
+    private final IUsuarioService usuarioService;
     private final DataSource localDataSource;
 
     @Transactional(readOnly = true)
@@ -278,6 +281,9 @@ public class NotaCreditoServiceImpl implements INotaCreditoService {
                 case ENTREGA_PENDIENTE:
                     log.info("------> Registrando nota de Credito");
                     validarOrigenUnico(notaCredito);
+                    if (notaCredito.getUsuario() != null) {
+                        notaCredito.setSucursal(usuarioService.findById(notaCredito.getUsuario().getIdUsuario()).getSucursal());
+                    }
                     notaCreditoSaved = notaCreditoRepository.save(notaCredito);
                     break;
                 case ANULADO:
@@ -288,7 +294,8 @@ public class NotaCreditoServiceImpl implements INotaCreditoService {
                     log.info("------> Registrando entrega de productos");
                     for(NotaCreditoDetalle item : notaCredito.getItems()) {
                         log.info("Registrando entrega de producto: {}", item.getProducto().getCodProducto());
-                        movimientoProductoService.save(buildMovimiento(item.getProducto(), item.getCantidad(), TipoMovimientoEnum.ENTREGA_PRODUCTO_NOTA, notaCredito.getUsuario()));
+                        movimientoProductoService.save(buildMovimiento(item.getProducto(), item.getCantidad(),
+                                TipoMovimientoEnum.ENTREGA_PRODUCTO_NOTA, notaCredito.getUsuario(), notaCredito.getSucursal()));
                     }
 
                     log.info("------> Registrando actualización de estado de la nota de credito");
@@ -405,12 +412,12 @@ public class NotaCreditoServiceImpl implements INotaCreditoService {
         }
     }
 
-    private MovimientoProducto buildMovimiento(Producto producto, int cantidad, TipoMovimientoEnum tipoMovimiento, Usuario usuario) {
+    private MovimientoProducto buildMovimiento(Producto producto, int cantidad, TipoMovimientoEnum tipoMovimiento, Usuario usuario, Sucursal sucursal) {
         return MovimientoProducto.builder()
                 .cantidad(cantidad)
                 .producto(producto)
                 .usuario(usuario)
-                .sucursal(usuario.getSucursal())
+                .sucursal(sucursal)
                 .tipoMovimiento(tipoMovimiento)
                 .build();
     }

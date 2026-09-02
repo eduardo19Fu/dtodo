@@ -16,6 +16,7 @@ import xyz.pangosoft.dtodo.model.Proforma;
 import xyz.pangosoft.dtodo.repository.IProformaRepository;
 import xyz.pangosoft.dtodo.service.IEstadoService;
 import xyz.pangosoft.dtodo.service.IProformaService;
+import xyz.pangosoft.dtodo.service.IUsuarioService;
 import xyz.pangosoft.dtodo.util.Utils;
 
 import lombok.RequiredArgsConstructor;
@@ -72,6 +73,7 @@ public class ProformaServiceImpl implements IProformaService {
 
     private final IProformaRepository proformaRepository;
     private final IEstadoService estadoService;
+    private final IUsuarioService usuarioService;
     private final DataSource dataSource;
 
     @Transactional(readOnly = true)
@@ -360,6 +362,9 @@ public class ProformaServiceImpl implements IProformaService {
             Estado estado = estadoService.findById(1);
             proforma.setEstado(estado);
             proforma.setNoProforma(noProforma);
+            if (proforma.getUsuario() != null) {
+                proforma.setSucursal(usuarioService.findById(proforma.getUsuario().getIdUsuario()).getSucursal());
+            }
 
             log.info("Registrando proforma: {}", proforma);
             newProforma = proformaRepository.save(proforma);

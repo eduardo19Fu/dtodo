@@ -50,6 +50,11 @@ public class Correlativo implements Serializable {
 	@JsonIgnoreProperties({"password", "roles", "hibernateLazyInitializer", "handler" })
 	private Usuario usuario;
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "id_sucursal")
+	@JsonIgnoreProperties({ "usuario", "hibernateLazyInitializer", "handler" })
+	private Sucursal sucursal;
+
 	@PrePersist
 	public void preConfig() {
 		this.fechaCreacion = LocalDateTime.now();

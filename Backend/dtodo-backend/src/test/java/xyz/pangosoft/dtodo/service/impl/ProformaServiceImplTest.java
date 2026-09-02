@@ -10,6 +10,7 @@ import xyz.pangosoft.dtodo.model.DetalleProforma;
 import xyz.pangosoft.dtodo.model.Proforma;
 import xyz.pangosoft.dtodo.repository.IProformaRepository;
 import xyz.pangosoft.dtodo.service.IEstadoService;
+import xyz.pangosoft.dtodo.service.IUsuarioService;
 
 import javax.sql.DataSource;
 
@@ -30,6 +31,7 @@ class ProformaServiceImplTest {
     private final ProformaServiceImpl service = new ProformaServiceImpl(
             proformaRepository,
             mock(IEstadoService.class),
+            mock(IUsuarioService.class),
             mock(DataSource.class)
     );
 

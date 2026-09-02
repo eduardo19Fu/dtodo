@@ -37,6 +37,7 @@ import xyz.pangosoft.dtodo.model.Emisor;
 import xyz.pangosoft.dtodo.model.Estado;
 import xyz.pangosoft.dtodo.model.MovimientoProducto;
 import xyz.pangosoft.dtodo.model.Producto;
+import xyz.pangosoft.dtodo.model.Sucursal;
 import xyz.pangosoft.dtodo.model.TipoFactura;
 import xyz.pangosoft.dtodo.model.Usuario;
 import xyz.pangosoft.dtodo.model.enums.TipoMovimientoEnum;
@@ -390,6 +391,8 @@ public class FacturaServiceImpl implements IFacturaService {
 			Estado estadoCorrFinalizado = estadoService.findByEstado("FINALIZADO");
 			TipoFactura tipoFactura = tipoFacturaService.getTipoFactura(1);
 			Correlativo correlativo = correlativoService.findByUsuario(factura.getUsuario().getIdUsuario());
+			Usuario usuarioVendedor = usuarioService.findById(factura.getUsuario().getIdUsuario());
+			Sucursal sucursal = usuarioVendedor.getSucursal();
 
 			Emisor emisor = emisorService.getEmisor(1);
 			Certificador certificador = certificadorService.getCertificador(1);
@@ -399,7 +402,7 @@ public class FacturaServiceImpl implements IFacturaService {
 				log.info("********** Registrando nueva venta **********");
 
 				log.info("-----------> Iniciando Proceso de Certificación FEL");
-				documentoFel.setDatos_emisor(configurarDatosEmisor(emisor));
+				documentoFel.setDatos_emisor(configurarDatosEmisor(emisor, sucursal));
 				documentoFel.setDatos_generales(configurarDatosGenerales());
 				documentoFel.setDatos_receptor(configurarDatosReceptor(factura.getCliente()));
 
@@ -411,6 +414,7 @@ public class FacturaServiceImpl implements IFacturaService {
 				documentoFel.setTotales(sumTotales(documentoFel));
 
 				factura.setTotal(new BigDecimal(documentoFel.getTotales().getGranTotal()));
+				factura.setSucursal(sucursal);
 
 				documentoFel.setAdenda(configurarAdendas(factura.getUsuario(), factura.getNoFactura().toString()));
 
@@ -485,7 +489,8 @@ public class FacturaServiceImpl implements IFacturaService {
 						if(voidFactura.getEstado().getEstado().equals("ANULADO")) {
 
 							// RECORRER ITEMS DE FACTURA ANULADA PARA DEVOLVER LAS EXISTENCIAS AL STOCK
-							actualizarExistenciasDeItems(voidFactura.getItemsFactura(), usuario, TipoMovimientoEnum.ANULACION_FACTURA);
+							// Se devuelve el stock a la sucursal donde se realizó la venta original, no a la del usuario que anula
+							actualizarExistenciasDeItems(voidFactura.getItemsFactura(), usuario, voidFactura.getSucursal(), TipoMovimientoEnum.ANULACION_FACTURA);
 
 						} else {
 							log.error("No se pudo llevar acabo la anulación de la factura en la base de datos");
@@ -558,12 +563,13 @@ public class FacturaServiceImpl implements IFacturaService {
 	 * del negocio, para el proceso de firma y certificación de emisión de factura
 	 * en régimen FEL</p>.
 	 * @param emisor Objeto de tipo emisor que contiene los datos almacenado en la base de datos del Emisor
+	 * @param sucursal Sucursal donde se está realizando la venta; aporta el código de establecimiento SAT
 	 * @return Objeto de tipo DatosEmisor inicializado para el proceso de firma y certificación
 	 * */
-	private DatosEmisor configurarDatosEmisor(Emisor emisor) {
+	private DatosEmisor configurarDatosEmisor(Emisor emisor, Sucursal sucursal) {
 		DatosEmisor datosEmisor = new DatosEmisor();
 		datosEmisor.setAfiliacionIVA("GEN");
-		datosEmisor.setCodigoEstablecimiento(1);
+		datosEmisor.setCodigoEstablecimiento(sucursal != null ? sucursal.getCodigoEstablecimientoSat() : 1);
 		datosEmisor.setCodigoPostal(emisor.getCodigoPostal());
 		datosEmisor.setCorreoEmisor(emisor.getCorreoEmisor());
 		datosEmisor.setDepartamento(emisor.getDepartamento());
@@ -782,7 +788,7 @@ public class FacturaServiceImpl implements IFacturaService {
 			log.info("-----------> Actualizando correlativo");
 			cambiarCorrelativo(correlativo, estadoService.findByEstado("FINALIZADO"));
 
-			actualizarExistenciasDeItems(factura.getItemsFactura(), factura.getUsuario(), TipoMovimientoEnum.VENTA);
+			actualizarExistenciasDeItems(factura.getItemsFactura(), factura.getUsuario(), factura.getSucursal(), TipoMovimientoEnum.VENTA);
 
 		}
 
@@ -803,9 +809,9 @@ public class FacturaServiceImpl implements IFacturaService {
 	/**
 	 *
 	 * */
-	private void actualizarExistenciasDeItems(List<DetalleFactura> items, Usuario usuario, TipoMovimientoEnum tipoMovimiento) {
+	private void actualizarExistenciasDeItems(List<DetalleFactura> items, Usuario usuario, Sucursal sucursal, TipoMovimientoEnum tipoMovimiento) {
 		log.info("-----------> Actualizando las existencias de los items");
-        items.stream().map(item -> buildMovimiento(item.getProducto(), usuario, tipoMovimiento, item.getCantidad())).forEach(movimientoProductoService::save);
+        items.stream().map(item -> buildMovimiento(item.getProducto(), usuario, sucursal, tipoMovimiento, item.getCantidad())).forEach(movimientoProductoService::save);
 	}
 
 	/**
@@ -819,12 +825,12 @@ public class FacturaServiceImpl implements IFacturaService {
 	 * @return MovimientoProducto Objeto resultante del movimiento guardado en la Base de Datos
 	 *
 	 * */
-	private MovimientoProducto buildMovimiento(Producto producto, Usuario usuario, TipoMovimientoEnum tipoMovimiento, int cantidad) {
+	private MovimientoProducto buildMovimiento(Producto producto, Usuario usuario, Sucursal sucursal, TipoMovimientoEnum tipoMovimiento, int cantidad) {
 		return MovimientoProducto.builder()
 				.tipoMovimiento(tipoMovimiento)
 				.usuario(usuario)
 				.producto(producto)
-				.sucursal(usuario.getSucursal())
+				.sucursal(sucursal)
 				.cantidad(cantidad)
 				.build();
 	}

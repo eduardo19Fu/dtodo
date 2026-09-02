@@ -62,6 +62,11 @@ public class Proforma implements Serializable {
     @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
     private Cliente cliente;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_sucursal")
+    @JsonIgnoreProperties({ "usuario", "hibernateLazyInitializer", "handler" })
+    private Sucursal sucursal;
+
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "id_proforma")
     @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })

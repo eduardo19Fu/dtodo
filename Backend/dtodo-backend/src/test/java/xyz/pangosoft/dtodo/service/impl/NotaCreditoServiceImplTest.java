@@ -12,6 +12,7 @@ import xyz.pangosoft.dtodo.model.enums.EstadoNotaCreditoEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoDocumentoOrigenEnum;
 import xyz.pangosoft.dtodo.repository.INotaCreditoRepository;
 import xyz.pangosoft.dtodo.service.IMovimientoProductoService;
+import xyz.pangosoft.dtodo.service.IUsuarioService;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -37,7 +38,7 @@ class NotaCreditoServiceImplTest {
     void ordenaLasUltimasNotasAntesDePaginar() {
         INotaCreditoRepository repository = mock(INotaCreditoRepository.class);
         NotaCreditoServiceImpl service = new NotaCreditoServiceImpl(
-                repository, mock(IMovimientoProductoService.class), mock(DataSource.class));
+                repository, mock(IMovimientoProductoService.class), mock(IUsuarioService.class), mock(DataSource.class));
         NotaCreditoDto segunda = new NotaCreditoDto();
         segunda.setIdNotaCredito(20L);
         NotaCreditoDto primera = new NotaCreditoDto();
@@ -56,7 +57,7 @@ class NotaCreditoServiceImplTest {
     void findDetalleMapeaSoloLosDatosNecesariosParaVisualizacion() {
         INotaCreditoRepository repository = mock(INotaCreditoRepository.class);
         NotaCreditoServiceImpl service = new NotaCreditoServiceImpl(
-                repository, mock(IMovimientoProductoService.class), mock(DataSource.class));
+                repository, mock(IMovimientoProductoService.class), mock(IUsuarioService.class), mock(DataSource.class));
 
         Producto producto = Producto.builder()
                 .idProducto(21)
