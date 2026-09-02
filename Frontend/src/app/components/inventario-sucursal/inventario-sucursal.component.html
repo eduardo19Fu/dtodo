@@ -1,0 +1,123 @@
+<section class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-8">
+        <h1>{{title}}</h1>
+        <p class="sucursal-subtitle" *ngIf="nombreSucursalActiva">
+          <i class="fas fa-store"></i> {{nombreSucursalActiva}}
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="card listing-card">
+  <div class="card-header listing-card-header">Existencias registradas</div>
+  <div class="card-body table-responsive">
+    <div class="row mb-2 align-items-center table-controls">
+      <div class="col-sm-4">
+        <div class="d-inline-flex align-items-center">
+          <label class="mb-0 mr-2">Mostrar</label>
+          <select class="form-control form-control-sm page-size-select"
+                  [ngModel]="pageSize" (ngModelChange)="cambiarPageSize($event)">
+            <option *ngFor="let opt of pageSizeOptions" [ngValue]="opt">{{opt}}</option>
+          </select>
+          <label class="mb-0 ml-2">registros</label>
+        </div>
+      </div>
+      <div class="col-sm-4 text-center">
+        <span *ngIf="inventario.length > 0" class="info-paginacion">
+          Mostrando registros del <strong>{{paginaActual * pageSize + 1}}</strong>
+          al <strong>{{paginaActual * pageSize + inventario.length}}</strong>
+          de un total de <strong>{{totalElementos}}</strong> registros
+        </span>
+      </div>
+      <div class="col-sm-4">
+        <div class="listing-search-control float-right search-control">
+          <label class="mb-0 mr-2">B&uacute;squeda:</label>
+          <input type="text" class="form-control form-control-sm" [value]="filtro"
+                 (input)="onBuscar($event.target.value)" placeholder="Nombre o c&oacute;digo de producto">
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="cargando" class="text-center p-4">
+      <div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div>
+    </div>
+
+    <div *ngIf="!cargando && inventario.length === 0" class="alert alert-info">
+      <h5><i class="icon fas fa-info"></i> Atenci&oacute;n!</h5>
+      No se encontraron productos con existencias registradas en esta sucursal.
+    </div>
+
+    <table class="table table-hover table-striped table-bordered table-sm mt-0 catalog-table mobile-data-table"
+           *ngIf="!cargando && inventario.length > 0">
+      <thead>
+        <tr>
+          <th class="col-codigo">C&oacute;digo</th>
+          <th class="col-nombre">Producto</th>
+          <th class="col-stock">Stock actual</th>
+          <th class="col-stock-min">Stock m&iacute;nimo</th>
+          <th class="col-fecha">&Uacute;ltima actualizaci&oacute;n</th>
+          <th class="col-opciones">Opciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let fila of inventario">
+          <td class="col-codigo" data-label="C&oacute;digo"><span class="cell-ellipsis" [title]="fila.codProducto">{{fila.codProducto}}</span></td>
+          <td class="col-nombre mobile-primary-cell" data-label="Producto"><span class="cell-ellipsis" [title]="fila.nombreProducto">{{fila.nombreProducto}}</span></td>
+
+          <td class="col-stock" data-label="Stock actual">
+            <span *ngIf="idProductoEditando !== fila.idProducto"
+                  [ngClass]="{'stock-bajo': fila.stockMinimo != null && fila.stock <= fila.stockMinimo}">{{fila.stock}}</span>
+            <input *ngIf="idProductoEditando === fila.idProducto" type="number" min="0" class="form-control form-control-sm stock-input"
+                   [(ngModel)]="stockEdicion">
+          </td>
+
+          <td class="col-stock-min" data-label="Stock m&iacute;nimo">
+            <span *ngIf="idProductoEditando !== fila.idProducto">{{fila.stockMinimo != null ? fila.stockMinimo : '-'}}</span>
+            <input *ngIf="idProductoEditando === fila.idProducto" type="number" min="0" class="form-control form-control-sm stock-input"
+                   [(ngModel)]="stockMinimoEdicion" placeholder="Opcional">
+          </td>
+
+          <td class="col-fecha" data-label="&Uacute;ltima actualizaci&oacute;n">
+            <span class="fecha-principal">{{fila.fechaActualizacion | date: 'dd/MM/yyyy'}}</span>
+            <small class="fecha-hora">{{fila.fechaActualizacion | date: 'HH:mm'}}</small>
+          </td>
+
+          <td class="col-opciones mobile-actions-cell" data-label="Opciones">
+            <div class="action-buttons" *ngIf="idProductoEditando !== fila.idProducto">
+              <button class="btn btn-sm listing-table-action listing-action-edit" type="button"
+                      appTooltip="Ajustar stock" aria-label="Ajustar stock"
+                      (click)="editar(fila)">
+                <i class="fas fa-edit"></i>
+              </button>
+            </div>
+            <div class="action-buttons" *ngIf="idProductoEditando === fila.idProducto">
+              <button class="btn btn-sm listing-table-action listing-action-edit" type="button"
+                      appTooltip="Guardar" aria-label="Guardar"
+                      (click)="guardar(fila)">
+                <i class="fas fa-check"></i>
+              </button>
+              <button class="btn btn-sm listing-table-action listing-action-delete" type="button"
+                      appTooltip="Cancelar" aria-label="Cancelar"
+                      (click)="cancelarEdicion()">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <nav class="listing-pagination" *ngIf="!cargando && totalPaginas > 1" aria-label="Paginaci&oacute;n de inventario">
+      <ul class="pagination justify-content-center mt-3 mb-0">
+        <li class="page-item" [ngClass]="{'disabled': isFirst}"><a class="page-link" href="javascript:void(0)" (click)="irPrimeraPagina()"><i class="fas fa-angle-double-left"></i></a></li>
+        <li class="page-item" [ngClass]="{'disabled': isFirst}"><a class="page-link" href="javascript:void(0)" (click)="irPaginaAnterior()"><i class="fas fa-angle-left"></i></a></li>
+        <li class="page-item" *ngFor="let pagina of paginasVisibles" [ngClass]="{'active': pagina === paginaActual}"><a class="page-link" href="javascript:void(0)" (click)="irAPagina(pagina)">{{pagina + 1}}</a></li>
+        <li class="page-item" [ngClass]="{'disabled': isLast}"><a class="page-link" href="javascript:void(0)" (click)="irPaginaSiguiente()"><i class="fas fa-angle-right"></i></a></li>
+        <li class="page-item" [ngClass]="{'disabled': isLast}"><a class="page-link" href="javascript:void(0)" (click)="irUltimaPagina()"><i class="fas fa-angle-double-right"></i></a></li>
+      </ul>
+    </nav>
+  </div>
+</div>

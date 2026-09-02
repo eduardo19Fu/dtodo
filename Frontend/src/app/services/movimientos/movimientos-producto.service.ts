@@ -7,6 +7,7 @@ import { map, catchError } from 'rxjs/operators';
 import { MovimientoProducto } from 'src/app/models/movimiento-producto';
 
 import { global } from '../global';
+import { AuthService } from '../auth.service';
 import Swal from 'sweetalert2';
 
 @Injectable({
@@ -18,7 +19,8 @@ export class MovimientosProductoService {
 
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {
     this.url = global.url;
   }
@@ -86,7 +88,10 @@ export class MovimientosProductoService {
     headers.append('Accept', 'application/pdf');
     const requestOptions: any = { headers, responseType: 'blob' };
 
-    return this.http.post(`${this.url}/movimientos/inventario?fechaIni=${fechaIni.toString()}&fechaFin=${fechaFin.toString()}`,
+    const idSucursal = this.authService.usuario?.sucursal?.idSucursal;
+    const sucursalQuery = idSucursal ? `&idSucursal=${idSucursal}` : '';
+
+    return this.http.post(`${this.url}/movimientos/inventario?fechaIni=${fechaIni.toString()}&fechaFin=${fechaFin.toString()}${sucursalQuery}`,
       '', requestOptions).pipe(
 
       map((response: any) => {
