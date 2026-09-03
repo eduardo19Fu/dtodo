@@ -155,13 +155,13 @@ public class MovimientoProductoServiceImpl implements IMovimientoProductoService
 	@Transactional(readOnly = true)
 	@Override
 	public Page<MovimientoProductoDto> findListado(
-			String fechaIni, String fechaFin, String filtro, Pageable pageable) {
+			String fechaIni, String fechaFin, Integer idSucursal, String filtro, Pageable pageable) {
 		try {
 			LocalDateTime[] rango = parseDateRange(fechaIni, fechaFin);
 			String filtroNormalizado = filtro == null ? "" : filtro.trim();
 			if (rango[0] == null) {
 				List<Long> ultimosIds = repoMovimiento.findUltimosIds(
-						PageRequest.of(0, LIMITE_MOVIMIENTOS_INICIALES));
+						idSucursal, PageRequest.of(0, LIMITE_MOVIMIENTOS_INICIALES));
 				if (ultimosIds.isEmpty()) {
 					return new PageImpl<>(java.util.Collections.emptyList(), pageable, 0);
 				}
@@ -169,7 +169,7 @@ public class MovimientoProductoServiceImpl implements IMovimientoProductoService
 						ultimosIds, filtroNormalizado, pageable);
 			}
 			return repoMovimiento.findListado(
-					rango[0], rango[1], filtroNormalizado, pageable);
+					rango[0], rango[1], idSucursal, filtroNormalizado, pageable);
 		} catch (org.springframework.dao.DataAccessException e) {
 			log.error("Error al consultar el listado de movimientos: {}", e.getMessage());
 			throw new DataAccessException("Ha ocurrido un error al consultar los movimientos", e);

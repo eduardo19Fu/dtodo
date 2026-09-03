@@ -44,34 +44,35 @@ class MovimientoProductoServiceImplTest {
     @Test
     void incluyeCompletoElDiaFinalDelRango() {
         PageRequest pageable = PageRequest.of(0, 5);
-        when(repository.findListado(any(), any(), any(), any())).thenReturn(Page.empty());
+        when(repository.findListado(any(), any(), any(), any(), any())).thenReturn(Page.empty());
 
-        service.findListado("2026-08-01", "2026-08-05", "", pageable);
+        service.findListado("2026-08-01", "2026-08-05", 1, "", pageable);
 
         verify(repository).findListado(
                 eq(LocalDateTime.of(2026, 8, 1, 0, 0)),
                 eq(LocalDateTime.of(2026, 8, 6, 0, 0)),
+                eq(1),
                 eq(""),
                 eq(pageable)
         );
     }
 
     @Test
-    void limitaLaConsultaInicialALosUltimosQuinientosMovimientos() {
+    void limitaLaConsultaInicialALosUltimosQuinientosMovimientosDeLaSucursal() {
         PageRequest pageable = PageRequest.of(0, 5);
-        when(repository.findUltimosIds(any())).thenReturn(Arrays.asList(10L, 9L, 8L));
+        when(repository.findUltimosIds(any(), any())).thenReturn(Arrays.asList(10L, 9L, 8L));
         when(repository.findListadoLimitado(any(), any(), any())).thenReturn(Page.empty());
 
-        service.findListado(null, null, "", pageable);
+        service.findListado(null, null, 1, "", pageable);
 
-        verify(repository).findUltimosIds(PageRequest.of(0, 500));
+        verify(repository).findUltimosIds(1, PageRequest.of(0, 500));
         verify(repository).findListadoLimitado(Arrays.asList(10L, 9L, 8L), "", pageable);
     }
 
     @Test
     void rechazaUnRangoInvertido() {
         assertThrows(BadRequestException.class,
-                () -> service.findListado("2026-08-05", "2026-08-01", "", PageRequest.of(0, 5)));
+                () -> service.findListado("2026-08-05", "2026-08-01", 1, "", PageRequest.of(0, 5)));
 
         verifyNoInteractions(repository);
     }

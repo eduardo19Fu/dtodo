@@ -85,13 +85,21 @@ public class MovimientoProductoApiController {
 			@RequestParam(value = "size", defaultValue = "5") Integer size,
 			@RequestParam(value = "fechaIni", required = false) String fechaIni,
 			@RequestParam(value = "fechaFin", required = false) String fechaFin,
+			@RequestParam(value = "idSucursal", required = false) Integer idSucursal,
 			@RequestParam(value = "filtro", defaultValue = "") String filtro,
 			@RequestParam(value = "orden", defaultValue = "fecha") String orden,
 			@RequestParam(value = "direccion", defaultValue = "desc") String direccion) {
 		Sort.Direction sentido = "asc".equalsIgnoreCase(direccion)
 				? Sort.Direction.ASC : Sort.Direction.DESC;
-		return ResponseEntity.ok(serviceMove.findListado(fechaIni, fechaFin,
+		return ResponseEntity.ok(serviceMove.findListado(fechaIni, fechaFin, resolverSucursal(idSucursal),
 				filtro, PageRequest.of(page, size, Sort.by(sentido, obtenerPropiedadOrden(orden)))));
+	}
+
+	private Integer resolverSucursal(Integer idSucursal) {
+		if (idSucursal != null) {
+			return idSucursal;
+		}
+		return serviceSucursal.findPrincipal().getIdSucursal();
 	}
 
 	private String obtenerPropiedadOrden(String orden) {
