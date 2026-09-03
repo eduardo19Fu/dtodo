@@ -21,6 +21,10 @@
 .table-controls-row > [class*='col-']:last-child { padding-right: 0; }
 .table-controls-row > [class*='col-']:last-child > div { width: 100%; }
 
+.listing-empty-state {
+  min-width: 1120px;
+}
+
 .usuarios-table {
   min-width: 1120px;
   table-layout: fixed;

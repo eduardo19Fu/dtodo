@@ -125,6 +125,10 @@
   width: 100%;
 }
 
+.listing-empty-state {
+  min-width: 1260px;
+}
+
 .document-table th {
   background: #343a40;
   border-color: #454d55;

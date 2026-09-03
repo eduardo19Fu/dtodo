@@ -48,9 +48,12 @@
       <div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div>
     </div>
 
-    <div *ngIf="!cargando && correlativos.length === 0" class="alert alert-info">
-      <h5><i class="icon fas fa-info"></i> Atención!</h5>
-      No se encontraron correlativos con el filtro indicado.
+    <div *ngIf="!cargando && correlativos.length === 0" class="listing-empty-state">
+      <span class="listing-empty-icon" aria-hidden="true"><i class="fas fa-hashtag"></i></span>
+      <div class="listing-empty-state-body">
+        <h5>No se encontraron correlativos</h5>
+        <p>No hay resultados para el filtro indicado.</p>
+      </div>
     </div>
 
     <table class="table table-hover table-striped table-bordered table-sm mt-0 correlativos-table mobile-data-table"

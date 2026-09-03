@@ -103,9 +103,12 @@
       <div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div>
     </div>
 
-    <div *ngIf="!cargando && busquedaRealizada && facturasDto.length === 0" class="alert alert-info">
-      <h5><i class="icon fas fa-info"></i> Atención!</h5>
-      No se encontraron facturas con los filtros indicados.
+    <div *ngIf="!cargando && busquedaRealizada && facturasDto.length === 0" class="listing-empty-state">
+      <span class="listing-empty-icon" aria-hidden="true"><i class="fas fa-file-invoice-dollar"></i></span>
+      <div class="listing-empty-state-body">
+        <h5>No se encontraron facturas</h5>
+        <p>No hay resultados para los filtros indicados.</p>
+      </div>
     </div>
 
     <table class="table table-hover table-striped table-bordered table-sm mt-0 document-table mobile-data-table"

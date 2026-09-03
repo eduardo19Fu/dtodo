@@ -157,6 +157,11 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
     width: 100% !important;
   }
 
+  .table-responsive .listing-empty-state {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
   .table-responsive .table-controls-row > :last-child,
   .table-responsive .table-controls > :last-child {
     order: 1;
@@ -602,6 +607,50 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   min-width: 2.2rem;
   padding: 0.42rem 0.55rem;
   white-space: nowrap;
+}
+
+/* Estado vacío compartido por los listados de tabla (sin resultados para el filtro/búsqueda). */
+.listing-empty-state {
+  align-items: flex-start;
+  background: #f8fafe;
+  border: 1px solid #e1e8f1;
+  border-radius: 12px;
+  box-shadow: 0 5px 16px rgba(33, 61, 99, 0.07);
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 14px;
+  padding: 1.25rem 1.4rem;
+  width: 100%;
+}
+
+.listing-empty-icon {
+  align-items: center;
+  background: #e4f5f7;
+  border-radius: 50%;
+  color: #087785;
+  display: flex;
+  flex: 0 0 44px;
+  font-size: 1.05rem;
+  height: 44px;
+  justify-content: center;
+}
+
+.listing-empty-state-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.listing-empty-state-body h5 {
+  color: #24344d;
+  font-size: 0.98rem;
+  font-weight: 650;
+  margin: 0 0 0.3rem;
+}
+
+.listing-empty-state-body p {
+  color: #5d7088;
+  font-size: 0.88rem;
+  margin: 0;
 }
 
 /* Toast compacto utilizado para operaciones breves de carga. */

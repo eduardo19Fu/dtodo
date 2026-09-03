@@ -53,9 +53,12 @@
       </div>
     </div>
 
-    <div *ngIf="!cargando && usuarios.length === 0" class="alert alert-info">
-      <h5><i class="icon fas fa-info"></i> Atención!</h5>
-      No se encontraron usuarios con el filtro indicado.
+    <div *ngIf="!cargando && usuarios.length === 0" class="listing-empty-state">
+      <span class="listing-empty-icon" aria-hidden="true"><i class="fas fa-users"></i></span>
+      <div class="listing-empty-state-body">
+        <h5>No se encontraron usuarios</h5>
+        <p>No hay resultados para el filtro indicado.</p>
+      </div>
     </div>
 
     <table class="table table-hover table-striped table-bordered table-sm mt-0 usuarios-table mobile-data-table"

@@ -4,6 +4,7 @@
 .pagination .page-item.disabled .page-link { cursor: not-allowed; }
 
 .catalog-table { min-width: 850px; table-layout: fixed; width: 100%; }
+.listing-empty-state { min-width: 850px; }
 .table-controls { margin-left: 0; margin-right: 0; min-width: 850px; width: 100%; }
 .table-controls > [class*='col-']:first-child { padding-left: 0; }
 .table-controls > [class*='col-']:last-child { padding-right: 0; }
