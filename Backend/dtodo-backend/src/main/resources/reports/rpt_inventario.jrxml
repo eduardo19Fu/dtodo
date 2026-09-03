@@ -181,7 +181,7 @@ INNER JOIN marcas_producto AS map ON map.id_marca_producto = p.id_marca_producto
 		<band height="92" splitType="Stretch">
 			<image>
 				<reportElement x="0" y="0" width="169" height="70" uuid="7c79616f-be77-4782-bd7f-05c0b57d8b35"/>
-				<imageExpression><![CDATA["static/images/reports-image/dimsa-logo.jpeg"]]></imageExpression>
+				<imageExpression><![CDATA[this.getClass().getResourceAsStream("/static/images/reports-image/logo-dtodo.jpg")]]></imageExpression>
 			</image>
 			<staticText>
 				<reportElement x="0" y="0" width="572" height="70" uuid="ab8fdc0a-a250-4d65-b7e7-6973ada699fc"/>
