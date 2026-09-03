@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import xyz.pangosoft.dtodo.model.Sucursal;
 import xyz.pangosoft.dtodo.repository.ISucursalRepository;
+import xyz.pangosoft.dtodo.service.IEstadoService;
 import xyz.pangosoft.dtodo.service.ISucursalService;
 
 @Service
@@ -29,6 +30,8 @@ import xyz.pangosoft.dtodo.service.ISucursalService;
 public class SucursalServiceImpl implements ISucursalService {
 
 	private final ISucursalRepository sucursalRepo;
+
+	private final IEstadoService estadoService;
 
 	@Transactional(readOnly = true)
 	@Override
@@ -160,6 +163,12 @@ public class SucursalServiceImpl implements ISucursalService {
 				sucursal.setFechaRegistro(sucursalExistente.getFechaRegistro());
 				sucursal.setUsuario(sucursalExistente.getUsuario());
 				sucursal.setEsPrincipal(sucursalExistente.isEsPrincipal());
+				if (sucursal.getEstado() == null) {
+					sucursal.setEstado(sucursalExistente.getEstado());
+				}
+			} else {
+				log.info("Registrando sucursal nueva: {}", sucursal.getNombre());
+				sucursal.setEstado(estadoService.findByEstado("ACTIVO"));
 			}
 
 			newSucursal = sucursalRepo.save(sucursal);
