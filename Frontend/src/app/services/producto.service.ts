@@ -102,7 +102,8 @@ export class ProductoService {
   }
 
   getProductoByCode(codigo: string): Observable<Producto> {
-    return this.http.get<Producto>(`${this.url}/productos/codigo/${codigo}`).pipe(
+    const params = this.conSucursal(new HttpParams());
+    return this.http.get<Producto>(`${this.url}/productos/codigo/${codigo}`, { params }).pipe(
       catchError(e => {
         swal.fire('Error al consultar el producto', e.error, 'error');
         return throwError(e);

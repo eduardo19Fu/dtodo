@@ -39,7 +39,7 @@ public interface IProductoService {
 	// Busqueda de Productos desde el frontend
 	public List<Producto> findByName(String name);
 	
-	public Producto findByCodigo(String codigo);
+	public Producto findByCodigo(String codigo, Integer idSucursal);
 	
 	// Listado de productos caducados
 	public List<Producto> findCaducados();

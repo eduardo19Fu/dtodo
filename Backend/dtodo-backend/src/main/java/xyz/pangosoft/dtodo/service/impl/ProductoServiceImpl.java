@@ -363,7 +363,7 @@ public class ProductoServiceImpl implements IProductoService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public Producto findByCodigo(String codigo) {
+	public Producto findByCodigo(String codigo, Integer idSucursal) {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
 		log.debug("Enter {}", __method);
 
@@ -373,8 +373,12 @@ public class ProductoServiceImpl implements IProductoService {
 			producto = repoProducto.findByCodigo(codigo);
 
 			if(producto.isPresent()) {
-				log.info("Devolviendo Producto: {}", producto.get());
-				return producto.get();
+				Producto encontrado = producto.get();
+				// productos.stock quedó deprecada tras la migración a sucursales; el stock real de
+				// esta búsqueda (usada al registrar movimientos) debe venir de InventarioSucursal.
+				encontrado.setStock(inventarioSucursalService.obtenerStock(idSucursal, encontrado.getIdProducto()));
+				log.info("Devolviendo Producto: {}", encontrado);
+				return encontrado;
 			} else {
 				log.warn("Producto con codigo {}, no se encuentra registrado", codigo);
 				throw new NotFoundException("Producto con codigo " + codigo + " no se encuentra registrado en la base de datos");

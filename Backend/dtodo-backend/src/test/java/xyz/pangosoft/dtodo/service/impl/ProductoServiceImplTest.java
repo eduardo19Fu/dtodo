@@ -45,6 +45,24 @@ class ProductoServiceImplTest {
     }
 
     @Test
+    void findByCodigoDevuelveElStockDeLaSucursalIndicadaNoElDeProductos() {
+        IProductoRepository repository = mock(IProductoRepository.class);
+        IInventarioSucursalService inventarioSucursalService = mock(IInventarioSucursalService.class);
+        ProductoServiceImpl service = new ProductoServiceImpl(
+                repository, mock(IUploadFileService.class), mock(IEstadoService.class),
+                inventarioSucursalService, mock(DataSource.class));
+
+        // productos.stock (deprecada) trae un valor obsoleto/incorrecto para esta prueba.
+        Producto producto = Producto.builder().idProducto(2447).codProducto("7501174995015").stock(45).build();
+        when(repository.findByCodigo("7501174995015")).thenReturn(Optional.of(producto));
+        when(inventarioSucursalService.obtenerStock(1, 2447)).thenReturn(40);
+
+        Producto resultado = service.findByCodigo("7501174995015", 1);
+
+        assertEquals(40, resultado.getStock());
+    }
+
+    @Test
     void alActualizarPreservaElStockActualIgnorandoElDelPayload() {
         IProductoRepository repository = mock(IProductoRepository.class);
         ProductoServiceImpl service = new ProductoServiceImpl(

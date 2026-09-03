@@ -249,10 +249,11 @@ public class ProductoApiController {
 
 	@Secured({ "ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO" })
 	@GetMapping(value = "/productos/codigo/{codigo}")
-	public ResponseEntity<Producto> findByCodigo(@PathVariable("codigo") String codigo) {
+	public ResponseEntity<Producto> findByCodigo(@PathVariable("codigo") String codigo,
+			@RequestParam(value = "idSucursal", required = false) Integer idSucursal) {
 		log.info("Buscando producto por codigo: {}", codigo);
 
-		Producto producto = serviceProducto.findByCodigo(codigo);
+		Producto producto = serviceProducto.findByCodigo(codigo, resolverSucursal(idSucursal));
 		return ResponseEntity.ok(producto);
 	}
 	
