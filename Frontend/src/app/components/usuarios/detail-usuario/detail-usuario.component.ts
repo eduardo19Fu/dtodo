@@ -23,6 +23,7 @@ export class DetailUsuarioComponent implements OnInit, OnChanges, AfterViewInit,
 
   sucursales: Sucursal[] = [];
   idSucursalSeleccionada: number = null;
+  editandoSucursal = false;
   guardandoSucursal = false;
 
   constructor(
@@ -42,6 +43,7 @@ export class DetailUsuarioComponent implements OnInit, OnChanges, AfterViewInit,
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.usuario) {
       this.idSucursalSeleccionada = this.usuario?.sucursal ? this.usuario.sucursal.idSucursal : null;
+      this.editandoSucursal = false;
     }
   }
 
@@ -86,6 +88,15 @@ export class DetailUsuarioComponent implements OnInit, OnChanges, AfterViewInit,
     return this.idSucursalSeleccionada !== idActual;
   }
 
+  iniciarEdicionSucursal(): void {
+    this.editandoSucursal = true;
+  }
+
+  cancelarEdicionSucursal(): void {
+    this.idSucursalSeleccionada = this.usuario?.sucursal ? this.usuario.sucursal.idSucursal : null;
+    this.editandoSucursal = false;
+  }
+
   guardarSucursal(): void {
     if (this.guardandoSucursal || !this.sucursalCambio) {
       return;
@@ -103,6 +114,7 @@ export class DetailUsuarioComponent implements OnInit, OnChanges, AfterViewInit,
       () => {
         this.usuario.sucursal = usuarioActualizado.sucursal;
         this.guardandoSucursal = false;
+        this.editandoSucursal = false;
         swal.fire('Sucursal actualizada', `El usuario ${this.usuario.usuario} fue reasignado con éxito`, 'success');
       },
       () => this.guardandoSucursal = false
