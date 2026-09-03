@@ -30,7 +30,7 @@ public interface IProductoService {
 	
 	public Producto findById(Integer idproducto);
 
-	public Integer totalProductos();
+	public Integer totalProductos(Integer idSucursal);
 	
 	public Producto save(Producto producto);
 	

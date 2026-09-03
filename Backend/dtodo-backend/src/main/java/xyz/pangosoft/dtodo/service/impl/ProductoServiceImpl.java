@@ -469,13 +469,13 @@ public class ProductoServiceImpl implements IProductoService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public Integer totalProductos() {
+	public Integer totalProductos(Integer idSucursal) {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
 		log.debug("Enter {}", __method);
 
 		try {
-			log.info("Obteniendo cantidad de productos registrados");
-			return repoProducto.getCantProductos() == null ? 0 : repoProducto.getCantProductos();
+			log.info("Obteniendo cantidad de productos registrados en la sucursal {}", idSucursal);
+			return inventarioSucursalService.contarPorSucursal(idSucursal);
 		} catch (DataAccessException e) {
 			log.error("Ha ocurrido un error a nivel de base de datos: {}", e.getMessage());
 			throw new xyz.pangosoft.dtodo.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos => " + e.getMessage(), e.getCause());

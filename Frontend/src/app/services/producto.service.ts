@@ -118,7 +118,8 @@ export class ProductoService {
   getTotalProductos(): Observable<any> {
     // Es un contador informativo del dashboard (Home): ante cualquier error se
     // degrada a 0 en vez de interrumpir con un swal, no hay nada crítico que reportar aquí.
-    return this.http.get<any>(`${this.url}/productos/cantidad-productos`).pipe(
+    const params = this.conSucursal(new HttpParams());
+    return this.http.get<any>(`${this.url}/productos/cantidad-productos`, { params }).pipe(
       catchError(() => of(0))
     );
   }

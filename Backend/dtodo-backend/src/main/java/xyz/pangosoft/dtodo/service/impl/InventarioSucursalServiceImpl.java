@@ -93,6 +93,12 @@ public class InventarioSucursalServiceImpl implements IInventarioSucursalService
 		return guardar(inventario);
 	}
 
+	@Transactional(readOnly = true)
+	@Override
+	public int contarPorSucursal(Integer idSucursal) {
+		return (int) inventarioRepo.countBySucursal_IdSucursal(idSucursal);
+	}
+
 	@Transactional
 	@Override
 	public void clonarInventario(Integer idSucursalOrigen, Integer idSucursalDestino) {

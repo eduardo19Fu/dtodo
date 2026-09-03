@@ -30,6 +30,21 @@ import static org.mockito.Mockito.when;
 class ProductoServiceImplTest {
 
     @Test
+    void totalProductosCuentaSoloElInventarioDeLaSucursalIndicada() {
+        IProductoRepository repository = mock(IProductoRepository.class);
+        IInventarioSucursalService inventarioSucursalService = mock(IInventarioSucursalService.class);
+        ProductoServiceImpl service = new ProductoServiceImpl(
+                repository, mock(IUploadFileService.class), mock(IEstadoService.class),
+                inventarioSucursalService, mock(DataSource.class));
+        when(inventarioSucursalService.contarPorSucursal(3)).thenReturn(0);
+
+        Integer total = service.totalProductos(3);
+
+        assertEquals(0, total);
+        verify(inventarioSucursalService).contarPorSucursal(3);
+    }
+
+    @Test
     void alActualizarPreservaElStockActualIgnorandoElDelPayload() {
         IProductoRepository repository = mock(IProductoRepository.class);
         ProductoServiceImpl service = new ProductoServiceImpl(

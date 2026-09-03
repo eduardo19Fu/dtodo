@@ -165,11 +165,11 @@ public class ProductoApiController {
 
 	@Secured(value = {"ROLE_ADMIN", "ROLE_INVENTARIO", "ROLE_COBRADOR"})
 	@GetMapping(value = "/productos/cantidad-productos")
-	public ResponseEntity<Integer> getTotalProductos(){
+	public ResponseEntity<Integer> getTotalProductos(
+			@RequestParam(value = "idSucursal", required = false) Integer idSucursal){
 		log.info("Obteniendo total de Productos registrados");
 
-		Integer total = 0;
-		total = serviceProducto.totalProductos();
+		Integer total = serviceProducto.totalProductos(resolverSucursal(idSucursal));
 		return ResponseEntity.ok(total);
 	}
 

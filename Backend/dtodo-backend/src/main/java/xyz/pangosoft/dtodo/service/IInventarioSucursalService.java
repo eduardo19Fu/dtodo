@@ -28,4 +28,7 @@ public interface IInventarioSucursalService {
 	// Copia el inventario completo de una sucursal origen hacia una sucursal destino recién creada
 	public void clonarInventario(Integer idSucursalOrigen, Integer idSucursalDestino);
 
+	// Cuenta cuántos productos tienen inventario importado/registrado en una sucursal
+	public int contarPorSucursal(Integer idSucursal);
+
 }

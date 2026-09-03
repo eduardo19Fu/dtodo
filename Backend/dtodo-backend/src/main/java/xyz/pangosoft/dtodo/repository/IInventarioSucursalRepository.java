@@ -18,6 +18,8 @@ public interface IInventarioSucursalRepository extends JpaRepository<InventarioS
 
 	boolean existsBySucursal_IdSucursal(Integer idSucursal);
 
+	long countBySucursal_IdSucursal(Integer idSucursal);
+
 	@Query(value = "SELECT new xyz.pangosoft.dtodo.dto.InventarioSucursalDto(" +
 			"i.idInventarioSucursal, p.idProducto, p.codProducto, p.nombre, " +
 			"i.stock, i.stockMinimo, i.fechaActualizacion) " +
