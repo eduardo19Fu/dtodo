@@ -150,6 +150,19 @@
     border-radius: 8px;
 }
 
+@media (max-width: 767.98px) {
+    .empty-state {
+        flex-direction: column;
+        min-width: 0;
+        padding: 1rem;
+        width: 100%;
+    }
+
+    .import-inventory-control select {
+        max-width: 100%;
+    }
+}
+
 .sort-header {
     align-items: center;
     background: transparent;
