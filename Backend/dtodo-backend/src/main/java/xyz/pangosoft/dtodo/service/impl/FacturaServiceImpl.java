@@ -516,8 +516,11 @@ public class FacturaServiceImpl implements IFacturaService {
 	}
 
 	@Override
-	public Integer totalVentas() {
+	public Integer totalVentas(Integer idUsuario) {
 		try {
+			if (idUsuario != null) {
+				return repoFactura.getCantidadVentasPorUsuario(idUsuario).intValue();
+			}
 			return repoFactura.getCantidadVentas();
 		} catch (DataAccessException e) {
 			log.error("Ha ocurrido un error a nivel de Base de Datos: {}", e.getMessage());

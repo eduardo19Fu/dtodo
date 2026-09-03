@@ -20,6 +20,11 @@ public interface IFacturaRepository extends JpaRepository<Factura, Long> {
     @Query(value = "Select get_cant_ventas()", nativeQuery = true)
     Integer getCantidadVentas();
 
+    // Mismo criterio que get_cant_ventas() (excluye facturas anuladas, id_estado = 4), pero
+    // acotado a un usuario -- usado por el dashboard para un cobrador que solo debe ver sus propias ventas.
+    @Query("select count(f) from Factura f where f.usuario.idUsuario = :idUsuario and f.estado.idEstado <> 4")
+    Long getCantidadVentasPorUsuario(@Param("idUsuario") Integer idUsuario);
+
     List<Factura> findByFechaBetween(Date iniDate, Date endDate);
 
     Optional<Factura> findFacturaByNoFactura(Long noFactura);

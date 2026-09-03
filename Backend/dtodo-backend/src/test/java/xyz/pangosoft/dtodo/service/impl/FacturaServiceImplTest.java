@@ -60,6 +60,36 @@ class FacturaServiceImplTest {
     }
 
     @Test
+    void totalVentasCuentaSoloLasDelUsuarioIndicado() {
+        IFacturaRepository repository = mock(IFacturaRepository.class);
+        FacturaServiceImpl service = new FacturaServiceImpl(
+                repository, mock(ITipoFacturaRepository.class), mock(IEmisorService.class),
+                mock(IEstadoService.class), mock(ITipoFacturaService.class), mock(ICorrelativoService.class),
+                mock(ICertificadorService.class), mock(IMovimientoProductoService.class), mock(IUsuarioService.class),
+                mock(IFelService.class), mock(DataSource.class));
+        when(repository.getCantidadVentasPorUsuario(20)).thenReturn(3L);
+
+        Integer total = service.totalVentas(20);
+
+        assertEquals(3, total);
+    }
+
+    @Test
+    void totalVentasSinUsuarioDevuelveElConteoGlobal() {
+        IFacturaRepository repository = mock(IFacturaRepository.class);
+        FacturaServiceImpl service = new FacturaServiceImpl(
+                repository, mock(ITipoFacturaRepository.class), mock(IEmisorService.class),
+                mock(IEstadoService.class), mock(ITipoFacturaService.class), mock(ICorrelativoService.class),
+                mock(ICertificadorService.class), mock(IMovimientoProductoService.class), mock(IUsuarioService.class),
+                mock(IFelService.class), mock(DataSource.class));
+        when(repository.getCantidadVentas()).thenReturn(150);
+
+        Integer total = service.totalVentas(null);
+
+        assertEquals(150, total);
+    }
+
+    @Test
     void usaElCodigoDeEstablecimientoDeLaSucursalEnVezDeUnValorFijo() throws Exception {
         FacturaServiceImpl service = new FacturaServiceImpl(
                 mock(IFacturaRepository.class), mock(ITipoFacturaRepository.class), mock(IEmisorService.class),

@@ -48,7 +48,7 @@ public interface IFacturaService {
 
 	public TipoFactura findTipoFactura(Integer idTipoFactura);
 
-	public Integer totalVentas();
+	public Integer totalVentas(Integer idUsuario);
 
 	public List<Factura> facturasPorFecha(String iniDate, String endDate);
 	

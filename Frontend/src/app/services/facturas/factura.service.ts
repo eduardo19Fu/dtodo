@@ -120,8 +120,9 @@ export class FacturaService {
     );
   }
 
-  getTotalVentas(): Observable<any> {
-    return this.http.get<any>(`${this.url}/facturas/cantidad-ventas`).pipe(
+  getTotalVentas(idUsuario?: number): Observable<any> {
+    const params = idUsuario ? new HttpParams().set('idUsuario', idUsuario.toString()) : new HttpParams();
+    return this.http.get<any>(`${this.url}/facturas/cantidad-ventas`, { params }).pipe(
       catchError(e => {
         swal.fire(e.error.mensaje, e.error.error, 'error');
         return throwError(e);

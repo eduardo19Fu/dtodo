@@ -121,8 +121,9 @@ public class FacturaApiController {
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
     @GetMapping(value = "/facturas/cantidad-ventas")
-    public ResponseEntity<Integer> cantidadVentas() {
-        return ResponseEntity.ok(serviceFactura.totalVentas());
+    public ResponseEntity<Integer> cantidadVentas(
+            @RequestParam(value = "idUsuario", required = false) Integer idUsuario) {
+        return ResponseEntity.ok(serviceFactura.totalVentas(idUsuario));
     }
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})

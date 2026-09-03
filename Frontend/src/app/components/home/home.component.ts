@@ -74,7 +74,8 @@ export class HomeComponent implements OnInit {
   }
 
   getFacturas(): void {
-    this.serviceFactura.getTotalVentas().subscribe(
+    const idUsuario = this.auth.esSoloCobrador() ? this.auth.usuario.idUsuario : null;
+    this.serviceFactura.getTotalVentas(idUsuario).subscribe(
       total => this.totalFacturas = total
     );
   }

@@ -148,6 +148,11 @@ export class AuthService {
     return false;
   }
 
+  /** true si el usuario logueado tiene únicamente el rol ROLE_COBRADOR (sin ADMIN ni INVENTARIO). */
+  esSoloCobrador(): boolean {
+    return this.usuario.roles.length === 1 && this.usuario.roles[0] === 'ROLE_COBRADOR';
+  }
+
   logout(): void {
     this._token = null;
     this.refreshTokenValue = null;
