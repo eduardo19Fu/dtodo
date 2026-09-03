@@ -47,6 +47,7 @@ export class ListadoProductosMejoradoComponent implements OnInit, OnDestroy {
 
   // Edición en línea de stock (sustituye a la pantalla independiente de Inventario por Sucursal)
   idSucursalActiva: number = null;
+  nombreSucursalActiva: string = '';
   idProductoEditandoStock: number = null;
   stockEdicion: number = null;
 
@@ -89,9 +90,13 @@ export class ListadoProductosMejoradoComponent implements OnInit, OnDestroy {
     const sucursal = this.auth.usuario?.sucursal;
     if (sucursal) {
       this.idSucursalActiva = sucursal.idSucursal;
+      this.nombreSucursalActiva = sucursal.nombre;
       return;
     }
-    this.sucursalService.getPrincipal().subscribe(principal => this.idSucursalActiva = principal.idSucursal);
+    this.sucursalService.getPrincipal().subscribe(principal => {
+      this.idSucursalActiva = principal.idSucursal;
+      this.nombreSucursalActiva = principal.nombre;
+    });
   }
 
   get sucursalesOrigenDisponibles(): Sucursal[] {

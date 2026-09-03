@@ -3,6 +3,16 @@
     font-size: 0.9rem;
 }
 
+.sucursal-subtitle {
+    color: #6c757d;
+    font-size: 0.95rem;
+    margin: 0.15rem 0 0;
+}
+
+.sucursal-subtitle i {
+    margin-right: 0.3rem;
+}
+
 .pagination .page-link {
     cursor: pointer;
 }

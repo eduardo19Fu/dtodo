@@ -5,6 +5,9 @@
         <div class="row mb-2">
             <div class="col-sm-6">
                 <h1>{{title}}</h1>
+                <p class="sucursal-subtitle" *ngIf="nombreSucursalActiva">
+                    <i class="fas fa-store"></i> {{nombreSucursalActiva}}
+                </p>
                 <br>
                 <a [routerLink]="['/productos/create']" class="btn listing-page-action listing-primary-action" *ngIf="auth.hasRole('ROLE_ADMIN')">
                     <i class="fas fa-plus"></i>
