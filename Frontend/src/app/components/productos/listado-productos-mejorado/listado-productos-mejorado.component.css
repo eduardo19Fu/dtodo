@@ -71,6 +71,18 @@
     width: 80px;
 }
 
+.import-inventory-control {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.import-inventory-control select {
+    max-width: 280px;
+}
+
 .sort-header {
     align-items: center;
     background: transparent;

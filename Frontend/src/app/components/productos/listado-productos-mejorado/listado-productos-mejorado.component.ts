@@ -4,6 +4,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 import { Producto } from '../../../models/producto';
 import { ProductoDto } from '../../../dtos/productoDto';
+import { Sucursal } from '../../../models/sucursal';
 
 import { AuthService } from '../../../services/auth.service';
 import { ProductoService } from '../../../services/producto.service';
@@ -49,6 +50,11 @@ export class ListadoProductosMejoradoComponent implements OnInit, OnDestroy {
   idProductoEditandoStock: number = null;
   stockEdicion: number = null;
 
+  // Importar inventario cuando la sucursal activa todavía no tiene productos registrados
+  sucursalesParaImportar: Sucursal[] = [];
+  idSucursalImportar: number = null;
+  importando: boolean = false;
+
   constructor(
     public modalService: ModalService,
     private productoService: ProductoService,
@@ -73,6 +79,10 @@ export class ListadoProductosMejoradoComponent implements OnInit, OnDestroy {
       this.filtro = filtro;
       this.cargarProductos(0);
     });
+
+    if (this.auth.hasRole('ROLE_ADMIN')) {
+      this.sucursalService.getSucursales().subscribe(sucursales => this.sucursalesParaImportar = sucursales);
+    }
   }
 
   private resolverSucursalActiva(): void {
@@ -82,6 +92,27 @@ export class ListadoProductosMejoradoComponent implements OnInit, OnDestroy {
       return;
     }
     this.sucursalService.getPrincipal().subscribe(principal => this.idSucursalActiva = principal.idSucursal);
+  }
+
+  get sucursalesOrigenDisponibles(): Sucursal[] {
+    return this.sucursalesParaImportar.filter(s => s.idSucursal !== this.idSucursalActiva);
+  }
+
+  importarProductos(): void {
+    if (!this.idSucursalImportar || !this.idSucursalActiva) {
+      return;
+    }
+
+    this.importando = true;
+    this.sucursalService.clonarInventario(this.idSucursalActiva, this.idSucursalImportar).subscribe(
+      () => {
+        this.importando = false;
+        this.idSucursalImportar = null;
+        Swal.fire('Inventario importado', 'El inventario se copi&oacute; correctamente a esta sucursal.', 'success');
+        this.cargarProductos(0);
+      },
+      () => this.importando = false
+    );
   }
 
   ngOnDestroy(): void {

@@ -1,5 +1,6 @@
 import { ListadoProductosMejoradoComponent } from './listado-productos-mejorado.component';
 import { ProductoDto } from 'src/app/dtos/productoDto';
+import { Sucursal } from 'src/app/models/sucursal';
 
 describe('ListadoProductosMejoradoComponent - edicion en linea de stock', () => {
   let component: ListadoProductosMejoradoComponent;
@@ -26,5 +27,34 @@ describe('ListadoProductosMejoradoComponent - edicion en linea de stock', () => 
 
     expect(component.idProductoEditandoStock).toBeNull();
     expect(producto.stock).toBe(15);
+  });
+});
+
+describe('ListadoProductosMejoradoComponent - importar inventario a una sucursal vacia', () => {
+  let component: ListadoProductosMejoradoComponent;
+
+  const sucursal = (id: number, nombre: string): Sucursal => {
+    const s = new Sucursal();
+    s.idSucursal = id;
+    s.nombre = nombre;
+    return s;
+  };
+
+  beforeEach(() => {
+    component = new ListadoProductosMejoradoComponent(null, null, null, null, null);
+    component.idSucursalActiva = 2;
+    component.sucursalesParaImportar = [sucursal(1, 'Sucursal Central'), sucursal(2, 'Sucursal Norte')];
+  });
+
+  it('excluye la propia sucursal activa de las opciones de origen', () => {
+    expect(component.sucursalesOrigenDisponibles.map(s => s.idSucursal)).toEqual([1]);
+  });
+
+  it('no intenta importar si no se selecciono una sucursal de origen', () => {
+    component.idSucursalImportar = null;
+
+    component.importarProductos();
+
+    expect(component.importando).toBeFalse();
   });
 });

@@ -66,12 +66,37 @@
             </div>
         </div>
 
-        <div *ngIf="!cargando && productosDto?.length == 0" class="alert alert-info alert-dismissible">
+        <div *ngIf="!cargando && productosDto?.length == 0 && filtro" class="alert alert-info alert-dismissible">
             <h5>
                 <i class="icon fas fa-info"></i>
                 Atención!
             </h5>
-            No se encontraron productos.
+            No se encontraron productos con el filtro indicado.
+        </div>
+
+        <div *ngIf="!cargando && productosDto?.length == 0 && !filtro" class="alert alert-warning">
+            <h5>
+                <i class="icon fas fa-exclamation-triangle"></i>
+                Esta sucursal no tiene inventario registrado
+            </h5>
+            Todav&iacute;a no se ha importado ning&uacute;n producto a esta sucursal.
+            <span *ngIf="!auth.hasRole('ROLE_ADMIN')">Solicita a un administrador que importe el inventario.</span>
+
+            <div class="import-inventory-control" *ngIf="auth.hasRole('ROLE_ADMIN')">
+                <select class="form-control form-control-sm" [(ngModel)]="idSucursalImportar" [disabled]="importando">
+                    <option [ngValue]="null">Selecciona la sucursal de origen</option>
+                    <option *ngFor="let origen of sucursalesOrigenDisponibles" [ngValue]="origen.idSucursal">
+                        {{origen.nombre}}{{origen.esPrincipal ? ' (Principal)' : ''}}
+                    </option>
+                </select>
+                <button type="button" class="btn btn-primary btn-sm ml-2"
+                        [disabled]="!idSucursalImportar || importando"
+                        (click)="importarProductos()">
+                    <span *ngIf="importando" class="spinner-border spinner-border-sm mr-1" role="status" aria-hidden="true"></span>
+                    <i *ngIf="!importando" class="fas fa-file-import mr-1"></i>
+                    {{importando ? 'Importando...' : 'Importar productos'}}
+                </button>
+            </div>
         </div>
 
         <table class="table table-hover table-striped table-bordered table-sm mt-0 productos-table mobile-data-table"
