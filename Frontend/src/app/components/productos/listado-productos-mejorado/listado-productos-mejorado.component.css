@@ -21,7 +21,7 @@
 }
 
 .productos-table {
-    min-width: 1360px;
+    min-width: 1420px;
     table-layout: fixed;
     width: 100%;
 }
@@ -29,7 +29,7 @@
 .table-controls-row {
     margin-left: 0;
     margin-right: 0;
-    min-width: 1360px;
+    min-width: 1420px;
     width: 100%;
 }
 
@@ -59,11 +59,17 @@
 .productos-table .col-codigo { width: 160px; }
 .productos-table .col-nombre { width: 330px; }
 .productos-table .col-precio { text-align: right; width: 120px; }
-.productos-table .col-stock { text-align: center; width: 80px; }
+.productos-table .col-stock { text-align: center; width: 100px; }
 .productos-table .col-tipo { width: 160px; }
 .productos-table .col-marca { width: 160px; }
 .productos-table .col-estado { text-align: center; width: 120px; }
-.productos-table .col-opciones { text-align: center; width: 110px; }
+.productos-table .col-opciones { text-align: center; width: 150px; }
+
+.stock-input {
+    margin: 0 auto;
+    text-align: center;
+    width: 80px;
+}
 
 .sort-header {
     align-items: center;

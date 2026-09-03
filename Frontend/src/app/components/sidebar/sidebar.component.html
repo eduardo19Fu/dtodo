@@ -83,14 +83,7 @@
                 <li class="nav-item" *ngIf="authService.hasRole('ROLE_ADMIN') || authService.hasRole('ROLE_INVENTARIO')">
                     <a [routerLink]="['/productos/inventario/index']" class="nav-link" [routerLinkActive]="['active']">
                         <i class="fas fa-warehouse nav-icon"></i>
-                        <p>Inventario</p>
-                    </a>
-                </li>
-
-                <li class="nav-item" *ngIf="authService.hasRole('ROLE_ADMIN') || authService.hasRole('ROLE_INVENTARIO')">
-                    <a [routerLink]="['/productos/inventario-sucursal/index']" class="nav-link" [routerLinkActive]="['active']">
-                        <i class="fas fa-boxes nav-icon"></i>
-                        <p>Inventario por Sucursal</p>
+                        <p>Movimientos de Producto</p>
                     </a>
                 </li>
 

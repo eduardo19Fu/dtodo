@@ -102,7 +102,11 @@
                         {{producto.precioCompra | currency: "Q" : "symbol"}}
                     </td>
                     <td class="col-precio text-nowrap" data-label="Precio venta">{{producto.precioVenta | currency: "Q" : "symbol"}}</td>
-                    <td class="col-stock" data-label="Stock">{{producto.stock}}</td>
+                    <td class="col-stock" data-label="Stock">
+                        <span *ngIf="idProductoEditandoStock !== producto.idProducto">{{producto.stock}}</span>
+                        <input *ngIf="idProductoEditandoStock === producto.idProducto" type="number" min="0"
+                               class="form-control form-control-sm stock-input" [(ngModel)]="stockEdicion">
+                    </td>
                     <td class="col-tipo" data-label="Tipo">
                         <span class="cell-ellipsis" [title]="producto.tipoProducto || ''">{{producto.tipoProducto || 'Sin tipo'}}</span>
                     </td>
@@ -121,7 +125,7 @@
                         </span>
                     </td>
                     <td class="col-opciones mobile-actions-cell" data-label="Opciones">
-                        <div class="action-buttons">
+                        <div class="action-buttons" *ngIf="idProductoEditandoStock !== producto.idProducto">
                         <button class="btn btn-sm listing-table-action listing-action-view" type="button"
                             appTooltip="Ver detalle del producto" aria-label="Ver detalle del producto"
                             (click)="abrirModal(producto)">
@@ -134,8 +138,28 @@
                             *ngIf="auth.hasRole('ROLE_ADMIN')">
                             <i class="fas fa-edit"></i>
                         </button>
+
+                        <button class="btn btn-sm listing-table-action listing-action-edit" type="button"
+                            appTooltip="Ajustar stock" aria-label="Ajustar stock"
+                            (click)="editarStock(producto)"
+                            *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_INVENTARIO')">
+                            <i class="fas fa-boxes"></i>
+                        </button>
                         </div>
 
+                        <div class="action-buttons" *ngIf="idProductoEditandoStock === producto.idProducto">
+                        <button class="btn btn-sm listing-table-action listing-action-edit" type="button"
+                            appTooltip="Guardar stock" aria-label="Guardar stock"
+                            (click)="guardarStock(producto)">
+                            <i class="fas fa-check"></i>
+                        </button>
+
+                        <button class="btn btn-sm listing-table-action listing-action-delete" type="button"
+                            appTooltip="Cancelar" aria-label="Cancelar"
+                            (click)="cancelarEdicionStock()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        </div>
                     </td>
                 </tr>
             </tbody>
