@@ -35,6 +35,14 @@ Soporte completo para operar múltiples sucursales, cada una con inventario inde
 
 **Nota de diseño**: la primera versión de este cambio incluyó una pantalla independiente "Inventario por Sucursal", redundante con Productos. Se retiró del frontend tras revisión; el endpoint de backend (`GET /inventario-sucursal/{idSucursal}/listado`) se conservó por si un futuro consumidor (reporte, exportación) lo necesita, pero ningún componente lo usa actualmente. El ajuste manual de stock en línea todavía **no** genera un registro en el historial de movimientos — es una sobreescritura directa, decisión explícita para no ampliar el alcance de este cambio.
 
+### Cambiado — Productos y búsquedas de producto ahora filtran por sucursal
+
+Antes, el catálogo de Productos (y los buscadores de producto embebidos al crear facturas, proformas y movimientos de inventario) mostraban **todos** los productos del sistema aunque no tuvieran existencias registradas en la sucursal activa (aparecían con `Stock: 0`). Esto generaba confusión: no se distinguía "agotado" de "no se vende en esta sucursal". Ahora:
+
+- Un producto solo aparece en el listado/búsqueda si tiene una fila en `inventario_sucursal` para la sucursal del usuario logueado (`IProductoRepository.findAllProductosDto` pasó de `LEFT JOIN` a `INNER JOIN`; `ProductoServiceImpl` agrega un filtro `EXISTS` equivalente a la búsqueda por Criteria API). Como los tres buscadores de producto (factura, proforma, movimiento de inventario) reutilizan los mismos dos métodos de `ProductoService` que el listado principal, quedaron cubiertos con el mismo cambio.
+- Una sucursal sin inventario importado ya no genera error: `findAllDtoMejorado` dejó de lanzar `NoContentException` en resultado vacío (esa rama era código muerto antes de este cambio — un catálogo global vacío no era realista — y con el filtro por sucursal se volvió un caso normal; lanzarla producía un HTTP 204 sin cuerpo utilizable que rompía el cliente Angular). Ahora devuelve una página vacía normal.
+- Productos muestra un estado vacío distinto cuando la sucursal activa no tiene inventario: `ROLE_ADMIN` ve un selector de sucursal origen y un botón "Importar productos" (reutiliza `clonarInventario`); el resto de roles ve un aviso para solicitarlo a un administrador.
+
 ### Fuera de alcance / seguimiento pendiente
 - Los listados de facturas, proformas y notas de crédito no tienen todavía un filtro de sucursal en la UI ni en el backend (los documentos ya quedan correctamente etiquetados con su sucursal; falta exponer el filtro).
 - El backend confía en los IDs que envía el frontend para resolver la sucursal en vez de validarlos contra el JWT — mismo patrón que ya existía para `idUsuario`; queda documentado como riesgo conocido, no corregido en este cambio.
