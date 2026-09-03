@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpEvent, HttpParams, HttpRequest, HttpResponse } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
 import { Producto } from '../models/producto';
@@ -116,11 +116,10 @@ export class ProductoService {
   }
 
   getTotalProductos(): Observable<any> {
+    // Es un contador informativo del dashboard (Home): ante cualquier error se
+    // degrada a 0 en vez de interrumpir con un swal, no hay nada crítico que reportar aquí.
     return this.http.get<any>(`${this.url}/productos/cantidad-productos`).pipe(
-      catchError(e => {
-        swal.fire(e.error.mensaje, e.error.error, 'error');
-        return throwError(e);
-      })
+      catchError(() => of(0))
     );
   }
 

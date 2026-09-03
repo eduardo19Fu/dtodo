@@ -163,7 +163,7 @@ public class ProductoApiController {
 		return ResponseEntity.ok(producto);
 	}
 
-	@Secured(value = {"ROLE_ADMIN", "ROLE_INVENTARIO"})
+	@Secured(value = {"ROLE_ADMIN", "ROLE_INVENTARIO", "ROLE_COBRADOR"})
 	@GetMapping(value = "/productos/cantidad-productos")
 	public ResponseEntity<Integer> getTotalProductos(){
 		log.info("Obteniendo total de Productos registrados");
