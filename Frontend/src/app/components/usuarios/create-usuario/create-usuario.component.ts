@@ -27,6 +27,7 @@ export class CreateUsuarioComponent implements OnInit {
 
   public usuarioAuxiliar: UsuarioAuxiliar;
   sucursales: Sucursal[] = [];
+  idSucursalSeleccionada: number = null;
 
   constructor(
     private router: Router,
@@ -57,13 +58,22 @@ export class CreateUsuarioComponent implements OnInit {
         this.usuarioService.getUsuario(id).subscribe(usuario => {
           this.usuarioAuxiliar = usuario;
           this.filas = this.usuarioAuxiliar.roles || [];
+          this.idSucursalSeleccionada = usuario.sucursal ? usuario.sucursal.idSucursal : null;
         });
       }
     });
   }
 
+  private aplicarSucursalSeleccionada(): void {
+    this.usuarioAuxiliar.sucursal = this.idSucursalSeleccionada
+      ? this.sucursales.find(item => item.idSucursal === this.idSucursalSeleccionada)
+        || { idSucursal: this.idSucursalSeleccionada } as Sucursal
+      : null;
+  }
+
   create(): void {
     this.usuarioAuxiliar.roles = this.filas;
+    this.aplicarSucursalSeleccionada();
 
     this.usuarioService.create(this.usuarioAuxiliar).subscribe(
       response => {
@@ -75,6 +85,7 @@ export class CreateUsuarioComponent implements OnInit {
 
   update(): void {
     this.usuarioAuxiliar.roles = this.filas;
+    this.aplicarSucursalSeleccionada();
     this.usuarioService.update(this.usuarioAuxiliar).subscribe(
       response => {
         this.router.navigate(['/usuarios/index']);
