@@ -28,9 +28,12 @@ Soporte completo para operar múltiples sucursales, cada una con inventario inde
 
 **Frontend**
 - Nuevo módulo de administración de sucursales (`/sucursales`), con selector de "copiar inventario desde" al crear una sucursal.
-- Nueva pantalla de inventario por sucursal (`/productos/inventario-sucursal`) con ajuste manual de stock en línea.
+- El listado de **Productos** (que ya mostraba el stock escopeado a la sucursal activa) gana edición en línea del stock; no se creó una pantalla separada de inventario por sucursal para evitar mostrar la misma información dos veces (ver nota más abajo).
+- El menú lateral "Inventario" se renombró a "Movimientos de Producto" para diferenciarlo claramente del stock actual (que ahora vive en Productos).
 - La sesión del usuario incluye ahora su sucursal activa (mostrada en el panel lateral); el alta/edición de usuarios permite asignarla.
 - `ProductoService` y el reporte PDF de inventario propagan automáticamente la sucursal activa del usuario logueado en cada consulta.
+
+**Nota de diseño**: la primera versión de este cambio incluyó una pantalla independiente "Inventario por Sucursal", redundante con Productos. Se retiró del frontend tras revisión; el endpoint de backend (`GET /inventario-sucursal/{idSucursal}/listado`) se conservó por si un futuro consumidor (reporte, exportación) lo necesita, pero ningún componente lo usa actualmente. El ajuste manual de stock en línea todavía **no** genera un registro en el historial de movimientos — es una sobreescritura directa, decisión explícita para no ampliar el alcance de este cambio.
 
 ### Fuera de alcance / seguimiento pendiente
 - Los listados de facturas, proformas y notas de crédito no tienen todavía un filtro de sucursal en la UI ni en el backend (los documentos ya quedan correctamente etiquetados con su sucursal; falta exponer el filtro).
