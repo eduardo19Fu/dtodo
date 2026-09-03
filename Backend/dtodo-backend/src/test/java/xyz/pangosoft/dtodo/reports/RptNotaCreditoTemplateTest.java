@@ -10,21 +10,18 @@ import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperReport;
 import org.junit.jupiter.api.Test;
 
-class ProformaPdfTemplateTest {
+class RptNotaCreditoTemplateTest {
 
     @Test
-    void compilaPlantillaPdfDeProforma() throws Exception {
-        try (InputStream template = getClass().getResourceAsStream("/reports/proforma.jrxml")) {
-            assertNotNull(template, "La plantilla PDF de proforma debe existir");
+    void compilaPlantillaPdfDeNotaCreditoConLosCamposDeSucursal() throws Exception {
+        try (InputStream template = getClass().getResourceAsStream("/reports/rpt_nota_credito.jrxml")) {
+            assertNotNull(template, "La plantilla PDF de nota de crédito debe existir");
 
             JasperReport report = JasperCompileManager.compileReport(template);
 
             assertNotNull(report);
             assertTrue(Arrays.stream(report.getParameters())
-                    .anyMatch(parameter -> "proformaId".equals(parameter.getName())));
-            assertTrue(Arrays.stream(report.getFields())
-                    .anyMatch(field -> "precio_venta".equals(field.getName())
-                            && "java.math.BigDecimal".equals(field.getValueClassName())));
+                    .anyMatch(parameter -> "idNotaCredito".equals(parameter.getName())));
             assertTrue(Arrays.stream(report.getFields())
                     .anyMatch(field -> "sucursal_direccion".equals(field.getName())));
             assertTrue(Arrays.stream(report.getFields())

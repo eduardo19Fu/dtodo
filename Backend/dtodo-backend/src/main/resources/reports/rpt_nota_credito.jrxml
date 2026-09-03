@@ -30,12 +30,15 @@
 			END AS precio_venta,
 			ncd.descuento,
 			ncd.sub_total,
-			ncd.sub_total_descuento
+			ncd.sub_total_descuento,
+			COALESCE(s.direccion, '') AS sucursal_direccion,
+			COALESCE(s.telefono, '') AS sucursal_telefono
 FROM notas_credito AS nc
 INNER JOIN clientes AS cl ON nc.id_cliente = cl.id_cliente
 INNER JOIN usuarios AS us ON us.id_usuario = nc.id_usuario
 LEFT JOIN notas_credito_detalle AS ncd ON ncd.id_nota_credito = nc.id_nota_credito
 LEFT JOIN productos AS p ON p.id_producto = ncd.id_producto
+LEFT JOIN sucursales AS s ON s.id_sucursal = nc.id_sucursal
 WHERE nc.id_nota_credito = $P{idNotaCredito}]]>
 	</queryString>
 	<field name="id_nota_credito" class="java.lang.String">
@@ -124,6 +127,16 @@ WHERE nc.id_nota_credito = $P{idNotaCredito}]]>
 		<property name="com.jaspersoft.studio.field.name" value="sub_total_descuento"/>
 		<property name="com.jaspersoft.studio.field.label" value="sub_total_descuento"/>
 	</field>
+	<field name="sucursal_direccion" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="sucursal_direccion"/>
+		<property name="com.jaspersoft.studio.field.label" value="sucursal_direccion"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="sucursales"/>
+	</field>
+	<field name="sucursal_telefono" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="sucursal_telefono"/>
+		<property name="com.jaspersoft.studio.field.label" value="sucursal_telefono"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="sucursales"/>
+	</field>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -134,16 +147,13 @@ WHERE nc.id_nota_credito = $P{idNotaCredito}]]>
 				<reportElement x="50" y="5" width="130" height="80" uuid="f6511a5e-1249-48eb-b485-b2a7b5e981c9"/>
 				<imageExpression><![CDATA[this.getClass().getResourceAsStream("/static/images/reports-image/logo-dtodo.jpg")]]></imageExpression>
 			</image>
-			<staticText>
+			<textField>
 				<reportElement x="10" y="90" width="208" height="50" isPrintWhenDetailOverflows="true" uuid="570e3d5b-cd30-4d42-ab13-81620914120b"/>
 				<textElement textAlignment="Center">
 					<font size="10" isBold="true"/>
 				</textElement>
-				<text><![CDATA[1a. Calle 4-32 Zona 2, Barrio San Francisco
-Jalapa, Jalapa
-NIT.: 4514627-6
-Teléfonos: 4582-1048/5728-2246]]></text>
-			</staticText>
+				<textFieldExpression><![CDATA[$F{sucursal_direccion} + "\nNIT.: 4514627-6\nTeléfonos: " + $F{sucursal_telefono}]]></textFieldExpression>
+			</textField>
 			<staticText>
 				<reportElement x="190" y="20" width="187" height="30" isPrintWhenDetailOverflows="true" uuid="275ed23d-79e8-444d-9da0-b0527e9dc386"/>
 				<textElement textAlignment="Right">

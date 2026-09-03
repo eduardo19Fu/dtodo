@@ -21,13 +21,16 @@
         prd.descuento,
         prd.sub_total_descuento,
         CONCAT(us.primer_nombre,' ', us.apellido) AS vendedor,
-        get_numero_letras(pr.total) AS total_letras
+        get_numero_letras(pr.total) AS total_letras,
+        COALESCE(s.direccion, '') AS sucursal_direccion,
+        COALESCE(s.telefono, '') AS sucursal_telefono
 FROM proformas AS pr
 INNER JOIN clientes AS cl ON pr.id_cliente = cl.id_cliente
 INNER JOIN proformas_detalle AS prd ON prd.id_proforma = pr.id_proforma
 INNER JOIN productos AS p ON p.id_producto = prd.id_producto
 INNER JOIN usuarios AS us ON us.id_usuario = pr.id_usuario
-WHERE pr.id_proforma =  $P{proformaId} 
+LEFT JOIN sucursales AS s ON s.id_sucursal = pr.id_sucursal
+WHERE pr.id_proforma =  $P{proformaId}
 ORDER BY p.nombre ASC]]>
 	</queryString>
 	<field name="nombre" class="java.lang.String">
@@ -44,6 +47,16 @@ ORDER BY p.nombre ASC]]>
 		<property name="com.jaspersoft.studio.field.name" value="nit"/>
 		<property name="com.jaspersoft.studio.field.label" value="nit"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="clientes"/>
+	</field>
+	<field name="sucursal_direccion" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="sucursal_direccion"/>
+		<property name="com.jaspersoft.studio.field.label" value="sucursal_direccion"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="sucursales"/>
+	</field>
+	<field name="sucursal_telefono" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="sucursal_telefono"/>
+		<property name="com.jaspersoft.studio.field.label" value="sucursal_telefono"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="sucursales"/>
 	</field>
 	<field name="date_format(pr.fecha_emision,&apos;%d/%m/%Y&apos;)" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name">
@@ -149,16 +162,13 @@ ORDER BY p.nombre ASC]]>
 				</textElement>
 				<text><![CDATA[Fecha:]]></text>
 			</staticText>
-			<staticText>
+			<textField>
 				<reportElement x="162" y="8" width="206" height="55" uuid="eaf74af2-04d1-4dbd-adc4-00a0f2de813d"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font fontName="SansSerif" size="10" isBold="true"/>
 				</textElement>
-				<text><![CDATA[1a. Calle 4-32 Zona 2, Barrio San Francisco
- Jalapa, Jalapa
-NIT.: 4514627-6 
-Teléfonos: 4582-1048/5728-2246]]></text>
-			</staticText>
+				<textFieldExpression><![CDATA[$F{sucursal_direccion} + "\nNIT.: 4514627-6 \nTeléfonos: " + $F{sucursal_telefono}]]></textFieldExpression>
+			</textField>
 			<image scaleImage="FillFrame">
 				<reportElement x="-1" y="2" width="162" height="75" uuid="45fd4051-15a5-48dc-bf67-7ddaf5d16f43"/>
 				<imageExpression><![CDATA[this.getClass().getResourceAsStream("/static/images/reports-image/logo-dtodo.jpg")]]></imageExpression>
