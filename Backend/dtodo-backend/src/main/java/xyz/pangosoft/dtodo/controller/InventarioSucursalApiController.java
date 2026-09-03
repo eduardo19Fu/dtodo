@@ -41,8 +41,10 @@ public class InventarioSucursalApiController {
 			@RequestParam(value = "size", defaultValue = "10") Integer size,
 			@RequestParam(value = "filtro", defaultValue = "") String filtro) {
 		log.info("Listando inventario de la sucursal: {}", idSucursal);
+		// El Sort se aplica contra la entidad InventarioSucursal (alias "i" en el @Query), por lo que debe
+		// usar la ruta de asociación real "producto.nombre" y no el nombre del campo del DTO proyectado.
 		return ResponseEntity.ok(serviceInventario.findListado(
-				idSucursal, filtro, PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "nombreProducto"))));
+				idSucursal, filtro, PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "producto.nombre"))));
 	}
 
 	@Secured(value = { "ROLE_ADMIN", "ROLE_INVENTARIO" })
