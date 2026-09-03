@@ -23,7 +23,6 @@ import javax.sql.DataSource;
 
 import xyz.pangosoft.dtodo.dto.ProductoDto;
 import xyz.pangosoft.dtodo.dto.ProductoDtoMejorado;
-import xyz.pangosoft.dtodo.error.exceptions.NoContentException;
 import xyz.pangosoft.dtodo.error.exceptions.ReportGenerationException;
 import xyz.pangosoft.dtodo.service.IEstadoService;
 import xyz.pangosoft.dtodo.service.IUploadFileService;
@@ -43,6 +42,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import xyz.pangosoft.dtodo.error.exceptions.NotFoundException;
 import xyz.pangosoft.dtodo.model.Estado;
+import xyz.pangosoft.dtodo.model.InventarioSucursal;
 import xyz.pangosoft.dtodo.model.MarcaProducto;
 import xyz.pangosoft.dtodo.model.Producto;
 import xyz.pangosoft.dtodo.model.TipoProducto;
@@ -52,9 +52,13 @@ import xyz.pangosoft.dtodo.service.IProductoService;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRParameter;
@@ -127,13 +131,10 @@ public class ProductoServiceImpl implements IProductoService {
 
 		try {
 			log.debug("Consultando productos desde la base de datos...");
+			// No se lanza NoContentException si no hay resultados: una sucursal sin inventario todavía
+			// registrado es un estado válido (no un error), y el frontend necesita poder distinguirlo
+			// mostrando la página vacía en vez de recibir un 204 sin cuerpo utilizable.
 			Page<Object[]> results = repoProducto.findAllProductosDto(orden, direccion, idSucursal, pageable);
-
-			if (results.isEmpty()) {
-				log.warn("No existen productos registrados");
-				throw new NoContentException("No existen productos registrados");
-			}
-
 			return mapPageToProductoDtoMejorado(results);
 		} catch (DataAccessException dax) {
 			log.error("Ha ocurrido un error al intentar consultar los productos: {}", dax.getMessage());
@@ -154,7 +155,7 @@ public class ProductoServiceImpl implements IProductoService {
 			log.debug("Consultando productos desde la base de datos que conicidan con la busqueda...");
 			List<String> terminos = obtenerTerminosBusqueda(filtro);
 			Page<Producto> results = repoProducto.findAll(
-					crearEspecificacionBusqueda(terminos), crearPageableOrdenado(pageable, orden, direccion));
+					crearEspecificacionBusqueda(terminos, idSucursal), crearPageableOrdenado(pageable, orden, direccion));
 
 			return results.map(producto -> mapProductoToProductoDtoMejorado(producto, idSucursal));
 		} catch (DataAccessException dax) {
@@ -175,29 +176,47 @@ public class ProductoServiceImpl implements IProductoService {
 				.collect(Collectors.toList());
 	}
 
-	private Specification<Producto> crearEspecificacionBusqueda(List<String> terminos) {
+	private Specification<Producto> crearEspecificacionBusqueda(List<String> terminos, Integer idSucursal) {
 		return (root, query, criteriaBuilder) -> {
-			if (terminos.isEmpty()) {
-				return criteriaBuilder.conjunction();
+			List<Predicate> condiciones = new ArrayList<>();
+			condiciones.add(existeEnInventarioDeSucursal(root, query, criteriaBuilder, idSucursal));
+
+			if (!terminos.isEmpty()) {
+				Join<Producto, MarcaProducto> marca = root.join("marcaProducto", JoinType.LEFT);
+				Join<Producto, TipoProducto> tipo = root.join("tipoProducto", JoinType.LEFT);
+				Join<Producto, Estado> estado = root.join("estado", JoinType.LEFT);
+				List<Predicate> coincidencias = new ArrayList<>();
+
+				for (String termino : terminos) {
+					String patron = "%" + escaparLike(termino) + "%";
+					coincidencias.add(criteriaBuilder.or(
+							criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(root.get("nombre"), "")), patron, '\\'),
+							criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(root.get("codProducto"), "")), patron, '\\'),
+							criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(marca.get("marca"), "")), patron, '\\'),
+							criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(tipo.get("tipoProducto"), "")), patron, '\\'),
+							criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(estado.get("estado"), "")), patron, '\\')));
+				}
+
+				condiciones.add(criteriaBuilder.and(coincidencias.toArray(new Predicate[0])));
 			}
 
-			Join<Producto, MarcaProducto> marca = root.join("marcaProducto", JoinType.LEFT);
-			Join<Producto, TipoProducto> tipo = root.join("tipoProducto", JoinType.LEFT);
-			Join<Producto, Estado> estado = root.join("estado", JoinType.LEFT);
-			List<Predicate> coincidencias = new ArrayList<>();
-
-			for (String termino : terminos) {
-				String patron = "%" + escaparLike(termino) + "%";
-				coincidencias.add(criteriaBuilder.or(
-						criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(root.get("nombre"), "")), patron, '\\'),
-						criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(root.get("codProducto"), "")), patron, '\\'),
-						criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(marca.get("marca"), "")), patron, '\\'),
-						criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(tipo.get("tipoProducto"), "")), patron, '\\'),
-						criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(estado.get("estado"), "")), patron, '\\')));
-			}
-
-			return criteriaBuilder.and(coincidencias.toArray(new Predicate[0]));
+			return criteriaBuilder.and(condiciones.toArray(new Predicate[0]));
 		};
+	}
+
+	/**
+	 * Restringe el resultado a productos que tienen fila de existencias registrada en la sucursal indicada
+	 * (tabla inventario_sucursal), para que el listado/busqueda de productos quede acotado a la sucursal activa.
+	 */
+	private Predicate existeEnInventarioDeSucursal(
+			Root<Producto> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder, Integer idSucursal) {
+		Subquery<Long> subquery = query.subquery(Long.class);
+		Root<InventarioSucursal> inventario = subquery.from(InventarioSucursal.class);
+		subquery.select(criteriaBuilder.literal(1L))
+				.where(
+						criteriaBuilder.equal(inventario.get("producto"), root),
+						criteriaBuilder.equal(inventario.get("sucursal").get("idSucursal"), idSucursal));
+		return criteriaBuilder.exists(subquery);
 	}
 
 	private String escaparLike(String valor) {

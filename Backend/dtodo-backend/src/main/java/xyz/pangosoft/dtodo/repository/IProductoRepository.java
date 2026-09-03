@@ -55,7 +55,7 @@ public interface IProductoRepository extends JpaRepository<Producto, Integer>, J
 				"prod.fecha_vencimiento, " +
 				"prod.fecha_ingreso, " +
 				"prod.fecha_registro, " +
-				"COALESCE(inv.stock, 0) AS stock, " +
+				"inv.stock AS stock, " +
 				"prod.imagen, " +
 				"prod.id_estado, " +
 				"m.marca, " +
@@ -63,9 +63,9 @@ public interface IProductoRepository extends JpaRepository<Producto, Integer>, J
 				"e.estado " +
 				"FROM productos AS prod " +
 				"INNER JOIN estados AS e ON e.id_estado = prod.id_estado " +
+				"INNER JOIN inventario_sucursal AS inv ON inv.id_producto = prod.id_producto AND inv.id_sucursal = :idsucursal " +
 				"LEFT JOIN marcas_producto AS m ON m.id_marca_producto = prod.id_marca_producto " +
 				"LEFT JOIN tipos_producto AS tp ON tp.id_tipo_producto = prod.id_tipo_producto " +
-				"LEFT JOIN inventario_sucursal AS inv ON inv.id_producto = prod.id_producto AND inv.id_sucursal = :idsucursal " +
 				"ORDER BY " +
 				"CASE WHEN :direccion = 'asc' AND :orden = 'codigo' THEN prod.cod_producto END ASC, " +
 				"CASE WHEN :direccion = 'desc' AND :orden = 'codigo' THEN prod.cod_producto END DESC, " +
@@ -75,8 +75,8 @@ public interface IProductoRepository extends JpaRepository<Producto, Integer>, J
 				"CASE WHEN :direccion = 'desc' AND :orden = 'precioCompra' THEN prod.precio_compra END DESC, " +
 				"CASE WHEN :direccion = 'asc' AND :orden = 'precioVenta' THEN prod.precio_venta END ASC, " +
 				"CASE WHEN :direccion = 'desc' AND :orden = 'precioVenta' THEN prod.precio_venta END DESC, " +
-				"CASE WHEN :direccion = 'asc' AND :orden = 'stock' THEN COALESCE(inv.stock, 0) END ASC, " +
-				"CASE WHEN :direccion = 'desc' AND :orden = 'stock' THEN COALESCE(inv.stock, 0) END DESC, " +
+				"CASE WHEN :direccion = 'asc' AND :orden = 'stock' THEN inv.stock END ASC, " +
+				"CASE WHEN :direccion = 'desc' AND :orden = 'stock' THEN inv.stock END DESC, " +
 				"CASE WHEN :direccion = 'asc' AND :orden = 'tipo' THEN tp.tipo_producto END ASC, " +
 				"CASE WHEN :direccion = 'desc' AND :orden = 'tipo' THEN tp.tipo_producto END DESC, " +
 				"CASE WHEN :direccion = 'asc' AND :orden = 'marca' THEN m.marca END ASC, " +
@@ -84,8 +84,8 @@ public interface IProductoRepository extends JpaRepository<Producto, Integer>, J
 				"CASE WHEN :direccion = 'asc' AND :orden = 'estado' THEN e.estado END ASC, " +
 				"CASE WHEN :direccion = 'desc' AND :orden = 'estado' THEN e.estado END DESC, " +
 				"prod.id_producto ASC",
-			countQuery = "SELECT COUNT(*) FROM productos " +
-					"WHERE :orden = :orden AND :direccion = :direccion",
+			countQuery = "SELECT COUNT(*) FROM productos AS prod " +
+					"INNER JOIN inventario_sucursal AS inv ON inv.id_producto = prod.id_producto AND inv.id_sucursal = :idsucursal",
 			nativeQuery = true)
 	Page<Object[]> findAllProductosDto(@Param("orden") String orden,
 			@Param("direccion") String direccion, @Param("idsucursal") Integer idsucursal, Pageable pageable);
