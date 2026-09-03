@@ -1,3 +1,5 @@
+<app-detail-sucursal *ngIf="sucursalSeleccionada" [sucursal]="sucursalSeleccionada"></app-detail-sucursal>
+
 <section class="content-header">
   <div class="container-fluid">
     <div class="row mb-2">
@@ -81,12 +83,13 @@
           <td class="col-id" data-label="ID"><span class="listing-id-pill">#{{sucursal.idSucursal}}</span></td>
           <td class="col-nombre mobile-primary-cell" data-label="Nombre">
             <span class="cell-ellipsis" [title]="sucursal.nombre">{{sucursal.nombre}}</span>
-            <span *ngIf="sucursal.esPrincipal" class="badge badge-info principal-badge">Principal</span>
+            <span *ngIf="sucursal.esPrincipal" class="listing-status-pill listing-status-info principal-badge">Principal</span>
           </td>
           <td class="col-direccion" data-label="Direcci&oacute;n"><span class="cell-ellipsis" [title]="sucursal.direccion">{{sucursal.direccion}}</span></td>
           <td class="col-establecimiento" data-label="Cod. Establecimiento">{{sucursal.codigoEstablecimientoSat}}</td>
           <td class="col-estado" data-label="Estado">
-            <span class="badge" [ngClass]="sucursal.estado === 'ACTIVO' ? 'badge-success' : 'badge-secondary'">{{sucursal.estado}}</span>
+            <span class="listing-status-pill"
+                  [ngClass]="sucursal.estado === 'ACTIVO' ? 'listing-status-success' : 'listing-status-danger'">{{sucursal.estado}}</span>
           </td>
           <td class="col-fecha" data-label="Fecha de registro">
             <span class="fecha-principal">{{sucursal.fechaRegistro | date: 'dd/MM/yyyy'}}</span>
@@ -94,6 +97,13 @@
           </td>
           <td class="col-opciones mobile-actions-cell" data-label="Opciones" *ngIf="auth.hasRole('ROLE_ADMIN')">
             <div class="action-buttons">
+              <button class="btn btn-sm listing-table-action listing-action-view" type="button"
+                      appTooltip="Ver detalle de la sucursal" aria-label="Ver detalle de la sucursal"
+                      [disabled]="detalleCargandoId !== null" (click)="abrirDetalle(sucursal)">
+                <span *ngIf="detalleCargandoId === sucursal.idSucursal"
+                      class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                <i *ngIf="detalleCargandoId !== sucursal.idSucursal" class="fas fa-eye"></i>
+              </button>
               <button class="btn btn-sm listing-table-action listing-action-edit" type="button"
                       appTooltip="Editar sucursal" aria-label="Editar sucursal"
                       [routerLink]="['/sucursales/create', sucursal.idSucursal]">

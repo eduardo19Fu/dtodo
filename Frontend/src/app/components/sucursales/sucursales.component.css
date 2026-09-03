@@ -3,8 +3,8 @@
 .pagination .page-link { cursor: pointer; }
 .pagination .page-item.disabled .page-link { cursor: not-allowed; }
 
-.catalog-table { min-width: 900px; table-layout: fixed; width: 100%; }
-.table-controls { margin-left: 0; margin-right: 0; min-width: 900px; width: 100%; }
+.catalog-table { min-width: 1090px; table-layout: fixed; width: 100%; }
+.table-controls { margin-left: 0; margin-right: 0; min-width: 1090px; width: 100%; }
 .table-controls > [class*='col-']:first-child { padding-left: 0; }
 .table-controls > [class*='col-']:last-child { padding-right: 0; }
 .catalog-table th {
@@ -31,7 +31,7 @@
 .catalog-table .col-establecimiento { text-align: center; width: 140px; }
 .catalog-table .col-estado { text-align: center; width: 110px; }
 .catalog-table .col-fecha { width: 145px; }
-.catalog-table .col-opciones { text-align: center; width: 90px; }
+.catalog-table .col-opciones { text-align: center; width: 110px; }
 .cell-ellipsis { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fecha-principal { display: block; white-space: nowrap; }
 .fecha-hora { color: #6c757d; display: block; font-size: 0.78rem; margin-top: 0.2rem; white-space: nowrap; }

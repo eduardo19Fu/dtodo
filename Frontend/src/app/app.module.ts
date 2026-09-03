@@ -54,6 +54,7 @@ import { DespacharNotaComponent } from './components/notas-credito/despachar-not
 import { ListadoProductosMejoradoComponent } from './components/productos/listado-productos-mejorado/listado-productos-mejorado.component';
 import { SucursalesComponent } from './components/sucursales/sucursales.component';
 import { CreateSucursalComponent } from './components/sucursales/create-sucursal/create-sucursal.component';
+import { DetailSucursalComponent } from './components/sucursales/detail-sucursal/detail-sucursal.component';
 import { TooltipDirective } from './directives/tooltip.directive';
 
 @NgModule({
@@ -105,6 +106,7 @@ import { TooltipDirective } from './directives/tooltip.directive';
     ListadoProductosMejoradoComponent,
     SucursalesComponent,
     CreateSucursalComponent,
+    DetailSucursalComponent,
     TooltipDirective
   ],
   imports: [

@@ -2,9 +2,11 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
+import { Sucursal } from 'src/app/models/sucursal';
 import { SucursalDto } from 'src/app/dtos/sucursal-dto';
 import { AuthService } from 'src/app/services/auth.service';
 import { SucursalService } from 'src/app/services/sucursal.service';
+import { DetailSucursalService } from 'src/app/services/sucursales/detail-sucursal.service';
 
 import Swal from 'sweetalert2';
 
@@ -17,6 +19,8 @@ export class SucursalesComponent implements OnInit, OnDestroy {
 
   title = 'Sucursales';
   sucursales: SucursalDto[] = [];
+  sucursalSeleccionada: Sucursal;
+  detalleCargandoId: number = null;
   paginaActual = 0;
   totalPaginas = 0;
   totalElementos = 0;
@@ -34,6 +38,7 @@ export class SucursalesComponent implements OnInit, OnDestroy {
 
   constructor(
     private sucursalService: SucursalService,
+    private detailSucursalService: DetailSucursalService,
     public auth: AuthService
   ) { }
 
@@ -108,5 +113,22 @@ export class SucursalesComponent implements OnInit, OnDestroy {
       paginas.push(pagina);
     }
     return paginas;
+  }
+
+  abrirDetalle(sucursal: SucursalDto): void {
+    if (this.detalleCargandoId !== null) {
+      return;
+    }
+    this.detalleCargandoId = sucursal.idSucursal;
+    this.sucursalService.getSucursal(sucursal.idSucursal).subscribe(
+      detalle => {
+        this.sucursalSeleccionada = detalle;
+        this.detalleCargandoId = null;
+        this.detailSucursalService.abrirModal();
+      },
+      () => {
+        this.detalleCargandoId = null;
+      }
+    );
   }
 }
