@@ -69,7 +69,7 @@ public class NotaCredito implements Serializable {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario")
-    @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler", "password"})
+    @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler", "password", "sucursal"})
     private Usuario usuario;
 
     @ManyToOne(fetch = FetchType.LAZY)

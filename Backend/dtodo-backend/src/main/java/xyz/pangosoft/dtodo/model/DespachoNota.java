@@ -52,6 +52,6 @@ public class DespachoNota implements Serializable {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario")
-    @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler", "roles", "password"})
+    @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler", "roles", "password", "sucursal"})
     private Usuario usuario;
 }

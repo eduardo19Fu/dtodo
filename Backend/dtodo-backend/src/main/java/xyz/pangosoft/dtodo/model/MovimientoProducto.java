@@ -51,7 +51,7 @@ public class MovimientoProducto implements Serializable {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "id_usuario")
-	@JsonIgnoreProperties({"password", "roles", "hibernateLazyInitializer", "handler" })
+	@JsonIgnoreProperties({"password", "roles", "sucursal", "hibernateLazyInitializer", "handler" })
 	private Usuario usuario;
 
 	@ManyToOne(fetch = FetchType.LAZY)
