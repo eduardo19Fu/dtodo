@@ -502,6 +502,12 @@ public class ProductoServiceImpl implements IProductoService {
 		try {
 			if(producto.getIdProducto() != null) {
 				log.info("Actualizando Producto con ID: {}", producto.getIdProducto());
+				// El stock real vive en InventarioSucursal (ver IInventarioSucursalService.ajustarStock);
+				// productos.stock quedó deprecada tras la migración a sucursales, pero como esta es una
+				// actualización de la entidad completa, se preserva su valor actual para que el formulario
+				// de edición de producto no pueda pisarla con datos obsoletos del cliente.
+				Producto productoExistente = findById(producto.getIdProducto());
+				producto.setStock(productoExistente.getStock());
                 productoSaved = repoProducto.save(producto);
 			} else {
 				log.info("Registrando nuevo producto: {}", producto);

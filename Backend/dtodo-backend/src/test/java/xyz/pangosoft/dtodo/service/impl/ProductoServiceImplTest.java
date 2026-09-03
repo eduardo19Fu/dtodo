@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Optional;
 
 import xyz.pangosoft.dtodo.model.Producto;
 import xyz.pangosoft.dtodo.repository.IProductoRepository;
@@ -27,6 +28,24 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class ProductoServiceImplTest {
+
+    @Test
+    void alActualizarPreservaElStockActualIgnorandoElDelPayload() {
+        IProductoRepository repository = mock(IProductoRepository.class);
+        ProductoServiceImpl service = new ProductoServiceImpl(
+                repository, mock(IUploadFileService.class), mock(IEstadoService.class),
+                mock(IInventarioSucursalService.class), mock(DataSource.class));
+
+        Producto existente = Producto.builder().idProducto(2447).nombre("ABACO").stock(39).build();
+        when(repository.findById(2447)).thenReturn(Optional.of(existente));
+        when(repository.save(any(Producto.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Producto cambios = Producto.builder().idProducto(2447).nombre("ABACO").stock(45).build();
+
+        Producto resultado = service.save(cambios);
+
+        assertEquals(39, resultado.getStock());
+    }
 
     @Test
     void findAllDtoMejoradoFiltraPorLaSucursalIndicada() {
