@@ -43,6 +43,19 @@ Antes, el catálogo de Productos (y los buscadores de producto embebidos al crea
 - Una sucursal sin inventario importado ya no genera error: `findAllDtoMejorado` dejó de lanzar `NoContentException` en resultado vacío (esa rama era código muerto antes de este cambio — un catálogo global vacío no era realista — y con el filtro por sucursal se volvió un caso normal; lanzarla producía un HTTP 204 sin cuerpo utilizable que rompía el cliente Angular). Ahora devuelve una página vacía normal.
 - Productos muestra un estado vacío distinto cuando la sucursal activa no tiene inventario: `ROLE_ADMIN` ve un selector de sucursal origen y un botón "Importar productos" (reutiliza `clonarInventario`); el resto de roles ve un aviso para solicitarlo a un administrador.
 
+### Corregido
+
+- **Ciclo de deserialización Jackson entre `Sucursal` y `Usuario`**: `POST /api/sucursales` con un `usuario` anidado fallaba con `"JSON parse error: No _valueDeserializer assigned"` (HTTP 400). `Usuario.sucursal` ya ignoraba `usuario` en su propio `@JsonIgnoreProperties`, pero `Sucursal.usuario` no ignoraba `sucursal` de vuelta, así que el ciclo solo estaba roto en un sentido. Se agregó `"sucursal"` a la lista de propiedades ignoradas en `Sucursal.usuario`. Cubierto con un test permanente (`SucursalJacksonTest`) que reproduce el escenario contra el `ObjectMapper` real de la aplicación.
+- **`id_estado` nunca se asignaba al crear una sucursal**: `POST /api/sucursales` fallaba con `SQLIntegrityConstraintViolationException: Column 'id_estado' cannot be null` (HTTP 500), porque `SucursalServiceImpl.save()` nunca seteaba el estado en el alta. Ahora se asigna `ACTIVO` automáticamente al crear, y se conserva el estado existente al actualizar (a menos que se envíe uno explícito).
+- **Aviso de "sucursal sin inventario" en Productos**: rediseñado de alertas planas de Bootstrap a una tarjeta con icono suave, alineada en colores con el resto de badges del sistema; se corrigió además su ancho, que no coincidía con el de la tabla/controles superiores (tanto en escritorio como en el breakpoint móvil, donde antes forzaba scroll horizontal en vez de ajustarse como el resto de tarjetas).
+- **Listado de Sucursales**: los badges de estado/principal pasaron de clases crudas de Bootstrap a los tokens `listing-status-pill` que usa el resto de tablas del sistema; se corrigió el ancho mínimo de la tabla, que quedaba por debajo de la suma real de sus columnas y las comprimía en vez de forzar scroll horizontal limpio.
+
+### Agregado — Detalle de sucursal
+
+- Botón "Ver detalle" en el listado de Sucursales que abre un modal de solo lectura (encargado, teléfono, código de establecimiento SAT, quién la registró, fecha de registro, estado y si es la principal), siguiendo el mismo patrón visual ya usado por Usuarios y Productos.
+- La carga del detalle usa un toast ("Cargando detalle...") en vez de un spinner en el botón, igual que en Proformas/Notas de crédito.
+- La barra de paginación del listado de Sucursales ya no se oculta cuando solo hay una página, para mantener el mismo pie de tabla que el resto de listados del sistema.
+
 ### Fuera de alcance / seguimiento pendiente
 - Los listados de facturas, proformas y notas de crédito no tienen todavía un filtro de sucursal en la UI ni en el backend (los documentos ya quedan correctamente etiquetados con su sucursal; falta exponer el filtro).
 - El backend confía en los IDs que envía el frontend para resolver la sucursal en vez de validarlos contra el JWT — mismo patrón que ya existía para `idUsuario`; queda documentado como riesgo conocido, no corregido en este cambio.
