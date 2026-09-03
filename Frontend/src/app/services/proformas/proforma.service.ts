@@ -8,6 +8,7 @@ import { Proforma } from 'src/app/models/proforma';
 import { catchError, map } from 'rxjs/operators';
 import { UsuarioDto } from '../../dtos/usuario-dto';
 import { DocumentoOrigenNotaDto } from '../../dtos/documento-origen-nota-dto';
+import { AuthService } from '../auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -17,9 +18,19 @@ export class ProformaService {
   url: string;
 
   constructor(
-    private httpClient: HttpClient
+    private httpClient: HttpClient,
+    private authService: AuthService
   ) {
     this.url = global.url;
+  }
+
+  /** Un usuario sin ROLE_ADMIN solo debe ver los documentos que él mismo generó. */
+  private conUsuarioSiNoAdmin(params: HttpParams): HttpParams {
+    if (this.authService.hasRole('ROLE_ADMIN')) {
+      return params;
+    }
+    const idUsuario = this.authService.usuario?.idUsuario;
+    return idUsuario ? params.set('idUsuario', idUsuario.toString()) : params;
   }
 
   getProformas(): Observable<Proforma[]> {
@@ -77,12 +88,12 @@ export class ProformaService {
 
   getProformasDtoPaginadas(page: number, fechaIni: string, fechaFin: string, size: number = 5,
                            orden: string = 'fecha', direccion: string = 'desc'): Observable<any> {
-    const params = new HttpParams()
+    const params = this.conUsuarioSiNoAdmin(new HttpParams()
       .set('fechaIni', fechaIni)
       .set('fechaFin', fechaFin)
       .set('size', size.toString())
       .set('orden', orden)
-      .set('direccion', direccion);
+      .set('direccion', direccion));
     return this.httpClient.get<any>(`${this.url}/proformas-dto/page/${page}`, { params }).pipe(
       catchError(e => throwError(e))
     );
@@ -91,13 +102,13 @@ export class ProformaService {
   buscarProformasDto(page: number, fechaIni: string, fechaFin: string,
                      filtro: string, size: number = 5,
                      orden: string = 'fecha', direccion: string = 'desc'): Observable<any> {
-    const params = new HttpParams()
+    const params = this.conUsuarioSiNoAdmin(new HttpParams()
       .set('fechaIni', fechaIni)
       .set('fechaFin', fechaFin)
       .set('filtro', filtro)
       .set('size', size.toString())
       .set('orden', orden)
-      .set('direccion', direccion);
+      .set('direccion', direccion));
     return this.httpClient.get<any>(`${this.url}/proformas-dto/search/${page}`, { params }).pipe(
       catchError(e => throwError(e))
     );
@@ -105,11 +116,11 @@ export class ProformaService {
 
   getUltimasProformasDto(page: number, filtro: string = '', size: number = 5,
                          orden: string = 'fecha', direccion: string = 'desc'): Observable<any> {
-    const params = new HttpParams()
+    const params = this.conUsuarioSiNoAdmin(new HttpParams()
       .set('filtro', filtro)
       .set('size', size.toString())
       .set('orden', orden)
-      .set('direccion', direccion);
+      .set('direccion', direccion));
     return this.httpClient.get<any>(`${this.url}/proformas-dto/ultimas/${page}`, { params }).pipe(
       catchError(e => throwError(e))
     );

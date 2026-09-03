@@ -55,14 +55,16 @@ public interface INotaCreditoRepository extends JpaRepository<NotaCredito, Long>
             "nc.idNotaCredito, nc.total, nc.usuario.usuario, nc.cliente.nombre, nc.cliente.nit, " +
             "nc.correlativoFacturaSat, nc.serieFacturaSat, nc.tipoDocumentoOrigen, nc.noProforma, " +
             "nc.fechaCreacion, nc.fechaEntregaEstimada, nc.estado) " +
-            "FROM NotaCredito nc ORDER BY nc.fechaCreacion DESC")
-    List<NotaCreditoDto> findUltimasAsDto(Pageable pageable);
+            "FROM NotaCredito nc WHERE (:idUsuario is null or nc.usuario.idUsuario = :idUsuario) " +
+            "ORDER BY nc.fechaCreacion DESC")
+    List<NotaCreditoDto> findUltimasAsDto(@Param("idUsuario") Integer idUsuario, Pageable pageable);
 
     @Query("SELECT new xyz.pangosoft.dtodo.dto.NotaCreditoDto(" +
             "nc.idNotaCredito, nc.total, nc.usuario.usuario, nc.cliente.nombre, nc.cliente.nit, " +
             "nc.correlativoFacturaSat, nc.serieFacturaSat, nc.tipoDocumentoOrigen, nc.noProforma, " +
             "nc.fechaCreacion, nc.fechaEntregaEstimada, nc.estado) " +
             "FROM NotaCredito nc WHERE nc.fechaCreacion >= :fechaIni AND nc.fechaCreacion < :fechaFin " +
+            "AND (:idUsuario is null or nc.usuario.idUsuario = :idUsuario) " +
             "AND (:filtro = '' OR lower(nc.cliente.nombre) LIKE lower(concat('%', :filtro, '%')) " +
             "OR lower(nc.cliente.nit) LIKE lower(concat('%', :filtro, '%')) " +
             "OR lower(nc.usuario.usuario) LIKE lower(concat('%', :filtro, '%')) " +
@@ -74,6 +76,7 @@ public interface INotaCreditoRepository extends JpaRepository<NotaCredito, Long>
             "OR lower(str(nc.estado)) LIKE lower(concat('%', :filtro, '%')))")
     Page<NotaCreditoDto> findByFechasAsDto(@Param("fechaIni") LocalDateTime fechaIni,
                                                 @Param("fechaFin") LocalDateTime fechaFin,
+                                                @Param("idUsuario") Integer idUsuario,
                                                 @Param("filtro") String filtro,
                                                 Pageable pageable);
 }

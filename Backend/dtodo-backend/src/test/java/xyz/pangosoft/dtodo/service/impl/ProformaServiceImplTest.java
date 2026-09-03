@@ -21,7 +21,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -62,14 +64,24 @@ class ProformaServiceImplTest {
     void ordenaLasUltimasProformasSinCambiarElConjuntoConsultado() {
         ProformaDto segunda = ProformaDto.builder().noProforma("200P").build();
         ProformaDto primera = ProformaDto.builder().noProforma("100P").build();
-        when(proformaRepository.findUltimasListadoDto(any()))
+        when(proformaRepository.findUltimasListadoDto(any(), any()))
                 .thenReturn(new ArrayList<>(Arrays.asList(segunda, primera)));
 
-        Page<ProformaDto> resultado = service.findUltimasListadoDto("",
+        Page<ProformaDto> resultado = service.findUltimasListadoDto("", null,
                 PageRequest.of(0, 5, Sort.by(Sort.Direction.ASC, "noProforma")));
 
         assertEquals("100P", resultado.getContent().get(0).getNoProforma());
         assertEquals("200P", resultado.getContent().get(1).getNoProforma());
+    }
+
+    @Test
+    void propagaElIdUsuarioAlListadoPaginadoParaUnUsuarioNoAdmin() {
+        PageRequest pageable = PageRequest.of(0, 5);
+        when(proformaRepository.findAllListadoDto(any(), any(), eq(9), eq(pageable))).thenReturn(Page.empty());
+
+        service.findAllListadoDto("2026-08-01", "2026-08-05", 9, pageable);
+
+        verify(proformaRepository).findAllListadoDto(any(), any(), eq(9), eq(pageable));
     }
 
     @Test

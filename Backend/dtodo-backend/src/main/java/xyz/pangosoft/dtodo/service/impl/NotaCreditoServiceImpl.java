@@ -99,9 +99,9 @@ public class NotaCreditoServiceImpl implements INotaCreditoService {
 
     @Transactional(readOnly = true)
     @Override
-    public Page<NotaCreditoDto> findUltimas(String filtro, Pageable pageable) {
+    public Page<NotaCreditoDto> findUltimas(String filtro, Integer idUsuario, Pageable pageable) {
         try {
-            List<NotaCreditoDto> notas = notaCreditoRepository.findUltimasAsDto(PageRequest.of(0, 500));
+            List<NotaCreditoDto> notas = notaCreditoRepository.findUltimasAsDto(idUsuario, PageRequest.of(0, 500));
             String filtroNormalizado = filtro == null ? "" : filtro.trim().toLowerCase();
             if (!filtroNormalizado.isEmpty()) {
                 notas = notas.stream()
@@ -122,7 +122,7 @@ public class NotaCreditoServiceImpl implements INotaCreditoService {
     @Transactional(readOnly = true)
     @Override
     public Page<NotaCreditoDto> findPorFechas(String fechaIni, String fechaFin,
-                                                   String filtro, Pageable pageable) {
+                                                   String filtro, Integer idUsuario, Pageable pageable) {
         try {
             LocalDate inicio = LocalDate.parse(fechaIni);
             LocalDate fin = LocalDate.parse(fechaFin);
@@ -131,7 +131,7 @@ public class NotaCreditoServiceImpl implements INotaCreditoService {
             }
             String filtroNormalizado = filtro == null ? "" : filtro.trim().replaceAll("\\s+", " ");
             return notaCreditoRepository.findByFechasAsDto(
-                    inicio.atStartOfDay(), fin.plusDays(1).atStartOfDay(), filtroNormalizado, pageable);
+                    inicio.atStartOfDay(), fin.plusDays(1).atStartOfDay(), idUsuario, filtroNormalizado, pageable);
         } catch (DateTimeParseException e) {
             throw new BadRequestException("El formato del rango de fechas no es válido", e);
         } catch (DataAccessException e) {

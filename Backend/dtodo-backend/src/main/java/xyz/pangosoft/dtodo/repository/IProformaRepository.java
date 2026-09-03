@@ -40,23 +40,27 @@ public interface IProformaRepository extends JpaRepository<Proforma, Long> {
             "p.idProforma, p.noProforma, p.fechaEmision, p.total, e.idEstado, e.estado, " +
             "u.usuario, concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, '')), c.nombre, c.nit) " +
             "from Proforma p join p.estado e join p.usuario u join p.cliente c " +
+            "where (:idUsuario is null or u.idUsuario = :idUsuario) " +
             "order by p.fechaEmision desc")
-    List<ProformaDto> findUltimasListadoDto(Pageable pageable);
+    List<ProformaDto> findUltimasListadoDto(@Param("idUsuario") Integer idUsuario, Pageable pageable);
 
     @Query("select new xyz.pangosoft.dtodo.dto.ProformaDto(" +
             "p.idProforma, p.noProforma, p.fechaEmision, p.total, e.idEstado, e.estado, " +
             "u.usuario, concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, '')), c.nombre, c.nit) " +
             "from Proforma p join p.estado e join p.usuario u join p.cliente c " +
-            "where p.fechaEmision >= :fechaIni and p.fechaEmision < :fechaFin")
+            "where p.fechaEmision >= :fechaIni and p.fechaEmision < :fechaFin " +
+            "and (:idUsuario is null or u.idUsuario = :idUsuario)")
     Page<ProformaDto> findAllListadoDto(@Param("fechaIni") Date fechaIni,
                                                 @Param("fechaFin") Date fechaFin,
+                                                @Param("idUsuario") Integer idUsuario,
                                                 Pageable pageable);
 
     @Query("select new xyz.pangosoft.dtodo.dto.ProformaDto(" +
             "p.idProforma, p.noProforma, p.fechaEmision, p.total, e.idEstado, e.estado, " +
             "u.usuario, concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, '')), c.nombre, c.nit) " +
             "from Proforma p join p.estado e join p.usuario u join p.cliente c " +
-            "where p.fechaEmision >= :fechaIni and p.fechaEmision < :fechaFin and (" +
+            "where p.fechaEmision >= :fechaIni and p.fechaEmision < :fechaFin " +
+            "and (:idUsuario is null or u.idUsuario = :idUsuario) and (" +
             "lower(c.nombre) like lower(concat('%', :filtro, '%')) or " +
             "lower(c.nit) like lower(concat('%', :filtro, '%')) or " +
             "lower(u.usuario) like lower(concat('%', :filtro, '%')) or " +
@@ -64,6 +68,7 @@ public interface IProformaRepository extends JpaRepository<Proforma, Long> {
             "lower(p.noProforma) like lower(concat('%', :filtro, '%')))")
     Page<ProformaDto> searchListadoDto(@Param("fechaIni") Date fechaIni,
                                                @Param("fechaFin") Date fechaFin,
+                                               @Param("idUsuario") Integer idUsuario,
                                                @Param("filtro") String filtro,
                                                Pageable pageable);
 

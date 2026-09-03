@@ -21,11 +21,11 @@ public interface IProformaService {
 
     public Page<Proforma> findAll(Pageable pageable);
 
-    Page<ProformaDto> findAllListadoDto(String fechaIni, String fechaFin, Pageable pageable);
+    Page<ProformaDto> findAllListadoDto(String fechaIni, String fechaFin, Integer idUsuario, Pageable pageable);
 
-    Page<ProformaDto> searchListadoDto(String fechaIni, String fechaFin, String filtro, Pageable pageable);
+    Page<ProformaDto> searchListadoDto(String fechaIni, String fechaFin, String filtro, Integer idUsuario, Pageable pageable);
 
-    Page<ProformaDto> findUltimasListadoDto(String filtro, Pageable pageable);
+    Page<ProformaDto> findUltimasListadoDto(String filtro, Integer idUsuario, Pageable pageable);
 
     Page<DetalleDocumentoDto> findDetalleDto(Long idProforma, Pageable pageable);
 

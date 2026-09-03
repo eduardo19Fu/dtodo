@@ -133,10 +133,10 @@ public class ProformaServiceImpl implements IProformaService {
 
     @Transactional(readOnly = true)
     @Override
-    public Page<ProformaDto> findAllListadoDto(String fechaIni, String fechaFin, Pageable pageable) {
+    public Page<ProformaDto> findAllListadoDto(String fechaIni, String fechaFin, Integer idUsuario, Pageable pageable) {
         Date[] rango = parseDateRange(fechaIni, fechaFin);
         try {
-            return proformaRepository.findAllListadoDto(rango[0], rango[1], pageable);
+            return proformaRepository.findAllListadoDto(rango[0], rango[1], idUsuario, pageable);
         } catch (org.springframework.dao.DataAccessException e) {
             log.error("Error al consultar el listado paginado de proformas: {}", e.getMessage());
             throw new DataAccessException("Ha ocurrido un error al consultar las proformas", e);
@@ -145,11 +145,11 @@ public class ProformaServiceImpl implements IProformaService {
 
     @Transactional(readOnly = true)
     @Override
-    public Page<ProformaDto> searchListadoDto(String fechaIni, String fechaFin, String filtro, Pageable pageable) {
+    public Page<ProformaDto> searchListadoDto(String fechaIni, String fechaFin, String filtro, Integer idUsuario, Pageable pageable) {
         Date[] rango = parseDateRange(fechaIni, fechaFin);
         String filtroAdaptado = filtro == null ? "" : filtro.trim().replaceAll("\\s+", " ");
         try {
-            return proformaRepository.searchListadoDto(rango[0], rango[1], filtroAdaptado, pageable);
+            return proformaRepository.searchListadoDto(rango[0], rango[1], idUsuario, filtroAdaptado, pageable);
         } catch (org.springframework.dao.DataAccessException e) {
             log.error("Error al filtrar el listado de proformas: {}", e.getMessage());
             throw new DataAccessException("Ha ocurrido un error al filtrar las proformas", e);
@@ -158,9 +158,9 @@ public class ProformaServiceImpl implements IProformaService {
 
     @Transactional(readOnly = true)
     @Override
-    public Page<ProformaDto> findUltimasListadoDto(String filtro, Pageable pageable) {
+    public Page<ProformaDto> findUltimasListadoDto(String filtro, Integer idUsuario, Pageable pageable) {
         try {
-            List<ProformaDto> proformas = proformaRepository.findUltimasListadoDto(PageRequest.of(0, 500));
+            List<ProformaDto> proformas = proformaRepository.findUltimasListadoDto(idUsuario, PageRequest.of(0, 500));
             String filtroNormalizado = filtro == null ? "" : filtro.trim().toLowerCase();
             if (!filtroNormalizado.isEmpty()) {
                 proformas = proformas.stream()

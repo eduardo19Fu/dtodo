@@ -139,10 +139,10 @@ public class FacturaServiceImpl implements IFacturaService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public Page<FacturaDto> findAllListadoDto(String fechaIni, String fechaFin, Pageable pageable) {
+	public Page<FacturaDto> findAllListadoDto(String fechaIni, String fechaFin, Integer idUsuario, Pageable pageable) {
 		Date[] rango = parseDateRange(fechaIni, fechaFin);
 		try {
-			return repoFactura.findAllListadoDto(rango[0], rango[1], pageable);
+			return repoFactura.findAllListadoDto(rango[0], rango[1], idUsuario, pageable);
 		} catch (DataAccessException e) {
 			log.error("Error al consultar el listado paginado de facturas: {}", e.getMessage());
 			throw new xyz.pangosoft.dtodo.error.exceptions.DataAccessException(
@@ -152,11 +152,11 @@ public class FacturaServiceImpl implements IFacturaService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public Page<FacturaDto> searchListadoDto(String fechaIni, String fechaFin, String filtro, Pageable pageable) {
+	public Page<FacturaDto> searchListadoDto(String fechaIni, String fechaFin, String filtro, Integer idUsuario, Pageable pageable) {
 		Date[] rango = parseDateRange(fechaIni, fechaFin);
 		String filtroAdaptado = filtro == null ? "" : filtro.trim().replaceAll("\\s+", " ");
 		try {
-			return repoFactura.searchListadoDto(rango[0], rango[1], filtroAdaptado, pageable);
+			return repoFactura.searchListadoDto(rango[0], rango[1], idUsuario, filtroAdaptado, pageable);
 		} catch (DataAccessException e) {
 			log.error("Error al filtrar el listado de facturas: {}", e.getMessage());
 			throw new xyz.pangosoft.dtodo.error.exceptions.DataAccessException(
@@ -166,9 +166,9 @@ public class FacturaServiceImpl implements IFacturaService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public Page<FacturaDto> findUltimasListadoDto(String filtro, Pageable pageable) {
+	public Page<FacturaDto> findUltimasListadoDto(String filtro, Integer idUsuario, Pageable pageable) {
 		try {
-			List<FacturaDto> facturas = repoFactura.findUltimasListadoDto(PageRequest.of(0, 500));
+			List<FacturaDto> facturas = repoFactura.findUltimasListadoDto(idUsuario, PageRequest.of(0, 500));
 			String filtroNormalizado = filtro == null ? "" : filtro.trim().toLowerCase();
 			if (!filtroNormalizado.isEmpty()) {
 				facturas = facturas.stream()

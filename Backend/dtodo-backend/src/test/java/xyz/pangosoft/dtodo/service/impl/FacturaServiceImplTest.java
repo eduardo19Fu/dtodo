@@ -26,10 +26,28 @@ import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class FacturaServiceImplTest {
+
+    @Test
+    void propagaElIdUsuarioAlListadoPaginadoParaUnUsuarioNoAdmin() {
+        IFacturaRepository repository = mock(IFacturaRepository.class);
+        FacturaServiceImpl service = new FacturaServiceImpl(
+                repository, mock(ITipoFacturaRepository.class), mock(IEmisorService.class),
+                mock(IEstadoService.class), mock(ITipoFacturaService.class), mock(ICorrelativoService.class),
+                mock(ICertificadorService.class), mock(IMovimientoProductoService.class), mock(IUsuarioService.class),
+                mock(IFelService.class), mock(DataSource.class));
+        PageRequest pageable = PageRequest.of(0, 5);
+        when(repository.findAllListadoDto(any(), any(), eq(7), eq(pageable))).thenReturn(Page.empty());
+
+        service.findAllListadoDto("2026-08-01", "2026-08-05", 7, pageable);
+
+        verify(repository).findAllListadoDto(any(), any(), eq(7), eq(pageable));
+    }
 
     @Test
     void ordenaLasUltimasFacturasAntesDePaginar() {
@@ -49,10 +67,10 @@ class FacturaServiceImplTest {
         );
         FacturaDto segunda = FacturaDto.builder().noFactura(200L).build();
         FacturaDto primera = FacturaDto.builder().noFactura(100L).build();
-        when(repository.findUltimasListadoDto(any()))
+        when(repository.findUltimasListadoDto(any(), any()))
                 .thenReturn(new ArrayList<>(Arrays.asList(segunda, primera)));
 
-        Page<FacturaDto> resultado = service.findUltimasListadoDto("",
+        Page<FacturaDto> resultado = service.findUltimasListadoDto("", null,
                 PageRequest.of(0, 5, Sort.by(Sort.Direction.ASC, "noFactura")));
 
         assertEquals(100L, resultado.getContent().get(0).getNoFactura());

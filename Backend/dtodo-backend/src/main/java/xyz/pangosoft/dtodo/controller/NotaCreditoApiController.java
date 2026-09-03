@@ -46,11 +46,12 @@ public class NotaCreditoApiController {
     public ResponseEntity<Page<NotaCreditoDto>> getUltimasNotas(
             @PathVariable("page") Integer page,
             @RequestParam(value = "filtro", defaultValue = "") String filtro,
+            @RequestParam(value = "idUsuario", required = false) Integer idUsuario,
             @RequestParam(value = "size", defaultValue = "5") Integer size,
             @RequestParam(value = "orden", defaultValue = "fecha") String orden,
             @RequestParam(value = "direccion", defaultValue = "desc") String direccion) {
         return ResponseEntity.ok(notaCreditoService.findUltimas(
-                filtro, PageRequest.of(page, size, obtenerOrden(orden, direccion))));
+                filtro, idUsuario, PageRequest.of(page, size, obtenerOrden(orden, direccion))));
     }
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
@@ -60,11 +61,12 @@ public class NotaCreditoApiController {
             @RequestParam("fechaIni") String fechaIni,
             @RequestParam("fechaFin") String fechaFin,
             @RequestParam(value = "filtro", defaultValue = "") String filtro,
+            @RequestParam(value = "idUsuario", required = false) Integer idUsuario,
             @RequestParam(value = "size", defaultValue = "5") Integer size,
             @RequestParam(value = "orden", defaultValue = "fecha") String orden,
             @RequestParam(value = "direccion", defaultValue = "desc") String direccion) {
         return ResponseEntity.ok(notaCreditoService.findPorFechas(
-                fechaIni, fechaFin, filtro, PageRequest.of(page, size, obtenerOrden(orden, direccion))));
+                fechaIni, fechaFin, filtro, idUsuario, PageRequest.of(page, size, obtenerOrden(orden, direccion))));
     }
 
     private Sort obtenerOrden(String orden, String direccion) {
