@@ -81,16 +81,73 @@
     width: 80px;
 }
 
+.empty-state {
+    align-items: flex-start;
+    background: #f8fafe;
+    border: 1px solid #e1e8f1;
+    border-radius: 12px;
+    box-shadow: 0 5px 16px rgba(33, 61, 99, 0.07);
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 14px;
+    min-width: 1420px;
+    padding: 1.25rem 1.4rem;
+    width: 100%;
+}
+
+.empty-state-icon {
+    align-items: center;
+    border-radius: 50%;
+    display: flex;
+    flex: 0 0 44px;
+    font-size: 1.05rem;
+    height: 44px;
+    justify-content: center;
+    width: 44px;
+}
+
+.empty-state-icon-info {
+    background: #e4f5f7;
+    color: #087785;
+}
+
+.empty-state-icon-warning {
+    background: #fff3d6;
+    color: #9a6500;
+}
+
+.empty-state-body {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.empty-state-body h5 {
+    color: #24344d;
+    font-size: 0.98rem;
+    font-weight: 650;
+    margin: 0 0 0.3rem;
+}
+
+.empty-state-body p {
+    color: #5d7088;
+    font-size: 0.88rem;
+    margin: 0;
+}
+
 .import-inventory-control {
     align-items: center;
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-    margin-top: 0.75rem;
+    margin-top: 0.9rem;
 }
 
 .import-inventory-control select {
     max-width: 280px;
+}
+
+.empty-state-action {
+    border-radius: 8px;
 }
 
 .sort-header {
