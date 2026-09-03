@@ -100,9 +100,7 @@
               <button class="btn btn-sm listing-table-action listing-action-view" type="button"
                       appTooltip="Ver detalle de la sucursal" aria-label="Ver detalle de la sucursal"
                       [disabled]="detalleCargandoId !== null" (click)="abrirDetalle(sucursal)">
-                <span *ngIf="detalleCargandoId === sucursal.idSucursal"
-                      class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                <i *ngIf="detalleCargandoId !== sucursal.idSucursal" class="fas fa-eye"></i>
+                <i class="fas fa-eye"></i>
               </button>
               <button class="btn btn-sm listing-table-action listing-action-edit" type="button"
                       appTooltip="Editar sucursal" aria-label="Editar sucursal"
@@ -115,7 +113,7 @@
       </tbody>
     </table>
 
-    <nav class="listing-pagination" *ngIf="!cargando && totalPaginas > 1" aria-label="Paginaci&oacute;n de sucursales">
+    <nav class="listing-pagination" *ngIf="!cargando && sucursales.length > 0" aria-label="Paginaci&oacute;n de sucursales">
       <ul class="pagination justify-content-center mt-3 mb-0">
         <li class="page-item" [ngClass]="{'disabled': isFirst}"><a class="page-link" href="javascript:void(0)" (click)="irPrimeraPagina()"><i class="fas fa-angle-double-left"></i></a></li>
         <li class="page-item" [ngClass]="{'disabled': isFirst}"><a class="page-link" href="javascript:void(0)" (click)="irPaginaAnterior()"><i class="fas fa-angle-left"></i></a></li>

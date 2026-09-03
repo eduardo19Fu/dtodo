@@ -120,14 +120,28 @@ export class SucursalesComponent implements OnInit, OnDestroy {
       return;
     }
     this.detalleCargandoId = sucursal.idSucursal;
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'info',
+      title: 'Cargando detalle',
+      text: `Preparando la sucursal ${sucursal.nombre}...`,
+      showConfirmButton: false,
+      customClass: {
+        popup: 'app-loading-toast'
+      },
+      didOpen: () => Swal.showLoading()
+    });
     this.sucursalService.getSucursal(sucursal.idSucursal).subscribe(
       detalle => {
         this.sucursalSeleccionada = detalle;
         this.detalleCargandoId = null;
+        Swal.close();
         this.detailSucursalService.abrirModal();
       },
       () => {
         this.detalleCargandoId = null;
+        Swal.close();
       }
     );
   }
