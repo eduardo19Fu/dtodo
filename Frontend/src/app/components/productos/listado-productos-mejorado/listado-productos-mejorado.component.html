@@ -87,17 +87,17 @@
                 </p>
 
                 <div class="import-inventory-control" *ngIf="auth.hasRole('ROLE_ADMIN')">
-                    <select class="form-control form-control-sm" [(ngModel)]="idSucursalImportar" [disabled]="importando">
+                    <select class="import-inventory-select" [(ngModel)]="idSucursalImportar" [disabled]="importando">
                         <option [ngValue]="null">Selecciona la sucursal de origen</option>
                         <option *ngFor="let origen of sucursalesOrigenDisponibles" [ngValue]="origen.idSucursal">
                             {{origen.nombre}}{{origen.esPrincipal ? ' (Principal)' : ''}}
                         </option>
                     </select>
-                    <button type="button" class="btn btn-primary btn-sm empty-state-action"
+                    <button type="button" class="btn listing-page-action listing-primary-action"
                             [disabled]="!idSucursalImportar || importando"
                             (click)="importarProductos()">
-                        <span *ngIf="importando" class="spinner-border spinner-border-sm mr-1" role="status" aria-hidden="true"></span>
-                        <i *ngIf="!importando" class="fas fa-file-import mr-1"></i>
+                        <span *ngIf="importando" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        <i *ngIf="!importando" class="fas fa-file-import"></i>
                         {{importando ? 'Importando...' : 'Importar productos'}}
                     </button>
                 </div>
