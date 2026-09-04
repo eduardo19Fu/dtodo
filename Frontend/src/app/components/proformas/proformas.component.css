@@ -62,11 +62,6 @@
   opacity: 1;
 }
 
-.page-size-select {
-  width: 70px;
-  display: inline-block;
-}
-
 .page-action-button {
   align-items: center;
   border-radius: 9px;

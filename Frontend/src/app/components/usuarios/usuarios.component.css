@@ -3,11 +3,6 @@
   font-size: 0.9rem;
 }
 
-.page-size-select {
-  display: inline-block;
-  width: 70px;
-}
-
 .users-list-card .card-body { padding-bottom: 1rem; }
 
 .table-controls-row {

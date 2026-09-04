@@ -1,5 +1,4 @@
 .info-paginacion { color: #6c757d; font-size: 0.9rem; }
-.page-size-select { display: inline-block; width: 70px; }
 
 :host ::ng-deep .table-bordered { border-top: 2px solid #dee2e6; }
 

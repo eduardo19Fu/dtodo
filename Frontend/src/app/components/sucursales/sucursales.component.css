@@ -1,5 +1,4 @@
 .info-paginacion { color: #6c757d; font-size: 0.9rem; }
-.page-size-select { display: inline-block; width: 70px; }
 .pagination .page-link { cursor: pointer; }
 .pagination .page-item.disabled .page-link { cursor: not-allowed; }
 
