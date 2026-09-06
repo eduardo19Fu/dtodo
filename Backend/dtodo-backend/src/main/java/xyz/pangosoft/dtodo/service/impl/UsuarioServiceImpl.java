@@ -152,10 +152,10 @@ public class UsuarioServiceImpl implements UserDetailsService, IUsuarioService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<Usuario> cajeros() {
+	public List<Usuario> cajeros(Integer idSucursal) {
 		try {
 			log.info("Listando usuarios con rol de cajero");
-			return repoUsuario.findByRole();
+			return repoUsuario.findByRole(idSucursal);
 		} catch (DataAccessException e) {
 			log.error("Error de base de datos al listar cajeros: {}", e.getMessage());
 			throw new xyz.pangosoft.dtodo.error.exceptions.DataAccessException(e.getMessage(), e);

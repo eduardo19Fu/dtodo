@@ -1,7 +1,11 @@
 import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { Usuario } from 'src/app/models/usuario';
+import { Sucursal } from '../../../models/sucursal';
 import { UsuarioService } from '../../../services/usuarios/usuario.service';
 import { FacturaService } from '../../../services/facturas/factura.service';
+import { AuthService } from '../../../services/auth.service';
+import { SucursalService } from '../../../services/sucursal.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-poliza-individual',
@@ -16,22 +20,42 @@ export class PolizaIndividualComponent implements OnInit, AfterViewInit {
 
   idCajero: number = null;
   cajeros: Usuario[];
+  generando: boolean = false;
+
+  // Elegir la sucursal cuyos cajeros se listan (ROLE_ADMIN y ROLE_COBRADOR)
+  sucursales: Sucursal[] = [];
+  idSucursal: number;
 
   constructor(
     private usuarioService: UsuarioService,
-    private facturaService: FacturaService
+    private facturaService: FacturaService,
+    public auth: AuthService,
+    private sucursalService: SucursalService
   ) {
     this.title = 'Póliza Individual';
   }
 
   ngOnInit(): void {
+    this.idSucursal = this.auth.usuario?.sucursal?.idSucursal;
+    this.sucursalService.getSucursales().subscribe(sucursales => this.sucursales = sucursales);
   }
 
   ngAfterViewInit(): void {
     this.getCajeros();
   }
 
+  onSucursalChange(idSucursal: number): void {
+    this.idSucursal = idSucursal;
+    this.idCajero = null;
+    this.getCajeros();
+  }
+
   onSubmit(): void {
+    if (this.generando) {
+      return;
+    }
+
+    this.generando = true;
     this.facturaService.getSellsDaillyReportPDF(this.idCajero, this.fecha).subscribe(response => {
       const url = window.URL.createObjectURL(response.data);
       const a = document.createElement('a');
@@ -46,14 +70,17 @@ export class PolizaIndividualComponent implements OnInit, AfterViewInit {
       window.open(a.toString(), '_blank');
       window.URL.revokeObjectURL(url);
       a.remove();
+      this.generando = false;
     },
       error => {
         console.log(error);
+        this.generando = false;
+        Swal.fire('Error al generar el reporte', error.error?.mensaje || 'No fue posible generar la póliza', 'error');
       });
   }
 
   getCajeros(): void {
-    this.usuarioService.getCajeros().subscribe(cajeros => this.cajeros = cajeros);
+    this.usuarioService.getCajeros(this.idSucursal).subscribe(cajeros => this.cajeros = cajeros);
   }
 
 }

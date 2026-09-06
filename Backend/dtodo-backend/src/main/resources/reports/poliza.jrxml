@@ -3,29 +3,29 @@
 	<property name="ireport.zoom" value="1.3995221406292004"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<parameter name="fechaIni" class="java.util.Date">
+	<parameter name="fecha" class="java.util.Date">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<parameter name="usuario" class="java.lang.Integer">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[select 
-	sum(dp.cantidad),
-	p.nombre_producto,
-	p.precio_compra * sum(dp.cantidad) as pc_total,
-	sum(dp.subtotal) as pv_total,
-	(sum(dp.subtotal)) - (p.precio_compra * sum(dp.cantidad)) as ganancia,
-	concat(u.nombre,' ',u.apellido) as vendedor
-from tbl_detalle_documento dp
-inner join tbl_documento dc on dc.idtransaccion = dp.idtransaccion
-inner join tbl_producto p on p.codigo = dp.codigo
-inner join tbl_usuario u on dc.idvendedor = u.idusuario
-where dc.estado != 'ANULADA' and dc.tipo_documento in (1,4) and dc.serie = dp.serie and date(dc.fecha_emision) = $P{fechaIni} and u.idusuario = $P{usuario}
-group by p.nombre_producto
-order by p.nombre_producto asc;]]>
+		<![CDATA[select
+	sum(fd.cantidad) as cantidad,
+	p.nombre as nombre_producto,
+	p.precio_compra * sum(fd.cantidad) as pc_total,
+	sum(fd.sub_total_descuento) as pv_total,
+	sum(fd.sub_total_descuento) - (p.precio_compra * sum(fd.cantidad)) as ganancia,
+	concat(u.primer_nombre,' ',u.apellido) as vendedor
+from facturas_detalle fd
+inner join facturas f on f.id_factura = fd.id_factura
+inner join productos p on p.id_producto = fd.id_producto
+inner join usuarios u on u.id_usuario = f.id_usuario
+where f.id_estado != 4 and date(f.fecha) = $P{fecha} and f.id_usuario = $P{usuario}
+group by p.id_producto
+order by p.nombre asc;]]>
 	</queryString>
-	<field name="sum(dp.cantidad)" class="java.math.BigDecimal"/>
+	<field name="cantidad" class="java.math.BigDecimal"/>
 	<field name="nombre_producto" class="java.lang.String"/>
 	<field name="pc_total" class="java.math.BigDecimal"/>
 	<field name="pv_total" class="java.math.BigDecimal"/>
@@ -59,9 +59,6 @@ order by p.nombre_producto asc;]]>
 	</background>
 	<title>
 		<band height="80" splitType="Stretch">
-			<rectangle radius="10">
-				<reportElement x="0" y="0" width="572" height="72"/>
-			</rectangle>
 			<staticText>
 				<reportElement x="131" y="19" width="385" height="39"/>
 				<textElement textAlignment="Center">
@@ -71,8 +68,14 @@ order by p.nombre_producto asc;]]>
 			</staticText>
 			<image>
 				<reportElement x="11" y="1" width="120" height="70"/>
-				<imageExpression class="java.lang.String"><![CDATA[new File("").getAbsolutePath()+"\\src\\prstd\\images\\logo-dtodo.jpg"]]></imageExpression>
+				<imageExpression><![CDATA[this.getClass().getResourceAsStream("/static/images/reports-image/logo-dtodo.jpg")]]></imageExpression>
 			</image>
+			<line>
+				<reportElement x="0" y="74" width="572" height="1" forecolor="#29ABE2"/>
+				<graphicElement>
+					<pen lineWidth="2.0" lineStyle="Double"/>
+				</graphicElement>
+			</line>
 		</band>
 	</title>
 	<pageHeader>
@@ -103,7 +106,7 @@ order by p.nombre_producto asc;]]>
 				<textElement textAlignment="Center">
 					<font size="12"/>
 				</textElement>
-				<textFieldExpression class="java.util.Date"><![CDATA[$P{fechaIni}]]></textFieldExpression>
+				<textFieldExpression class="java.util.Date"><![CDATA[$P{fecha}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd/MM/yyyy h.mm a">
 				<reportElement x="482" y="0" width="100" height="20"/>
@@ -120,6 +123,12 @@ order by p.nombre_producto asc;]]>
 	</pageHeader>
 	<columnHeader>
 		<band height="30" splitType="Stretch">
+			<rectangle radius="6">
+				<reportElement mode="Opaque" x="0" y="3" width="572" height="24" backcolor="#EAF6FC"/>
+				<graphicElement>
+					<pen lineColor="#CFEBF7"/>
+				</graphicElement>
+			</rectangle>
 			<staticText>
 				<reportElement x="0" y="8" width="70" height="20"/>
 				<textElement textAlignment="Center">
@@ -162,7 +171,7 @@ order by p.nombre_producto asc;]]>
 			<textField>
 				<reportElement x="0" y="0" width="70" height="20"/>
 				<textElement textAlignment="Center"/>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{sum(dp.cantidad)}]]></textFieldExpression>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{cantidad}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement x="78" y="0" width="165" height="20"/>
@@ -171,42 +180,24 @@ order by p.nombre_producto asc;]]>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{nombre_producto}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement x="249" y="0" width="18" height="20"/>
-				<textElement>
-					<font size="12" isBold="true"/>
-				</textElement>
-				<text><![CDATA[Q.]]></text>
-			</staticText>
-			<textField pattern="#,##0.00">
-				<reportElement x="267" y="0" width="86" height="20"/>
-				<textElement/>
+			<textField pattern="Q#,##0.00;¤-#,##0.00">
+				<reportElement x="251" y="0" width="100" height="20"/>
+				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{pc_total}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00">
-				<reportElement x="375" y="0" width="83" height="20"/>
-				<textElement/>
+			<textField pattern="Q#,##0.00;¤-#,##0.00">
+				<reportElement x="358" y="0" width="100" height="20"/>
+				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{pv_total}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement x="358" y="0" width="18" height="20"/>
-				<textElement>
-					<font size="12" isBold="true"/>
-				</textElement>
-				<text><![CDATA[Q.]]></text>
-			</staticText>
-			<textField pattern="#,##0.00">
-				<reportElement x="482" y="0" width="83" height="20"/>
-				<textElement/>
+			<textField pattern="Q#,##0.00;¤-#,##0.00">
+				<reportElement x="465" y="0" width="100" height="20"/>
+				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{ganancia}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement x="464" y="0" width="18" height="20"/>
-				<textElement>
-					<font size="12" isBold="true"/>
-				</textElement>
-				<text><![CDATA[Q.]]></text>
-			</staticText>
+			<line>
+				<reportElement x="0" y="34" width="572" height="1" forecolor="#E2E2E2"/>
+			</line>
 		</band>
 	</detail>
 	<columnFooter>
@@ -235,43 +226,36 @@ order by p.nombre_producto asc;]]>
 			<rectangle radius="10">
 				<reportElement x="249" y="2" width="333" height="86"/>
 			</rectangle>
-			<textField pattern="#,##0.00">
-				<reportElement x="466" y="68" width="100" height="18"/>
+			<textField pattern="Q#,##0.00;¤-#,##0.00">
+				<reportElement x="448" y="68" width="118" height="18" forecolor="#1878A8"/>
 				<textElement textAlignment="Center">
 					<font size="14" isBold="true"/>
 				</textElement>
 				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{total_facturado}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="326" y="68" width="116" height="20"/>
+				<reportElement x="326" y="68" width="116" height="20" forecolor="#1878A8"/>
 				<textElement textAlignment="Right">
 					<font size="14" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Total Facturado:]]></text>
 			</staticText>
-			<staticText>
-				<reportElement x="448" y="68" width="18" height="18"/>
-				<textElement>
-					<font size="14" isBold="true"/>
-				</textElement>
-				<text><![CDATA[Q.]]></text>
-			</staticText>
-			<textField pattern="#,##0.00">
-				<reportElement x="465" y="5" width="100" height="18"/>
+			<textField pattern="Q#,##0.00;¤-#,##0.00">
+				<reportElement x="447" y="5" width="118" height="18"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="12" isBold="true"/>
 				</textElement>
 				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{pcTotal_1}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00">
-				<reportElement x="465" y="25" width="100" height="18"/>
+			<textField pattern="Q#,##0.00;¤-#,##0.00">
+				<reportElement x="447" y="25" width="118" height="18"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="12" isBold="true"/>
 				</textElement>
 				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{pvTotal_1}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00">
-				<reportElement x="465" y="45" width="100" height="18"/>
+			<textField pattern="Q#,##0.00;¤-#,##0.00">
+				<reportElement x="447" y="45" width="118" height="18"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="12" isBold="true"/>
 				</textElement>
@@ -297,27 +281,6 @@ order by p.nombre_producto asc;]]>
 					<font size="12" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Ganancia:]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="447" y="5" width="18" height="18"/>
-				<textElement>
-					<font size="14" isBold="true"/>
-				</textElement>
-				<text><![CDATA[Q.]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="447" y="25" width="18" height="18"/>
-				<textElement>
-					<font size="14" isBold="true"/>
-				</textElement>
-				<text><![CDATA[Q.]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="447" y="45" width="18" height="18"/>
-				<textElement>
-					<font size="14" isBold="true"/>
-				</textElement>
-				<text><![CDATA[Q.]]></text>
 			</staticText>
 			<line>
 				<reportElement x="267" y="65" width="304" height="1"/>

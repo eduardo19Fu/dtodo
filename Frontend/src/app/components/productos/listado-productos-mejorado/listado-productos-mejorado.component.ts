@@ -11,6 +11,7 @@ import { ProductoService } from '../../../services/producto.service';
 import { ModalService } from '../../../services/productos/modal.service';
 import { InventarioSucursalService } from '../../../services/inventario-sucursal.service';
 import { SucursalService } from '../../../services/sucursal.service';
+import { ExportacionProductos } from '../exportar-productos/exportar-productos.component';
 
 import Swal from 'sweetalert2';
 
@@ -52,9 +53,12 @@ export class ListadoProductosMejoradoComponent implements OnInit, OnDestroy {
   stockEdicion: number = null;
 
   // Importar inventario cuando la sucursal activa todavía no tiene productos registrados
-  sucursalesParaImportar: Sucursal[] = [];
+  sucursalesAdmin: Sucursal[] = [];
   idSucursalImportar: number = null;
   importando: boolean = false;
+
+  // Exportar Excel de otra sucursal (solo ROLE_ADMIN)
+  modalExportarVisible: boolean = false;
 
   constructor(
     public modalService: ModalService,
@@ -82,7 +86,7 @@ export class ListadoProductosMejoradoComponent implements OnInit, OnDestroy {
     });
 
     if (this.auth.hasRole('ROLE_ADMIN')) {
-      this.sucursalService.getSucursales().subscribe(sucursales => this.sucursalesParaImportar = sucursales);
+      this.sucursalService.getSucursales().subscribe(sucursales => this.sucursalesAdmin = sucursales);
     }
   }
 
@@ -100,7 +104,7 @@ export class ListadoProductosMejoradoComponent implements OnInit, OnDestroy {
   }
 
   get sucursalesOrigenDisponibles(): Sucursal[] {
-    return this.sucursalesParaImportar.filter(s => s.idSucursal !== this.idSucursalActiva);
+    return this.sucursalesAdmin.filter(s => s.idSucursal !== this.idSucursalActiva);
   }
 
   importarProductos(): void {
@@ -248,13 +252,25 @@ export class ListadoProductosMejoradoComponent implements OnInit, OnDestroy {
     );
   }
 
-  exportarExcel(): void {
+  abrirModalExportar(): void {
     if (this.exportando) {
       return;
     }
+    this.modalExportarVisible = true;
+  }
 
+  cerrarModalExportar(): void {
+    this.modalExportarVisible = false;
+  }
+
+  confirmarExportacion(solicitud: ExportacionProductos): void {
+    this.cerrarModalExportar();
+    this.exportarExcel(solicitud.idSucursal);
+  }
+
+  private exportarExcel(idSucursal: number): void {
     this.exportando = true;
-    this.productoService.exportarProductosExcel().subscribe(
+    this.productoService.exportarProductosExcel(idSucursal).subscribe(
       response => {
         const disposition = response.headers.get('content-disposition');
         const filenameMatch = disposition && disposition.match(/filename="?([^";]+)"?/i);

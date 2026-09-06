@@ -173,8 +173,10 @@ export class ProductoService {
 
   /******** SERVICIO DE REPORTES **********/
 
-  exportarProductosExcel(): Observable<HttpResponse<Blob>> {
-    const params = this.conSucursal(new HttpParams());
+  exportarProductosExcel(idSucursal?: number): Observable<HttpResponse<Blob>> {
+    const params = idSucursal
+      ? new HttpParams().set('idSucursal', idSucursal.toString())
+      : this.conSucursal(new HttpParams());
     return this.http.get(`${this.url}/productos/excel`, {
       params,
       observe: 'response',

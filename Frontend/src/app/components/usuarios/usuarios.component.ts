@@ -47,7 +47,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
   constructor(
     private detailUsuarioService: DetailUsuarioService,
     private usuarioService: UsuarioService,
-    private authService: AuthService
+    public authService: AuthService
   ) { }
 
   ngOnInit(): void {

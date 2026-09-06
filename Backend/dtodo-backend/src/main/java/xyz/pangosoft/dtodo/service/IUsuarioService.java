@@ -34,7 +34,7 @@ public interface IUsuarioService {
 
 	Integer totalUsuarios();
 
-	List<Usuario> cajeros();
+	List<Usuario> cajeros(Integer idSucursal);
 
 	Usuario save(Usuario usuario);
 

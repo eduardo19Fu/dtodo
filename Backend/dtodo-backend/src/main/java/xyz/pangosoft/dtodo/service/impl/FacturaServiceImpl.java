@@ -875,7 +875,7 @@ public class FacturaServiceImpl implements IFacturaService {
 				throw new NotFoundException("Archivo no encontrado");
 			}
 			params.put("usuario", usuario);
-			params.put("fecha", fecha);
+			params.put("fecha", fechaBusqueda);
 
 			JasperReport jasperReport = JasperCompileManager.compileReport(file);
 			JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, params, con);

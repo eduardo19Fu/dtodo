@@ -1,4 +1,8 @@
 <app-detail-producto *ngIf="productoSeleccionado" [producto]="productoSeleccionado"></app-detail-producto>
+
+<app-exportar-productos *ngIf="modalExportarVisible" [sucursales]="sucursalesAdmin" [idSucursalActual]="idSucursalActiva"
+  (cerrar)="cerrarModalExportar()" (exportar)="confirmarExportacion($event)">
+</app-exportar-productos>
 <!-- Content Header (Page header) -->
 <section class="content-header">
     <div class="container-fluid">
@@ -17,7 +21,7 @@
                         class="btn listing-page-action listing-secondary-action ml-2"
                         *ngIf="auth.hasRole('ROLE_ADMIN')"
                         [disabled]="exportando"
-                        (click)="exportarExcel()">
+                        (click)="abrirModalExportar()">
                     <span *ngIf="exportando" class="spinner-border spinner-border-sm mr-1" role="status" aria-hidden="true"></span>
                     <i *ngIf="!exportando" class="fas fa-file-excel mr-1"></i>
                     {{exportando ? 'Generando...' : 'Exportar Excel'}}

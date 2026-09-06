@@ -26,6 +26,16 @@
             </div>
           </div>
 
+          <div class="report-field sucursal-field" *ngIf="auth.hasRole('ROLE_ADMIN')">
+            <label for="reporte-sucursal">Sucursal</label>
+            <div class="select-control">
+              <i class="fas fa-store" aria-hidden="true"></i>
+              <select id="reporte-sucursal" name="reporte-sucursal" class="form-control" [(ngModel)]="idSucursal">
+                <option *ngFor="let sucursal of sucursales" [ngValue]="sucursal.idSucursal">{{ sucursal.nombre }}</option>
+              </select>
+            </div>
+          </div>
+
           <div class="report-date-grid">
             <div class="report-field">
               <label for="fecha-inicio">Fecha inicial <span aria-hidden="true">*</span></label>

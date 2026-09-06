@@ -88,13 +88,13 @@ export class MovimientosProductoService {
   }
 
   /********* INVENTARIO FORMATO PDF ***********/
-  getInventoryPDF(fechaIni: Date, fechaFin: Date): Observable<any> {
+  getInventoryPDF(fechaIni: Date, fechaFin: Date, idSucursal?: number): Observable<any> {
     const headers = new HttpHeaders();
     headers.append('Accept', 'application/pdf');
     const requestOptions: any = { headers, responseType: 'blob' };
 
-    const idSucursal = this.authService.usuario?.sucursal?.idSucursal;
-    const sucursalQuery = idSucursal ? `&idSucursal=${idSucursal}` : '';
+    const sucursal = idSucursal || this.authService.usuario?.sucursal?.idSucursal;
+    const sucursalQuery = sucursal ? `&idSucursal=${sucursal}` : '';
 
     return this.http.post(`${this.url}/movimientos/inventario?fechaIni=${fechaIni.toString()}&fechaFin=${fechaFin.toString()}${sucursalQuery}`,
       '', requestOptions).pipe(

@@ -3,6 +3,9 @@
     <div class="row mb-2">
       <div class="col-sm-6">
         <h1>{{title}}</h1>
+        <p class="sucursal-subtitle" *ngIf="auth.usuario?.sucursal">
+          <i class="fas fa-store"></i> {{ auth.usuario.sucursal.nombre }}
+        </p>
         <br>
         <a *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR')"
           [routerLink]="['/clientes/create']" class="btn listing-page-action listing-primary-action">
