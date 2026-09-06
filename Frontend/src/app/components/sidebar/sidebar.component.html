@@ -39,9 +39,6 @@
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                 
                 <!-- MENU PRODUCTOS -->
-                <li class="nav-header" *ngIf="authService.hasRole('ROLE_INVENTARIO') || authService.hasRole('ROLE_ADMIN')">
-                    Productos e Inventario
-                </li>
                 <li class="nav-item"
                     [ngClass]="{'menu-open': router.url.startsWith('/productos') && !router.url.includes('inventario')}">
                     <a href="" class="nav-link" [ngClass]="{'active': router.url.startsWith('/productos') && !router.url.includes('inventario')}">
@@ -88,8 +85,6 @@
                 </li>
 
                 <!-- MENUS DE FACTURAS -->
-                <li class="nav-header" *ngIf="authService.hasRole('ROLE_COBRADOR') || authService.hasRole('ROLE_ADMIN') || authService.hasRole('ROLE_INVENTARIO')">Ventas</li>
-
                 <li class="nav-item" *ngIf="authService.hasRole('ROLE_COBRADOR') || authService.hasRole('ROLE_ADMIN') || authService.hasRole('ROLE_INVENTARIO')">
                     <a [routerLink]="['/proformas/index']" class="nav-link" [ngClass]="{'active' : router.url.startsWith('/proformas')}">
                         <i class="nav-icon fas fa-street-view"></i>
@@ -136,26 +131,12 @@
                 <!-- MENU DE NOTAS DE CREDITO FINAL -->
 
                 <!-- MENU DE CLIENTES -->
-                <li class="nav-header" *ngIf="authService.hasRole('ROLE_COBRADOR') || authService.hasRole('ROLE_ADMIN')">Clientes</li>
                 <li class="nav-item" *ngIf="authService.hasRole('ROLE_COBRADOR') || authService.hasRole('ROLE_ADMIN')">
                     <a [routerLink]="['/clientes/index']" class="nav-link" [ngClass]="{'active' : router.url.startsWith('/clientes')}">
                         <i class="nav-icon fas fa-street-view"></i>
                         <p>Clientes</p>
                     </a>
                 </li><!-- MENU DE CLIENTES FINAL -->
-
-                <!-- MENU DE USUARIOS -->
-                <li class="nav-header" *ngIf="authService.hasRole('ROLE_ADMIN')">Usuarios y Permisos</li>
-                <li class="nav-item"  *ngIf="authService.hasRole('ROLE_ADMIN')"
-                    [ngClass]="{'menu-open': router.url.startsWith('/usuarios')}">
-                    <a [routerLink]="['/usuarios/index']" class="nav-link"
-                        [ngClass]="{'active' : router.url.startsWith('/usuarios')}">
-                        <p>
-                            <i class="fas fa-users nav-icon"></i>
-                            Usuarios
-                        </p>
-                    </a>
-                </li> <!-- MENU DE USUARIOS FINAL -->
 
                 <!-- MENU DE SUCURSALES -->
                 <li class="nav-item" *ngIf="authService.hasRole('ROLE_ADMIN')">
@@ -168,7 +149,18 @@
                     </a>
                 </li> <!-- MENU DE SUCURSALES FINAL -->
 
-                <li class="nav-header">Sesión</li>
+                <!-- MENU DE USUARIOS -->
+                <li class="nav-item"  *ngIf="authService.hasRole('ROLE_ADMIN')"
+                    [ngClass]="{'menu-open': router.url.startsWith('/usuarios')}">
+                    <a [routerLink]="['/usuarios/index']" class="nav-link"
+                        [ngClass]="{'active' : router.url.startsWith('/usuarios')}">
+                        <p>
+                            <i class="fas fa-users nav-icon"></i>
+                            Usuarios
+                        </p>
+                    </a>
+                </li> <!-- MENU DE USUARIOS FINAL -->   
+
                 <li class="nav-item">
                     <a [routerLink]="['/login']" class="nav-link">
                         <i class="fas fa-window-close nav-icon"></i>

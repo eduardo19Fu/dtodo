@@ -166,7 +166,7 @@
             </button>
             <button class="btn btn-sm table-action action-cancel" type="button"
                     appTooltip="Anular factura" aria-label="Anular factura"
-                    (click)="cancel(factura)" *ngIf="auth.hasRole('ROLE_ADMIN')"
+                    (click)="cancel(factura)" *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR')"
                     [disabled]="factura.idEstado === 4">
               <i class="fas fa-ban"></i>
             </button>
