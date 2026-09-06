@@ -1,0 +1,5 @@
+allowBuilds:
+  '@angular/cli': true
+  '@fortawesome/fontawesome-free': true
+  admin-lte: true
+  core-js: true

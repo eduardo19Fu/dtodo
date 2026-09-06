@@ -8,12 +8,12 @@ This repository contains two applications. `Frontend/` is an Angular 11 client; 
 
 ## Build, Test, and Development Commands
 
-- `cd Frontend && npm ci`: install the locked frontend dependencies.
-- `npm start`: serve Angular locally with live reload.
-- `npm run build`: compile into `Frontend/dist/frontend`.
-- `npm test`: run Jasmine unit tests through Karma.
-- `npm run lint`: apply the configured TSLint and Codelyzer rules.
-- `npm run e2e`: run the legacy Protractor suite.
+- `cd Frontend && pnpm install --frozen-lockfile`: install the locked frontend dependencies.
+- `pnpm start`: serve Angular locally with live reload.
+- `pnpm run build`: compile into `Frontend/dist/frontend`.
+- `pnpm test`: run Jasmine unit tests through Karma.
+- `pnpm run lint`: apply the configured TSLint and Codelyzer rules.
+- `pnpm run e2e`: run the legacy Protractor suite.
 - `cd Backend/dtodo-backend && .\mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=dev`: run the API on Windows using the development profile.
 - `.\mvnw.cmd test` or `.\mvnw.cmd clean package`: run JUnit tests or build the backend JAR.
 
