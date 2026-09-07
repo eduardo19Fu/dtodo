@@ -1,6 +1,5 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { FormGroup } from '@angular/forms';
 
 import { AuthService } from '../../../services/auth.service';
 import { MovimientosProductoService } from '../../../services/movimientos/movimientos-producto.service';
@@ -11,13 +10,7 @@ import { Producto } from 'src/app/models/producto';
 import { MovimientoProducto } from '../../../models/movimiento-producto';
 import { UsuarioAuxiliar } from 'src/app/models/auxiliar/usuario-auxiliar';
 
-import { JqueryConfigs } from '../../../utils/jquery/jquery-utils';
 import Swal from 'sweetalert2';
-
-declare const $;
-
-// tslint:disable-next-line: no-string-literal
-window['$'] = window['jQuery'] = $;
 
 @Component({
   selector: 'app-create-movimiento',
@@ -27,17 +20,17 @@ window['$'] = window['jQuery'] = $;
     './create-movimiento.component.css'
   ]
 })
-export class CreateMovimientoComponent implements OnInit, AfterViewInit {
+export class CreateMovimientoComponent implements OnInit {
+
+  @ViewChild('cantidadInput') cantidadInput: ElementRef<HTMLInputElement>;
 
   title: string;
-  jQueryConfigs: JqueryConfigs;
 
   usuario: UsuarioAuxiliar;
   movimientoProducto: MovimientoProducto;
   producto: Producto;
-  productos: Producto[];
-  modalForm: FormGroup;
   movimientos: string[] = ['ENTRADA', 'SALIDA'];
+  modalProductoVisible: boolean = false;
 
   constructor(
     private movimientoProductoService: MovimientosProductoService,
@@ -49,7 +42,6 @@ export class CreateMovimientoComponent implements OnInit, AfterViewInit {
     this.title = 'Ingresar Nuevo Movimiento';
     this.movimientoProducto = new MovimientoProducto();
     this.producto = new Producto();
-    this.jQueryConfigs = new JqueryConfigs();
   }
 
   ngOnInit(): void {
@@ -62,12 +54,6 @@ export class CreateMovimientoComponent implements OnInit, AfterViewInit {
         Swal.fire(`Error: ${error.status}`, '', 'error');
       }
     );
-  }
-
-  ngAfterViewInit(): void {
-    this.jQueryConfigs.configSelect();
-    this.jQueryConfigs.hideModal();
-    this.producto = new Producto();
   }
 
   create(): void {
@@ -100,7 +86,9 @@ export class CreateMovimientoComponent implements OnInit, AfterViewInit {
       this.productoService.getProductoByCode(codigo).subscribe(
         producto => {
           this.producto = producto;
-          (document.getElementById('cantidad') as HTMLInputElement).focus();
+          if (this.cantidadInput) {
+            this.cantidadInput.nativeElement.focus();
+          }
         },
         error => {
           if (error.status === 400) {
@@ -117,9 +105,17 @@ export class CreateMovimientoComponent implements OnInit, AfterViewInit {
     }
   }
 
-  loadProducto(event): void {
-    (document.getElementById('cod-producto') as HTMLInputElement).value = event.codProducto;
-    (document.getElementById('button-x')).click();
+  abrirModalProducto(): void {
+    this.modalProductoVisible = true;
+  }
+
+  cerrarModalProducto(): void {
+    this.modalProductoVisible = false;
+  }
+
+  loadProducto(producto: Producto): void {
+    this.producto.codProducto = producto.codProducto;
+    this.cerrarModalProducto();
     this.buscarProducto();
   }
 }

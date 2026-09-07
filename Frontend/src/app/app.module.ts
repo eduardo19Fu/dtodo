@@ -36,7 +36,6 @@ import { MovimientosProductoComponent } from './components/movimientos-producto/
 import { CreateMovimientoComponent } from './components/movimientos-producto/create-movimiento/create-movimiento.component';
 import { BusquedaMovimientosComponent } from './components/movimientos-producto/busqueda-movimientos/busqueda-movimientos.component';
 import { PolizaIndividualComponent } from './components/facturas/poliza-individual/poliza-individual.component';
-import { SearchProductModalComponent } from './components/productos/search-product-modal/search-product-modal.component';
 import { HeaderVentasComponent } from './components/header-ventas/header-ventas.component';
 import { ModalCambioComponent } from './components/facturas/create-factura/modal-cambio/modal-cambio.component';
 import { ModalBuscarProductoComponent } from './components/facturas/create-factura/modal-buscar-producto/modal-buscar-producto.component';
@@ -49,9 +48,7 @@ import { ExportarProformasComponent } from './components/proformas/exportar-prof
 import { NotasCreditoComponent } from './components/notas-credito/notas-credito.component';
 import { CreateNotaComponent } from './components/notas-credito/create-nota/create-nota.component';
 import { DetailNotaComponent } from './components/notas-credito/detail-nota/detail-nota.component';
-import { ModalNotasCreditoComponent } from './components/notas-credito/modal-notas-credito/modal-notas-credito.component';
 import { DespacharNotaComponent } from './components/notas-credito/despachar-nota/despachar-nota.component';
-import { ListadoProductosMejoradoComponent } from './components/productos/listado-productos-mejorado/listado-productos-mejorado.component';
 import { ExportarProductosComponent } from './components/productos/exportar-productos/exportar-productos.component';
 import { SucursalesComponent } from './components/sucursales/sucursales.component';
 import { CreateSucursalComponent } from './components/sucursales/create-sucursal/create-sucursal.component';
@@ -89,7 +86,6 @@ import { TooltipDirective } from './directives/tooltip.directive';
     CreateMovimientoComponent,
     BusquedaMovimientosComponent,
     PolizaIndividualComponent,
-    SearchProductModalComponent,
     HeaderVentasComponent,
     ModalCambioComponent,
     ModalBuscarProductoComponent,
@@ -102,9 +98,7 @@ import { TooltipDirective } from './directives/tooltip.directive';
     NotasCreditoComponent,
     CreateNotaComponent,
     DetailNotaComponent,
-    ModalNotasCreditoComponent,
     DespacharNotaComponent,
-    ListadoProductosMejoradoComponent,
     ExportarProductosComponent,
     SucursalesComponent,
     CreateSucursalComponent,

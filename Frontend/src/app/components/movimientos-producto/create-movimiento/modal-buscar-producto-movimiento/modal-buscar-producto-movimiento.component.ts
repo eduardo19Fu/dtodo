@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
+import { Component, EventEmitter, HostListener, OnDestroy, OnInit, Output } from '@angular/core';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
@@ -16,6 +16,7 @@ import Swal from 'sweetalert2';
 export class ModalBuscarProductoMovimientoComponent implements OnInit, OnDestroy {
 
   @Output() producto = new EventEmitter<Producto>();
+  @Output() cerrar = new EventEmitter<void>();
 
   title: string;
   productosDto: ProductoDto[] = [];
@@ -139,6 +140,15 @@ export class ModalBuscarProductoMovimientoComponent implements OnInit, OnDestroy
 
   chooseProducto(producto: ProductoDto): void {
     this.producto.emit(producto as any);
+  }
+
+  cerrarModal(): void {
+    this.cerrar.emit();
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.cerrarModal();
   }
 
 }
