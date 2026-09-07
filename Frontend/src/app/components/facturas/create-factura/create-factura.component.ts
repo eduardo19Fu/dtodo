@@ -15,7 +15,6 @@ import { ClienteCreateService } from '../../../services/facturas/cliente-create.
 import { FacturaService } from '../../../services/facturas/factura.service';
 import { ProductoService } from '../../../services/producto.service';
 import { UsuarioService } from '../../../services/usuarios/usuario.service';
-import { ModalCambioService } from '../../../services/facturas/modal-cambio.service';
 import { ProformaService } from '../../../services/proformas/proforma.service';
 import { Proforma } from '../../../models/proforma';
 import { DetalleProforma } from '../../../models/detalle-proforma';
@@ -38,7 +37,6 @@ export class CreateFacturaComponent implements OnInit {
   title: string;
   nitIngresado: string;
   nitBusqueda = '';
-  pagar = false;
   isSaving = false;
   modalProductoVisible = false;
   modalClienteVisible = false;
@@ -71,7 +69,6 @@ export class CreateFacturaComponent implements OnInit {
     private clienteService: ClienteService,
     private usuarioService: UsuarioService,
     private clienteCreateService: ClienteCreateService,
-    private modalCambioService: ModalCambioService,
     private correlativoService: CorrelativoService,
     public authService: AuthService,
     private activatedRoute: ActivatedRoute

@@ -7,7 +7,7 @@ describe('ProductosComponent - edicion en linea de stock', () => {
   let producto: ProductoDto;
 
   beforeEach(() => {
-    component = new ProductosComponent(null, null, null, null, null);
+    component = new ProductosComponent(null, null, null, null);
     producto = new ProductoDto();
     producto.idProducto = 4;
     producto.stock = 15;
@@ -41,7 +41,7 @@ describe('ProductosComponent - importar inventario a una sucursal vacia', () => 
   };
 
   beforeEach(() => {
-    component = new ProductosComponent(null, null, null, null, null);
+    component = new ProductosComponent(null, null, null, null);
     component.idSucursalActiva = 2;
     component.sucursalesAdmin = [sucursal(1, 'Sucursal Central'), sucursal(2, 'Sucursal Norte')];
   });
@@ -56,5 +56,24 @@ describe('ProductosComponent - importar inventario a una sucursal vacia', () => 
     component.importarProductos();
 
     expect(component.importando).toBeFalse();
+  });
+});
+
+describe('ProductosComponent - detalle de producto', () => {
+  let component: ProductosComponent;
+
+  beforeEach(() => {
+    component = new ProductosComponent(null, null, null, null);
+  });
+
+  it('abre y cierra el detalle mediante estado Angular', () => {
+    const producto = new ProductoDto();
+    producto.idProducto = 8;
+
+    component.abrirModal(producto);
+    expect(component.productoSeleccionado).toBe(producto as any);
+
+    component.cerrarDetalleProducto();
+    expect(component.productoSeleccionado).toBeNull();
   });
 });

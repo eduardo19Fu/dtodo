@@ -1,10 +1,8 @@
-import { DOCUMENT } from '@angular/common';
 import { HttpEventType } from '@angular/common/http';
-import { AfterViewInit, Component, ElementRef, HostListener, Inject, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, OnDestroy, Output } from '@angular/core';
 import { Producto } from 'src/app/models/producto';
 import { AuthService } from 'src/app/services/auth.service';
 import { ProductoService } from 'src/app/services/producto.service';
-import { ModalService } from 'src/app/services/productos/modal.service';
 
 import swal from 'sweetalert2';
 
@@ -13,69 +11,38 @@ import swal from 'sweetalert2';
   templateUrl: './detail-producto.component.html',
   styleUrls: ['./detail-producto.component.css']
 })
-export class DetailProductoComponent implements OnInit, AfterViewInit, OnDestroy {
+export class DetailProductoComponent implements OnDestroy {
 
   title: string;
 
   @Input() producto: Producto;
+  @Output() cerrar = new EventEmitter<void>();
+  @Output() productoActualizado = new EventEmitter<Producto>();
 
   public imagenSeleccionada: File;
   public progreso: number;
+  cerrando = false;
+
+  private cierreTimer: ReturnType<typeof setTimeout>;
 
   constructor(
-    public modalService: ModalService,
     private serviceProducto: ProductoService,
-    public auth: AuthService,
-    private elementRef: ElementRef<HTMLElement>,
-    @Inject(DOCUMENT) private document: Document
+    public auth: AuthService
   ) {
     this.title = 'Detalle del Producto';
     this.progreso = 0;
   }
 
-  ngOnInit(): void {
-    // this.getProducto();
-  }
-
-  ngAfterViewInit(): void {
-    const hostElement = this.elementRef.nativeElement;
-    this.document.body.appendChild(hostElement);
-  }
-
   ngOnDestroy(): void {
-    const hostElement = this.elementRef.nativeElement;
-
-    if (hostElement.parentNode === this.document.body) {
-      this.document.body.removeChild(hostElement);
+    if (this.cierreTimer) {
+      clearTimeout(this.cierreTimer);
     }
   }
 
   @HostListener('document:keydown.escape')
   cerrarConEscape(): void {
-    if (this.modalService.modal) {
-      this.cerrarModal();
-    }
+    this.cerrarModal();
   }
-
-  cerrarDesdeBackdrop(event: MouseEvent): void {
-    if (event.target === event.currentTarget) {
-      this.cerrarModal();
-    }
-  }
-
-  /*getProducto(): void {
-    // tslint:disable-next-line: deprecation
-    this.activatedRoute.paramMap.subscribe(params => {
-      let id: number = +params.get('id');
-
-      if (id) {
-        // tslint:disable-next-line: deprecation
-        this.serviceProducto.getProducto(id).subscribe(
-          producto => this.producto = producto
-        );
-      }
-    });
-  }*/
 
   seleccionarImagen(event): void {
     this.imagenSeleccionada = event.target.files[0];
@@ -103,7 +70,7 @@ export class DetailProductoComponent implements OnInit, AfterViewInit, OnDestroy
 
             this.producto = response.producto as Producto;
 
-            this.modalService.notificarUpload.emit(this.producto);
+            this.productoActualizado.emit(this.producto);
             swal.fire('Imagen ha sido subida con éxito', response.mensaje, 'success');
           }
         },
@@ -115,9 +82,20 @@ export class DetailProductoComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   cerrarModal(): void{
-    this.modalService.cerrarModal();
+    if (this.cerrando) {
+      return;
+    }
+
+    this.cerrando = true;
     this.imagenSeleccionada = null;
     this.progreso = 0;
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      this.cerrar.emit();
+      return;
+    }
+
+    this.cierreTimer = setTimeout(() => this.cerrar.emit(), 180);
   }
 
 }

@@ -1,5 +1,4 @@
-<div *ngIf="modalService.modal" class="product-detail-overlay animacion fadeIn"
-  (click)="cerrarDesdeBackdrop($event)">
+<div class="product-detail-overlay" [class.product-detail-closing]="cerrando" (click)="cerrarModal()">
   <section class="product-detail-dialog" tabindex="-1" role="dialog" aria-modal="true"
     aria-labelledby="product-detail-title" (click)="$event.stopPropagation()">
     <div class="product-detail-content">
@@ -11,7 +10,7 @@
               <h5 id="product-detail-title" class="modal-title">{{title}}</h5>
             </div>
           </div>
-          <button (click)="cerrarModal()" type="button" class="close-button" data-dismiss="modal"
+          <button (click)="cerrarModal()" type="button" class="close-button"
             aria-label="Cerrar detalle del producto">
             <i class="fas fa-times" aria-hidden="true"></i>
           </button>
@@ -137,7 +136,7 @@
 
         <footer class="product-detail-footer">
           <span><i class="fas fa-shield-alt" aria-hidden="true"></i> Información del inventario</span>
-          <button (click)="cerrarModal()" type="button" class="btn close-action" data-dismiss="modal">Cerrar</button>
+          <button (click)="cerrarModal()" type="button" class="btn close-action">Cerrar</button>
         </footer>
     </div>
   </section>

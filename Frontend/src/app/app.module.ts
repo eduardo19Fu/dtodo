@@ -37,7 +37,6 @@ import { CreateMovimientoComponent } from './components/movimientos-producto/cre
 import { BusquedaMovimientosComponent } from './components/movimientos-producto/busqueda-movimientos/busqueda-movimientos.component';
 import { PolizaIndividualComponent } from './components/facturas/poliza-individual/poliza-individual.component';
 import { HeaderVentasComponent } from './components/header-ventas/header-ventas.component';
-import { ModalCambioComponent } from './components/facturas/create-factura/modal-cambio/modal-cambio.component';
 import { ModalBuscarProductoComponent } from './components/facturas/create-factura/modal-buscar-producto/modal-buscar-producto.component';
 import { ModalBuscarClienteComponent } from './components/facturas/create-factura/modal-buscar-cliente/modal-buscar-cliente.component';
 import { ModalBuscarProductoMovimientoComponent } from './components/movimientos-producto/create-movimiento/modal-buscar-producto-movimiento/modal-buscar-producto-movimiento.component';
@@ -87,7 +86,6 @@ import { TooltipDirective } from './directives/tooltip.directive';
     BusquedaMovimientosComponent,
     PolizaIndividualComponent,
     HeaderVentasComponent,
-    ModalCambioComponent,
     ModalBuscarProductoComponent,
     ModalBuscarClienteComponent,
     ModalBuscarProductoMovimientoComponent,

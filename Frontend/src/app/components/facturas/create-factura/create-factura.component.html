@@ -2,7 +2,6 @@
   (clienteCreado)="cargarCliente($event)">
 </app-modal-create>
 
-<app-modal-cambio *ngIf="pagar" [factura]="factura"></app-modal-cambio>
 <app-modal-buscar-producto *ngIf="modalProductoVisible" (producto)="loadProducto($event)"
   (cerrar)="cerrarModalProducto()"></app-modal-buscar-producto>
 <app-modal-buscar-cliente *ngIf="modalClienteVisible" (cliente)="loadCliente($event)"

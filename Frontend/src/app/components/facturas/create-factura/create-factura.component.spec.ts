@@ -12,7 +12,7 @@ describe('CreateFacturaComponent - edición de detalle', () => {
   let item: DetalleFactura;
 
   beforeEach(() => {
-    component = new CreateFacturaComponent(null, null, null, null, null, null, null, null, null, null);
+    component = new CreateFacturaComponent(null, null, null, null, null, null, null, null, null);
     const producto = new Producto();
     producto.idProducto = 1;
     producto.nombre = 'Producto de prueba';

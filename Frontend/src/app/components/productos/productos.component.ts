@@ -8,7 +8,6 @@ import { Sucursal } from '../../models/sucursal';
 
 import { AuthService } from '../../services/auth.service';
 import { ProductoService } from '../../services/producto.service';
-import { ModalService } from '../../services/productos/modal.service';
 import { InventarioSucursalService } from '../../services/inventario-sucursal.service';
 import { SucursalService } from '../../services/sucursal.service';
 import { ExportacionProductos } from './exportar-productos/exportar-productos.component';
@@ -61,7 +60,6 @@ export class ProductosComponent implements OnInit, OnDestroy {
   modalExportarVisible: boolean = false;
 
   constructor(
-    public modalService: ModalService,
     private productoService: ProductoService,
     private inventarioSucursalService: InventarioSucursalService,
     private sucursalService: SucursalService,
@@ -73,9 +71,6 @@ export class ProductosComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.cargarProductos(0);
     this.resolverSucursalActiva();
-    this.modalService.notificarUpload.subscribe(producto => {
-      this.cargarProductos(this.paginaActual);
-    });
 
     this.busquedaSubscription = this.busquedaSubject.pipe(
       debounceTime(300),
@@ -226,7 +221,15 @@ export class ProductosComponent implements OnInit, OnDestroy {
 
   abrirModal(producto: any): void {
     this.productoSeleccionado = producto;
-    this.modalService.abrirModal();
+  }
+
+  cerrarDetalleProducto(): void {
+    this.productoSeleccionado = null;
+  }
+
+  actualizarProducto(producto: Producto): void {
+    this.productoSeleccionado = producto;
+    this.cargarProductos(this.paginaActual);
   }
 
   editarStock(producto: ProductoDto): void {

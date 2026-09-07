@@ -1,4 +1,6 @@
-<app-detail-producto *ngIf="productoSeleccionado" [producto]="productoSeleccionado"></app-detail-producto>
+<app-detail-producto *ngIf="productoSeleccionado" [producto]="productoSeleccionado"
+  (cerrar)="cerrarDetalleProducto()" (productoActualizado)="actualizarProducto($event)">
+</app-detail-producto>
 
 <app-exportar-productos *ngIf="modalExportarVisible" [sucursales]="sucursalesAdmin" [idSucursalActual]="idSucursalActiva"
   (cerrar)="cerrarModalExportar()" (exportar)="confirmarExportacion($event)">
