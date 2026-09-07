@@ -29,10 +29,13 @@ export class CreateProformaComponent implements OnInit {
 
   title: string;
   nitIngresado: string;
+  nitBusqueda = '';
   noProforma: string;
   cantidadProducto: number = null;
   descuentoProducto = 0;
   isSaving = false;
+  modalProductoVisible = false;
+  modalClienteVisible = false;
 
   edicionDetalleAbierta = false;
   campoDetalleEdicion: CampoDetalleEditable = null;
@@ -82,20 +85,42 @@ export class CreateProformaComponent implements OnInit {
     );
   }
 
-  loadProducto(event): void {
-    (document.getElementById('codigo') as HTMLInputElement).value = event.codProducto;
-    (document.getElementById('button-x')).click();
+  abrirModalProducto(): void {
+    this.modalProductoVisible = true;
+  }
+
+  cerrarModalProducto(): void {
+    this.modalProductoVisible = false;
+  }
+
+  abrirModalCliente(): void {
+    this.modalClienteVisible = true;
+  }
+
+  cerrarModalCliente(): void {
+    this.modalClienteVisible = false;
+  }
+
+  loadProducto(producto: Producto): void {
+    this.producto.codProducto = producto.codProducto;
+    this.cerrarModalProducto();
     this.buscarProducto();
   }
 
-  loadCliente(event): void {
-    (document.getElementById('buscar') as HTMLInputElement).value = event.nit;
-    (document.getElementById('button-2x')).click();
+  loadCliente(cliente: Cliente): void {
+    this.nitBusqueda = cliente.nit;
+    this.cerrarModalCliente();
     this.buscarCliente();
   }
 
+  cargarCliente(cliente: Cliente): void {
+    this.cliente = cliente;
+    this.nitBusqueda = cliente.nit;
+    this.nitIngresado = null;
+  }
+
   buscarProducto(): void {
-    const codigo = (document.getElementById('codigo') as HTMLInputElement).value;
+    const codigo = this.producto.codProducto;
     if (!codigo) {
       swal.fire('Código Inválido', 'Ingrese un código de producto válido para realizar la búsqueda.', 'warning');
       return;
@@ -121,7 +146,7 @@ export class CreateProformaComponent implements OnInit {
   }
 
   buscarCliente(): void {
-    const nit = ((document.getElementById('buscar') as HTMLInputElement)).value;
+    const nit = (this.nitBusqueda || '').trim();
 
     if (nit) {
       this.clienteService.getClienteByNit(nit).subscribe(
@@ -388,6 +413,7 @@ export class CreateProformaComponent implements OnInit {
           this.proformaCargada = response;
 
           this.cliente = response.cliente;
+          this.nitBusqueda = this.cliente.nit || '';
 
           this.proforma.idProforma = response.idProforma;
           this.proforma.noProforma = response.noProforma;

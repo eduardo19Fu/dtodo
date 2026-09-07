@@ -29,6 +29,20 @@ describe('CreateFacturaComponent - edición de detalle', () => {
     component.calcularCambio();
   });
 
+  it('controla la visibilidad de los selectores con estado Angular', () => {
+    component.abrirModalCliente();
+    component.abrirModalProducto();
+
+    expect(component.modalClienteVisible).toBeTrue();
+    expect(component.modalProductoVisible).toBeTrue();
+
+    component.cerrarModalCliente();
+    component.cerrarModalProducto();
+
+    expect(component.modalClienteVisible).toBeFalse();
+    expect(component.modalProductoVisible).toBeFalse();
+  });
+
   it('actualiza cantidad, total y cambio al confirmar', fakeAsync(() => {
     const origen = document.createElement('button');
     spyOn(origen, 'focus');
