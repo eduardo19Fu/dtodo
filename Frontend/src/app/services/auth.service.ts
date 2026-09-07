@@ -19,10 +19,10 @@ export class AuthService {
     private http: HttpClient
   ) {
     /** Local **/
-    // this.url = 'http://localhost:8383';
+    this.url = 'http://localhost:8383';
 
     /** Producción **/
-    this.url = 'https://dtodojalapa.xyz:8382';
+    // this.url = 'https://dtodojalapa.xyz:8382';
 
     /** Desarrollo **/
     // this.url = 'https://dtodojalapa.xyz:8383';
