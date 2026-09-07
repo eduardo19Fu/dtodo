@@ -1,10 +1,5 @@
-export const global = {
-    /** Local **/
-    url: 'http://localhost:8383/api'
-    
-    /** Producción **/
-    // url: 'https://dtodojalapa.xyz:8382/api'
+import { environment } from '../../environments/environment';
 
-    /** Desarrollo **/
-    // url: 'https://dtodojalapa.xyz:8383/api'
+export const global = {
+    url: environment.apiUrl + '/api'
 };

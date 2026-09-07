@@ -3,6 +3,7 @@ import { Observable } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Usuario } from '../models/usuario';
 import { Sucursal } from '../models/sucursal';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -18,14 +19,7 @@ export class AuthService {
   constructor(
     private http: HttpClient
   ) {
-    /** Local **/
-    this.url = 'http://localhost:8383';
-
-    /** Producción **/
-    // this.url = 'https://dtodojalapa.xyz:8382';
-
-    /** Desarrollo **/
-    // this.url = 'https://dtodojalapa.xyz:8383';
+    this.url = environment.apiUrl;
   }
 
   public get usuario(): Usuario {

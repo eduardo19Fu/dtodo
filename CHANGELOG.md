@@ -6,6 +6,11 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Perfiles de entorno en el Frontend
+
+- `global.ts` y `AuthService` ya no tienen la URL del backend escrita a mano con bloques comentados para alternar entre Local/Producción/Desarrollo — ahora leen `environment.apiUrl` de `src/environments/`. Se agregó `environment.test.ts` (VPS de pruebas, `dtodojalapa.xyz:8383`) junto a los ya existentes `environment.ts` (local, `localhost:8383`) y `environment.prod.ts` (producción, `dtodojalapa.xyz:8382`), con su propia configuración `test` en `angular.json` (build y serve) y los scripts `pnpm run start:test`/`pnpm run build:test`/`pnpm run build:prod`.
+- Se verificaron los tres builds (`pnpm run build`, `build:test`, `build:prod`) confirmando que cada uno incrusta únicamente la URL de su propio entorno.
+
 ### Agregado — Módulo de Sucursales
 
 Soporte completo para operar múltiples sucursales, cada una con inventario independiente (copiado del inventario existente al crearse, y desde ahí administrado manualmente sin sincronización automática entre sucursales).

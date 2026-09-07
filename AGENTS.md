@@ -9,8 +9,10 @@ This repository contains two applications. `Frontend/` is an Angular 11 client; 
 ## Build, Test, and Development Commands
 
 - `cd Frontend && pnpm install --frozen-lockfile`: install the locked frontend dependencies.
-- `pnpm start`: serve Angular locally with live reload.
-- `pnpm run build`: compile into `Frontend/dist/frontend`.
+- `pnpm start`: serve Angular locally with live reload, against the local backend (`environment.ts`).
+- `pnpm run start:test` / `pnpm run build:test`: serve or build against the VPS test backend (`environment.test.ts`).
+- `pnpm run build`: compile into `Frontend/dist/frontend` using `environment.ts`.
+- `pnpm run build:prod`: production build against `environment.prod.ts`.
 - `pnpm test`: run Jasmine unit tests through Karma.
 - `pnpm run lint`: apply the configured TSLint and Codelyzer rules.
 - `pnpm run e2e`: run the legacy Protractor suite.
