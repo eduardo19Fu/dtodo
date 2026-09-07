@@ -43,6 +43,21 @@ describe('CreateFacturaComponent - edición de detalle', () => {
     expect(component.modalProductoVisible).toBeFalse();
   });
 
+  it('muestra el total completo como pendiente antes de ingresar el efectivo', () => {
+    expect(component.factura.total).toBe(180);
+    expect(component.pagoSuficiente()).toBeFalse();
+    expect(component.saldoPendiente()).toBe(180);
+  });
+
+  it('habilita el pago y deja de mostrar saldo pendiente al recibir el total', () => {
+    component.efectivo = 180;
+    component.calcularCambio();
+
+    expect(component.pagoSuficiente()).toBeTrue();
+    expect(component.saldoPendiente()).toBe(0);
+    expect(component.cambio).toBe(0);
+  });
+
   it('actualiza cantidad, total y cambio al confirmar', fakeAsync(() => {
     const origen = document.createElement('button');
     spyOn(origen, 'focus');

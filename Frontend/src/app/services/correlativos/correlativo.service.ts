@@ -64,8 +64,8 @@ export class CorrelativoService {
     );
   }
 
-  create(correlativo: Correlativo): Observable<any>{
-    return this.http.post<any>(`${this.url}/correlativos`, correlativo).pipe(
+  create(correlativo: Correlativo): Observable<Correlativo>{
+    return this.http.post<Correlativo>(`${this.url}/correlativos`, correlativo).pipe(
       catchError(e => {
         swal.fire(e.error.mensaje, e.error.error, 'error');
         return throwError(e);
@@ -73,8 +73,8 @@ export class CorrelativoService {
     );
   }
 
-  update(correlativo: Correlativo): Observable<any>{
-    return this.http.put<any>(`${this.url}/correlativos`, correlativo).pipe(
+  update(correlativo: Correlativo): Observable<Correlativo>{
+    return this.http.put<Correlativo>(`${this.url}/correlativos`, correlativo).pipe(
       catchError(e => {
         swal.fire(e.error.mensaje, e.error.error, 'error');
         return throwError(e);

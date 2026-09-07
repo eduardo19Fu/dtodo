@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, HostListener, OnDestroy, OnInit, Output } from '@angular/core';
 import { MovimientosProductoService } from '../../../services/movimientos/movimientos-producto.service';
 import { AuthService } from '../../../services/auth.service';
 import { SucursalService } from '../../../services/sucursal.service';
@@ -9,12 +9,17 @@ import { Sucursal } from '../../../models/sucursal';
   templateUrl: './busqueda-movimientos.component.html',
   styleUrls: ['./busqueda-movimientos.component.css']
 })
-export class BusquedaMovimientosComponent implements OnInit {
+export class BusquedaMovimientosComponent implements OnInit, OnDestroy {
+
+  @Output() cerrar = new EventEmitter<void>();
 
   title: string;
 
   fechaIni: Date;
   fechaFin: Date;
+  cerrando = false;
+
+  private cierreTimer: ReturnType<typeof setTimeout>;
 
   // Elegir sucursal del reporte (solo ROLE_ADMIN); el resto siempre reporta la suya
   sucursales: Sucursal[] = [];
@@ -54,6 +59,29 @@ export class BusquedaMovimientosComponent implements OnInit {
       error => {
         console.log(error);
       });
+  }
+
+  ngOnDestroy(): void {
+    if (this.cierreTimer) {
+      clearTimeout(this.cierreTimer);
+    }
+  }
+
+  cerrarModal(): void {
+    if (this.cerrando) {
+      return;
+    }
+    this.cerrando = true;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      this.cerrar.emit();
+      return;
+    }
+    this.cierreTimer = setTimeout(() => this.cerrar.emit(), 180);
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.cerrarModal();
   }
 
 }

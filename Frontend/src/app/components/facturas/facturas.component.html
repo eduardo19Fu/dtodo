@@ -1,5 +1,6 @@
 <app-detail-factura *ngIf="facturaSeleccionada" [factura]="facturaSeleccionada"></app-detail-factura>
-<app-poliza-individual></app-poliza-individual>
+<app-poliza-individual *ngIf="modalPolizaVisible"
+  (cerrar)="cerrarModalPoliza()"></app-poliza-individual>
 
 <section class="content-header">
   <div class="container-fluid">
@@ -14,7 +15,7 @@
           <i class="fas fa-plus"></i> Nuevo
         </a>
         <button type="button" class="btn page-action-button secondary-action ml-2"
-                data-toggle="modal" data-target="#modal-poliza">
+                (click)="abrirModalPoliza()">
           <i class="fa fa-print"></i> Póliza
         </button>
       </div>

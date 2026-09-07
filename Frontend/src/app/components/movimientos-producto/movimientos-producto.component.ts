@@ -40,6 +40,7 @@ export class MovimientosProductoComponent implements OnInit, OnDestroy {
   private busquedaSubscription: Subscription;
 
   cargando: boolean = false;
+  modalReporteVisible: boolean = false;
 
   constructor(
     private movimientosProductoService: MovimientosProductoService,
@@ -143,6 +144,14 @@ export class MovimientosProductoComponent implements OnInit, OnDestroy {
     this.fechaIniAplicada = null;
     this.fechaFinAplicada = null;
     this.cargarMovimientos(0);
+  }
+
+  abrirModalReporte(): void {
+    this.modalReporteVisible = true;
+  }
+
+  cerrarModalReporte(): void {
+    this.modalReporteVisible = false;
   }
 
   ordenarPor(campo: string): void {

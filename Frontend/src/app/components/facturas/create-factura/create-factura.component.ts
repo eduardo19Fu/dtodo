@@ -514,6 +514,11 @@ export class CreateFacturaComponent implements OnInit {
     return !!this.efectivo && this.efectivo >= this.factura.total;
   }
 
+  saldoPendiente(): number {
+    const efectivoRecibido = Number(this.efectivo) || 0;
+    return Math.max(this.factura.total - efectivoRecibido, 0);
+  }
+
   cantidadesValidas(): boolean {
     return this.factura.itemsFactura.every((item: DetalleFactura) =>
       Number.isInteger(Number(item.cantidad))

@@ -1,5 +1,6 @@
 <!-- CREAR INVENTARIO -->
-<app-busqueda-movimientos></app-busqueda-movimientos>
+<app-busqueda-movimientos *ngIf="modalReporteVisible"
+    (cerrar)="cerrarModalReporte()"></app-busqueda-movimientos>
 
 <!-- Content Header (Page header) -->
 <section class="content-header">
@@ -16,7 +17,8 @@
                     Nuevo
                 </button>&nbsp;
 
-                <button type="button" class="btn listing-page-action listing-secondary-action" data-toggle="modal" data-target="#modal-busqueda">
+                <button type="button" class="btn listing-page-action listing-secondary-action"
+                    (click)="abrirModalReporte()">
                     <i class="fas fa-print"></i>
                     Imprimir
                 </button>
