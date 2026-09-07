@@ -1,0 +1,47 @@
+<div class="export-backdrop animacion fadeIn" (click)="cerrar.emit()">
+  <div class="modal export-modal" tabindex="-1" role="dialog" aria-modal="true"
+    aria-labelledby="export-productos-title" (click)="$event.stopPropagation()">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content export-content">
+        <header class="modal-header export-header">
+          <div class="export-heading-icon" aria-hidden="true">
+            <i class="fas fa-file-excel"></i>
+          </div>
+          <div class="export-heading-copy">
+            <span>Reportes</span>
+            <h4 class="modal-title" id="export-productos-title">Exportar productos</h4>
+            <p>Genera el Excel del inventario de la sucursal que elijas.</p>
+          </div>
+          <button type="button" class="export-close" (click)="cerrar.emit()" aria-label="Cerrar">
+            <i class="fas fa-times" aria-hidden="true"></i>
+          </button>
+        </header>
+
+        <form (ngSubmit)="solicitarExportacion()">
+          <div class="modal-body export-body">
+            <div class="export-field">
+              <label for="export-sucursal">Sucursal <span aria-hidden="true">*</span></label>
+              <div class="select-control">
+                <i class="fas fa-store" aria-hidden="true"></i>
+                <select id="export-sucursal" name="export-sucursal" class="form-control"
+                  [(ngModel)]="idSucursal" required>
+                  <option *ngFor="let sucursal of sucursales" [ngValue]="sucursal.idSucursal">
+                    {{ sucursal.nombre }}{{ sucursal.idSucursal === idSucursalActual ? ' (actual)' : '' }}
+                  </option>
+                </select>
+              </div>
+              <p class="export-hint">El archivo reflejar&aacute; el stock registrado en la sucursal seleccionada.</p>
+            </div>
+          </div>
+
+          <footer class="modal-footer export-footer">
+            <button type="button" class="export-cancel" (click)="cerrar.emit()">Cancelar</button>
+            <button type="submit" class="export-confirm" [disabled]="!idSucursal">
+              <i class="fas fa-file-excel" aria-hidden="true"></i> Exportar
+            </button>
+          </footer>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

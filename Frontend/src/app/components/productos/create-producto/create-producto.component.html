@@ -55,8 +55,8 @@
             </div>
           </div>
 
-          <div class="field-group">
-            <label for="stock">Existencias <span class="required-mark">*</span></label>
+          <div class="field-group" *ngIf="!producto.idProducto">
+            <label for="stock">Existencias iniciales <span class="required-mark">*</span></label>
             <div class="control-with-icon">
               <i class="fas fa-boxes" aria-hidden="true"></i>
               <input type="number" id="stock" name="stock" class="form-control" [(ngModel)]="producto.stock"
@@ -66,6 +66,7 @@
               <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
               <span *ngIf="stock.errors.required">El stock no puede estar vacío.</span>
             </div>
+            <small>Se registra como inventario inicial de tu sucursal. Para ajustar existencias despu&eacute;s, usa el bot&oacute;n de stock en el listado de Productos.</small>
           </div>
         </div>
       </section>

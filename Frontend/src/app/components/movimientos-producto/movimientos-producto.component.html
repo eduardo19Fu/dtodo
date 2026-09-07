@@ -7,6 +7,9 @@
         <div class="row mb-2">
             <div class="col-sm-6">
                 <h1>{{title}}</h1>
+                <p class="sucursal-subtitle" *ngIf="authService.usuario?.sucursal">
+                    <i class="fas fa-store"></i> {{ authService.usuario.sucursal.nombre }}
+                </p>
                 <br>
                 <button type="button" class="btn listing-page-action listing-primary-action" [routerLink]="['/productos/inventario/create']">
                     <i class="fas fa-plus"></i>
@@ -117,12 +120,12 @@
             </div>
         </div>
 
-        <div *ngIf="!cargando && movimientosDto?.length == 0" class="alert alert-info alert-dismissible">
-            <h5>
-                <i class="icon fas fa-info"></i>
-                Atención!
-            </h5>
-            No existe ningún movimiento registrado en la base de datos!
+        <div *ngIf="!cargando && movimientosDto?.length == 0" class="listing-empty-state">
+            <span class="listing-empty-icon" aria-hidden="true"><i class="fas fa-exchange-alt"></i></span>
+            <div class="listing-empty-state-body">
+                <h5>No se encontraron movimientos</h5>
+                <p>No hay movimientos registrados con los filtros aplicados.</p>
+            </div>
         </div>
 
         <table class="table table-hover table-striped table-bordered table-sm mt-0 movimientos-table mobile-data-table"

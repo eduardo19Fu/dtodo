@@ -1,14 +1,115 @@
 package xyz.pangosoft.dtodo.service.impl;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 
+import javax.sql.DataSource;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Optional;
+
+import xyz.pangosoft.dtodo.model.Producto;
+import xyz.pangosoft.dtodo.repository.IProductoRepository;
+import xyz.pangosoft.dtodo.service.IEstadoService;
+import xyz.pangosoft.dtodo.service.IInventarioSucursalService;
+import xyz.pangosoft.dtodo.service.IUploadFileService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class ProductoServiceImplTest {
+
+    @Test
+    void totalProductosCuentaSoloElInventarioDeLaSucursalIndicada() {
+        IProductoRepository repository = mock(IProductoRepository.class);
+        IInventarioSucursalService inventarioSucursalService = mock(IInventarioSucursalService.class);
+        ProductoServiceImpl service = new ProductoServiceImpl(
+                repository, mock(IUploadFileService.class), mock(IEstadoService.class),
+                inventarioSucursalService, mock(DataSource.class));
+        when(inventarioSucursalService.contarPorSucursal(3)).thenReturn(0);
+
+        Integer total = service.totalProductos(3);
+
+        assertEquals(0, total);
+        verify(inventarioSucursalService).contarPorSucursal(3);
+    }
+
+    @Test
+    void findByCodigoDevuelveElStockDeLaSucursalIndicadaNoElDeProductos() {
+        IProductoRepository repository = mock(IProductoRepository.class);
+        IInventarioSucursalService inventarioSucursalService = mock(IInventarioSucursalService.class);
+        ProductoServiceImpl service = new ProductoServiceImpl(
+                repository, mock(IUploadFileService.class), mock(IEstadoService.class),
+                inventarioSucursalService, mock(DataSource.class));
+
+        // productos.stock (deprecada) trae un valor obsoleto/incorrecto para esta prueba.
+        Producto producto = Producto.builder().idProducto(2447).codProducto("7501174995015").stock(45).build();
+        when(repository.findByCodigo("7501174995015")).thenReturn(Optional.of(producto));
+        when(inventarioSucursalService.obtenerStock(1, 2447)).thenReturn(40);
+
+        Producto resultado = service.findByCodigo("7501174995015", 1);
+
+        assertEquals(40, resultado.getStock());
+    }
+
+    @Test
+    void alActualizarPreservaElStockActualIgnorandoElDelPayload() {
+        IProductoRepository repository = mock(IProductoRepository.class);
+        ProductoServiceImpl service = new ProductoServiceImpl(
+                repository, mock(IUploadFileService.class), mock(IEstadoService.class),
+                mock(IInventarioSucursalService.class), mock(DataSource.class));
+
+        Producto existente = Producto.builder().idProducto(2447).nombre("ABACO").stock(39).build();
+        when(repository.findById(2447)).thenReturn(Optional.of(existente));
+        when(repository.save(any(Producto.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Producto cambios = Producto.builder().idProducto(2447).nombre("ABACO").stock(45).build();
+
+        Producto resultado = service.save(cambios);
+
+        assertEquals(39, resultado.getStock());
+    }
+
+    @Test
+    void findAllDtoMejoradoFiltraPorLaSucursalIndicada() {
+        IProductoRepository repository = mock(IProductoRepository.class);
+        ProductoServiceImpl service = new ProductoServiceImpl(
+                repository, mock(IUploadFileService.class), mock(IEstadoService.class),
+                mock(IInventarioSucursalService.class), mock(DataSource.class));
+        Page<Object[]> paginaVacia = new PageImpl<>(new ArrayList<>());
+        when(repository.findAllProductosDto(eq("nombre"), eq("asc"), eq(3), any())).thenReturn(paginaVacia);
+
+        Page<?> resultado = service.findAllDtoMejorado("nombre", "asc", 3, PageRequest.of(0, 5));
+
+        verify(repository).findAllProductosDto(eq("nombre"), eq("asc"), eq(3), any());
+        assertEquals(0, resultado.getTotalElements());
+    }
+
+    @Test
+    void searchProductoDtoMejoradoFiltraPorLaSucursalIndicada() {
+        IProductoRepository repository = mock(IProductoRepository.class);
+        ProductoServiceImpl service = new ProductoServiceImpl(
+                repository, mock(IUploadFileService.class), mock(IEstadoService.class),
+                mock(IInventarioSucursalService.class), mock(DataSource.class));
+        when(repository.findAll(
+                org.mockito.ArgumentMatchers.<Specification<Producto>>any(),
+                org.mockito.ArgumentMatchers.any(PageRequest.class)))
+                .thenReturn(new PageImpl<>(new ArrayList<>()));
+
+        Page<?> resultado = service.searchProductoDtoMejorado("abaco", "nombre", "asc", 3, PageRequest.of(0, 5));
+
+        assertEquals(0, resultado.getTotalElements());
+    }
 
     @Test
     void separaLosTerminosSinImponerUnaFraseContinua() {

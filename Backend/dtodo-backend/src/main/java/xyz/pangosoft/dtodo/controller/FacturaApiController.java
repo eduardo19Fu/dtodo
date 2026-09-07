@@ -54,11 +54,12 @@ public class FacturaApiController {
             @PathVariable("page") Integer page,
             @RequestParam("fechaIni") String fechaIni,
             @RequestParam("fechaFin") String fechaFin,
+            @RequestParam(value = "idUsuario", required = false) Integer idUsuario,
             @RequestParam(value = "size", defaultValue = "5") Integer size,
             @RequestParam(value = "orden", defaultValue = "fecha") String orden,
             @RequestParam(value = "direccion", defaultValue = "desc") String direccion) {
         return ResponseEntity.ok(serviceFactura.findAllListadoDto(
-                fechaIni, fechaFin, PageRequest.of(page, size, obtenerOrden(orden, direccion))));
+                fechaIni, fechaFin, idUsuario, PageRequest.of(page, size, obtenerOrden(orden, direccion))));
     }
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
@@ -68,11 +69,12 @@ public class FacturaApiController {
             @RequestParam("fechaIni") String fechaIni,
             @RequestParam("fechaFin") String fechaFin,
             @RequestParam(value = "filtro", defaultValue = "") String filtro,
+            @RequestParam(value = "idUsuario", required = false) Integer idUsuario,
             @RequestParam(value = "size", defaultValue = "5") Integer size,
             @RequestParam(value = "orden", defaultValue = "fecha") String orden,
             @RequestParam(value = "direccion", defaultValue = "desc") String direccion) {
         return ResponseEntity.ok(serviceFactura.searchListadoDto(
-                fechaIni, fechaFin, filtro, PageRequest.of(page, size, obtenerOrden(orden, direccion))));
+                fechaIni, fechaFin, filtro, idUsuario, PageRequest.of(page, size, obtenerOrden(orden, direccion))));
     }
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
@@ -80,11 +82,12 @@ public class FacturaApiController {
     public ResponseEntity<Page<FacturaDto>> getUltimasListadoDto(
             @PathVariable("page") Integer page,
             @RequestParam(value = "filtro", defaultValue = "") String filtro,
+            @RequestParam(value = "idUsuario", required = false) Integer idUsuario,
             @RequestParam(value = "size", defaultValue = "5") Integer size,
             @RequestParam(value = "orden", defaultValue = "fecha") String orden,
             @RequestParam(value = "direccion", defaultValue = "desc") String direccion) {
         return ResponseEntity.ok(serviceFactura.findUltimasListadoDto(
-                filtro, PageRequest.of(page, size, obtenerOrden(orden, direccion))));
+                filtro, idUsuario, PageRequest.of(page, size, obtenerOrden(orden, direccion))));
     }
 
     private Sort obtenerOrden(String orden, String direccion) {
@@ -121,8 +124,9 @@ public class FacturaApiController {
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
     @GetMapping(value = "/facturas/cantidad-ventas")
-    public ResponseEntity<Integer> cantidadVentas() {
-        return ResponseEntity.ok(serviceFactura.totalVentas());
+    public ResponseEntity<Integer> cantidadVentas(
+            @RequestParam(value = "idUsuario", required = false) Integer idUsuario) {
+        return ResponseEntity.ok(serviceFactura.totalVentas(idUsuario));
     }
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})

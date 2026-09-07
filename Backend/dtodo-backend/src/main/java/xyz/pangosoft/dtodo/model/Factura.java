@@ -60,13 +60,18 @@ public class Factura implements Serializable {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "id_usuario")
-	@JsonIgnoreProperties({ "password", "roles", "hibernateLazyInitializer", "handler" })
+	@JsonIgnoreProperties({ "password", "roles", "sucursal", "hibernateLazyInitializer", "handler" })
 	private Usuario usuario;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "id_cliente")
 	@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 	private Cliente cliente;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "id_sucursal")
+	@JsonIgnoreProperties({ "usuario", "hibernateLazyInitializer", "handler" })
+	private Sucursal sucursal;
 
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JoinColumn(name = "id_factura")

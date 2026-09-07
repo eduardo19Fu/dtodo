@@ -53,8 +53,9 @@ export class UsuarioService {
     return this.http.get<any>(`${this.url}/usuarios/listado`, {params});
   }
 
-  getCajeros(): Observable<Usuario[]> {
-    return this.http.get<Usuario[]>(`${this.url}/usuarios/cajero`);
+  getCajeros(idSucursal?: number): Observable<Usuario[]> {
+    const params = idSucursal ? new HttpParams().set('idSucursal', idSucursal.toString()) : undefined;
+    return this.http.get<Usuario[]>(`${this.url}/usuarios/cajero`, { params });
   }
 
   getUsuario(id: number): Observable<UsuarioAuxiliar> {

@@ -11,6 +11,7 @@ import xyz.pangosoft.dtodo.model.MovimientoProducto;
 import xyz.pangosoft.dtodo.model.NotaCredito;
 import xyz.pangosoft.dtodo.model.NotaCreditoDetalle;
 import xyz.pangosoft.dtodo.model.Producto;
+import xyz.pangosoft.dtodo.model.Sucursal;
 import xyz.pangosoft.dtodo.model.Usuario;
 import xyz.pangosoft.dtodo.model.enums.EstadoNotaCreditoEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoDocumentoOrigenEnum;
@@ -18,6 +19,7 @@ import xyz.pangosoft.dtodo.model.enums.TipoMovimientoEnum;
 import xyz.pangosoft.dtodo.repository.INotaCreditoRepository;
 import xyz.pangosoft.dtodo.service.IMovimientoProductoService;
 import xyz.pangosoft.dtodo.service.INotaCreditoService;
+import xyz.pangosoft.dtodo.service.IUsuarioService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jasperreports.engine.JRException;
@@ -55,6 +57,7 @@ public class NotaCreditoServiceImpl implements INotaCreditoService {
 
     private final INotaCreditoRepository notaCreditoRepository;
     private final IMovimientoProductoService movimientoProductoService;
+    private final IUsuarioService usuarioService;
     private final DataSource localDataSource;
 
     @Transactional(readOnly = true)
@@ -96,9 +99,9 @@ public class NotaCreditoServiceImpl implements INotaCreditoService {
 
     @Transactional(readOnly = true)
     @Override
-    public Page<NotaCreditoDto> findUltimas(String filtro, Pageable pageable) {
+    public Page<NotaCreditoDto> findUltimas(String filtro, Integer idUsuario, Pageable pageable) {
         try {
-            List<NotaCreditoDto> notas = notaCreditoRepository.findUltimasAsDto(PageRequest.of(0, 500));
+            List<NotaCreditoDto> notas = notaCreditoRepository.findUltimasAsDto(idUsuario, PageRequest.of(0, 500));
             String filtroNormalizado = filtro == null ? "" : filtro.trim().toLowerCase();
             if (!filtroNormalizado.isEmpty()) {
                 notas = notas.stream()
@@ -119,7 +122,7 @@ public class NotaCreditoServiceImpl implements INotaCreditoService {
     @Transactional(readOnly = true)
     @Override
     public Page<NotaCreditoDto> findPorFechas(String fechaIni, String fechaFin,
-                                                   String filtro, Pageable pageable) {
+                                                   String filtro, Integer idUsuario, Pageable pageable) {
         try {
             LocalDate inicio = LocalDate.parse(fechaIni);
             LocalDate fin = LocalDate.parse(fechaFin);
@@ -128,7 +131,7 @@ public class NotaCreditoServiceImpl implements INotaCreditoService {
             }
             String filtroNormalizado = filtro == null ? "" : filtro.trim().replaceAll("\\s+", " ");
             return notaCreditoRepository.findByFechasAsDto(
-                    inicio.atStartOfDay(), fin.plusDays(1).atStartOfDay(), filtroNormalizado, pageable);
+                    inicio.atStartOfDay(), fin.plusDays(1).atStartOfDay(), idUsuario, filtroNormalizado, pageable);
         } catch (DateTimeParseException e) {
             throw new BadRequestException("El formato del rango de fechas no es válido", e);
         } catch (DataAccessException e) {
@@ -278,6 +281,9 @@ public class NotaCreditoServiceImpl implements INotaCreditoService {
                 case ENTREGA_PENDIENTE:
                     log.info("------> Registrando nota de Credito");
                     validarOrigenUnico(notaCredito);
+                    if (notaCredito.getUsuario() != null) {
+                        notaCredito.setSucursal(usuarioService.findById(notaCredito.getUsuario().getIdUsuario()).getSucursal());
+                    }
                     notaCreditoSaved = notaCreditoRepository.save(notaCredito);
                     break;
                 case ANULADO:
@@ -288,7 +294,8 @@ public class NotaCreditoServiceImpl implements INotaCreditoService {
                     log.info("------> Registrando entrega de productos");
                     for(NotaCreditoDetalle item : notaCredito.getItems()) {
                         log.info("Registrando entrega de producto: {}", item.getProducto().getCodProducto());
-                        movimientoProductoService.save(buildMovimiento(item.getProducto(), item.getCantidad(), TipoMovimientoEnum.ENTREGA_PRODUCTO_NOTA, notaCredito.getUsuario()));
+                        movimientoProductoService.save(buildMovimiento(item.getProducto(), item.getCantidad(),
+                                TipoMovimientoEnum.ENTREGA_PRODUCTO_NOTA, notaCredito.getUsuario(), notaCredito.getSucursal()));
                     }
 
                     log.info("------> Registrando actualización de estado de la nota de credito");
@@ -405,12 +412,12 @@ public class NotaCreditoServiceImpl implements INotaCreditoService {
         }
     }
 
-    private MovimientoProducto buildMovimiento(Producto producto, int cantidad, TipoMovimientoEnum tipoMovimiento, Usuario usuario) {
+    private MovimientoProducto buildMovimiento(Producto producto, int cantidad, TipoMovimientoEnum tipoMovimiento, Usuario usuario, Sucursal sucursal) {
         return MovimientoProducto.builder()
-                .stockInicial(producto.getStock())
                 .cantidad(cantidad)
                 .producto(producto)
                 .usuario(usuario)
+                .sucursal(sucursal)
                 .tipoMovimiento(tipoMovimiento)
                 .build();
     }

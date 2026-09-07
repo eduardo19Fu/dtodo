@@ -39,7 +39,7 @@ public class TipoProducto implements Serializable {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "id_usuario")
-	@JsonIgnoreProperties({ "password", "roles", "fecha_registro", "hibernateLazyInitializer", "handler" })
+	@JsonIgnoreProperties({ "password", "roles", "sucursal", "fecha_registro", "hibernateLazyInitializer", "handler" })
 	private Usuario usuario;
 
 	@PrePersist

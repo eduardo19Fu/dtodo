@@ -15,6 +15,9 @@
             </div>
             <div class="info">
                 <a [routerLink]="['/home']" class="d-block">{{usuario.primerNombre + ' ' + usuario.apellido}}</a>
+                <span *ngIf="usuario.sucursal" class="sucursal-activa">
+                    <i class="fas fa-store"></i> {{usuario.sucursal.nombre}}
+                </span>
             </div>
         </div>
 
@@ -36,9 +39,6 @@
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                 
                 <!-- MENU PRODUCTOS -->
-                <li class="nav-header" *ngIf="authService.hasRole('ROLE_INVENTARIO') || authService.hasRole('ROLE_ADMIN')">
-                    Productos e Inventario
-                </li>
                 <li class="nav-item"
                     [ngClass]="{'menu-open': router.url.startsWith('/productos') && !router.url.includes('inventario')}">
                     <a href="" class="nav-link" [ngClass]="{'active': router.url.startsWith('/productos') && !router.url.includes('inventario')}">
@@ -80,13 +80,11 @@
                 <li class="nav-item" *ngIf="authService.hasRole('ROLE_ADMIN') || authService.hasRole('ROLE_INVENTARIO')">
                     <a [routerLink]="['/productos/inventario/index']" class="nav-link" [routerLinkActive]="['active']">
                         <i class="fas fa-warehouse nav-icon"></i>
-                        <p>Inventario</p>
+                        <p>Movimientos de Producto</p>
                     </a>
                 </li>
 
                 <!-- MENUS DE FACTURAS -->
-                <li class="nav-header" *ngIf="authService.hasRole('ROLE_COBRADOR') || authService.hasRole('ROLE_ADMIN') || authService.hasRole('ROLE_INVENTARIO')">Ventas</li>
-
                 <li class="nav-item" *ngIf="authService.hasRole('ROLE_COBRADOR') || authService.hasRole('ROLE_ADMIN') || authService.hasRole('ROLE_INVENTARIO')">
                     <a [routerLink]="['/proformas/index']" class="nav-link" [ngClass]="{'active' : router.url.startsWith('/proformas')}">
                         <i class="nav-icon fas fa-street-view"></i>
@@ -133,7 +131,6 @@
                 <!-- MENU DE NOTAS DE CREDITO FINAL -->
 
                 <!-- MENU DE CLIENTES -->
-                <li class="nav-header" *ngIf="authService.hasRole('ROLE_COBRADOR') || authService.hasRole('ROLE_ADMIN')">Clientes</li>
                 <li class="nav-item" *ngIf="authService.hasRole('ROLE_COBRADOR') || authService.hasRole('ROLE_ADMIN')">
                     <a [routerLink]="['/clientes/index']" class="nav-link" [ngClass]="{'active' : router.url.startsWith('/clientes')}">
                         <i class="nav-icon fas fa-street-view"></i>
@@ -141,8 +138,18 @@
                     </a>
                 </li><!-- MENU DE CLIENTES FINAL -->
 
+                <!-- MENU DE SUCURSALES -->
+                <li class="nav-item" *ngIf="authService.hasRole('ROLE_ADMIN')">
+                    <a [routerLink]="['/sucursales/index']" class="nav-link"
+                        [ngClass]="{'active' : router.url.startsWith('/sucursales')}">
+                        <p>
+                            <i class="fas fa-store nav-icon"></i>
+                            Sucursales
+                        </p>
+                    </a>
+                </li> <!-- MENU DE SUCURSALES FINAL -->
+
                 <!-- MENU DE USUARIOS -->
-                <li class="nav-header" *ngIf="authService.hasRole('ROLE_ADMIN')">Usuarios y Permisos</li>
                 <li class="nav-item"  *ngIf="authService.hasRole('ROLE_ADMIN')"
                     [ngClass]="{'menu-open': router.url.startsWith('/usuarios')}">
                     <a [routerLink]="['/usuarios/index']" class="nav-link"
@@ -152,9 +159,8 @@
                             Usuarios
                         </p>
                     </a>
-                </li> <!-- MENU DE USUARIOS FINAL -->
+                </li> <!-- MENU DE USUARIOS FINAL -->   
 
-                <li class="nav-header">Sesión</li>
                 <li class="nav-item">
                     <a [routerLink]="['/login']" class="nav-link">
                         <i class="fas fa-window-close nav-icon"></i>

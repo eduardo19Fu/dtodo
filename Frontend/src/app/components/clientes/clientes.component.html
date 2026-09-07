@@ -3,6 +3,9 @@
     <div class="row mb-2">
       <div class="col-sm-6">
         <h1>{{title}}</h1>
+        <p class="sucursal-subtitle" *ngIf="auth.usuario?.sucursal">
+          <i class="fas fa-store"></i> {{ auth.usuario.sucursal.nombre }}
+        </p>
         <br>
         <a *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR')"
           [routerLink]="['/clientes/create']" class="btn listing-page-action listing-primary-action">
@@ -49,9 +52,12 @@
       <div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div>
     </div>
 
-    <div *ngIf="!cargando && clientes.length === 0" class="alert alert-info alert-dismissible">
-      <h5><i class="icon fas fa-info"></i> Atención!</h5>
-      No se encontraron clientes con el filtro indicado.
+    <div *ngIf="!cargando && clientes.length === 0" class="listing-empty-state">
+      <span class="listing-empty-icon" aria-hidden="true"><i class="fas fa-address-book"></i></span>
+      <div class="listing-empty-state-body">
+        <h5>No se encontraron clientes</h5>
+        <p>No hay resultados para el filtro indicado.</p>
+      </div>
     </div>
 
     <table class="table table-hover table-striped table-bordered table-sm mt-0 clientes-table mobile-data-table"

@@ -102,6 +102,10 @@ public class JwtTokenService {
         addClaimIfPresent(claims, "primerNombre", usuario.getPrimerNombre());
         addClaimIfPresent(claims, "segundoNombre", usuario.getSegundoNombre());
         addClaimIfPresent(claims, "apellido", usuario.getApellido());
+        if (usuario.getSucursal() != null) {
+            claims.claim("id_sucursal", usuario.getSucursal().getIdSucursal().toString());
+            addClaimIfPresent(claims, "sucursal", usuario.getSucursal().getNombre());
+        }
 
         return encode(claims.build());
     }

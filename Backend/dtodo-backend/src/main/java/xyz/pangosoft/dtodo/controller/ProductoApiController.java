@@ -32,9 +32,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import xyz.pangosoft.dtodo.model.Estado;
+import xyz.pangosoft.dtodo.model.InventarioSucursal;
 import xyz.pangosoft.dtodo.model.Producto;
+import xyz.pangosoft.dtodo.model.Sucursal;
 import xyz.pangosoft.dtodo.service.IEstadoService;
+import xyz.pangosoft.dtodo.service.IInventarioSucursalService;
 import xyz.pangosoft.dtodo.service.IProductoService;
+import xyz.pangosoft.dtodo.service.ISucursalService;
 import xyz.pangosoft.dtodo.service.IUploadFileService;
 
 @CrossOrigin(origins = { "http://localhost:4200", "https://dtodojalapa.xyz" },
@@ -51,29 +55,34 @@ public class ProductoApiController {
 
 	private final IUploadFileService serviceUpload;
 
+	private final ISucursalService serviceSucursal;
+
+	private final IInventarioSucursalService serviceInventarioSucursal;
+
 	@GetMapping(value = "/productos")
-	public ResponseEntity<List<Producto>> index() {
+	public ResponseEntity<List<Producto>> listado(@RequestParam(value = "idSucursal", required = false) Integer idSucursal) {
 		log.info("Listando productos registrados");
 
 		List<Producto> productos = new ArrayList<>();
-		productos = serviceProducto.findAll();
+		productos = serviceProducto.findAll(resolverSucursal(idSucursal));
 		return ResponseEntity.ok(productos);
 	}
 
 	@GetMapping(value = "/productos/dto")
-	public ResponseEntity<List<ProductoDto>> getAllDto() {
+	public ResponseEntity<List<ProductoDto>> getAllDto(@RequestParam(value = "idSucursal", required = false) Integer idSucursal) {
 		log.info("Listando productos registrados con dtos");
-		return ResponseEntity.ok(serviceProducto.findAllDto());
+		return ResponseEntity.ok(serviceProducto.findAllDto(resolverSucursal(idSucursal)));
 	}
 
 	@GetMapping(value = "/productos-dto/page/{page}")
 	public ResponseEntity<Page<ProductoDtoMejorado>> getPageDto(@PathVariable("page") Integer page,
 																@RequestParam(value = "size", defaultValue = "5") Integer size,
 																@RequestParam(value = "orden", defaultValue = "nombre") String orden,
-																@RequestParam(value = "direccion", defaultValue = "asc") String direccion)
+																@RequestParam(value = "direccion", defaultValue = "asc") String direccion,
+																@RequestParam(value = "idSucursal", required = false) Integer idSucursal)
 	{
 		return ResponseEntity.ok(serviceProducto.findAllDtoMejorado(
-				validarOrden(orden), validarDireccion(direccion), PageRequest.of(page, size)));
+				validarOrden(orden), validarDireccion(direccion), resolverSucursal(idSucursal), PageRequest.of(page, size)));
 	}
 
 	@GetMapping(value = "/productos-dto/search/{page}")
@@ -82,10 +91,23 @@ public class ProductoApiController {
 																@RequestParam(required = false) String filtro,
 																@RequestParam(value = "size", defaultValue = "5") Integer size,
 																@RequestParam(value = "orden", defaultValue = "nombre") String orden,
-																@RequestParam(value = "direccion", defaultValue = "asc") String direccion)
+																@RequestParam(value = "direccion", defaultValue = "asc") String direccion,
+																@RequestParam(value = "idSucursal", required = false) Integer idSucursal)
 	{
 		return ResponseEntity.ok(serviceProducto.searchProductoDtoMejorado(
-				filtro, validarOrden(orden), validarDireccion(direccion), PageRequest.of(page, size)));
+				filtro, validarOrden(orden), validarDireccion(direccion), resolverSucursal(idSucursal), PageRequest.of(page, size)));
+	}
+
+	/**
+	 * Mientras el frontend no envíe explícitamente la sucursal activa del usuario (ver plan de
+	 * implementación, milestone M8), las consultas de productos caen por defecto en la sucursal
+	 * principal para no romper las pantallas existentes.
+	 */
+	private Integer resolverSucursal(Integer idSucursal) {
+		if (idSucursal != null) {
+			return idSucursal;
+		}
+		return serviceSucursal.findPrincipal().getIdSucursal();
 	}
 
 	private String validarOrden(String orden) {
@@ -124,11 +146,11 @@ public class ProductoApiController {
 	}
 	
 	@GetMapping(value = "/productos-activos")
-	public ResponseEntity<List<ProductoDto>> findAll() {
+	public ResponseEntity<List<ProductoDto>> findAll(@RequestParam(value = "idSucursal", required = false) Integer idSucursal) {
 		log.info("Listando productos activos");
 
 		Estado estado = serviceEstado.findById(1);
-		List<ProductoDto> productosActivos = serviceProducto.findAllByEstado(estado);
+		List<ProductoDto> productosActivos = serviceProducto.findAllByEstado(estado, resolverSucursal(idSucursal));
 		return ResponseEntity.ok(productosActivos);
 	}
 
@@ -141,23 +163,32 @@ public class ProductoApiController {
 		return ResponseEntity.ok(producto);
 	}
 
-	@Secured(value = {"ROLE_ADMIN", "ROLE_INVENTARIO"})
+	@Secured(value = {"ROLE_ADMIN", "ROLE_INVENTARIO", "ROLE_COBRADOR"})
 	@GetMapping(value = "/productos/cantidad-productos")
-	public ResponseEntity<Integer> getTotalProductos(){
+	public ResponseEntity<Integer> getTotalProductos(
+			@RequestParam(value = "idSucursal", required = false) Integer idSucursal){
 		log.info("Obteniendo total de Productos registrados");
 
-		Integer total = 0;
-		total = serviceProducto.totalProductos();
+		Integer total = serviceProducto.totalProductos(resolverSucursal(idSucursal));
 		return ResponseEntity.ok(total);
 	}
 
 	@Secured(value = { "ROLE_ADMIN" })
 	@PostMapping(value = "/productos")
-	public ResponseEntity<Producto> create(@RequestBody Producto producto, BindingResult result) {
+	public ResponseEntity<Producto> create(@RequestBody Producto producto, BindingResult result,
+			@RequestParam(value = "idSucursal", required = false) Integer idSucursal) {
 		log.info("Registrando nuevo producto con codigo: {}", producto.getCodProducto());
 
-		Producto newProducto = null;
-		newProducto = serviceProducto.save(producto);
+		int stockInicial = producto.getStock();
+		Producto newProducto = serviceProducto.save(producto);
+
+		if (stockInicial > 0) {
+			Sucursal sucursal = serviceSucursal.findById(resolverSucursal(idSucursal));
+			InventarioSucursal inventario = serviceInventarioSucursal.obtenerOCrear(sucursal, newProducto);
+			inventario.setStock(stockInicial);
+			serviceInventarioSucursal.guardar(inventario);
+		}
+
 		return new ResponseEntity<>(newProducto, HttpStatus.CREATED);
 	}
 
@@ -218,10 +249,11 @@ public class ProductoApiController {
 
 	@Secured({ "ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO" })
 	@GetMapping(value = "/productos/codigo/{codigo}")
-	public ResponseEntity<Producto> findByCodigo(@PathVariable("codigo") String codigo) {
+	public ResponseEntity<Producto> findByCodigo(@PathVariable("codigo") String codigo,
+			@RequestParam(value = "idSucursal", required = false) Integer idSucursal) {
 		log.info("Buscando producto por codigo: {}", codigo);
 
-		Producto producto = serviceProducto.findByCodigo(codigo);
+		Producto producto = serviceProducto.findByCodigo(codigo, resolverSucursal(idSucursal));
 		return ResponseEntity.ok(producto);
 	}
 	
@@ -235,9 +267,9 @@ public class ProductoApiController {
 
 	@Secured(value = {"ROLE_ADMIN"})
 	@GetMapping(value = "/productos/excel")
-	public ResponseEntity<byte[]> generarProductosExcel() {
+	public ResponseEntity<byte[]> generarProductosExcel(@RequestParam(value = "idSucursal", required = false) Integer idSucursal) {
 		log.info("Generando reporte Excel de productos");
-		byte[] reporte = serviceProducto.productosExcel();
+		byte[] reporte = serviceProducto.productosExcel(resolverSucursal(idSucursal));
 
 		return ResponseEntity.ok()
 				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=productos.xlsx")

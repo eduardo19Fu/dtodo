@@ -152,10 +152,10 @@ public class UsuarioServiceImpl implements UserDetailsService, IUsuarioService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<Usuario> cajeros() {
+	public List<Usuario> cajeros(Integer idSucursal) {
 		try {
 			log.info("Listando usuarios con rol de cajero");
-			return repoUsuario.findByRole();
+			return repoUsuario.findByRole(idSucursal);
 		} catch (DataAccessException e) {
 			log.error("Error de base de datos al listar cajeros: {}", e.getMessage());
 			throw new xyz.pangosoft.dtodo.error.exceptions.DataAccessException(e.getMessage(), e);
@@ -192,6 +192,7 @@ public class UsuarioServiceImpl implements UserDetailsService, IUsuarioService {
 			usuarioActual.setApellido(usuario.getApellido());
 			usuarioActual.setUsuario(usuario.getUsuario());
 			usuarioActual.setRoles(usuario.getRoles());
+			usuarioActual.setSucursal(usuario.getSucursal());
 
 			// Solo se recodifica la contraseña si cambió respecto a la almacenada
 			if (!usuarioActual.getPassword().equals(usuario.getPassword())) {

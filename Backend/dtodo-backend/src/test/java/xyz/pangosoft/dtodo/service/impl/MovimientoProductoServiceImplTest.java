@@ -10,10 +10,17 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
 import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
+import xyz.pangosoft.dtodo.model.InventarioSucursal;
+import xyz.pangosoft.dtodo.model.MovimientoProducto;
+import xyz.pangosoft.dtodo.model.Producto;
+import xyz.pangosoft.dtodo.model.Sucursal;
+import xyz.pangosoft.dtodo.model.enums.TipoMovimientoEnum;
 import xyz.pangosoft.dtodo.repository.IMovimientoProductoRepository;
 import xyz.pangosoft.dtodo.service.IEstadoService;
+import xyz.pangosoft.dtodo.service.IInventarioSucursalService;
 import xyz.pangosoft.dtodo.service.IProductoService;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -25,45 +32,91 @@ import static org.mockito.Mockito.when;
 class MovimientoProductoServiceImplTest {
 
     private final IMovimientoProductoRepository repository = mock(IMovimientoProductoRepository.class);
+    private final IInventarioSucursalService inventarioSucursalService = mock(IInventarioSucursalService.class);
     private final MovimientoProductoServiceImpl service = new MovimientoProductoServiceImpl(
             repository,
             mock(IEstadoService.class),
             mock(IProductoService.class),
+            inventarioSucursalService,
             mock(DataSource.class)
     );
 
     @Test
     void incluyeCompletoElDiaFinalDelRango() {
         PageRequest pageable = PageRequest.of(0, 5);
-        when(repository.findListado(any(), any(), any(), any())).thenReturn(Page.empty());
+        when(repository.findListado(any(), any(), any(), any(), any())).thenReturn(Page.empty());
 
-        service.findListado("2026-08-01", "2026-08-05", "", pageable);
+        service.findListado("2026-08-01", "2026-08-05", 1, "", pageable);
 
         verify(repository).findListado(
                 eq(LocalDateTime.of(2026, 8, 1, 0, 0)),
                 eq(LocalDateTime.of(2026, 8, 6, 0, 0)),
+                eq(1),
                 eq(""),
                 eq(pageable)
         );
     }
 
     @Test
-    void limitaLaConsultaInicialALosUltimosQuinientosMovimientos() {
+    void limitaLaConsultaInicialALosUltimosQuinientosMovimientosDeLaSucursal() {
         PageRequest pageable = PageRequest.of(0, 5);
-        when(repository.findUltimosIds(any())).thenReturn(Arrays.asList(10L, 9L, 8L));
+        when(repository.findUltimosIds(any(), any())).thenReturn(Arrays.asList(10L, 9L, 8L));
         when(repository.findListadoLimitado(any(), any(), any())).thenReturn(Page.empty());
 
-        service.findListado(null, null, "", pageable);
+        service.findListado(null, null, 1, "", pageable);
 
-        verify(repository).findUltimosIds(PageRequest.of(0, 500));
+        verify(repository).findUltimosIds(1, PageRequest.of(0, 500));
         verify(repository).findListadoLimitado(Arrays.asList(10L, 9L, 8L), "", pageable);
     }
 
     @Test
     void rechazaUnRangoInvertido() {
         assertThrows(BadRequestException.class,
-                () -> service.findListado("2026-08-05", "2026-08-01", "", PageRequest.of(0, 5)));
+                () -> service.findListado("2026-08-05", "2026-08-01", 1, "", PageRequest.of(0, 5)));
 
         verifyNoInteractions(repository);
+    }
+
+    @Test
+    void unaVentaDescuentaElStockDeLaSucursalDelMovimiento() {
+        Sucursal sucursal = Sucursal.builder().idSucursal(1).build();
+        Producto producto = Producto.builder().idProducto(10).build();
+        InventarioSucursal inventario = InventarioSucursal.builder()
+                .sucursal(sucursal).producto(producto).stock(50).build();
+        when(inventarioSucursalService.obtenerOCrear(sucursal, producto)).thenReturn(inventario);
+        when(inventarioSucursalService.guardar(any(InventarioSucursal.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        MovimientoProducto movimiento = MovimientoProducto.builder()
+                .sucursal(sucursal).producto(producto)
+                .tipoMovimiento(TipoMovimientoEnum.VENTA).cantidad(5)
+                .build();
+
+        boolean resultado = service.calcularStock(movimiento);
+
+        assertEquals(true, resultado);
+        assertEquals(50, movimiento.getStockInicial());
+        assertEquals(45, inventario.getStock());
+    }
+
+    @Test
+    void unaCompraAumentaElStockDeLaSucursalDelMovimiento() {
+        Sucursal sucursal = Sucursal.builder().idSucursal(2).build();
+        Producto producto = Producto.builder().idProducto(11).build();
+        InventarioSucursal inventario = InventarioSucursal.builder()
+                .sucursal(sucursal).producto(producto).stock(10).build();
+        when(inventarioSucursalService.obtenerOCrear(sucursal, producto)).thenReturn(inventario);
+        when(inventarioSucursalService.guardar(any(InventarioSucursal.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        MovimientoProducto movimiento = MovimientoProducto.builder()
+                .sucursal(sucursal).producto(producto)
+                .tipoMovimiento(TipoMovimientoEnum.COMPRA).cantidad(20)
+                .build();
+
+        boolean resultado = service.calcularStock(movimiento);
+
+        assertEquals(true, resultado);
+        assertEquals(30, inventario.getStock());
     }
 }

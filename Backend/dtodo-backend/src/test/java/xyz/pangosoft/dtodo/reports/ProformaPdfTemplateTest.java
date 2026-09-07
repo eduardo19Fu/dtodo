@@ -25,6 +25,10 @@ class ProformaPdfTemplateTest {
             assertTrue(Arrays.stream(report.getFields())
                     .anyMatch(field -> "precio_venta".equals(field.getName())
                             && "java.math.BigDecimal".equals(field.getValueClassName())));
+            assertTrue(Arrays.stream(report.getFields())
+                    .anyMatch(field -> "sucursal_direccion".equals(field.getName())));
+            assertTrue(Arrays.stream(report.getFields())
+                    .anyMatch(field -> "sucursal_telefono".equals(field.getName())));
         }
     }
 }

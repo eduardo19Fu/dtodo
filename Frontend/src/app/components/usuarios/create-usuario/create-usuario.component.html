@@ -104,6 +104,18 @@
               <i class="fas fa-exclamation-circle"></i> La contraseña es obligatoria.
             </div>
           </div>
+
+          <div class="field-group">
+            <label for="sucursal">Sucursal</label>
+            <div class="select-control">
+              <i class="fas fa-store" aria-hidden="true"></i>
+              <select id="sucursal" name="sucursal" class="form-control" [(ngModel)]="idSucursalSeleccionada">
+                <option [ngValue]="null">Sin asignar</option>
+                <option *ngFor="let item of sucursales" [ngValue]="item.idSucursal">{{item.nombre}}</option>
+              </select>
+            </div>
+            <small>Determina desde d&oacute;nde vende y qu&eacute; inventario ve este usuario.</small>
+          </div>
         </div>
       </section>
 

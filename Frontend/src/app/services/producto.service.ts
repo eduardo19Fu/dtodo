@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpEvent, HttpParams, HttpRequest, HttpResponse } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
 import { Producto } from '../models/producto';
@@ -9,6 +9,7 @@ import { MovimientoProducto } from '../models/movimiento-producto';
 import { global } from './global';
 import swal from 'sweetalert2';
 import { ProductoDto } from '../dtos/productoDto';
+import { AuthService } from './auth.service';
 
 
 @Injectable({
@@ -19,29 +20,43 @@ export class ProductoService {
   private url: string;
 
   constructor(
-    private http: HttpClient
+    private http: HttpClient,
+    private authService: AuthService
   ) {
     this.url = global.url;
   }
 
+  /** Sucursal activa del usuario logueado. Si no tiene una asignada, el backend usa la sucursal principal. */
+  private get idSucursalActiva(): number {
+    return this.authService.usuario?.sucursal?.idSucursal || null;
+  }
+
+  private conSucursal(params: HttpParams): HttpParams {
+    const idSucursal = this.idSucursalActiva;
+    return idSucursal ? params.set('idSucursal', idSucursal.toString()) : params;
+  }
+
   getProductos(): Observable<Producto[]> {
-    return this.http.get<Producto[]>(this.url + '/productos');
+    const params = this.conSucursal(new HttpParams());
+    return this.http.get<Producto[]>(this.url + '/productos', { params });
   }
 
   getProductosDto(): Observable<ProductoDto[]> {
-    return this.http.get<ProductoDto[]>(this.url + '/productos/dto');
+    const params = this.conSucursal(new HttpParams());
+    return this.http.get<ProductoDto[]>(this.url + '/productos/dto', { params });
   }
 
   getProductosActivos(): Observable<ProductoDto[]> {
-    return this.http.get<ProductoDto[]>(`${this.url}/productos-activos`);
+    const params = this.conSucursal(new HttpParams());
+    return this.http.get<ProductoDto[]>(`${this.url}/productos-activos`, { params });
   }
 
   getProductosDtoPaginados(page: number, size: number = 5,
                            orden: string = 'nombre', direccion: 'asc' | 'desc' = 'asc'): Observable<any> {
-    const params = new HttpParams()
+    const params = this.conSucursal(new HttpParams()
       .set('size', size.toString())
       .set('orden', orden)
-      .set('direccion', direccion);
+      .set('direccion', direccion));
     return this.http.get<any>(`${this.url}/productos-dto/page/${page}`, {params}).pipe(
       catchError(e => {
         console.error(e);
@@ -52,11 +67,11 @@ export class ProductoService {
 
   buscarProductosDto(page: number, filtro: string, size: number = 5,
                      orden: string = 'nombre', direccion: 'asc' | 'desc' = 'asc'): Observable<any> {
-    const params = new HttpParams()
+    const params = this.conSucursal(new HttpParams()
       .set('filtro', filtro)
       .set('size', size.toString())
       .set('orden', orden)
-      .set('direccion', direccion);
+      .set('direccion', direccion));
     return this.http.get<any>(`${this.url}/productos-dto/search/${page}`, {params}).pipe(
       catchError(e => {
         console.error(e);
@@ -87,7 +102,8 @@ export class ProductoService {
   }
 
   getProductoByCode(codigo: string): Observable<Producto> {
-    return this.http.get<Producto>(`${this.url}/productos/codigo/${codigo}`).pipe(
+    const params = this.conSucursal(new HttpParams());
+    return this.http.get<Producto>(`${this.url}/productos/codigo/${codigo}`, { params }).pipe(
       catchError(e => {
         swal.fire('Error al consultar el producto', e.error, 'error');
         return throwError(e);
@@ -101,16 +117,17 @@ export class ProductoService {
   }
 
   getTotalProductos(): Observable<any> {
-    return this.http.get<any>(`${this.url}/productos/cantidad-productos`).pipe(
-      catchError(e => {
-        swal.fire(e.error.mensaje, e.error.error, 'error');
-        return throwError(e);
-      })
+    // Es un contador informativo del dashboard (Home): ante cualquier error se
+    // degrada a 0 en vez de interrumpir con un swal, no hay nada crítico que reportar aquí.
+    const params = this.conSucursal(new HttpParams());
+    return this.http.get<any>(`${this.url}/productos/cantidad-productos`, { params }).pipe(
+      catchError(() => of(0))
     );
   }
 
   create(producto: Producto): Observable<any> {
-    return this.http.post<any>(`${this.url}/productos`, producto).pipe(
+    const params = this.conSucursal(new HttpParams());
+    return this.http.post<any>(`${this.url}/productos`, producto, { params }).pipe(
       catchError(e => {
         swal.fire(e.error.mensaje, e.error.error, 'error');
         return throwError(e);
@@ -156,8 +173,12 @@ export class ProductoService {
 
   /******** SERVICIO DE REPORTES **********/
 
-  exportarProductosExcel(): Observable<HttpResponse<Blob>> {
+  exportarProductosExcel(idSucursal?: number): Observable<HttpResponse<Blob>> {
+    const params = idSucursal
+      ? new HttpParams().set('idSucursal', idSucursal.toString())
+      : this.conSucursal(new HttpParams());
     return this.http.get(`${this.url}/productos/excel`, {
+      params,
       observe: 'response',
       responseType: 'blob'
     }).pipe(

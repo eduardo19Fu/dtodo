@@ -51,9 +51,14 @@ public class MovimientoProducto implements Serializable {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "id_usuario")
-	@JsonIgnoreProperties({"password", "roles", "hibernateLazyInitializer", "handler" })
+	@JsonIgnoreProperties({"password", "roles", "sucursal", "hibernateLazyInitializer", "handler" })
 	private Usuario usuario;
-	
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "id_sucursal")
+	@JsonIgnoreProperties({ "usuario", "hibernateLazyInitializer", "handler" })
+	private Sucursal sucursal;
+
 	@PrePersist
 	public void configFecha() {
 		this.fechaMovimiento = LocalDateTime.now();

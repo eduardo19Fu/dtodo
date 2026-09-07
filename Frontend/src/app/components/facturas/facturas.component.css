@@ -63,11 +63,6 @@
   opacity: 1;
 }
 
-.page-size-select {
-  width: 70px;
-  display: inline-block;
-}
-
 .page-action-button {
   align-items: center;
   border-radius: 9px;
@@ -117,6 +112,10 @@
   min-width: 1245px;
   table-layout: fixed;
   width: 100%;
+}
+
+.listing-empty-state {
+  min-width: 1245px;
 }
 
 .document-table th {

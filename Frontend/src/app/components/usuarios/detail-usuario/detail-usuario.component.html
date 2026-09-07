@@ -74,6 +74,37 @@
                 </small>
               </div>
             </article>
+            <article class="information-card sucursal-card registration-card">
+              <span class="card-icon"><i class="fas fa-store" aria-hidden="true"></i></span>
+              <div class="sucursal-edit-copy">
+                <span class="information-label">Sucursal</span>
+
+                <div *ngIf="!editandoSucursal" class="sucursal-view">
+                  <strong [class.empty-value]="!usuario.sucursal">{{usuario.sucursal?.nombre || 'Sin asignar'}}</strong>
+                  <button type="button" class="sucursal-edit-button" appTooltip="Cambiar sucursal"
+                    aria-label="Cambiar sucursal" (click)="iniciarEdicionSucursal()">
+                    <i class="fas fa-pen" aria-hidden="true"></i>
+                  </button>
+                </div>
+
+                <div *ngIf="editandoSucursal" class="sucursal-edit-control">
+                  <select class="sucursal-select" [(ngModel)]="idSucursalSeleccionada" [disabled]="guardandoSucursal">
+                    <option [ngValue]="null">Sin asignar</option>
+                    <option *ngFor="let item of sucursales" [ngValue]="item.idSucursal">{{item.nombre}}</option>
+                  </select>
+                  <button type="button" class="sucursal-save-button" appTooltip="Guardar sucursal"
+                    aria-label="Guardar sucursal" [disabled]="!sucursalCambio || guardandoSucursal"
+                    (click)="guardarSucursal()">
+                    <span *ngIf="guardandoSucursal" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    <i *ngIf="!guardandoSucursal" class="fas fa-check" aria-hidden="true"></i>
+                  </button>
+                  <button type="button" class="sucursal-cancel-button" appTooltip="Cancelar"
+                    aria-label="Cancelar" [disabled]="guardandoSucursal" (click)="cancelarEdicionSucursal()">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </div>
+            </article>
           </div>
         </section>
 

@@ -33,8 +33,11 @@ import org.springframework.web.bind.annotation.RestController;
 import xyz.pangosoft.dtodo.dto.MovimientoProductoDto;
 import xyz.pangosoft.dtodo.model.MovimientoProducto;
 import xyz.pangosoft.dtodo.model.Producto;
+import xyz.pangosoft.dtodo.model.Usuario;
 import xyz.pangosoft.dtodo.service.IMovimientoProductoService;
 import xyz.pangosoft.dtodo.service.IProductoService;
+import xyz.pangosoft.dtodo.service.ISucursalService;
+import xyz.pangosoft.dtodo.service.IUsuarioService;
 
 import net.sf.jasperreports.engine.JRException;
 
@@ -48,6 +51,10 @@ public class MovimientoProductoApiController {
 	private final IMovimientoProductoService serviceMove;
 
 	private final IProductoService serviceProducto;
+
+	private final IUsuarioService serviceUsuario;
+
+	private final ISucursalService serviceSucursal;
 
 	@GetMapping(value = "/movimientos")
 	public ResponseEntity<List<MovimientoProducto>> index() {
@@ -78,13 +85,21 @@ public class MovimientoProductoApiController {
 			@RequestParam(value = "size", defaultValue = "5") Integer size,
 			@RequestParam(value = "fechaIni", required = false) String fechaIni,
 			@RequestParam(value = "fechaFin", required = false) String fechaFin,
+			@RequestParam(value = "idSucursal", required = false) Integer idSucursal,
 			@RequestParam(value = "filtro", defaultValue = "") String filtro,
 			@RequestParam(value = "orden", defaultValue = "fecha") String orden,
 			@RequestParam(value = "direccion", defaultValue = "desc") String direccion) {
 		Sort.Direction sentido = "asc".equalsIgnoreCase(direccion)
 				? Sort.Direction.ASC : Sort.Direction.DESC;
-		return ResponseEntity.ok(serviceMove.findListado(fechaIni, fechaFin,
+		return ResponseEntity.ok(serviceMove.findListado(fechaIni, fechaFin, resolverSucursal(idSucursal),
 				filtro, PageRequest.of(page, size, Sort.by(sentido, obtenerPropiedadOrden(orden)))));
+	}
+
+	private Integer resolverSucursal(Integer idSucursal) {
+		if (idSucursal != null) {
+			return idSucursal;
+		}
+		return serviceSucursal.findPrincipal().getIdSucursal();
 	}
 
 	private String obtenerPropiedadOrden(String orden) {
@@ -118,6 +133,12 @@ public class MovimientoProductoApiController {
 	@PostMapping(value = "/movimientos")
 	public ResponseEntity<?> create(@RequestBody MovimientoProducto movimientoProducto, BindingResult result) {
 		log.info("Creando nuevo movimiento para el producto: {}", movimientoProducto.getProducto().getCodProducto());
+
+		if (movimientoProducto.getSucursal() == null && movimientoProducto.getUsuario() != null) {
+			Usuario usuario = serviceUsuario.findById(movimientoProducto.getUsuario().getIdUsuario());
+			movimientoProducto.setSucursal(usuario.getSucursal());
+		}
+
 		MovimientoProducto newMovimiento = null;
 		newMovimiento = serviceMove.save(movimientoProducto);
 		return ResponseEntity.status(HttpStatus.CREATED).body(newMovimiento);
@@ -130,16 +151,18 @@ public class MovimientoProductoApiController {
 	 * @throws FileNotFoundException *****************/
 	
 	@PostMapping(value = "/movimientos/inventario")
-	public void inventario(@RequestParam("fechaIni") String paramFechaIni, @RequestParam("fechaFin") String paramFechaFin, 
-			HttpServletResponse httpServletResponse) 
+	public void inventario(@RequestParam("fechaIni") String paramFechaIni, @RequestParam("fechaFin") String paramFechaFin,
+			@RequestParam(value = "idSucursal", required = false) Integer idSucursal,
+			HttpServletResponse httpServletResponse)
 			throws ParseException, FileNotFoundException, JRException, SQLException{
-		
+
 		Date fechaIni, fechaFin;
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 		fechaIni = format.parse(paramFechaIni);
 		fechaFin = format.parse(paramFechaFin);
-		
-		byte[] bytesInventoryReport = serviceMove.inventory(fechaIni, fechaFin);
+
+		Integer sucursalResuelta = idSucursal != null ? idSucursal : serviceSucursal.findPrincipal().getIdSucursal();
+		byte[] bytesInventoryReport = serviceMove.inventory(fechaIni, fechaFin, sucursalResuelta);
 		ByteArrayOutputStream out = new ByteArrayOutputStream(bytesInventoryReport.length);
 		out.write(bytesInventoryReport, 0, bytesInventoryReport.length);
 		

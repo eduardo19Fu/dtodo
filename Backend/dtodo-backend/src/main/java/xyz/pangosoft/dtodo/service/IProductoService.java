@@ -15,22 +15,22 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface IProductoService {
 	
-	public List<Producto> findAll();
+	public List<Producto> findAll(Integer idSucursal);
 
-	public List<ProductoDto> findAllDto();
+	public List<ProductoDto> findAllDto(Integer idSucursal);
 
-	public Page<ProductoDtoMejorado> findAllDtoMejorado(String orden, String direccion, Pageable pageable);
+	public Page<ProductoDtoMejorado> findAllDtoMejorado(String orden, String direccion, Integer idSucursal, Pageable pageable);
 
 	public Page<ProductoDtoMejorado> searchProductoDtoMejorado(
-			String filtro, String orden, String direccion, Pageable pageable);
-	
-	public List<ProductoDto> findAllByEstado(Estado estado);
+			String filtro, String orden, String direccion, Integer idSucursal, Pageable pageable);
+
+	public List<ProductoDto> findAllByEstado(Estado estado, Integer idSucursal);
 	
 	public Page<Producto> findAll(Pageable pageable);
 	
 	public Producto findById(Integer idproducto);
 
-	public Integer totalProductos();
+	public Integer totalProductos(Integer idSucursal);
 	
 	public Producto save(Producto producto);
 	
@@ -39,7 +39,7 @@ public interface IProductoService {
 	// Busqueda de Productos desde el frontend
 	public List<Producto> findByName(String name);
 	
-	public Producto findByCodigo(String codigo);
+	public Producto findByCodigo(String codigo, Integer idSucursal);
 	
 	// Listado de productos caducados
 	public List<Producto> findCaducados();
@@ -50,5 +50,5 @@ public interface IProductoService {
 
 	public byte[] inventarioPDF(String fechaIni, String fechaFin);
 
-	public byte[] productosExcel();
+	public byte[] productosExcel(Integer idSucursal);
 }

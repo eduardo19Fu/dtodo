@@ -3,11 +3,6 @@
   font-size: 0.9rem;
 }
 
-.page-size-select {
-  display: inline-block;
-  width: 70px;
-}
-
 .users-list-card .card-body { padding-bottom: 1rem; }
 
 .table-controls-row {
@@ -20,6 +15,10 @@
 .table-controls-row > [class*='col-']:first-child { padding-left: 0; }
 .table-controls-row > [class*='col-']:last-child { padding-right: 0; }
 .table-controls-row > [class*='col-']:last-child > div { width: 100%; }
+
+.listing-empty-state {
+  min-width: 1120px;
+}
 
 .usuarios-table {
   min-width: 1120px;

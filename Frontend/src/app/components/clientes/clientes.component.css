@@ -1,9 +1,9 @@
 .info-paginacion { color: #6c757d; font-size: 0.9rem; }
-.page-size-select { display: inline-block; width: 70px; }
 
 :host ::ng-deep .table-bordered { border-top: 2px solid #dee2e6; }
 
 .clientes-table { min-width: 1180px; table-layout: fixed; width: 100%; }
+.listing-empty-state { min-width: 1180px; }
 .table-controls-row { margin-left: 0; margin-right: 0; min-width: 1180px; width: 100%; }
 .table-controls-row > [class*='col-']:first-child { padding-left: 0; }
 .table-controls-row > [class*='col-']:last-child { padding-right: 0; }

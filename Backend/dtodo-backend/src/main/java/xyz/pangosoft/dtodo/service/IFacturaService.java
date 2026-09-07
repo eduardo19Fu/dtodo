@@ -24,11 +24,11 @@ public interface IFacturaService {
 	
 	public Page<Factura> findAll(Pageable pageable);
 
-	Page<FacturaDto> findAllListadoDto(String fechaIni, String fechaFin, Pageable pageable);
+	Page<FacturaDto> findAllListadoDto(String fechaIni, String fechaFin, Integer idUsuario, Pageable pageable);
 
-	Page<FacturaDto> searchListadoDto(String fechaIni, String fechaFin, String filtro, Pageable pageable);
+	Page<FacturaDto> searchListadoDto(String fechaIni, String fechaFin, String filtro, Integer idUsuario, Pageable pageable);
 
-	Page<FacturaDto> findUltimasListadoDto(String filtro, Pageable pageable);
+	Page<FacturaDto> findUltimasListadoDto(String filtro, Integer idUsuario, Pageable pageable);
 
 	Page<DetalleDocumentoDto> findDetalleDto(Long idFactura, Pageable pageable);
 
@@ -48,7 +48,7 @@ public interface IFacturaService {
 
 	public TipoFactura findTipoFactura(Integer idTipoFactura);
 
-	public Integer totalVentas();
+	public Integer totalVentas(Integer idUsuario);
 
 	public List<Factura> facturasPorFecha(String iniDate, String endDate);
 	

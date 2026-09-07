@@ -7,6 +7,7 @@ import { Factura } from 'src/app/models/factura';
 import { DocumentoOrigenNotaDto } from 'src/app/dtos/documento-origen-nota-dto';
 
 import { global } from '../global';
+import { AuthService } from '../auth.service';
 import swal from 'sweetalert2';
 
 @Injectable({
@@ -18,9 +19,19 @@ export class FacturaService {
 
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {
     this.url = global.url;
+  }
+
+  /** Un usuario sin ROLE_ADMIN solo debe ver los documentos que él mismo generó. */
+  private conUsuarioSiNoAdmin(params: HttpParams): HttpParams {
+    if (this.authService.hasRole('ROLE_ADMIN')) {
+      return params;
+    }
+    const idUsuario = this.authService.usuario?.idUsuario;
+    return idUsuario ? params.set('idUsuario', idUsuario.toString()) : params;
   }
 
   getFacturas(): Observable<Factura[]> {
@@ -49,12 +60,12 @@ export class FacturaService {
 
   getFacturasDtoPaginadas(page: number, fechaIni: string, fechaFin: string, size: number = 5,
                           orden: string = 'fecha', direccion: string = 'desc'): Observable<any> {
-    const params = new HttpParams()
+    const params = this.conUsuarioSiNoAdmin(new HttpParams()
       .set('fechaIni', fechaIni)
       .set('fechaFin', fechaFin)
       .set('size', size.toString())
       .set('orden', orden)
-      .set('direccion', direccion);
+      .set('direccion', direccion));
     return this.http.get<any>(`${this.url}/facturas-dto/page/${page}`, { params }).pipe(
       catchError(e => throwError(e))
     );
@@ -63,13 +74,13 @@ export class FacturaService {
   buscarFacturasDto(page: number, fechaIni: string, fechaFin: string,
                     filtro: string, size: number = 5,
                     orden: string = 'fecha', direccion: string = 'desc'): Observable<any> {
-    const params = new HttpParams()
+    const params = this.conUsuarioSiNoAdmin(new HttpParams()
       .set('fechaIni', fechaIni)
       .set('fechaFin', fechaFin)
       .set('filtro', filtro)
       .set('size', size.toString())
       .set('orden', orden)
-      .set('direccion', direccion);
+      .set('direccion', direccion));
     return this.http.get<any>(`${this.url}/facturas-dto/search/${page}`, { params }).pipe(
       catchError(e => throwError(e))
     );
@@ -77,11 +88,11 @@ export class FacturaService {
 
   getUltimasFacturasDto(page: number, filtro: string = '', size: number = 5,
                         orden: string = 'fecha', direccion: string = 'desc'): Observable<any> {
-    const params = new HttpParams()
+    const params = this.conUsuarioSiNoAdmin(new HttpParams()
       .set('filtro', filtro)
       .set('size', size.toString())
       .set('orden', orden)
-      .set('direccion', direccion);
+      .set('direccion', direccion));
     return this.http.get<any>(`${this.url}/facturas-dto/ultimas/${page}`, { params }).pipe(
       catchError(e => throwError(e))
     );
@@ -120,8 +131,9 @@ export class FacturaService {
     );
   }
 
-  getTotalVentas(): Observable<any> {
-    return this.http.get<any>(`${this.url}/facturas/cantidad-ventas`).pipe(
+  getTotalVentas(idUsuario?: number): Observable<any> {
+    const params = idUsuario ? new HttpParams().set('idUsuario', idUsuario.toString()) : new HttpParams();
+    return this.http.get<any>(`${this.url}/facturas/cantidad-ventas`, { params }).pipe(
       catchError(e => {
         swal.fire(e.error.mensaje, e.error.error, 'error');
         return throwError(e);

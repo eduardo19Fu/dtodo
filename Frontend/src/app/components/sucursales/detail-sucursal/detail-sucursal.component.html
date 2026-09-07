@@ -1,0 +1,97 @@
+<div *ngIf="detailSucursalService.modal" class="sucursal-detail-overlay animacion fadeIn"
+  (click)="cerrarDesdeBackdrop($event)">
+  <section class="sucursal-detail-dialog" tabindex="-1" role="dialog" aria-modal="true"
+    aria-labelledby="sucursal-detail-title" (click)="$event.stopPropagation()">
+    <div class="sucursal-detail-content">
+      <header class="sucursal-detail-header">
+        <div class="header-copy">
+          <span class="header-icon" aria-hidden="true"><i class="fas fa-store"></i></span>
+          <div>
+            <span class="header-eyebrow">Sucursales</span>
+            <h5 id="sucursal-detail-title">{{title}}</h5>
+          </div>
+        </div>
+        <button (click)="cerrarModal()" type="button" class="close-button"
+          aria-label="Cerrar detalle de sucursal">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+      </header>
+
+      <div *ngIf="sucursal" class="sucursal-detail-body">
+        <section class="identity-section">
+          <div class="profile-summary">
+            <span class="profile-avatar" aria-hidden="true"><i class="fas fa-store-alt"></i></span>
+            <div class="profile-copy">
+              <span class="profile-label">Sucursal</span>
+              <h6>{{sucursal.nombre}}</h6>
+              <span class="address"><i class="fas fa-map-marker-alt" aria-hidden="true"></i>{{sucursal.direccion || 'Sin dirección registrada'}}</span>
+            </div>
+            <div class="status-badges">
+              <span *ngIf="sucursal.esPrincipal" class="status-pill status-principal">
+                <i class="fas fa-star" aria-hidden="true"></i> Principal
+              </span>
+              <span class="status-pill" [ngClass]="sucursal.estado?.estado === 'ACTIVO' ? 'status-active' : 'status-inactive'">
+                <i class="fas" [ngClass]="sucursal.estado?.estado === 'ACTIVO' ? 'fa-check-circle' : 'fa-times-circle'"
+                  aria-hidden="true"></i>
+                {{sucursal.estado?.estado || 'Sin estado'}}
+              </span>
+            </div>
+          </div>
+
+          <div class="information-grid">
+            <article class="information-card">
+              <span class="card-icon"><i class="fas fa-id-badge" aria-hidden="true"></i></span>
+              <div>
+                <span class="information-label">Identificador</span>
+                <strong>#{{sucursal.idSucursal}}</strong>
+              </div>
+            </article>
+            <article class="information-card">
+              <span class="card-icon"><i class="fas fa-file-invoice" aria-hidden="true"></i></span>
+              <div>
+                <span class="information-label">Código de establecimiento SAT</span>
+                <strong>{{sucursal.codigoEstablecimientoSat}}</strong>
+              </div>
+            </article>
+            <article class="information-card">
+              <span class="card-icon"><i class="fas fa-phone-alt" aria-hidden="true"></i></span>
+              <div>
+                <span class="information-label">Teléfono</span>
+                <strong [class.empty-value]="!sucursal.telefono">{{sucursal.telefono || 'No registrado'}}</strong>
+              </div>
+            </article>
+            <article class="information-card">
+              <span class="card-icon"><i class="fas fa-user-tie" aria-hidden="true"></i></span>
+              <div>
+                <span class="information-label">Encargado</span>
+                <strong [class.empty-value]="!sucursal.encargado">{{sucursal.encargado || 'No registrado'}}</strong>
+              </div>
+            </article>
+            <article class="information-card">
+              <span class="card-icon"><i class="fas fa-user-plus" aria-hidden="true"></i></span>
+              <div>
+                <span class="information-label">Registrada por</span>
+                <strong>{{nombreCreador}}</strong>
+              </div>
+            </article>
+            <article class="information-card registration-card">
+              <span class="card-icon"><i class="far fa-calendar-alt" aria-hidden="true"></i></span>
+              <div>
+                <span class="information-label">Fecha de registro</span>
+                <strong>{{sucursal.fechaRegistro | date: 'dd/MM/yyyy'}}</strong>
+                <small><i class="far fa-clock" aria-hidden="true"></i>
+                  {{sucursal.fechaRegistro | date: 'HH:mm'}} horas
+                </small>
+              </div>
+            </article>
+          </div>
+        </section>
+      </div>
+
+      <footer class="sucursal-detail-footer">
+        <span><i class="fas fa-shield-alt" aria-hidden="true"></i>Información administrativa de la sucursal</span>
+        <button (click)="cerrarModal()" type="button" class="close-action">Cerrar</button>
+      </footer>
+    </div>
+  </section>
+</div>

@@ -47,9 +47,10 @@ public class UsuarioApiController {
 	}
 
 	@GetMapping(value = "/usuarios/cajero")
-	public ResponseEntity<List<Usuario>> findCajeros() {
+	public ResponseEntity<List<Usuario>> findCajeros(
+			@RequestParam(value = "idSucursal", required = false) Integer idSucursal) {
 		log.info("Listando usuarios cajeros");
-		return ResponseEntity.ok(serviceUsuario.cajeros());
+		return ResponseEntity.ok(serviceUsuario.cajeros(idSucursal));
 	}
 
 	@GetMapping(value = "/usuarios/page/{page}")

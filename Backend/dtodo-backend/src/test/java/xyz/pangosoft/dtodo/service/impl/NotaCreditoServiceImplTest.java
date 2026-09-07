@@ -12,6 +12,7 @@ import xyz.pangosoft.dtodo.model.enums.EstadoNotaCreditoEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoDocumentoOrigenEnum;
 import xyz.pangosoft.dtodo.repository.INotaCreditoRepository;
 import xyz.pangosoft.dtodo.service.IMovimientoProductoService;
+import xyz.pangosoft.dtodo.service.IUsuarioService;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,23 +30,38 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class NotaCreditoServiceImplTest {
 
     @Test
+    void propagaElIdUsuarioAlListadoPorFechasParaUnUsuarioNoAdmin() {
+        INotaCreditoRepository repository = mock(INotaCreditoRepository.class);
+        NotaCreditoServiceImpl service = new NotaCreditoServiceImpl(
+                repository, mock(IMovimientoProductoService.class), mock(IUsuarioService.class), mock(DataSource.class));
+        PageRequest pageable = PageRequest.of(0, 5);
+        when(repository.findByFechasAsDto(any(), any(), eq(5), eq(""), eq(pageable))).thenReturn(Page.empty());
+
+        service.findPorFechas("2026-08-01", "2026-08-05", "", 5, pageable);
+
+        verify(repository).findByFechasAsDto(any(), any(), eq(5), eq(""), eq(pageable));
+    }
+
+    @Test
     void ordenaLasUltimasNotasAntesDePaginar() {
         INotaCreditoRepository repository = mock(INotaCreditoRepository.class);
         NotaCreditoServiceImpl service = new NotaCreditoServiceImpl(
-                repository, mock(IMovimientoProductoService.class), mock(DataSource.class));
+                repository, mock(IMovimientoProductoService.class), mock(IUsuarioService.class), mock(DataSource.class));
         NotaCreditoDto segunda = new NotaCreditoDto();
         segunda.setIdNotaCredito(20L);
         NotaCreditoDto primera = new NotaCreditoDto();
         primera.setIdNotaCredito(10L);
-        when(repository.findUltimasAsDto(any()))
+        when(repository.findUltimasAsDto(any(), any()))
                 .thenReturn(new ArrayList<>(Arrays.asList(segunda, primera)));
 
-        Page<NotaCreditoDto> resultado = service.findUltimas("",
+        Page<NotaCreditoDto> resultado = service.findUltimas("", null,
                 PageRequest.of(0, 5, Sort.by(Sort.Direction.ASC, "idNotaCredito")));
 
         assertEquals(10L, resultado.getContent().get(0).getIdNotaCredito());
@@ -56,7 +72,7 @@ class NotaCreditoServiceImplTest {
     void findDetalleMapeaSoloLosDatosNecesariosParaVisualizacion() {
         INotaCreditoRepository repository = mock(INotaCreditoRepository.class);
         NotaCreditoServiceImpl service = new NotaCreditoServiceImpl(
-                repository, mock(IMovimientoProductoService.class), mock(DataSource.class));
+                repository, mock(IMovimientoProductoService.class), mock(IUsuarioService.class), mock(DataSource.class));
 
         Producto producto = Producto.builder()
                 .idProducto(21)

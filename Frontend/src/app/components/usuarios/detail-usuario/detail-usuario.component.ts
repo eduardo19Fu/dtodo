@@ -1,21 +1,35 @@
 import { DOCUMENT } from '@angular/common';
-import { AfterViewInit, Component, ElementRef, HostListener, Inject, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  AfterViewInit, Component, ElementRef, HostListener, Inject, Input, OnChanges, OnDestroy, OnInit, SimpleChanges
+} from '@angular/core';
 import { UsuarioAuxiliar } from 'src/app/models/auxiliar/usuario-auxiliar';
+import { Sucursal } from 'src/app/models/sucursal';
 import { DetailUsuarioService } from 'src/app/services/usuarios/detail-usuario.service';
+import { SucursalService } from 'src/app/services/sucursal.service';
+import { UsuarioService } from 'src/app/services/usuarios/usuario.service';
+
+import swal from 'sweetalert2';
 
 @Component({
   selector: 'app-detail-usuario',
   templateUrl: './detail-usuario.component.html',
   styleUrls: ['./detail-usuario.component.css']
 })
-export class DetailUsuarioComponent implements OnInit, AfterViewInit, OnDestroy {
+export class DetailUsuarioComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
 
   title: string;
 
   @Input() usuario: UsuarioAuxiliar;
 
+  sucursales: Sucursal[] = [];
+  idSucursalSeleccionada: number = null;
+  editandoSucursal = false;
+  guardandoSucursal = false;
+
   constructor(
     public detailUsuarioService: DetailUsuarioService,
+    private sucursalService: SucursalService,
+    private usuarioService: UsuarioService,
     private elementRef: ElementRef<HTMLElement>,
     @Inject(DOCUMENT) private document: Document
   ) {
@@ -23,6 +37,14 @@ export class DetailUsuarioComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   ngOnInit(): void {
+    this.sucursalService.getSucursales().subscribe(sucursales => this.sucursales = sucursales);
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.usuario) {
+      this.idSucursalSeleccionada = this.usuario?.sucursal ? this.usuario.sucursal.idSucursal : null;
+      this.editandoSucursal = false;
+    }
   }
 
   ngAfterViewInit(): void {
@@ -59,6 +81,44 @@ export class DetailUsuarioComponent implements OnInit, AfterViewInit, OnDestroy 
       return 'Rol sin nombre';
     }
     return rol.replace(/^ROLE_/, '').replace(/_/g, ' ');
+  }
+
+  get sucursalCambio(): boolean {
+    const idActual = this.usuario?.sucursal ? this.usuario.sucursal.idSucursal : null;
+    return this.idSucursalSeleccionada !== idActual;
+  }
+
+  iniciarEdicionSucursal(): void {
+    this.editandoSucursal = true;
+  }
+
+  cancelarEdicionSucursal(): void {
+    this.idSucursalSeleccionada = this.usuario?.sucursal ? this.usuario.sucursal.idSucursal : null;
+    this.editandoSucursal = false;
+  }
+
+  guardarSucursal(): void {
+    if (this.guardandoSucursal || !this.sucursalCambio) {
+      return;
+    }
+
+    this.guardandoSucursal = true;
+    const usuarioActualizado: UsuarioAuxiliar = {
+      ...this.usuario,
+      sucursal: this.idSucursalSeleccionada
+        ? this.sucursales.find(item => item.idSucursal === this.idSucursalSeleccionada)
+        : null
+    };
+
+    this.usuarioService.update(usuarioActualizado).subscribe(
+      () => {
+        this.usuario.sucursal = usuarioActualizado.sucursal;
+        this.guardandoSucursal = false;
+        this.editandoSucursal = false;
+        swal.fire('Sucursal actualizada', `El usuario ${this.usuario.usuario} fue reasignado con éxito`, 'success');
+      },
+      () => this.guardandoSucursal = false
+    );
   }
 
   cerrarModal(): void {

@@ -27,9 +27,10 @@ public interface IUsuarioRepository extends JpaRepository<Usuario, Integer> {
 					+ "from usuarios as u\r\n"
 					+ "inner join usuarios_roles as ur on ur.usuario_id = u.id_usuario\r\n"
 					+ "inner join roles as r on r.id_role = ur.role_id\r\n"
-					+ "where r.role = 'ROLE_COBRADOR' AND enabled = 1;",
+					+ "where r.role = 'ROLE_COBRADOR' AND enabled = 1\r\n"
+					+ "AND (:idSucursal IS NULL OR u.id_sucursal = :idSucursal);",
 			nativeQuery = true)
-	public List<Usuario> findByRole();
+	public List<Usuario> findByRole(@Param("idSucursal") Integer idSucursal);
 
 	@Query(value = "Select get_cant_usuarios()", nativeQuery = true)
 	Integer getCantidadUsuarios();

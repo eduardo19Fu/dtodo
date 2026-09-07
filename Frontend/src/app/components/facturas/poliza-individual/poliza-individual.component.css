@@ -59,7 +59,14 @@
 .field-control .form-control:focus {
   border-color: var(--teal-600); box-shadow: 0 0 0 3px rgba(95, 158, 160, 0.16); outline: 0;
 }
-.select-control .form-control { padding-right: 34px; }
+.sucursal-field { margin-bottom: 20px; }
+.select-control .form-control {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath fill='%23728789' d='M0 0l5.5 7L11 0z'/%3E%3C/svg%3E");
+  background-position: right 15px center;
+  background-repeat: no-repeat;
+  padding-right: 38px;
+}
 .policy-report-footer {
   align-items: center; background: #faf8fc; border-top: 1px solid #e9e0ef; display: flex;
   justify-content: space-between; padding: 15px 26px;
@@ -76,7 +83,8 @@
   background: linear-gradient(135deg, var(--teal-700), var(--teal-600)); border: 0;
   box-shadow: 0 7px 16px rgba(75, 133, 135, 0.27); color: #fff; min-width: 155px;
 }
-.report-submit i { margin-right: 6px; }
+.report-submit i,
+.report-submit .spinner-border { margin-right: 6px; }
 .report-submit:hover,
 .report-submit:focus {
   box-shadow: 0 9px 19px rgba(75, 133, 135, 0.34); color: #fff; outline: 0; transform: translateY(-1px);

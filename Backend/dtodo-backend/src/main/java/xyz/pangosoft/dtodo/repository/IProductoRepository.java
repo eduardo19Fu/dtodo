@@ -20,16 +20,17 @@ public interface IProductoRepository extends JpaRepository<Producto, Integer>, J
 	// Buscar listado de productos por estado
 	List<Producto> findByEstado(Estado estado);
 
-	@Query(value = "{call sp_consultar_productos(:idestado)}", nativeQuery = true)
-	List<Producto> listarPorEstadoSP(Integer idestado);
+	@Query(value = "{call sp_consultar_productos(:idestado, :idsucursal)}", nativeQuery = true)
+	List<Producto> listarPorEstadoSP(@Param("idestado") Integer idestado, @Param("idsucursal") Integer idsucursal);
 
 	@Query("select new xyz.pangosoft.dtodo.dto.ProductoDto(" +
 			"p.idProducto, p.codProducto, p.nombre, p.precioCompra, p.precioVenta, " +
 			"p.porcentajeGanancia, p.descripcion, p.fechaVencimiento, p.fechaIngreso, " +
-			"p.fechaRegistro, p.stock, m.marca, t.tipoProducto, e.estado) " +
+			"p.fechaRegistro, COALESCE(inv.stock, 0), m.marca, t.tipoProducto, e.estado) " +
 			"from Producto p join p.marcaProducto m join p.tipoProducto t join p.estado e " +
+			"left join InventarioSucursal inv on inv.producto = p and inv.sucursal.idSucursal = :idsucursal " +
 			"where (:idestado = 0 or e.idEstado = :idestado) order by p.nombre")
-	List<ProductoDto> listarPorEstadoSPDto(@Param("idestado") Integer idestado);
+	List<ProductoDto> listarPorEstadoSPDto(@Param("idestado") Integer idestado, @Param("idsucursal") Integer idsucursal);
 
 	// Filtra los productos por nombre y devuelve un listado con las coincidencias
 	// select * from Producto where nombre = /*valor ingresado por usuario*/
@@ -54,7 +55,7 @@ public interface IProductoRepository extends JpaRepository<Producto, Integer>, J
 				"prod.fecha_vencimiento, " +
 				"prod.fecha_ingreso, " +
 				"prod.fecha_registro, " +
-				"prod.stock, " +
+				"inv.stock AS stock, " +
 				"prod.imagen, " +
 				"prod.id_estado, " +
 				"m.marca, " +
@@ -62,6 +63,7 @@ public interface IProductoRepository extends JpaRepository<Producto, Integer>, J
 				"e.estado " +
 				"FROM productos AS prod " +
 				"INNER JOIN estados AS e ON e.id_estado = prod.id_estado " +
+				"INNER JOIN inventario_sucursal AS inv ON inv.id_producto = prod.id_producto AND inv.id_sucursal = :idsucursal " +
 				"LEFT JOIN marcas_producto AS m ON m.id_marca_producto = prod.id_marca_producto " +
 				"LEFT JOIN tipos_producto AS tp ON tp.id_tipo_producto = prod.id_tipo_producto " +
 				"ORDER BY " +
@@ -73,8 +75,8 @@ public interface IProductoRepository extends JpaRepository<Producto, Integer>, J
 				"CASE WHEN :direccion = 'desc' AND :orden = 'precioCompra' THEN prod.precio_compra END DESC, " +
 				"CASE WHEN :direccion = 'asc' AND :orden = 'precioVenta' THEN prod.precio_venta END ASC, " +
 				"CASE WHEN :direccion = 'desc' AND :orden = 'precioVenta' THEN prod.precio_venta END DESC, " +
-				"CASE WHEN :direccion = 'asc' AND :orden = 'stock' THEN prod.stock END ASC, " +
-				"CASE WHEN :direccion = 'desc' AND :orden = 'stock' THEN prod.stock END DESC, " +
+				"CASE WHEN :direccion = 'asc' AND :orden = 'stock' THEN inv.stock END ASC, " +
+				"CASE WHEN :direccion = 'desc' AND :orden = 'stock' THEN inv.stock END DESC, " +
 				"CASE WHEN :direccion = 'asc' AND :orden = 'tipo' THEN tp.tipo_producto END ASC, " +
 				"CASE WHEN :direccion = 'desc' AND :orden = 'tipo' THEN tp.tipo_producto END DESC, " +
 				"CASE WHEN :direccion = 'asc' AND :orden = 'marca' THEN m.marca END ASC, " +
@@ -82,11 +84,11 @@ public interface IProductoRepository extends JpaRepository<Producto, Integer>, J
 				"CASE WHEN :direccion = 'asc' AND :orden = 'estado' THEN e.estado END ASC, " +
 				"CASE WHEN :direccion = 'desc' AND :orden = 'estado' THEN e.estado END DESC, " +
 				"prod.id_producto ASC",
-			countQuery = "SELECT COUNT(*) FROM productos " +
-					"WHERE :orden = :orden AND :direccion = :direccion",
+			countQuery = "SELECT COUNT(*) FROM productos AS prod " +
+					"INNER JOIN inventario_sucursal AS inv ON inv.id_producto = prod.id_producto AND inv.id_sucursal = :idsucursal",
 			nativeQuery = true)
 	Page<Object[]> findAllProductosDto(@Param("orden") String orden,
-			@Param("direccion") String direccion, Pageable pageable);
+			@Param("direccion") String direccion, @Param("idsucursal") Integer idsucursal, Pageable pageable);
 
 	@Query(value = "SELECT prod.id_producto, " +
 				"prod.cod_producto, " +

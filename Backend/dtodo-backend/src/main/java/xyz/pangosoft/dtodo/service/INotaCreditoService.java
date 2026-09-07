@@ -15,9 +15,9 @@ public interface INotaCreditoService {
 
     public List<NotaCreditoDto> findNotasActivas(EstadoNotaCreditoEnum estado);
 
-    Page<NotaCreditoDto> findUltimas(String filtro, Pageable pageable);
+    Page<NotaCreditoDto> findUltimas(String filtro, Integer idUsuario, Pageable pageable);
 
-    Page<NotaCreditoDto> findPorFechas(String fechaIni, String fechaFin, String filtro, Pageable pageable);
+    Page<NotaCreditoDto> findPorFechas(String fechaIni, String fechaFin, String filtro, Integer idUsuario, Pageable pageable);
 
     public NotaCredito findNota(Long idNota);
 

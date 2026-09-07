@@ -27,7 +27,7 @@ public interface IMovimientoProductoService {
 	public Page<MovimientoProductoDto> searchMovimientoDtoMejorado(String filtro, Pageable pageable);
 
 	public Page<MovimientoProductoDto> findListado(
-			String fechaIni, String fechaFin, String filtro, Pageable pageable);
+			String fechaIni, String fechaFin, Integer idSucursal, String filtro, Pageable pageable);
 
 	public Page<MovimientoProducto> findProductoMoves(Producto producto, Pageable pageable);
 
@@ -35,5 +35,5 @@ public interface IMovimientoProductoService {
 
 	/********* PDF REPORTS SERVICES ***********/
 
-	public byte[] inventory(Date fechaIni, Date fechaFin) throws JRException, FileNotFoundException, SQLException;
+	public byte[] inventory(Date fechaIni, Date fechaFin, Integer idSucursal) throws JRException, FileNotFoundException, SQLException;
 }

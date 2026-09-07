@@ -1,10 +1,17 @@
 <app-detail-producto *ngIf="productoSeleccionado" [producto]="productoSeleccionado"></app-detail-producto>
+
+<app-exportar-productos *ngIf="modalExportarVisible" [sucursales]="sucursalesAdmin" [idSucursalActual]="idSucursalActiva"
+  (cerrar)="cerrarModalExportar()" (exportar)="confirmarExportacion($event)">
+</app-exportar-productos>
 <!-- Content Header (Page header) -->
 <section class="content-header">
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-6">
                 <h1>{{title}}</h1>
+                <p class="sucursal-subtitle" *ngIf="nombreSucursalActiva">
+                    <i class="fas fa-store"></i> {{nombreSucursalActiva}}
+                </p>
                 <br>
                 <a [routerLink]="['/productos/create']" class="btn listing-page-action listing-primary-action" *ngIf="auth.hasRole('ROLE_ADMIN')">
                     <i class="fas fa-plus"></i>
@@ -14,7 +21,7 @@
                         class="btn listing-page-action listing-secondary-action ml-2"
                         *ngIf="auth.hasRole('ROLE_ADMIN')"
                         [disabled]="exportando"
-                        (click)="exportarExcel()">
+                        (click)="abrirModalExportar()">
                     <span *ngIf="exportando" class="spinner-border spinner-border-sm mr-1" role="status" aria-hidden="true"></span>
                     <i *ngIf="!exportando" class="fas fa-file-excel mr-1"></i>
                     {{exportando ? 'Generando...' : 'Exportar Excel'}}
@@ -66,12 +73,39 @@
             </div>
         </div>
 
-        <div *ngIf="!cargando && productosDto?.length == 0" class="alert alert-info alert-dismissible">
-            <h5>
-                <i class="icon fas fa-info"></i>
-                Atención!
-            </h5>
-            No se encontraron productos.
+        <div *ngIf="!cargando && productosDto?.length == 0 && filtro" class="empty-state">
+            <div class="empty-state-icon empty-state-icon-info"><i class="fas fa-search"></i></div>
+            <div class="empty-state-body">
+                <h5>No se encontraron productos</h5>
+                <p>No hay resultados para tu b&uacute;squeda. Intenta con otro t&eacute;rmino.</p>
+            </div>
+        </div>
+
+        <div *ngIf="!cargando && productosDto?.length == 0 && !filtro" class="empty-state">
+            <div class="empty-state-icon empty-state-icon-warning"><i class="fas fa-boxes"></i></div>
+            <div class="empty-state-body">
+                <h5>Esta sucursal no tiene inventario registrado</h5>
+                <p>
+                    Todav&iacute;a no se ha importado ning&uacute;n producto a esta sucursal.
+                    <span *ngIf="!auth.hasRole('ROLE_ADMIN')">Solicita a un administrador que lo importe.</span>
+                </p>
+
+                <div class="import-inventory-control" *ngIf="auth.hasRole('ROLE_ADMIN')">
+                    <select class="import-inventory-select" [(ngModel)]="idSucursalImportar" [disabled]="importando">
+                        <option [ngValue]="null">Selecciona la sucursal de origen</option>
+                        <option *ngFor="let origen of sucursalesOrigenDisponibles" [ngValue]="origen.idSucursal">
+                            {{origen.nombre}}{{origen.esPrincipal ? ' (Principal)' : ''}}
+                        </option>
+                    </select>
+                    <button type="button" class="btn listing-page-action listing-primary-action"
+                            [disabled]="!idSucursalImportar || importando"
+                            (click)="importarProductos()">
+                        <span *ngIf="importando" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        <i *ngIf="!importando" class="fas fa-file-import"></i>
+                        {{importando ? 'Importando...' : 'Importar productos'}}
+                    </button>
+                </div>
+            </div>
         </div>
 
         <table class="table table-hover table-striped table-bordered table-sm mt-0 productos-table mobile-data-table"
@@ -102,7 +136,11 @@
                         {{producto.precioCompra | currency: "Q" : "symbol"}}
                     </td>
                     <td class="col-precio text-nowrap" data-label="Precio venta">{{producto.precioVenta | currency: "Q" : "symbol"}}</td>
-                    <td class="col-stock" data-label="Stock">{{producto.stock}}</td>
+                    <td class="col-stock" data-label="Stock">
+                        <span *ngIf="idProductoEditandoStock !== producto.idProducto">{{producto.stock}}</span>
+                        <input *ngIf="idProductoEditandoStock === producto.idProducto" type="number" min="0"
+                               class="form-control form-control-sm stock-input" [(ngModel)]="stockEdicion">
+                    </td>
                     <td class="col-tipo" data-label="Tipo">
                         <span class="cell-ellipsis" [title]="producto.tipoProducto || ''">{{producto.tipoProducto || 'Sin tipo'}}</span>
                     </td>
@@ -121,7 +159,7 @@
                         </span>
                     </td>
                     <td class="col-opciones mobile-actions-cell" data-label="Opciones">
-                        <div class="action-buttons">
+                        <div class="action-buttons" *ngIf="idProductoEditandoStock !== producto.idProducto">
                         <button class="btn btn-sm listing-table-action listing-action-view" type="button"
                             appTooltip="Ver detalle del producto" aria-label="Ver detalle del producto"
                             (click)="abrirModal(producto)">
@@ -134,8 +172,28 @@
                             *ngIf="auth.hasRole('ROLE_ADMIN')">
                             <i class="fas fa-edit"></i>
                         </button>
+
+                        <button class="btn btn-sm listing-table-action listing-action-edit" type="button"
+                            appTooltip="Ajustar stock" aria-label="Ajustar stock"
+                            (click)="editarStock(producto)"
+                            *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_INVENTARIO')">
+                            <i class="fas fa-boxes"></i>
+                        </button>
                         </div>
 
+                        <div class="action-buttons" *ngIf="idProductoEditandoStock === producto.idProducto">
+                        <button class="btn btn-sm listing-table-action listing-action-edit" type="button"
+                            appTooltip="Guardar stock" aria-label="Guardar stock"
+                            (click)="guardarStock(producto)">
+                            <i class="fas fa-check"></i>
+                        </button>
+
+                        <button class="btn btn-sm listing-table-action listing-action-delete" type="button"
+                            appTooltip="Cancelar" aria-label="Cancelar"
+                            (click)="cancelarEdicionStock()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        </div>
                     </td>
                 </tr>
             </tbody>

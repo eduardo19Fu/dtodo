@@ -27,12 +27,8 @@
     cursor: not-allowed;
 }
 
-.page-size-select {
-    width: 70px;
-    display: inline-block;
-}
-
 .movimientos-table { min-width: 1120px; table-layout: fixed; width: 100%; }
+.listing-empty-state { min-width: 1120px; }
 .movimientos-table th {
     background: #343a40;
     border-color: #454d55;

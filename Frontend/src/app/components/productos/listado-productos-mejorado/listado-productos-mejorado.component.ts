@@ -4,10 +4,14 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 import { Producto } from '../../../models/producto';
 import { ProductoDto } from '../../../dtos/productoDto';
+import { Sucursal } from '../../../models/sucursal';
 
 import { AuthService } from '../../../services/auth.service';
 import { ProductoService } from '../../../services/producto.service';
 import { ModalService } from '../../../services/productos/modal.service';
+import { InventarioSucursalService } from '../../../services/inventario-sucursal.service';
+import { SucursalService } from '../../../services/sucursal.service';
+import { ExportacionProductos } from '../exportar-productos/exportar-productos.component';
 
 import Swal from 'sweetalert2';
 
@@ -42,9 +46,25 @@ export class ListadoProductosMejoradoComponent implements OnInit, OnDestroy {
   cargando: boolean = false;
   exportando: boolean = false;
 
+  // Edición en línea de stock (sustituye a la pantalla independiente de Inventario por Sucursal)
+  idSucursalActiva: number = null;
+  nombreSucursalActiva: string = '';
+  idProductoEditandoStock: number = null;
+  stockEdicion: number = null;
+
+  // Importar inventario cuando la sucursal activa todavía no tiene productos registrados
+  sucursalesAdmin: Sucursal[] = [];
+  idSucursalImportar: number = null;
+  importando: boolean = false;
+
+  // Exportar Excel de otra sucursal (solo ROLE_ADMIN)
+  modalExportarVisible: boolean = false;
+
   constructor(
     public modalService: ModalService,
     private productoService: ProductoService,
+    private inventarioSucursalService: InventarioSucursalService,
+    private sucursalService: SucursalService,
     public auth: AuthService
   ) {
     this.title = 'Productos';
@@ -52,6 +72,7 @@ export class ListadoProductosMejoradoComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.cargarProductos(0);
+    this.resolverSucursalActiva();
     this.modalService.notificarUpload.subscribe(producto => {
       this.cargarProductos(this.paginaActual);
     });
@@ -63,6 +84,44 @@ export class ListadoProductosMejoradoComponent implements OnInit, OnDestroy {
       this.filtro = filtro;
       this.cargarProductos(0);
     });
+
+    if (this.auth.hasRole('ROLE_ADMIN')) {
+      this.sucursalService.getSucursales().subscribe(sucursales => this.sucursalesAdmin = sucursales);
+    }
+  }
+
+  private resolverSucursalActiva(): void {
+    const sucursal = this.auth.usuario?.sucursal;
+    if (sucursal) {
+      this.idSucursalActiva = sucursal.idSucursal;
+      this.nombreSucursalActiva = sucursal.nombre;
+      return;
+    }
+    this.sucursalService.getPrincipal().subscribe(principal => {
+      this.idSucursalActiva = principal.idSucursal;
+      this.nombreSucursalActiva = principal.nombre;
+    });
+  }
+
+  get sucursalesOrigenDisponibles(): Sucursal[] {
+    return this.sucursalesAdmin.filter(s => s.idSucursal !== this.idSucursalActiva);
+  }
+
+  importarProductos(): void {
+    if (!this.idSucursalImportar || !this.idSucursalActiva) {
+      return;
+    }
+
+    this.importando = true;
+    this.sucursalService.clonarInventario(this.idSucursalActiva, this.idSucursalImportar).subscribe(
+      () => {
+        this.importando = false;
+        this.idSucursalImportar = null;
+        Swal.fire('Inventario importado', 'El inventario se copi&oacute; correctamente a esta sucursal.', 'success');
+        this.cargarProductos(0);
+      },
+      () => this.importando = false
+    );
   }
 
   ngOnDestroy(): void {
@@ -170,13 +229,48 @@ export class ListadoProductosMejoradoComponent implements OnInit, OnDestroy {
     this.modalService.abrirModal();
   }
 
-  exportarExcel(): void {
-    if (this.exportando) {
+  editarStock(producto: ProductoDto): void {
+    this.idProductoEditandoStock = producto.idProducto;
+    this.stockEdicion = producto.stock;
+  }
+
+  cancelarEdicionStock(): void {
+    this.idProductoEditandoStock = null;
+  }
+
+  guardarStock(producto: ProductoDto): void {
+    if (this.stockEdicion === null || this.stockEdicion < 0) {
+      Swal.fire('Stock inv&aacute;lido', 'Ingresa una cantidad v&aacute;lida.', 'warning');
       return;
     }
 
+    this.inventarioSucursalService.ajustarStock(this.idSucursalActiva, producto.idProducto, this.stockEdicion, null).subscribe(
+      () => {
+        producto.stock = this.stockEdicion;
+        this.idProductoEditandoStock = null;
+      }
+    );
+  }
+
+  abrirModalExportar(): void {
+    if (this.exportando) {
+      return;
+    }
+    this.modalExportarVisible = true;
+  }
+
+  cerrarModalExportar(): void {
+    this.modalExportarVisible = false;
+  }
+
+  confirmarExportacion(solicitud: ExportacionProductos): void {
+    this.cerrarModalExportar();
+    this.exportarExcel(solicitud.idSucursal);
+  }
+
+  private exportarExcel(idSucursal: number): void {
     this.exportando = true;
-    this.productoService.exportarProductosExcel().subscribe(
+    this.productoService.exportarProductosExcel(idSucursal).subscribe(
       response => {
         const disposition = response.headers.get('content-disposition');
         const filenameMatch = disposition && disposition.match(/filename="?([^";]+)"?/i);

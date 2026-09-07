@@ -233,6 +233,131 @@
   grid-column: span 2;
 }
 
+.sucursal-card {
+  align-items: center;
+}
+
+.sucursal-edit-copy {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.sucursal-view {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.sucursal-view strong {
+  margin-top: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sucursal-edit-button {
+  align-items: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--muted);
+  display: flex;
+  flex: 0 0 28px;
+  height: 28px;
+  justify-content: center;
+  transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+.sucursal-edit-button:hover,
+.sucursal-edit-button:focus {
+  background: var(--green-50);
+  border-color: #cfe3d8;
+  color: var(--green-800);
+  outline: 0;
+}
+
+.sucursal-edit-control {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.sucursal-select {
+  appearance: none;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%236d7b8f' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E") no-repeat right 10px center;
+  border: 1px solid #cfd9d4;
+  border-radius: 8px;
+  box-shadow: inset 0 1px 2px rgba(15, 40, 30, 0.04);
+  color: var(--ink);
+  flex: 1 1 auto;
+  font-size: 13px;
+  font-weight: 600;
+  min-width: 0;
+  padding: 7px 26px 7px 10px;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.sucursal-select:hover {
+  border-color: #b8c9c0;
+}
+
+.sucursal-select:focus {
+  border-color: var(--green-700);
+  box-shadow: 0 0 0 3px rgba(11, 143, 101, 0.15);
+  outline: 0;
+}
+
+.sucursal-select:disabled {
+  background-color: #f2f4f3;
+  cursor: not-allowed;
+}
+
+.sucursal-save-button,
+.sucursal-cancel-button {
+  align-items: center;
+  border: 0;
+  border-radius: 8px;
+  display: flex;
+  flex: 0 0 32px;
+  height: 32px;
+  justify-content: center;
+  transition: background-color 0.18s ease;
+}
+
+.sucursal-save-button {
+  background: var(--green-700);
+  color: #fff;
+}
+
+.sucursal-save-button:disabled {
+  background: #c3cfc9;
+  cursor: not-allowed;
+}
+
+.sucursal-save-button:not(:disabled):hover,
+.sucursal-save-button:not(:disabled):focus {
+  background: var(--green-800);
+  outline: 0;
+}
+
+.sucursal-cancel-button {
+  background: #f1ede9;
+  color: #8a7a6c;
+}
+
+.sucursal-cancel-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.sucursal-cancel-button:not(:disabled):hover,
+.sucursal-cancel-button:not(:disabled):focus {
+  background: #e7e0da;
+  outline: 0;
+}
+
 .card-icon,
 .section-icon,
 .role-icon {

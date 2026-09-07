@@ -23,7 +23,6 @@ import javax.sql.DataSource;
 
 import xyz.pangosoft.dtodo.dto.ProductoDto;
 import xyz.pangosoft.dtodo.dto.ProductoDtoMejorado;
-import xyz.pangosoft.dtodo.error.exceptions.NoContentException;
 import xyz.pangosoft.dtodo.error.exceptions.ReportGenerationException;
 import xyz.pangosoft.dtodo.service.IEstadoService;
 import xyz.pangosoft.dtodo.service.IUploadFileService;
@@ -43,17 +42,23 @@ import org.springframework.transaction.annotation.Transactional;
 
 import xyz.pangosoft.dtodo.error.exceptions.NotFoundException;
 import xyz.pangosoft.dtodo.model.Estado;
+import xyz.pangosoft.dtodo.model.InventarioSucursal;
 import xyz.pangosoft.dtodo.model.MarcaProducto;
 import xyz.pangosoft.dtodo.model.Producto;
 import xyz.pangosoft.dtodo.model.TipoProducto;
 import xyz.pangosoft.dtodo.repository.IProductoRepository;
+import xyz.pangosoft.dtodo.service.IInventarioSucursalService;
 import xyz.pangosoft.dtodo.service.IProductoService;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRParameter;
@@ -77,18 +82,20 @@ public class ProductoServiceImpl implements IProductoService {
 
 	private final IEstadoService estadoService;
 
+	private final IInventarioSucursalService inventarioSucursalService;
+
 	protected final DataSource localDataSource;
 
 	@Transactional(readOnly = true)
 	@Override
-	public List<Producto> findAll() {
+	public List<Producto> findAll(Integer idSucursal) {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
 		log.debug("Enter {}", __method);
 
 		List<Producto> productos = new ArrayList<>();
 
 		try {
-			productos = repoProducto.listarPorEstadoSP(0);
+			productos = repoProducto.listarPorEstadoSP(0, idSucursal);
 			log.info("Devolviendo listado de productos disponibles");
 			return productos;
 		} catch (DataAccessException e) {
@@ -104,11 +111,11 @@ public class ProductoServiceImpl implements IProductoService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public List<ProductoDto> findAllDto() {
+	public List<ProductoDto> findAllDto(Integer idSucursal) {
 		List<ProductoDto> productos = new ArrayList<>();
 		try {
 			log.info("Devolviendo productos con dtos");
-			productos = repoProducto.listarPorEstadoSPDto(0);
+			productos = repoProducto.listarPorEstadoSPDto(0, idSucursal);
 			return productos;
 		} catch (DataAccessException e) {
 			log.error("Ha ocurrido un error a nivel de base de datos al consultar productos desde procedimiento almacenado: {}", e.getMessage());
@@ -118,19 +125,16 @@ public class ProductoServiceImpl implements IProductoService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public Page<ProductoDtoMejorado> findAllDtoMejorado(String orden, String direccion, Pageable pageable) {
+	public Page<ProductoDtoMejorado> findAllDtoMejorado(String orden, String direccion, Integer idSucursal, Pageable pageable) {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
 		log.debug("Enter {}", __method);
 
 		try {
 			log.debug("Consultando productos desde la base de datos...");
-			Page<Object[]> results = repoProducto.findAllProductosDto(orden, direccion, pageable);
-
-			if (results.isEmpty()) {
-				log.warn("No existen productos registrados");
-				throw new NoContentException("No existen productos registrados");
-			}
-
+			// No se lanza NoContentException si no hay resultados: una sucursal sin inventario todavía
+			// registrado es un estado válido (no un error), y el frontend necesita poder distinguirlo
+			// mostrando la página vacía en vez de recibir un 204 sin cuerpo utilizable.
+			Page<Object[]> results = repoProducto.findAllProductosDto(orden, direccion, idSucursal, pageable);
 			return mapPageToProductoDtoMejorado(results);
 		} catch (DataAccessException dax) {
 			log.error("Ha ocurrido un error al intentar consultar los productos: {}", dax.getMessage());
@@ -143,7 +147,7 @@ public class ProductoServiceImpl implements IProductoService {
 	@Transactional(readOnly = true)
 	@Override
 	public Page<ProductoDtoMejorado> searchProductoDtoMejorado(
-			String filtro, String orden, String direccion, Pageable pageable) {
+			String filtro, String orden, String direccion, Integer idSucursal, Pageable pageable) {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
 		log.debug("Enter {}", __method);
 
@@ -151,9 +155,9 @@ public class ProductoServiceImpl implements IProductoService {
 			log.debug("Consultando productos desde la base de datos que conicidan con la busqueda...");
 			List<String> terminos = obtenerTerminosBusqueda(filtro);
 			Page<Producto> results = repoProducto.findAll(
-					crearEspecificacionBusqueda(terminos), crearPageableOrdenado(pageable, orden, direccion));
+					crearEspecificacionBusqueda(terminos, idSucursal), crearPageableOrdenado(pageable, orden, direccion));
 
-			return results.map(this::mapProductoToProductoDtoMejorado);
+			return results.map(producto -> mapProductoToProductoDtoMejorado(producto, idSucursal));
 		} catch (DataAccessException dax) {
 			log.error("Ha ocurrido un error al intentar consultar los productos con busqueda {}: {}", filtro, dax.getMessage());
 			throw new xyz.pangosoft.dtodo.error.exceptions.DataAccessException("Ha ocurrido un error al consultar los productos => ", dax);
@@ -172,29 +176,47 @@ public class ProductoServiceImpl implements IProductoService {
 				.collect(Collectors.toList());
 	}
 
-	private Specification<Producto> crearEspecificacionBusqueda(List<String> terminos) {
+	private Specification<Producto> crearEspecificacionBusqueda(List<String> terminos, Integer idSucursal) {
 		return (root, query, criteriaBuilder) -> {
-			if (terminos.isEmpty()) {
-				return criteriaBuilder.conjunction();
+			List<Predicate> condiciones = new ArrayList<>();
+			condiciones.add(existeEnInventarioDeSucursal(root, query, criteriaBuilder, idSucursal));
+
+			if (!terminos.isEmpty()) {
+				Join<Producto, MarcaProducto> marca = root.join("marcaProducto", JoinType.LEFT);
+				Join<Producto, TipoProducto> tipo = root.join("tipoProducto", JoinType.LEFT);
+				Join<Producto, Estado> estado = root.join("estado", JoinType.LEFT);
+				List<Predicate> coincidencias = new ArrayList<>();
+
+				for (String termino : terminos) {
+					String patron = "%" + escaparLike(termino) + "%";
+					coincidencias.add(criteriaBuilder.or(
+							criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(root.get("nombre"), "")), patron, '\\'),
+							criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(root.get("codProducto"), "")), patron, '\\'),
+							criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(marca.get("marca"), "")), patron, '\\'),
+							criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(tipo.get("tipoProducto"), "")), patron, '\\'),
+							criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(estado.get("estado"), "")), patron, '\\')));
+				}
+
+				condiciones.add(criteriaBuilder.and(coincidencias.toArray(new Predicate[0])));
 			}
 
-			Join<Producto, MarcaProducto> marca = root.join("marcaProducto", JoinType.LEFT);
-			Join<Producto, TipoProducto> tipo = root.join("tipoProducto", JoinType.LEFT);
-			Join<Producto, Estado> estado = root.join("estado", JoinType.LEFT);
-			List<Predicate> coincidencias = new ArrayList<>();
-
-			for (String termino : terminos) {
-				String patron = "%" + escaparLike(termino) + "%";
-				coincidencias.add(criteriaBuilder.or(
-						criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(root.get("nombre"), "")), patron, '\\'),
-						criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(root.get("codProducto"), "")), patron, '\\'),
-						criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(marca.get("marca"), "")), patron, '\\'),
-						criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(tipo.get("tipoProducto"), "")), patron, '\\'),
-						criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(estado.get("estado"), "")), patron, '\\')));
-			}
-
-			return criteriaBuilder.and(coincidencias.toArray(new Predicate[0]));
+			return criteriaBuilder.and(condiciones.toArray(new Predicate[0]));
 		};
+	}
+
+	/**
+	 * Restringe el resultado a productos que tienen fila de existencias registrada en la sucursal indicada
+	 * (tabla inventario_sucursal), para que el listado/busqueda de productos quede acotado a la sucursal activa.
+	 */
+	private Predicate existeEnInventarioDeSucursal(
+			Root<Producto> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder, Integer idSucursal) {
+		Subquery<Long> subquery = query.subquery(Long.class);
+		Root<InventarioSucursal> inventario = subquery.from(InventarioSucursal.class);
+		subquery.select(criteriaBuilder.literal(1L))
+				.where(
+						criteriaBuilder.equal(inventario.get("producto"), root),
+						criteriaBuilder.equal(inventario.get("sucursal").get("idSucursal"), idSucursal));
+		return criteriaBuilder.exists(subquery);
 	}
 
 	private String escaparLike(String valor) {
@@ -235,7 +257,7 @@ public class ProductoServiceImpl implements IProductoService {
 		return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
 	}
 
-	private ProductoDtoMejorado mapProductoToProductoDtoMejorado(Producto producto) {
+	private ProductoDtoMejorado mapProductoToProductoDtoMejorado(Producto producto, Integer idSucursal) {
 		return ProductoDtoMejorado.builder()
 				.idProducto(producto.getIdProducto())
 				.codProducto(producto.getCodProducto())
@@ -249,7 +271,7 @@ public class ProductoServiceImpl implements IProductoService {
 				.fechaIngreso(producto.getFechaIngreso() == null ? null
 						: new java.sql.Date(producto.getFechaIngreso().getTime()).toLocalDate())
 				.fechaRegistro(producto.getFechaRegistro())
-				.stock(producto.getStock())
+				.stock(inventarioSucursalService.obtenerStock(idSucursal, producto.getIdProducto()))
 				.imagen(producto.getImagen())
 				.idestado(producto.getEstado() == null ? 0 : producto.getEstado().getIdEstado())
 				.marcaProducto(producto.getMarcaProducto() == null ? null : producto.getMarcaProducto().getMarca())
@@ -341,7 +363,7 @@ public class ProductoServiceImpl implements IProductoService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public Producto findByCodigo(String codigo) {
+	public Producto findByCodigo(String codigo, Integer idSucursal) {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
 		log.debug("Enter {}", __method);
 
@@ -351,8 +373,12 @@ public class ProductoServiceImpl implements IProductoService {
 			producto = repoProducto.findByCodigo(codigo);
 
 			if(producto.isPresent()) {
-				log.info("Devolviendo Producto: {}", producto.get());
-				return producto.get();
+				Producto encontrado = producto.get();
+				// productos.stock quedó deprecada tras la migración a sucursales; el stock real de
+				// esta búsqueda (usada al registrar movimientos) debe venir de InventarioSucursal.
+				encontrado.setStock(inventarioSucursalService.obtenerStock(idSucursal, encontrado.getIdProducto()));
+				log.info("Devolviendo Producto: {}", encontrado);
+				return encontrado;
 			} else {
 				log.warn("Producto con codigo {}, no se encuentra registrado", codigo);
 				throw new NotFoundException("Producto con codigo " + codigo + " no se encuentra registrado en la base de datos");
@@ -425,14 +451,14 @@ public class ProductoServiceImpl implements IProductoService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public List<ProductoDto> findAllByEstado(Estado estado) {
+	public List<ProductoDto> findAllByEstado(Estado estado, Integer idSucursal) {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
 		log.debug("Enter {}", __method);
 
 		List<ProductoDto> productos = new ArrayList<>();
 
 		try {
-			productos = repoProducto.listarPorEstadoSPDto(estado.getIdEstado());
+			productos = repoProducto.listarPorEstadoSPDto(estado.getIdEstado(), idSucursal);
 
 			log.info("Listando productos con estado Activo");
 			return productos;
@@ -447,13 +473,13 @@ public class ProductoServiceImpl implements IProductoService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public Integer totalProductos() {
+	public Integer totalProductos(Integer idSucursal) {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
 		log.debug("Enter {}", __method);
 
 		try {
-			log.info("Obteniendo cantidad de productos registrados");
-			return repoProducto.getCantProductos() == null ? 0 : repoProducto.getCantProductos();
+			log.info("Obteniendo cantidad de productos registrados en la sucursal {}", idSucursal);
+			return inventarioSucursalService.contarPorSucursal(idSucursal);
 		} catch (DataAccessException e) {
 			log.error("Ha ocurrido un error a nivel de base de datos: {}", e.getMessage());
 			throw new xyz.pangosoft.dtodo.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos => " + e.getMessage(), e.getCause());
@@ -480,6 +506,12 @@ public class ProductoServiceImpl implements IProductoService {
 		try {
 			if(producto.getIdProducto() != null) {
 				log.info("Actualizando Producto con ID: {}", producto.getIdProducto());
+				// El stock real vive en InventarioSucursal (ver IInventarioSucursalService.ajustarStock);
+				// productos.stock quedó deprecada tras la migración a sucursales, pero como esta es una
+				// actualización de la entidad completa, se preserva su valor actual para que el formulario
+				// de edición de producto no pueda pisarla con datos obsoletos del cliente.
+				Producto productoExistente = findById(producto.getIdProducto());
+				producto.setStock(productoExistente.getStock());
                 productoSaved = repoProducto.save(producto);
 			} else {
 				log.info("Registrando nuevo producto: {}", producto);
@@ -543,7 +575,7 @@ public class ProductoServiceImpl implements IProductoService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public byte[] productosExcel() {
+	public byte[] productosExcel(Integer idSucursal) {
 		try (Connection connection = localDataSource.getConnection();
 			 InputStream template = getClass().getResourceAsStream("/reports/productos_excel.jrxml");
 			 ByteArrayOutputStream output = new ByteArrayOutputStream()) {
@@ -554,6 +586,7 @@ public class ProductoServiceImpl implements IProductoService {
 
 			Map<String, Object> parameters = new HashMap<>();
 			parameters.put(JRParameter.IS_IGNORE_PAGINATION, true);
+			parameters.put("idSucursal", idSucursal);
 
 			JasperReport report = JasperCompileManager.compileReport(template);
 			JasperPrint print = JasperFillManager.fillReport(report, parameters, connection);

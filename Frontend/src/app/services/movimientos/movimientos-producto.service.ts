@@ -7,6 +7,7 @@ import { map, catchError } from 'rxjs/operators';
 import { MovimientoProducto } from 'src/app/models/movimiento-producto';
 
 import { global } from '../global';
+import { AuthService } from '../auth.service';
 import Swal from 'sweetalert2';
 
 @Injectable({
@@ -18,7 +19,8 @@ export class MovimientosProductoService {
 
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {
     this.url = global.url;
   }
@@ -48,16 +50,21 @@ export class MovimientosProductoService {
   getListado(page: number, size: number, filtro: string,
              orden: string, direccion: 'asc' | 'desc',
              fechaIni?: string, fechaFin?: string): Observable<any> {
-    let params = new HttpParams()
+    let params = this.conSucursal(new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString())
       .set('filtro', filtro || '')
       .set('orden', orden)
-      .set('direccion', direccion);
+      .set('direccion', direccion));
     if (fechaIni && fechaFin) {
       params = params.set('fechaIni', fechaIni).set('fechaFin', fechaFin);
     }
     return this.http.get<any>(`${this.url}/movimientos/listado`, {params});
+  }
+
+  private conSucursal(params: HttpParams): HttpParams {
+    const idSucursal = this.authService.usuario?.sucursal?.idSucursal;
+    return idSucursal ? params.set('idSucursal', idSucursal.toString()) : params;
   }
 
   getMovimientosProductoPage(idproducto: number, page: number): Observable<any> {
@@ -81,12 +88,15 @@ export class MovimientosProductoService {
   }
 
   /********* INVENTARIO FORMATO PDF ***********/
-  getInventoryPDF(fechaIni: Date, fechaFin: Date): Observable<any> {
+  getInventoryPDF(fechaIni: Date, fechaFin: Date, idSucursal?: number): Observable<any> {
     const headers = new HttpHeaders();
     headers.append('Accept', 'application/pdf');
     const requestOptions: any = { headers, responseType: 'blob' };
 
-    return this.http.post(`${this.url}/movimientos/inventario?fechaIni=${fechaIni.toString()}&fechaFin=${fechaFin.toString()}`,
+    const sucursal = idSucursal || this.authService.usuario?.sucursal?.idSucursal;
+    const sucursalQuery = sucursal ? `&idSucursal=${sucursal}` : '';
+
+    return this.http.post(`${this.url}/movimientos/inventario?fechaIni=${fechaIni.toString()}&fechaFin=${fechaFin.toString()}${sucursalQuery}`,
       '', requestOptions).pipe(
 
       map((response: any) => {

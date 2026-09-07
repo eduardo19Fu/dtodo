@@ -20,6 +20,11 @@ public interface IFacturaRepository extends JpaRepository<Factura, Long> {
     @Query(value = "Select get_cant_ventas()", nativeQuery = true)
     Integer getCantidadVentas();
 
+    // Mismo criterio que get_cant_ventas() (excluye facturas anuladas, id_estado = 4), pero
+    // acotado a un usuario -- usado por el dashboard para un cobrador que solo debe ver sus propias ventas.
+    @Query("select count(f) from Factura f where f.usuario.idUsuario = :idUsuario and f.estado.idEstado <> 4")
+    Long getCantidadVentasPorUsuario(@Param("idUsuario") Integer idUsuario);
+
     List<Factura> findByFechaBetween(Date iniDate, Date endDate);
 
     Optional<Factura> findFacturaByNoFactura(Long noFactura);
@@ -41,17 +46,20 @@ public interface IFacturaRepository extends JpaRepository<Factura, Long> {
             "u.usuario, concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, '')), " +
             "c.nombre, c.nit, f.certificacionSat) " +
             "from Factura f join f.estado e join f.usuario u join f.cliente c " +
+            "where (:idUsuario is null or u.idUsuario = :idUsuario) " +
             "order by f.fecha desc")
-    List<FacturaDto> findUltimasListadoDto(Pageable pageable);
+    List<FacturaDto> findUltimasListadoDto(@Param("idUsuario") Integer idUsuario, Pageable pageable);
 
     @Query("select new xyz.pangosoft.dtodo.dto.FacturaDto(" +
             "f.idFactura, f.noFactura, f.serie, f.fecha, f.total, e.idEstado, e.estado, " +
             "u.usuario, concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, '')), " +
             "c.nombre, c.nit, f.certificacionSat) " +
             "from Factura f join f.estado e join f.usuario u join f.cliente c " +
-            "where f.fecha >= :fechaIni and f.fecha < :fechaFin")
+            "where f.fecha >= :fechaIni and f.fecha < :fechaFin " +
+            "and (:idUsuario is null or u.idUsuario = :idUsuario)")
     Page<FacturaDto> findAllListadoDto(@Param("fechaIni") Date fechaIni,
                                                @Param("fechaFin") Date fechaFin,
+                                               @Param("idUsuario") Integer idUsuario,
                                                Pageable pageable);
 
     @Query("select new xyz.pangosoft.dtodo.dto.FacturaDto(" +
@@ -59,7 +67,8 @@ public interface IFacturaRepository extends JpaRepository<Factura, Long> {
             "u.usuario, concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, '')), " +
             "c.nombre, c.nit, f.certificacionSat) " +
             "from Factura f join f.estado e join f.usuario u join f.cliente c " +
-            "where f.fecha >= :fechaIni and f.fecha < :fechaFin and (" +
+            "where f.fecha >= :fechaIni and f.fecha < :fechaFin " +
+            "and (:idUsuario is null or u.idUsuario = :idUsuario) and (" +
             "lower(c.nombre) like lower(concat('%', :filtro, '%')) or " +
             "lower(c.nit) like lower(concat('%', :filtro, '%')) or " +
             "lower(u.usuario) like lower(concat('%', :filtro, '%')) or " +
@@ -68,6 +77,7 @@ public interface IFacturaRepository extends JpaRepository<Factura, Long> {
             "str(f.noFactura) like concat('%', :filtro, '%'))")
     Page<FacturaDto> searchListadoDto(@Param("fechaIni") Date fechaIni,
                                               @Param("fechaFin") Date fechaFin,
+                                              @Param("idUsuario") Integer idUsuario,
                                               @Param("filtro") String filtro,
                                               Pageable pageable);
 

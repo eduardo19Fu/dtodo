@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Usuario } from '../models/usuario';
+import { Sucursal } from '../models/sucursal';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -17,14 +19,7 @@ export class AuthService {
   constructor(
     private http: HttpClient
   ) {
-    /** Local **/
-    // this.url = 'http://localhost:8383';
-
-    /** Producción **/
-    this.url = 'https://dtodojalapa.xyz:8382';
-
-    /** Desarrollo **/
-    // this.url = 'https://dtodojalapa.xyz:8383';
+    this.url = environment.apiUrl;
   }
 
   public get usuario(): Usuario {
@@ -114,6 +109,13 @@ export class AuthService {
     this._usuario.usuario = payload.user_name;
     this._usuario.roles = payload.authorities;
 
+    if (payload.id_sucursal) {
+      const sucursal = new Sucursal();
+      sucursal.idSucursal = Number(payload.id_sucursal);
+      sucursal.nombre = payload.sucursal;
+      this._usuario.sucursal = sucursal;
+    }
+
     sessionStorage.setItem('usuario', JSON.stringify(this._usuario));
   }
 
@@ -138,6 +140,11 @@ export class AuthService {
       return true;
     }
     return false;
+  }
+
+  /** true si el usuario logueado tiene únicamente el rol ROLE_COBRADOR (sin ADMIN ni INVENTARIO). */
+  esSoloCobrador(): boolean {
+    return this.usuario.roles.length === 1 && this.usuario.roles[0] === 'ROLE_COBRADOR';
   }
 
   logout(): void {

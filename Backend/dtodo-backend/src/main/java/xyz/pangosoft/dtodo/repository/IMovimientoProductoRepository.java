@@ -80,7 +80,8 @@ public interface IMovimientoProductoRepository extends JpaRepository<MovimientoP
 			"m.idMovimiento, m.fechaMovimiento, m.stockInicial, m.tipoMovimiento, " +
 			"m.cantidad, p.nombre, u.usuario) FROM MovimientoProducto m " +
 			"JOIN m.producto p JOIN m.usuario u " +
-			"WHERE (:fechaIni IS NULL OR (m.fechaMovimiento >= :fechaIni " +
+			"WHERE m.sucursal.idSucursal = :idSucursal " +
+			"AND (:fechaIni IS NULL OR (m.fechaMovimiento >= :fechaIni " +
 			"AND m.fechaMovimiento < :fechaFin)) AND (:filtro = '' " +
 			"OR LOWER(p.nombre) LIKE LOWER(CONCAT('%', :filtro, '%')) " +
 			"OR LOWER(u.usuario) LIKE LOWER(CONCAT('%', :filtro, '%')) " +
@@ -90,7 +91,8 @@ public interface IMovimientoProductoRepository extends JpaRepository<MovimientoP
 			"OR STR(m.cantidad) LIKE CONCAT('%', :filtro, '%'))",
 			countQuery = "SELECT COUNT(m) FROM MovimientoProducto m " +
 					"JOIN m.producto p JOIN m.usuario u " +
-					"WHERE (:fechaIni IS NULL OR (m.fechaMovimiento >= :fechaIni " +
+					"WHERE m.sucursal.idSucursal = :idSucursal " +
+					"AND (:fechaIni IS NULL OR (m.fechaMovimiento >= :fechaIni " +
 					"AND m.fechaMovimiento < :fechaFin)) AND (:filtro = '' " +
 					"OR LOWER(p.nombre) LIKE LOWER(CONCAT('%', :filtro, '%')) " +
 					"OR LOWER(u.usuario) LIKE LOWER(CONCAT('%', :filtro, '%')) " +
@@ -101,11 +103,13 @@ public interface IMovimientoProductoRepository extends JpaRepository<MovimientoP
 	Page<MovimientoProductoDto> findListado(
 			@Param("fechaIni") LocalDateTime fechaIni,
 			@Param("fechaFin") LocalDateTime fechaFin,
+			@Param("idSucursal") Integer idSucursal,
 			@Param("filtro") String filtro, Pageable pageable);
 
 	@Query("SELECT m.idMovimiento FROM MovimientoProducto m " +
+			"WHERE m.sucursal.idSucursal = :idSucursal " +
 			"ORDER BY m.fechaMovimiento DESC, m.idMovimiento DESC")
-	List<Long> findUltimosIds(Pageable pageable);
+	List<Long> findUltimosIds(@Param("idSucursal") Integer idSucursal, Pageable pageable);
 
 	@Query(value = "SELECT new xyz.pangosoft.dtodo.dto.MovimientoProductoDto(" +
 			"m.idMovimiento, m.fechaMovimiento, m.stockInicial, m.tipoMovimiento, " +

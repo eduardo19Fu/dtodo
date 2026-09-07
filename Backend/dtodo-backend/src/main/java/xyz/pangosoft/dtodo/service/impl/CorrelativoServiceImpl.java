@@ -183,6 +183,7 @@ public class CorrelativoServiceImpl implements ICorrelativoService {
 			} else {
 				correlativo.setCorrelativoActual(correlativo.getCorrelativoInicial());
 				correlativo.setEstado(estadoService.findById(1));
+				correlativo.setSucursal(usuarioService.findById(correlativo.getUsuario().getIdUsuario()).getSucursal());
 
 				newCorrelativo = correlativoRepository.save(correlativo);
 				return newCorrelativo;
