@@ -12,7 +12,6 @@ import { LoginComponent } from './components/login/login.component';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { HeaderComponent } from './components/header/header.component';
 import { HomeComponent } from './components/home/home.component';
-import { FooterComponent } from './components/footer/footer.component';
 import { ClientesComponent } from './components/clientes/clientes.component';
 import { CreateClienteComponent } from './components/clientes/create-cliente/create-cliente.component';
 import { ModalCreateComponent } from './components/clientes/modal-create/modal-create.component';
@@ -36,7 +35,6 @@ import { MovimientosProductoComponent } from './components/movimientos-producto/
 import { CreateMovimientoComponent } from './components/movimientos-producto/create-movimiento/create-movimiento.component';
 import { BusquedaMovimientosComponent } from './components/movimientos-producto/busqueda-movimientos/busqueda-movimientos.component';
 import { PolizaIndividualComponent } from './components/facturas/poliza-individual/poliza-individual.component';
-import { HeaderVentasComponent } from './components/header-ventas/header-ventas.component';
 import { ModalBuscarProductoComponent } from './components/facturas/create-factura/modal-buscar-producto/modal-buscar-producto.component';
 import { ModalBuscarClienteComponent } from './components/facturas/create-factura/modal-buscar-cliente/modal-buscar-cliente.component';
 import { ModalBuscarProductoMovimientoComponent } from './components/movimientos-producto/create-movimiento/modal-buscar-producto-movimiento/modal-buscar-producto-movimiento.component';
@@ -61,7 +59,6 @@ import { TooltipDirective } from './directives/tooltip.directive';
     SidebarComponent,
     HeaderComponent,
     HomeComponent,
-    FooterComponent,
     ClientesComponent,
     CreateClienteComponent,
     ModalCreateComponent,
@@ -85,7 +82,6 @@ import { TooltipDirective } from './directives/tooltip.directive';
     CreateMovimientoComponent,
     BusquedaMovimientosComponent,
     PolizaIndividualComponent,
-    HeaderVentasComponent,
     ModalBuscarProductoComponent,
     ModalBuscarClienteComponent,
     ModalBuscarProductoMovimientoComponent,

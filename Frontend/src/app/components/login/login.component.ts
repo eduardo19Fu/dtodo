@@ -20,6 +20,7 @@ export class LoginComponent implements OnInit {
   passwordTitle: string;
   headerTitle: string;
   passwordVisible: boolean = false;
+  cargando: boolean = false;
 
   constructor(
     private router: Router,
@@ -47,6 +48,8 @@ export class LoginComponent implements OnInit {
       return;
     }
 
+    this.cargando = true;
+
     this.authService.login(this.usuario).subscribe(
       response => {
         this.authService.guardarSesion(response.access_token, response.refresh_token);
@@ -54,6 +57,8 @@ export class LoginComponent implements OnInit {
         window.location.href = '/home';
       },
       error => {
+        this.cargando = false;
+
         if (error.status === 400) {
           swal.fire('Error de Autenticación', 'Usuario y/o contraseña incorrectos', 'error');
         }

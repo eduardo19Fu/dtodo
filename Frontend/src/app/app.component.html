@@ -1,23 +1,31 @@
-<router-outlet *ngIf="router.url === '/' || router.url === '/login'" ></router-outlet>
+<router-outlet *ngIf="esRutaPublica"></router-outlet>
 
-<div *ngIf="router.url !== '/login' && router.url !== '/'" class="wrapper">
+<div *ngIf="!esRutaPublica" class="app-shell"
+  [class.sidebar-collapsed]="sidebarColapsado"
+  [class.sidebar-mobile-open]="sidebarMovilAbierto">
 
-  <!-- <app-header-ventas *ngIf="authService.hasRole('ROLE_COBRADOR')"></app-header-ventas> -->
-  <div class="preloader flex-column justify-content-center align-items-center">
-    <img class="animation__shake" src="assets/img/Aglaya-logo2.png" alt="AdminLTELogo" height="60" width="60">
-  </div>
-  
-  <app-header></app-header>
-
-  <app-sidebar></app-sidebar>
-
-  <div class="content-wrapper">
-    <section class="content">
-      <div class="content-fluid">
-        <router-outlet></router-outlet>
-      </div>
-    </section>
-
+  <div *ngIf="preloaderVisible" class="app-preloader" [class.app-preloader-leaving]="preloaderCerrando"
+    aria-label="Cargando aplicación" role="status">
+    <img class="preloader-logo" src="assets/img/Aglaya-logo2.png" alt="Aglaya">
   </div>
 
+  <app-sidebar [collapsed]="sidebarColapsado"
+    (expandir)="expandirSidebar()" (navegacion)="cerrarSidebarMovil()">
+  </app-sidebar>
+
+  <button *ngIf="sidebarMovilAbierto" type="button" class="sidebar-backdrop"
+    (click)="cerrarSidebarMovil()" aria-label="Cerrar menú de navegación"></button>
+
+  <div class="shell-workspace">
+    <app-header [sidebarCollapsed]="sidebarColapsado" (toggleSidebar)="alternarSidebar()"></app-header>
+
+    <main class="shell-content" id="contenido-principal">
+      <router-outlet></router-outlet>
+    </main>
+
+    <footer class="shell-footer">
+      <span>D'Todo · Gestión comercial</span>
+      <span class="footer-status"><i class="fas fa-shield-alt" aria-hidden="true"></i> Sesión segura</span>
+    </footer>
+  </div>
 </div>

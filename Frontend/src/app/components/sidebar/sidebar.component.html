@@ -1,175 +1,115 @@
-<aside class="main-sidebar sidebar-dark-info elevation-4">
-    <!-- Brand Logo -->
-    <a [routerLink]="['/home']" class="brand-link">
-        <img src="assets/img/logo-dtodo.jpg" alt="AdminLTE Logo" class="brand-image img-circle elevation-3"
-            style="opacity: .8">
-        <span class="brand-text font-weight-light">Tienda</span>
-    </a>
+<aside class="app-sidebar" [class.is-collapsed]="collapsed">
+  <a [routerLink]="['/home']" class="brand" (click)="notificarNavegacion()" title="Ir al inicio">
+    <span class="brand-logo"><img src="assets/img/logo-dtodo-d.jpg" alt="Logo de D'Todo"></span>
+    <span class="brand-copy">
+      <strong>D'Todo</strong>
+      <small>Gestión comercial</small>
+    </span>
+  </a>
 
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <!-- Sidebar user (optional) -->
-        <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-            <div class="image">
-                <img src="assets/img/icons8-user-64.png" class="img-circle elevation-2" alt="User Image">
-            </div>
-            <div class="info">
-                <a [routerLink]="['/home']" class="d-block">{{usuario.primerNombre + ' ' + usuario.apellido}}</a>
-                <span *ngIf="usuario.sucursal" class="sucursal-activa">
-                    <i class="fas fa-store"></i> {{usuario.sucursal.nombre}}
-                </span>
-            </div>
-        </div>
+  <div class="sidebar-scroll">
+    <section class="user-card" [attr.title]="collapsed ? usuario?.primerNombre + ' ' + usuario?.apellido : null">
+      <span class="user-avatar"><img src="assets/img/icons8-user-64.png" alt=""></span>
+      <div class="user-copy">
+        <span>Sesión activa</span>
+        <strong>{{ usuario?.primerNombre }} {{ usuario?.apellido }}</strong>
+        <small *ngIf="usuario?.sucursal"><i class="fas fa-store" aria-hidden="true"></i>{{ usuario.sucursal.nombre }}</small>
+      </div>
+    </section>
 
-        <!-- SidebarSearch Form -->
-        <div class="form-inline">
-            <div class="input-group" data-widget="sidebar-search">
-                <input class="form-control form-control-sidebar" type="search" placeholder="Search" aria-label="Search">
-                <div class="input-group-append">
-                    <button class="btn btn-sidebar">
-                        <i class="fas fa-search fa-fw"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Sidebar Menu -->
-        <nav class="mt-2">
-            <!-- CONTENEDOR DE MENUS -->
-            <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-                
-                <!-- MENU PRODUCTOS -->
-                <li class="nav-item"
-                    [ngClass]="{'menu-open': router.url.startsWith('/productos') && !router.url.includes('inventario')}">
-                    <a href="" class="nav-link" [ngClass]="{'active': router.url.startsWith('/productos') && !router.url.includes('inventario')}">
-                        <i class="nav-icon fas fa-memory"></i>
-                        <p>
-                            Productos
-                            <i class="right fas fa-angle-left"></i>
-                        </p>
-                    </a>
-
-                    <ul class="nav nav-treeview">
-                        <li class="nav-item"
-                        *ngIf="authService.hasRole('ROLE_INVENTARIO') || authService.hasRole('ROLE_ADMIN') || authService.hasRole('ROLE_COBRADOR')">
-                            <a [routerLink]="['/productos/index']" class="nav-link"
-                                [ngClass]="{'active':router.url.includes('/productos/index')}">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Listado</p>
-                            </a>
-                        </li>
-
-                        <li class="nav-item" *ngIf="authService.hasRole('ROLE_INVENTARIO') || authService.hasRole('ROLE_ADMIN')">
-                            <a [routerLink]="['/productos/marcas/index']" class="nav-link"
-                                [ngClass]="{'active':router.url.includes('/marcas/')}">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Marcas</p>
-                            </a>
-                        </li>
-
-                        <li class="nav-item" *ngIf="authService.hasRole('ROLE_INVENTARIO') || authService.hasRole('ROLE_ADMIN')">
-                            <a [routerLink]="['/productos/categorias/index']" class="nav-link"
-                                [ngClass]="{'active':router.url.includes('/categorias/')}">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Categorías</p>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-
-                <li class="nav-item" *ngIf="authService.hasRole('ROLE_ADMIN') || authService.hasRole('ROLE_INVENTARIO')">
-                    <a [routerLink]="['/productos/inventario/index']" class="nav-link" [routerLinkActive]="['active']">
-                        <i class="fas fa-warehouse nav-icon"></i>
-                        <p>Movimientos de Producto</p>
-                    </a>
-                </li>
-
-                <!-- MENUS DE FACTURAS -->
-                <li class="nav-item" *ngIf="authService.hasRole('ROLE_COBRADOR') || authService.hasRole('ROLE_ADMIN') || authService.hasRole('ROLE_INVENTARIO')">
-                    <a [routerLink]="['/proformas/index']" class="nav-link" [ngClass]="{'active' : router.url.startsWith('/proformas')}">
-                        <i class="nav-icon fas fa-street-view"></i>
-                        <p>Proformas</p>
-                    </a>
-                </li>
-
-                <li class="nav-item" *ngIf="authService.hasRole('ROLE_COBRADOR') || authService.hasRole('ROLE_ADMIN')"
-                    [ngClass]="{'menu-open': router.url.startsWith('/facturas')}">
-                    <a href="" class="nav-link" [ngClass]="{'active': router.url.startsWith('/facturas')}">
-                        <i class="fas fa-money-bill nav-icon"></i>
-                        <p>
-                            Facturas
-                            <i class="right fas fa-angle-left"></i>
-                        </p>
-                    </a>
-
-                    <ul class="nav nav-treeview">
-                        <li class="nav-item">
-                            <a [routerLink]="['/facturas/index']" class="nav-link" [routerLinkActive]="['active']">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Facturas Emitidas</p>
-                            </a>
-                        </li>
-
-                        <li class="nav-item" *ngIf="authService.hasRole('ROLE_ADMIN')">
-                            <a [routerLink]="['/facturas/correlativos/index']" class="nav-link" [routerLinkActive]="['active']">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Correlativos</p>
-                            </a>
-                        </li>
-                    </ul>
-                </li><!-- MENU DE FACTURAS FINAL -->
-
-                <!-- MENU DE NOTAS DE CREDITO -->
-                <li class="nav-item"
-                    *ngIf="authService.hasRole('ROLE_ADMIN') || authService.hasRole('ROLE_COBRADOR') || authService.hasRole('ROLE_INVENTARIO')">
-                    <a [routerLink]="['/notas-credito/index']" class="nav-link"
-                        [ngClass]="{'active': router.url.startsWith('/notas-credito')}">
-                        <i class="far fa-credit-card nav-icon"></i>
-                        <p>Notas de Cr&eacute;dito</p>
-                    </a>
-                </li>
-                <!-- MENU DE NOTAS DE CREDITO FINAL -->
-
-                <!-- MENU DE CLIENTES -->
-                <li class="nav-item" *ngIf="authService.hasRole('ROLE_COBRADOR') || authService.hasRole('ROLE_ADMIN')">
-                    <a [routerLink]="['/clientes/index']" class="nav-link" [ngClass]="{'active' : router.url.startsWith('/clientes')}">
-                        <i class="nav-icon fas fa-street-view"></i>
-                        <p>Clientes</p>
-                    </a>
-                </li><!-- MENU DE CLIENTES FINAL -->
-
-                <!-- MENU DE SUCURSALES -->
-                <li class="nav-item" *ngIf="authService.hasRole('ROLE_ADMIN')">
-                    <a [routerLink]="['/sucursales/index']" class="nav-link"
-                        [ngClass]="{'active' : router.url.startsWith('/sucursales')}">
-                        <p>
-                            <i class="fas fa-store nav-icon"></i>
-                            Sucursales
-                        </p>
-                    </a>
-                </li> <!-- MENU DE SUCURSALES FINAL -->
-
-                <!-- MENU DE USUARIOS -->
-                <li class="nav-item"  *ngIf="authService.hasRole('ROLE_ADMIN')"
-                    [ngClass]="{'menu-open': router.url.startsWith('/usuarios')}">
-                    <a [routerLink]="['/usuarios/index']" class="nav-link"
-                        [ngClass]="{'active' : router.url.startsWith('/usuarios')}">
-                        <p>
-                            <i class="fas fa-users nav-icon"></i>
-                            Usuarios
-                        </p>
-                    </a>
-                </li> <!-- MENU DE USUARIOS FINAL -->   
-
-                <li class="nav-item">
-                    <a [routerLink]="['/login']" class="nav-link">
-                        <i class="fas fa-window-close nav-icon"></i>
-                        <p>Cerrar Sesión</p>
-                    </a>
-                </li>
-            </ul>
-        </nav>
-        <!-- /.sidebar-menu -->
+    <div class="sidebar-search">
+      <i class="fas fa-search" aria-hidden="true"></i>
+      <input type="search" [(ngModel)]="filtro" placeholder="Buscar módulo" aria-label="Buscar en el menú">
+      <button *ngIf="filtro" type="button" (click)="limpiarBusqueda()" aria-label="Limpiar búsqueda">
+        <i class="fas fa-times" aria-hidden="true"></i>
+      </button>
     </div>
-    <!-- /.sidebar -->
+
+    <nav class="sidebar-navigation" aria-label="Navegación principal">
+      <span class="navigation-label">Menú principal</span>
+
+      <section class="menu-group" *ngIf="mostrarGrupo('productos')"
+        [class.is-open]="menuAbierto('productos')" [class.is-active]="router.url.startsWith('/productos') && !router.url.includes('/inventario')">
+        <button type="button" class="menu-link group-trigger" (click)="alternarMenu('productos')"
+          [attr.aria-expanded]="menuAbierto('productos')" title="Productos">
+          <span class="menu-icon"><i class="fas fa-boxes" aria-hidden="true"></i></span>
+          <span class="menu-label">Productos</span>
+          <i class="fas fa-chevron-down menu-chevron" aria-hidden="true"></i>
+        </button>
+        <div class="submenu" *ngIf="menuAbierto('productos')">
+          <a *ngIf="coincide('listado', 'productos') && (authService.hasRole('ROLE_INVENTARIO') || authService.hasRole('ROLE_ADMIN') || authService.hasRole('ROLE_COBRADOR'))"
+            [routerLink]="['/productos/index']" class="submenu-link" routerLinkActive="active"
+            (click)="notificarNavegacion()"><span></span>Listado</a>
+          <a *ngIf="coincide('marcas', 'productos') && (authService.hasRole('ROLE_INVENTARIO') || authService.hasRole('ROLE_ADMIN'))"
+            [routerLink]="['/productos/marcas/index']" class="submenu-link" [class.active]="router.url.includes('/marcas/')"
+            (click)="notificarNavegacion()"><span></span>Marcas</a>
+          <a *ngIf="coincide('categorías', 'categorias', 'productos') && (authService.hasRole('ROLE_INVENTARIO') || authService.hasRole('ROLE_ADMIN'))"
+            [routerLink]="['/productos/categorias/index']" class="submenu-link" [class.active]="router.url.includes('/categorias/')"
+            (click)="notificarNavegacion()"><span></span>Categorías</a>
+        </div>
+      </section>
+
+      <a *ngIf="coincide('movimientos de producto', 'inventario') && (authService.hasRole('ROLE_ADMIN') || authService.hasRole('ROLE_INVENTARIO'))"
+        [routerLink]="['/productos/inventario/index']" class="menu-link" routerLinkActive="active"
+        (click)="notificarNavegacion()" title="Movimientos de producto">
+        <span class="menu-icon"><i class="fas fa-exchange-alt" aria-hidden="true"></i></span>
+        <span class="menu-label">Movimientos de producto</span>
+      </a>
+
+      <a *ngIf="coincide('proformas') && (authService.hasRole('ROLE_COBRADOR') || authService.hasRole('ROLE_ADMIN') || authService.hasRole('ROLE_INVENTARIO'))"
+        [routerLink]="['/proformas/index']" class="menu-link" [class.active]="router.url.startsWith('/proformas')"
+        (click)="notificarNavegacion()" title="Proformas">
+        <span class="menu-icon"><i class="fas fa-file-alt" aria-hidden="true"></i></span>
+        <span class="menu-label">Proformas</span>
+      </a>
+
+      <section class="menu-group" *ngIf="mostrarGrupo('facturas') && (authService.hasRole('ROLE_COBRADOR') || authService.hasRole('ROLE_ADMIN'))"
+        [class.is-open]="menuAbierto('facturas')" [class.is-active]="router.url.startsWith('/facturas')">
+        <button type="button" class="menu-link group-trigger" (click)="alternarMenu('facturas')"
+          [attr.aria-expanded]="menuAbierto('facturas')" title="Facturas">
+          <span class="menu-icon"><i class="fas fa-file-invoice-dollar" aria-hidden="true"></i></span>
+          <span class="menu-label">Facturas</span>
+          <i class="fas fa-chevron-down menu-chevron" aria-hidden="true"></i>
+        </button>
+        <div class="submenu" *ngIf="menuAbierto('facturas')">
+          <a *ngIf="coincide('facturas', 'facturas emitidas')" [routerLink]="['/facturas/index']"
+            class="submenu-link" routerLinkActive="active" (click)="notificarNavegacion()"><span></span>Facturas emitidas</a>
+          <a *ngIf="coincide('correlativos', 'facturas') && authService.hasRole('ROLE_ADMIN')"
+            [routerLink]="['/facturas/correlativos/index']" class="submenu-link" routerLinkActive="active"
+            (click)="notificarNavegacion()"><span></span>Correlativos</a>
+        </div>
+      </section>
+
+      <a *ngIf="coincide('notas de crédito', 'notas de credito') && (authService.hasRole('ROLE_ADMIN') || authService.hasRole('ROLE_COBRADOR') || authService.hasRole('ROLE_INVENTARIO'))"
+        [routerLink]="['/notas-credito/index']" class="menu-link" [class.active]="router.url.startsWith('/notas-credito')"
+        (click)="notificarNavegacion()" title="Notas de crédito">
+        <span class="menu-icon"><i class="fas fa-credit-card" aria-hidden="true"></i></span>
+        <span class="menu-label">Notas de crédito</span>
+      </a>
+
+      <a *ngIf="coincide('clientes') && (authService.hasRole('ROLE_COBRADOR') || authService.hasRole('ROLE_ADMIN'))"
+        [routerLink]="['/clientes/index']" class="menu-link" [class.active]="router.url.startsWith('/clientes')"
+        (click)="notificarNavegacion()" title="Clientes">
+        <span class="menu-icon"><i class="fas fa-user-friends" aria-hidden="true"></i></span>
+        <span class="menu-label">Clientes</span>
+      </a>
+
+      <a *ngIf="coincide('sucursales') && authService.hasRole('ROLE_ADMIN')" [routerLink]="['/sucursales/index']"
+        class="menu-link" [class.active]="router.url.startsWith('/sucursales')" (click)="notificarNavegacion()" title="Sucursales">
+        <span class="menu-icon"><i class="fas fa-store" aria-hidden="true"></i></span>
+        <span class="menu-label">Sucursales</span>
+      </a>
+
+      <a *ngIf="coincide('usuarios') && authService.hasRole('ROLE_ADMIN')" [routerLink]="['/usuarios/index']"
+        class="menu-link" [class.active]="router.url.startsWith('/usuarios')" (click)="notificarNavegacion()" title="Usuarios">
+        <span class="menu-icon"><i class="fas fa-users" aria-hidden="true"></i></span>
+        <span class="menu-label">Usuarios</span>
+      </a>
+    </nav>
+  </div>
+
+  <button type="button" class="logout-button" (click)="cerrarSesion()" title="Cerrar sesión">
+    <span class="menu-icon"><i class="fas fa-sign-out-alt" aria-hidden="true"></i></span>
+    <span class="menu-label">Cerrar sesión</span>
+  </button>
 </aside>

@@ -35,15 +35,6 @@ importers:
       admin-lte:
         specifier: 3.1.0
         version: 3.1.0(moment-timezone@0.5.48)(tempusdominus-core@5.19.3(jquery@3.7.1)(moment-timezone@0.5.48)(moment@2.30.1))
-      datatables.net-buttons:
-        specifier: 2.4.3
-        version: 2.4.3
-      datatables.net-responsive:
-        specifier: 2.5.1
-        version: 2.5.1
-      jquery-ui-dist:
-        specifier: 1.13.3
-        version: 1.13.3
       rxjs:
         specifier: ~6.6.0
         version: 6.6.7
@@ -1768,9 +1759,6 @@ packages:
 
   datatables.net-buttons@1.7.1:
     resolution: {integrity: sha512-D2OxZeR18jhSx+l0xcfAJzfUH7l3LHCu0e606fV7+v3hMhphOfljjZYLaiRmGiR9lqO/f5xE/w2a+OtG/QMavw==}
-
-  datatables.net-buttons@2.4.3:
-    resolution: {integrity: sha512-xoHD6I2kxnU/CEp97Ar0lSnAL1siucQ/5Q/otGWWfWE2VN0o4n5C2h2Ot/ZCS8kxbEHBGd873Bc2xPdJH87yOw==}
 
   datatables.net-colreorder-bs4@1.7.2:
     resolution: {integrity: sha512-iVlvHwD82ZCDuaDaAXsD6OukNjgWNe44+f0yu43a1bOwK1ncXYiBSohlEuIhynHnESexN2vg4saj4a0rEMNx+w==}
@@ -7612,11 +7600,6 @@ snapshots:
       jquery: 3.7.1
 
   datatables.net-buttons@1.7.1:
-    dependencies:
-      datatables.net: 1.13.11
-      jquery: 3.7.1
-
-  datatables.net-buttons@2.4.3:
     dependencies:
       datatables.net: 1.13.11
       jquery: 3.7.1

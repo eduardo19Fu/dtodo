@@ -1,3 +1,120 @@
-.main-header{
-    z-index: 999 !important;
+:host { display: block; }
+
+.app-header {
+  align-items: center;
+  backdrop-filter: blur(14px);
+  background: rgba(255, 255, 255, 0.94);
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 5px 18px rgba(29, 48, 75, 0.06);
+  display: flex;
+  height: 70px;
+  justify-content: space-between;
+  padding: 0 22px;
+}
+
+.header-leading,
+.header-actions,
+.home-link {
+  align-items: center;
+  display: flex;
+}
+
+.header-leading { gap: 14px; }
+.header-actions { gap: 12px; }
+
+.header-icon-button {
+  align-items: center;
+  background: #f5f8fc;
+  border: 1px solid #dfe7f1;
+  border-radius: 11px;
+  color: #52637a;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 15px;
+  height: 40px;
+  justify-content: center;
+  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, transform 180ms ease;
+  width: 40px;
+}
+
+.header-icon-button:hover,
+.header-icon-button:focus-visible {
+  background: #edf4ff;
+  border-color: #bdd3ee;
+  color: #2868b2;
+  outline: 0;
+  transform: translateY(-1px);
+}
+
+.menu-toggle { color: #315f8f; }
+
+.header-divider {
+  background: #e4eaf1;
+  height: 28px;
+  width: 1px;
+}
+
+.home-link {
+  color: #25344b;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.home-link:hover { color: #245f9f; text-decoration: none; }
+
+.home-icon {
+  align-items: center;
+  background: #edf4fc;
+  border-radius: 9px;
+  color: #3977b8;
+  display: flex;
+  height: 34px;
+  justify-content: center;
+  width: 34px;
+}
+
+.home-link small,
+.home-link strong { display: block; }
+
+.home-link small {
+  color: #8a97a9;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.home-link strong {
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.system-status {
+  align-items: center;
+  background: #eef8f4;
+  border: 1px solid #d4ece3;
+  border-radius: 999px;
+  color: #4b7868;
+  display: inline-flex;
+  font-size: 10px;
+  font-weight: 700;
+  gap: 7px;
+  padding: 7px 11px;
+}
+
+.system-status i { color: #4aaa83; font-size: 7px; }
+
+@media (max-width: 575.98px) {
+  .app-header { height: 62px; padding: 0 12px; }
+  .header-leading { gap: 9px; }
+  .header-divider,
+  .home-icon,
+  .system-status { display: none; }
+  .home-link small { display: none; }
+  .header-icon-button { height: 38px; width: 38px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header-icon-button { transition: none; }
 }
