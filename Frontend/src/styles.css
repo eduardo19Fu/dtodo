@@ -6,6 +6,23 @@
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
+/* Escala tipográfica compartida para formularios. Las vistas heredadas aún
+   definen tamaños locales, por lo que estas reglas mantienen una base legible
+   y uniforme mientras se completa su migración visual. */
+input:not([type='checkbox']):not([type='radio']):not([type='range']),
+select,
+textarea {
+  font-size: 15px !important;
+}
+
+form label,
+.form-group > label,
+.field-group > label,
+.report-field > label,
+.export-field > label {
+  font-size: 14px !important;
+}
+
 /* Controles y jerarquía visual compartidos por todos los listados. */
 .listing-card {
   border: 1px solid #e5eaf0;

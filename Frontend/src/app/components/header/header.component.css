@@ -30,7 +30,7 @@
   color: #52637a;
   cursor: pointer;
   display: inline-flex;
-  font-size: 15px;
+  font-size: 16px;
   height: 40px;
   justify-content: center;
   transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, transform 180ms ease;
@@ -78,7 +78,7 @@
 
 .home-link small {
   color: #8a97a9;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.06em;
   line-height: 1.1;
@@ -86,7 +86,7 @@
 }
 
 .home-link strong {
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.35;
 }
 
@@ -97,7 +97,7 @@
   border-radius: 999px;
   color: #4b7868;
   display: inline-flex;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   gap: 7px;
   padding: 7px 11px;

@@ -1,5 +1,6 @@
 :host {
   --shell-bg: #f4f7fb;
+  --shell-header-height: 70px;
   --sidebar-expanded: 274px;
   --sidebar-collapsed: 82px;
   display: block;
@@ -136,6 +137,7 @@ app-header {
 }
 
 @media (max-width: 575.98px) {
+  :host { --shell-header-height: 62px; }
   .footer-status { display: none; }
 }
 
