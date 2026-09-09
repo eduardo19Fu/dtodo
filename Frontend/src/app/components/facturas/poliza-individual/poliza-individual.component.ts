@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, HostListener, OnDestroy, OnInit, Output } from '@angular/core';
 import { Usuario } from 'src/app/models/usuario';
 import { Sucursal } from '../../../models/sucursal';
 import { UsuarioService } from '../../../services/usuarios/usuario.service';
@@ -12,11 +12,16 @@ import Swal from 'sweetalert2';
   templateUrl: './poliza-individual.component.html',
   styleUrls: ['./poliza-individual.component.css']
 })
-export class PolizaIndividualComponent implements OnInit, AfterViewInit {
+export class PolizaIndividualComponent implements OnInit, AfterViewInit, OnDestroy {
+
+  @Output() cerrar = new EventEmitter<void>();
 
   title: string;
 
   fecha: Date;
+  cerrando = false;
+
+  private cierreTimer: ReturnType<typeof setTimeout>;
 
   idCajero: number = null;
   cajeros: Usuario[];
@@ -42,6 +47,12 @@ export class PolizaIndividualComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.getCajeros();
+  }
+
+  ngOnDestroy(): void {
+    if (this.cierreTimer) {
+      clearTimeout(this.cierreTimer);
+    }
   }
 
   onSucursalChange(idSucursal: number): void {
@@ -81,6 +92,23 @@ export class PolizaIndividualComponent implements OnInit, AfterViewInit {
 
   getCajeros(): void {
     this.usuarioService.getCajeros(this.idSucursal).subscribe(cajeros => this.cajeros = cajeros);
+  }
+
+  cerrarModal(): void {
+    if (this.cerrando) {
+      return;
+    }
+    this.cerrando = true;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      this.cerrar.emit();
+      return;
+    }
+    this.cierreTimer = setTimeout(() => this.cerrar.emit(), 180);
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.cerrarModal();
   }
 
 }

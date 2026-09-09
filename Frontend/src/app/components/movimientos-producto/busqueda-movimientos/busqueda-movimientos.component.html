@@ -1,23 +1,23 @@
-<div class="modal fade inventory-report-modal" id="modal-busqueda" tabindex="-1" role="dialog"
-  aria-labelledby="inventory-report-title" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered" role="document">
-    <div class="modal-content inventory-report-content">
-      <header class="modal-header inventory-report-header">
+<div class="report-modal-overlay" [class.report-modal-closing]="cerrando" (click)="cerrarModal()">
+  <div class="inventory-report-modal" tabindex="-1" role="dialog" aria-modal="true"
+    aria-labelledby="inventory-report-title" (click)="$event.stopPropagation()">
+    <div class="report-modal-dialog inventory-report-content">
+      <header class="inventory-report-header">
         <div class="report-heading-icon" aria-hidden="true">
           <i class="fas fa-file-alt"></i>
         </div>
         <div class="report-heading-copy">
           <span>Reportes</span>
-          <h4 class="modal-title" id="inventory-report-title">{{ title }}</h4>
+          <h4 class="report-title" id="inventory-report-title">{{ title }}</h4>
           <p>Selecciona el período que deseas consultar.</p>
         </div>
-        <button id="button-x" type="button" class="report-close" data-dismiss="modal" aria-label="Cerrar">
+        <button type="button" class="report-close" (click)="cerrarModal()" aria-label="Cerrar">
           <i class="fas fa-times" aria-hidden="true"></i>
         </button>
       </header>
 
       <form #formBusqueda="ngForm" id="form-busqueda" (ngSubmit)="onSubmit()">
-        <div class="modal-body inventory-report-body">
+        <div class="inventory-report-body">
           <div class="report-intro">
             <span class="report-intro-icon" aria-hidden="true"><i class="far fa-calendar-alt"></i></span>
             <div>
@@ -57,10 +57,10 @@
           </div>
         </div>
 
-        <footer class="modal-footer inventory-report-footer">
+        <footer class="inventory-report-footer">
           <span class="required-note"><i class="fas fa-info-circle" aria-hidden="true"></i> Ambos campos son obligatorios</span>
           <div class="report-actions">
-            <button type="button" class="report-cancel" id="cerrar-modal" data-dismiss="modal">Cancelar</button>
+            <button type="button" class="report-cancel" (click)="cerrarModal()">Cancelar</button>
             <button type="submit" class="report-submit" [disabled]="!formBusqueda.form.valid">
               <i class="fas fa-file-pdf" aria-hidden="true"></i>
               Generar reporte

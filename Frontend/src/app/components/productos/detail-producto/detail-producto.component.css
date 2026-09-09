@@ -11,6 +11,7 @@
 
 .product-detail-overlay {
   align-items: flex-start;
+  animation: product-detail-overlay-in 180ms ease-out;
   background: rgba(14, 25, 22, 0.72);
   display: flex;
   inset: 0;
@@ -22,10 +23,19 @@
 }
 
 .product-detail-dialog {
+  animation: product-detail-dialog-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
   margin: auto;
   max-width: 1080px;
   outline: 0;
   width: 100%;
+}
+
+.product-detail-overlay.product-detail-closing {
+  animation: product-detail-overlay-out 180ms ease-in forwards;
+}
+
+.product-detail-closing .product-detail-dialog {
+  animation: product-detail-dialog-out 180ms ease-in forwards;
 }
 
 .product-detail-content {
@@ -468,18 +478,24 @@
   color: var(--green-900);
 }
 
-.animacion {
-  animation-duration: 0.25s;
-  animation-fill-mode: both;
-}
-
-.fadeIn {
-  animation-name: fadeIn;
-}
-
-@keyframes fadeIn {
+@keyframes product-detail-overlay-in {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+@keyframes product-detail-overlay-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes product-detail-dialog-in {
+  from { opacity: 0; transform: translateY(14px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes product-detail-dialog-out {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(10px) scale(0.985); }
 }
 
 @media (max-width: 767.98px) {
@@ -495,5 +511,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animacion { animation: none; }
+  .product-detail-overlay,
+  .product-detail-dialog,
+  .product-detail-overlay.product-detail-closing,
+  .product-detail-closing .product-detail-dialog { animation: none; }
 }

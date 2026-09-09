@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, HostListener, OnDestroy, OnInit, Output } from '@angular/core';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import Swal from 'sweetalert2';
@@ -17,6 +17,7 @@ import { ClienteService } from '../../../../services/cliente.service';
 export class ModalBuscarClienteComponent implements OnInit, OnDestroy {
 
   @Output() cliente = new EventEmitter<Cliente>();
+  @Output() cerrar = new EventEmitter<void>();
 
   title = 'Búsqueda de clientes';
   clientes: Cliente[] = [];
@@ -154,5 +155,14 @@ export class ModalBuscarClienteComponent implements OnInit, OnDestroy {
 
   chooseCliente(cliente: Cliente): void {
     this.cliente.emit(cliente);
+  }
+
+  cerrarModal(): void {
+    this.cerrar.emit();
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.cerrarModal();
   }
 }

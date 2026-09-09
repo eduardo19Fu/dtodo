@@ -2,7 +2,8 @@
 <app-modal-create *ngIf="nitIngresado" [nit]="nitIngresado" (clienteCreado)="cargarCliente($event)"></app-modal-create>
 
 <!-- MODAL PARA BUSCAR CLIENTES -->
-<app-modal-buscar-cliente (cliente)="loadCliente($event)"></app-modal-buscar-cliente>
+<app-modal-buscar-cliente *ngIf="modalClienteVisible" (cliente)="loadCliente($event)"
+    (cerrar)="cerrarModalCliente()"></app-modal-buscar-cliente>
 
 <!-- MODAL DE SELECCIÓN DE PRODUCTOS DE FACTURA -->
 <div *ngIf="mostrarModalProductos" class="abrir-modal animacion fadeIn">
@@ -229,8 +230,8 @@
                                     <input #mybuscar type="text" id="buscar" name="buscar" class="form-control"
                                         (keyup.enter)="buscarCliente()" placeholder="Ingresa el NIT del cliente" autofocus>
                                 </div>
-                                <button type="button" class="inline-search-button" data-toggle="modal"
-                                    data-target="#modal-buscar-cliente" aria-label="Buscar cliente" title="Buscar cliente">
+                                <button type="button" class="inline-search-button" (click)="abrirModalCliente()"
+                                    aria-label="Buscar cliente" title="Buscar cliente">
                                     <i class="fas fa-search" aria-hidden="true"></i>
                                 </button>
                             </div>

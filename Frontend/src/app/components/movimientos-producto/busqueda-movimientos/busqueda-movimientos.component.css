@@ -7,9 +7,25 @@
   --ink: #273044;
 }
 
-.inventory-report-modal .modal-dialog { margin: 24px auto; max-width: 720px; padding: 0 16px; }
+.report-modal-overlay {
+  align-items: flex-start;
+  animation: report-overlay-in 180ms ease-out;
+  background: rgba(15, 23, 42, 0.58);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 24px 16px;
+  position: fixed;
+  z-index: 1050;
+}
+.inventory-report-modal { max-width: 720px; width: 100%; }
+.report-modal-dialog { animation: report-dialog-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1); margin: 24px auto; }
+.report-modal-overlay.report-modal-closing { animation: report-overlay-out 180ms ease-in forwards; }
+.report-modal-closing .report-modal-dialog { animation: report-dialog-out 180ms ease-in forwards; }
 .inventory-report-content {
-  border: 0; border-radius: 17px; box-shadow: 0 26px 65px rgba(24, 16, 39, 0.36); overflow: hidden;
+  background: #fff; border: 0; border-radius: 17px; box-shadow: 0 26px 65px rgba(24, 16, 39, 0.36);
+  max-height: calc(100vh - 48px); overflow-y: auto;
 }
 .inventory-report-header {
   align-items: center; background: linear-gradient(125deg, var(--teal-900), var(--teal-700) 64%, var(--teal-600));
@@ -25,7 +41,7 @@
   color: #d9eeee; display: block; font-size: 10px; font-weight: 700; letter-spacing: 1.2px;
   margin-bottom: 2px; text-transform: uppercase;
 }
-.report-heading-copy .modal-title { color: #fff; font-size: 22px; font-weight: 700; line-height: 1.2; margin: 0; }
+.report-heading-copy .report-title { color: #fff; font-size: 22px; font-weight: 700; line-height: 1.2; margin: 0; }
 .report-heading-copy p { color: rgba(255, 255, 255, 0.7); font-size: 12px; margin: 3px 0 0; }
 .report-close {
   align-items: center; background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2);
@@ -92,16 +108,45 @@
 }
 .report-submit:disabled { box-shadow: none; cursor: not-allowed; opacity: 0.45; transform: none; }
 
+@keyframes report-overlay-in {
+  from { background: rgba(15, 23, 42, 0); }
+  to { background: rgba(15, 23, 42, 0.58); }
+}
+
+@keyframes report-overlay-out {
+  from { background: rgba(15, 23, 42, 0.58); opacity: 1; }
+  to { background: rgba(15, 23, 42, 0); opacity: 0; }
+}
+
+@keyframes report-dialog-in {
+  from { opacity: 0; transform: translateY(14px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes report-dialog-out {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(8px) scale(0.99); }
+}
+
 @media (max-width: 575.98px) {
-  .inventory-report-modal .modal-dialog { margin: 10px auto; padding: 0 8px; }
+  .report-modal-overlay { padding: 10px 8px; }
+  .report-modal-dialog { margin: 0 auto; }
+  .inventory-report-content { max-height: calc(100vh - 20px); }
   .inventory-report-header,
   .inventory-report-body,
   .inventory-report-footer { padding-left: 17px; padding-right: 17px; }
-  .report-heading-copy .modal-title { font-size: 18px; }
+  .report-heading-copy .report-title { font-size: 18px; }
   .report-heading-copy p { display: none; }
   .report-date-grid { grid-template-columns: 1fr; }
   .inventory-report-footer { align-items: stretch; flex-direction: column; gap: 12px; }
   .report-actions { width: 100%; }
   .report-cancel,
   .report-submit { flex: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .report-modal-overlay,
+  .report-modal-dialog,
+  .report-modal-overlay.report-modal-closing,
+  .report-modal-closing .report-modal-dialog { animation: none; }
 }

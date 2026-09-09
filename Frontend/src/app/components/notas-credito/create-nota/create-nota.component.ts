@@ -16,8 +16,6 @@ import { ProformaService } from 'src/app/services/proformas/proforma.service';
 
 import swal from 'sweetalert2';
 
-declare var $: any;
-
 /**
  * Item genérico utilizado por el modal de selección, independiente del
  * documento origen (Factura o Proforma).
@@ -64,6 +62,7 @@ export class CreateNotaComponent implements OnInit {
   itemsSeleccionables: ItemSeleccionable[] = [];
   mostrarModalProductos: boolean = false;
   cargandoProductosOrigen: boolean = false;
+  modalClienteVisible: boolean = false;
 
   // Paginación del modal
   paginaActual: number = 0;
@@ -122,9 +121,17 @@ export class CreateNotaComponent implements OnInit {
     this.cliente = event;
   }
 
-  loadCliente(event): void {
-    this.myBuscarTexto.nativeElement.value = event.nit;
-    (document.getElementById('button-2x')).click();
+  abrirModalCliente(): void {
+    this.modalClienteVisible = true;
+  }
+
+  cerrarModalCliente(): void {
+    this.modalClienteVisible = false;
+  }
+
+  loadCliente(cliente: Cliente): void {
+    this.myBuscarTexto.nativeElement.value = cliente.nit;
+    this.cerrarModalCliente();
     this.buscarCliente();
   }
 

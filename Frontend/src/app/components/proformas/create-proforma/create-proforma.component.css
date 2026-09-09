@@ -701,7 +701,7 @@
 
 .sticky-summary {
   position: sticky;
-  top: 12px;
+  top: calc(var(--shell-header-height, 70px) + 12px);
   z-index: 25;
 }
 
@@ -825,7 +825,7 @@
     margin: 8px 10px 0;
     padding: 9px 10px;
     position: sticky;
-    top: 8px;
+    top: calc(var(--shell-header-height, 70px) + 8px);
     z-index: 35;
   }
 

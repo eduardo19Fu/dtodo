@@ -1,51 +1,64 @@
-<section class="ftco-section">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-6 text-center mb-5">
-                <h2 class="heading-section">{{headerTitle}}</h2>
-            </div>
-        </div>
-        <div class="row justify-content-center">
-            <div class="col-md-12 col-lg-10">
-                <div class="wrap d-md-flex">
-                    <div class="img" style="background-image: url(assets/img/logo-dtodo.jpg);">
-                    </div>
-                    <div class="login-wrap p-4 p-md-5">
-                        <div class="d-flex">
-                            <div class="w-100">
-                                <h3 class="mb-4 text-center">{{title}}</h3>
-                            </div>
-                        </div>
-                        <form id="formulario-ingreso" method="POST" class="signin-form">
-                            <div class="form-group mb-3">
-                                <label class="label" for="usuario">{{usuarioTitle}}</label>
-                                <input [(ngModel)]="usuario.usuario" type="text" name="username" class="form-control"
-                                    placeholder="Username" required autofocus>
-                            </div>
-                            <div class="form-group mb-3">
-                                <label class="label" for="password">{{passwordTitle}}</label>
-                                <div class="input-group">
-                                    <input [(ngModel)]="usuario.password"
-                                        [type]="passwordVisible ? 'text' : 'password'"
-                                        name="password" class="form-control"
-                                        placeholder="Password" autocomplete="current-password" required>
-                                    <div class="input-group-append">
-                                        <button type="button" class="btn btn-outline-secondary toggle-password"
-                                            (click)="togglePasswordVisible()"
-                                            [attr.aria-label]="passwordVisible ? 'Ocultar contraseña' : 'Mostrar contraseña'">
-                                            <i class="fas" [ngClass]="passwordVisible ? 'fa-eye-slash' : 'fa-eye'"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <button (click)="login()" type="submit" class="form-control btn btn-primary rounded submit px-3">Entrar</button>
-                            </div>
+<div class="login-page">
+  <span class="login-orb login-orb-a" aria-hidden="true"></span>
+  <span class="login-orb login-orb-b" aria-hidden="true"></span>
 
-                        </form>
-                    </div>
-                </div>
-            </div>
+  <div class="login-center">
+    <div class="login-card">
+      <aside class="login-brand">
+        <div class="brand-mark">
+          <img src="assets/img/logo-dtodo-d.jpg" alt="" aria-hidden="true">
         </div>
+
+        <h1>D&rsquo;Todo</h1>
+        <p class="brand-tagline">Gestión comercial</p>
+
+        <p class="brand-headline">{{ headerTitle }}</p>
+
+        <ul class="brand-features">
+          <li><i class="fas fa-book" aria-hidden="true"></i> Librería</li>
+          <li><i class="fas fa-paperclip" aria-hidden="true"></i> Oficina</li>
+          <li><i class="fas fa-spray-can" aria-hidden="true"></i> Limpieza</li>
+        </ul>
+      </aside>
+
+      <section class="login-form-panel">
+        <div class="login-form-head">
+          <h2>{{ title }}</h2>
+          <p>Ingresa tus credenciales para continuar</p>
+        </div>
+
+        <form id="formulario-ingreso" class="login-form" (ngSubmit)="login()" novalidate>
+          <div class="form-field">
+            <label for="usuario">{{ usuarioTitle }}</label>
+            <div class="field-control">
+              <i class="fas fa-user" aria-hidden="true"></i>
+              <input [(ngModel)]="usuario.usuario" type="text" id="usuario" name="username"
+                placeholder="Ingresa tu usuario" autocomplete="username" required autofocus>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label for="password">{{ passwordTitle }}</label>
+            <div class="field-control">
+              <i class="fas fa-lock" aria-hidden="true"></i>
+              <input [(ngModel)]="usuario.password" [type]="passwordVisible ? 'text' : 'password'"
+                id="password" name="password" placeholder="Ingresa tu contraseña"
+                autocomplete="current-password" required>
+              <button type="button" class="toggle-password" (click)="togglePasswordVisible()"
+                [attr.aria-label]="passwordVisible ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+                <i class="fas" [ngClass]="passwordVisible ? 'fa-eye-slash' : 'fa-eye'" aria-hidden="true"></i>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="login-submit" [disabled]="cargando">
+            <i class="fas" [ngClass]="cargando ? 'fa-spinner fa-spin' : 'fa-sign-in-alt'" aria-hidden="true"></i>
+            {{ cargando ? 'Ingresando...' : 'Entrar' }}
+          </button>
+        </form>
+
+        <p class="login-security"><i class="fas fa-shield-alt" aria-hidden="true"></i> Conexión segura</p>
+      </section>
     </div>
-</section>
+  </div>
+</div>

@@ -2,8 +2,10 @@
   (clienteCreado)="cargarCliente($event)">
 </app-modal-create>
 
-<app-modal-buscar-producto (producto)="loadProducto($event)"></app-modal-buscar-producto>
-<app-modal-buscar-cliente (cliente)="loadCliente($event)"></app-modal-buscar-cliente>
+<app-modal-buscar-producto *ngIf="modalProductoVisible" (producto)="loadProducto($event)"
+  (cerrar)="cerrarModalProducto()"></app-modal-buscar-producto>
+<app-modal-buscar-cliente *ngIf="modalClienteVisible" (cliente)="loadCliente($event)"
+  (cerrar)="cerrarModalCliente()"></app-modal-buscar-cliente>
 
 <div class="product-form-page proforma-page">
   <header class="page-heading">
@@ -96,11 +98,11 @@
             <div class="inline-search-control">
               <div class="control-with-icon">
                 <i class="fas fa-id-card" aria-hidden="true"></i>
-                <input type="text" id="buscar" name="buscar" class="form-control"
+                <input type="text" id="buscar" name="buscar" class="form-control" [(ngModel)]="nitBusqueda"
                   (keyup.enter)="buscarCliente()" placeholder="Ingresa el NIT del cliente" autofocus>
               </div>
-              <button type="button" class="inline-search-button" data-toggle="modal"
-                data-target="#modal-buscar-cliente" aria-label="Buscar cliente" title="Buscar cliente">
+              <button type="button" class="inline-search-button" (click)="abrirModalCliente()"
+                aria-label="Buscar cliente" title="Buscar cliente">
                 <i class="fas fa-search" aria-hidden="true"></i>
               </button>
             </div>
@@ -153,11 +155,11 @@
               <div class="control-with-icon">
                 <i class="fas fa-barcode" aria-hidden="true"></i>
                 <input type="text" class="form-control" name="codigo" id="codigo"
-                  value="{{ producto ? producto.codProducto : '' }}" (keyup.enter)="buscarProducto()"
+                  [(ngModel)]="producto.codProducto" (keyup.enter)="buscarProducto()"
                   placeholder="Código del producto">
               </div>
-              <button type="button" class="inline-search-button" data-toggle="modal"
-                data-target="#modal-buscar-producto" aria-label="Buscar producto" title="Buscar producto">
+              <button type="button" class="inline-search-button" (click)="abrirModalProducto()"
+                aria-label="Buscar producto" title="Buscar producto">
                 <i class="fas fa-search" aria-hidden="true"></i>
               </button>
             </div>

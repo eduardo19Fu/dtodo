@@ -1,5 +1,7 @@
 <app-modal-buscar-producto-movimiento
-  (producto)="loadProducto($event)">
+  *ngIf="modalProductoVisible"
+  (producto)="loadProducto($event)"
+  (cerrar)="cerrarModalProducto()">
 </app-modal-buscar-producto-movimiento>
 
 <div class="product-form-page">
@@ -49,9 +51,8 @@
                   [(ngModel)]="producto.codProducto" (keyup.enter)="buscarProducto()" required #codigo="ngModel"
                   placeholder="Código del producto" autocomplete="off">
               </div>
-              <button type="button" class="search-product-button" data-toggle="modal"
-                data-target="#modal-buscar-producto" aria-label="Buscar producto en el catálogo"
-                title="Buscar producto">
+              <button type="button" class="search-product-button" (click)="abrirModalProducto()"
+                aria-label="Buscar producto en el catálogo" title="Buscar producto">
                 <i class="fas fa-search" aria-hidden="true"></i>
               </button>
             </div>
@@ -95,10 +96,12 @@
             <label for="cantidad">Cantidad <span class="required-mark">*</span></label>
             <div class="control-with-icon">
               <i class="fas fa-sort-numeric-up" aria-hidden="true"></i>
-              <input type="number" class="form-control" name="cantidad" id="cantidad" required
-                #cantidad="ngModel" [(ngModel)]="movimientoProducto.cantidad" placeholder="Cantidad a registrar">
+              <input type="number" class="form-control" name="cantidad" id="cantidad" required #cantidadInput
+                #cantidadControl="ngModel" [(ngModel)]="movimientoProducto.cantidad"
+                placeholder="Cantidad a registrar">
             </div>
-            <div class="validation-message" *ngIf="cantidad.invalid && (cantidad.touched || cantidad.dirty)">
+            <div class="validation-message"
+              *ngIf="cantidadControl.invalid && (cantidadControl.touched || cantidadControl.dirty)">
               <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
               <span>La cantidad no puede estar vacía.</span>
             </div>

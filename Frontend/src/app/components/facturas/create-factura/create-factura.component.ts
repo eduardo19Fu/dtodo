@@ -15,7 +15,6 @@ import { ClienteCreateService } from '../../../services/facturas/cliente-create.
 import { FacturaService } from '../../../services/facturas/factura.service';
 import { ProductoService } from '../../../services/producto.service';
 import { UsuarioService } from '../../../services/usuarios/usuario.service';
-import { ModalCambioService } from '../../../services/facturas/modal-cambio.service';
 import { ProformaService } from '../../../services/proformas/proforma.service';
 import { Proforma } from '../../../models/proforma';
 import { DetalleProforma } from '../../../models/detalle-proforma';
@@ -37,8 +36,10 @@ export class CreateFacturaComponent implements OnInit {
 
   title: string;
   nitIngresado: string;
-  pagar = false;
+  nitBusqueda = '';
   isSaving = false;
+  modalProductoVisible = false;
+  modalClienteVisible = false;
 
   edicionDetalleAbierta = false;
   campoDetalleEdicion: CampoDetalleEditable = null;
@@ -68,7 +69,6 @@ export class CreateFacturaComponent implements OnInit {
     private clienteService: ClienteService,
     private usuarioService: UsuarioService,
     private clienteCreateService: ClienteCreateService,
-    private modalCambioService: ModalCambioService,
     private correlativoService: CorrelativoService,
     public authService: AuthService,
     private activatedRoute: ActivatedRoute
@@ -94,7 +94,7 @@ export class CreateFacturaComponent implements OnInit {
   }
 
   buscarCliente(): void {
-    const nit = ((document.getElementById('buscar') as HTMLInputElement)).value;
+    const nit = (this.nitBusqueda || '').trim();
 
     if (nit) {
       this.clienteService.getClienteByNit(nit).subscribe(
@@ -117,8 +117,10 @@ export class CreateFacturaComponent implements OnInit {
     }
   }
 
-  cargarCliente(event): void {
-    this.cliente = event;
+  cargarCliente(cliente: Cliente): void {
+    this.cliente = cliente;
+    this.nitBusqueda = cliente.nit;
+    this.nitIngresado = null;
   }
 
   cargarCorrelativo(): void {
@@ -139,7 +141,7 @@ export class CreateFacturaComponent implements OnInit {
   }
 
   buscarProducto(): void {
-    const codigo = ((document.getElementById('codigo') as HTMLInputElement)).value;
+    const codigo = this.producto.codProducto;
 
     if (codigo) {
       this.productoService.getProductoByCode(codigo).subscribe(
@@ -439,8 +441,8 @@ export class CreateFacturaComponent implements OnInit {
         this.isSaving = false;
         this.cliente = new Cliente();
         this.factura = new Factura();
+        this.nitBusqueda = '';
         this.cargarCorrelativo();
-        (document.getElementById('buscar') as HTMLInputElement).value = '';
         swal.fire('Venta Realizada', `Factura No. ${response.noFactura} creada con éxito!`, 'success');
         (document.getElementById('buscar') as HTMLInputElement).focus();
         this.cambio = 0;
@@ -475,6 +477,7 @@ export class CreateFacturaComponent implements OnInit {
         this.proforma = proforma;
 
         this.cliente = proforma.cliente;
+        this.nitBusqueda = this.cliente.nit || '';
         this.factura.total = this.proforma.total;
 
         this.proforma.itemsProforma.forEach((itemProforma) => {
@@ -508,6 +511,11 @@ export class CreateFacturaComponent implements OnInit {
     return !!this.efectivo && this.efectivo >= this.factura.total;
   }
 
+  saldoPendiente(): number {
+    const efectivoRecibido = Number(this.efectivo) || 0;
+    return Math.max(this.factura.total - efectivoRecibido, 0);
+  }
+
   cantidadesValidas(): boolean {
     return this.factura.itemsFactura.every((item: DetalleFactura) =>
       Number.isInteger(Number(item.cantidad))
@@ -520,9 +528,25 @@ export class CreateFacturaComponent implements OnInit {
     this.factura.total = this.factura.calcularTotal();
   }
 
-  loadProducto(event): void {
-    (document.getElementById('codigo') as HTMLInputElement).value = event.codProducto;
-    (document.getElementById('button-x')).click();
+  abrirModalProducto(): void {
+    this.modalProductoVisible = true;
+  }
+
+  cerrarModalProducto(): void {
+    this.modalProductoVisible = false;
+  }
+
+  abrirModalCliente(): void {
+    this.modalClienteVisible = true;
+  }
+
+  cerrarModalCliente(): void {
+    this.modalClienteVisible = false;
+  }
+
+  loadProducto(producto: Producto): void {
+    this.producto.codProducto = producto.codProducto;
+    this.cerrarModalProducto();
     this.buscarProducto();
   }
 
@@ -530,9 +554,9 @@ export class CreateFacturaComponent implements OnInit {
     setTimeout(() => (document.getElementById('cantidad') as HTMLInputElement)?.focus(), 350);
   }
 
-  loadCliente(event): void {
-    (document.getElementById('buscar') as HTMLInputElement).value = event.nit;
-    (document.getElementById('button-2x')).click();
+  loadCliente(cliente: Cliente): void {
+    this.nitBusqueda = cliente.nit;
+    this.cerrarModalCliente();
     this.buscarCliente();
   }
 

@@ -1,13 +1,13 @@
-import { ListadoProductosMejoradoComponent } from './listado-productos-mejorado.component';
+import { ProductosComponent } from './productos.component';
 import { ProductoDto } from 'src/app/dtos/productoDto';
 import { Sucursal } from 'src/app/models/sucursal';
 
-describe('ListadoProductosMejoradoComponent - edicion en linea de stock', () => {
-  let component: ListadoProductosMejoradoComponent;
+describe('ProductosComponent - edicion en linea de stock', () => {
+  let component: ProductosComponent;
   let producto: ProductoDto;
 
   beforeEach(() => {
-    component = new ListadoProductosMejoradoComponent(null, null, null, null, null);
+    component = new ProductosComponent(null, null, null, null);
     producto = new ProductoDto();
     producto.idProducto = 4;
     producto.stock = 15;
@@ -30,8 +30,8 @@ describe('ListadoProductosMejoradoComponent - edicion en linea de stock', () => 
   });
 });
 
-describe('ListadoProductosMejoradoComponent - importar inventario a una sucursal vacia', () => {
-  let component: ListadoProductosMejoradoComponent;
+describe('ProductosComponent - importar inventario a una sucursal vacia', () => {
+  let component: ProductosComponent;
 
   const sucursal = (id: number, nombre: string): Sucursal => {
     const s = new Sucursal();
@@ -41,9 +41,9 @@ describe('ListadoProductosMejoradoComponent - importar inventario a una sucursal
   };
 
   beforeEach(() => {
-    component = new ListadoProductosMejoradoComponent(null, null, null, null, null);
+    component = new ProductosComponent(null, null, null, null);
     component.idSucursalActiva = 2;
-    component.sucursalesParaImportar = [sucursal(1, 'Sucursal Central'), sucursal(2, 'Sucursal Norte')];
+    component.sucursalesAdmin = [sucursal(1, 'Sucursal Central'), sucursal(2, 'Sucursal Norte')];
   });
 
   it('excluye la propia sucursal activa de las opciones de origen', () => {
@@ -56,5 +56,24 @@ describe('ListadoProductosMejoradoComponent - importar inventario a una sucursal
     component.importarProductos();
 
     expect(component.importando).toBeFalse();
+  });
+});
+
+describe('ProductosComponent - detalle de producto', () => {
+  let component: ProductosComponent;
+
+  beforeEach(() => {
+    component = new ProductosComponent(null, null, null, null);
+  });
+
+  it('abre y cierra el detalle mediante estado Angular', () => {
+    const producto = new ProductoDto();
+    producto.idProducto = 8;
+
+    component.abrirModal(producto);
+    expect(component.productoSeleccionado).toBe(producto as any);
+
+    component.cerrarDetalleProducto();
+    expect(component.productoSeleccionado).toBeNull();
   });
 });

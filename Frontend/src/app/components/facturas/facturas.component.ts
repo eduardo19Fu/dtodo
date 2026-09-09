@@ -36,6 +36,7 @@ export class FacturasComponent implements OnInit, OnDestroy {
   mostrandoUltimas = true;
   orden = 'fecha';
   direccion: 'asc' | 'desc' = 'desc';
+  modalPolizaVisible = false;
 
   private busquedaSubject = new Subject<string>();
   private busquedaSubscription: Subscription;
@@ -130,6 +131,14 @@ export class FacturasComponent implements OnInit, OnDestroy {
     this.mostrandoUltimas = true;
     this.busquedaRealizada = true;
     this.cargarFacturas(0);
+  }
+
+  abrirModalPoliza(): void {
+    this.modalPolizaVisible = true;
+  }
+
+  cerrarModalPoliza(): void {
+    this.modalPolizaVisible = false;
   }
 
   ordenarPor(campo: string): void {

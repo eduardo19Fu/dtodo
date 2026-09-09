@@ -12,7 +12,7 @@ describe('CreateFacturaComponent - edición de detalle', () => {
   let item: DetalleFactura;
 
   beforeEach(() => {
-    component = new CreateFacturaComponent(null, null, null, null, null, null, null, null, null, null);
+    component = new CreateFacturaComponent(null, null, null, null, null, null, null, null, null);
     const producto = new Producto();
     producto.idProducto = 1;
     producto.nombre = 'Producto de prueba';
@@ -27,6 +27,35 @@ describe('CreateFacturaComponent - edición de detalle', () => {
     item.subTotalDescuento = item.calcularImporteDescuento();
     component.factura.itemsFactura = [item];
     component.calcularCambio();
+  });
+
+  it('controla la visibilidad de los selectores con estado Angular', () => {
+    component.abrirModalCliente();
+    component.abrirModalProducto();
+
+    expect(component.modalClienteVisible).toBeTrue();
+    expect(component.modalProductoVisible).toBeTrue();
+
+    component.cerrarModalCliente();
+    component.cerrarModalProducto();
+
+    expect(component.modalClienteVisible).toBeFalse();
+    expect(component.modalProductoVisible).toBeFalse();
+  });
+
+  it('muestra el total completo como pendiente antes de ingresar el efectivo', () => {
+    expect(component.factura.total).toBe(180);
+    expect(component.pagoSuficiente()).toBeFalse();
+    expect(component.saldoPendiente()).toBe(180);
+  });
+
+  it('habilita el pago y deja de mostrar saldo pendiente al recibir el total', () => {
+    component.efectivo = 180;
+    component.calcularCambio();
+
+    expect(component.pagoSuficiente()).toBeTrue();
+    expect(component.saldoPendiente()).toBe(0);
+    expect(component.cambio).toBe(0);
   });
 
   it('actualiza cantidad, total y cambio al confirmar', fakeAsync(() => {

@@ -6,6 +6,23 @@
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
+/* Escala tipográfica compartida para formularios. Las vistas heredadas aún
+   definen tamaños locales, por lo que estas reglas mantienen una base legible
+   y uniforme mientras se completa su migración visual. */
+input:not([type='checkbox']):not([type='radio']):not([type='range']),
+select,
+textarea {
+  font-size: 15px !important;
+}
+
+form label,
+.form-group > label,
+.field-group > label,
+.report-field > label,
+.export-field > label {
+  font-size: 14px !important;
+}
+
 /* Controles y jerarquía visual compartidos por todos los listados. */
 .listing-card {
   border: 1px solid #e5eaf0;
@@ -76,36 +93,34 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   html,
   body,
   app-root,
-  .wrapper,
-  .content-wrapper,
-  .content,
-  .content-fluid {
+  .app-shell,
+  .shell-workspace,
+  .shell-content {
     max-width: 100%;
     overflow-x: hidden;
   }
 
-  .content-wrapper,
-  .content,
-  .content-fluid {
+  .shell-workspace,
+  .shell-content {
     min-width: 0;
     width: 100%;
   }
 
-  .content-wrapper form,
-  .content-wrapper form .row,
-  .content-wrapper form [class*='col-'],
-  .content-wrapper form .form-group,
-  .content-wrapper form .input-group,
-  .content-wrapper .card,
-  .content-wrapper .card-body {
+  .shell-content form,
+  .shell-content form .row,
+  .shell-content form [class*='col-'],
+  .shell-content form .form-group,
+  .shell-content form .input-group,
+  .shell-content .card,
+  .shell-content .card-body {
     box-sizing: border-box;
     max-width: 100%;
     min-width: 0;
   }
 
-  .content-wrapper input,
-  .content-wrapper select,
-  .content-wrapper textarea {
+  .shell-content input,
+  .shell-content select,
+  .shell-content textarea {
     max-width: 100%;
   }
 

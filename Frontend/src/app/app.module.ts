@@ -12,7 +12,6 @@ import { LoginComponent } from './components/login/login.component';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { HeaderComponent } from './components/header/header.component';
 import { HomeComponent } from './components/home/home.component';
-import { FooterComponent } from './components/footer/footer.component';
 import { ClientesComponent } from './components/clientes/clientes.component';
 import { CreateClienteComponent } from './components/clientes/create-cliente/create-cliente.component';
 import { ModalCreateComponent } from './components/clientes/modal-create/modal-create.component';
@@ -36,9 +35,6 @@ import { MovimientosProductoComponent } from './components/movimientos-producto/
 import { CreateMovimientoComponent } from './components/movimientos-producto/create-movimiento/create-movimiento.component';
 import { BusquedaMovimientosComponent } from './components/movimientos-producto/busqueda-movimientos/busqueda-movimientos.component';
 import { PolizaIndividualComponent } from './components/facturas/poliza-individual/poliza-individual.component';
-import { SearchProductModalComponent } from './components/productos/search-product-modal/search-product-modal.component';
-import { HeaderVentasComponent } from './components/header-ventas/header-ventas.component';
-import { ModalCambioComponent } from './components/facturas/create-factura/modal-cambio/modal-cambio.component';
 import { ModalBuscarProductoComponent } from './components/facturas/create-factura/modal-buscar-producto/modal-buscar-producto.component';
 import { ModalBuscarClienteComponent } from './components/facturas/create-factura/modal-buscar-cliente/modal-buscar-cliente.component';
 import { ModalBuscarProductoMovimientoComponent } from './components/movimientos-producto/create-movimiento/modal-buscar-producto-movimiento/modal-buscar-producto-movimiento.component';
@@ -49,9 +45,7 @@ import { ExportarProformasComponent } from './components/proformas/exportar-prof
 import { NotasCreditoComponent } from './components/notas-credito/notas-credito.component';
 import { CreateNotaComponent } from './components/notas-credito/create-nota/create-nota.component';
 import { DetailNotaComponent } from './components/notas-credito/detail-nota/detail-nota.component';
-import { ModalNotasCreditoComponent } from './components/notas-credito/modal-notas-credito/modal-notas-credito.component';
 import { DespacharNotaComponent } from './components/notas-credito/despachar-nota/despachar-nota.component';
-import { ListadoProductosMejoradoComponent } from './components/productos/listado-productos-mejorado/listado-productos-mejorado.component';
 import { ExportarProductosComponent } from './components/productos/exportar-productos/exportar-productos.component';
 import { SucursalesComponent } from './components/sucursales/sucursales.component';
 import { CreateSucursalComponent } from './components/sucursales/create-sucursal/create-sucursal.component';
@@ -65,7 +59,6 @@ import { TooltipDirective } from './directives/tooltip.directive';
     SidebarComponent,
     HeaderComponent,
     HomeComponent,
-    FooterComponent,
     ClientesComponent,
     CreateClienteComponent,
     ModalCreateComponent,
@@ -89,9 +82,6 @@ import { TooltipDirective } from './directives/tooltip.directive';
     CreateMovimientoComponent,
     BusquedaMovimientosComponent,
     PolizaIndividualComponent,
-    SearchProductModalComponent,
-    HeaderVentasComponent,
-    ModalCambioComponent,
     ModalBuscarProductoComponent,
     ModalBuscarClienteComponent,
     ModalBuscarProductoMovimientoComponent,
@@ -102,9 +92,7 @@ import { TooltipDirective } from './directives/tooltip.directive';
     NotasCreditoComponent,
     CreateNotaComponent,
     DetailNotaComponent,
-    ModalNotasCreditoComponent,
     DespacharNotaComponent,
-    ListadoProductosMejoradoComponent,
     ExportarProductosComponent,
     SucursalesComponent,
     CreateSucursalComponent,
