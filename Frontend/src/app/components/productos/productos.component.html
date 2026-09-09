@@ -178,7 +178,7 @@
                         <button class="btn btn-sm listing-table-action listing-action-edit" type="button"
                             appTooltip="Ajustar stock" aria-label="Ajustar stock"
                             (click)="editarStock(producto)"
-                            *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_INVENTARIO')">
+                            *ngIf="auth.hasRole('ROLE_ADMIN')">
                             <i class="fas fa-boxes"></i>
                         </button>
                         </div>

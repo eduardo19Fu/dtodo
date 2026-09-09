@@ -7,6 +7,8 @@ import java.util.Map;
 
 import xyz.pangosoft.dtodo.dto.ProductoDto;
 import xyz.pangosoft.dtodo.dto.ProductoDtoMejorado;
+import xyz.pangosoft.dtodo.dto.ProductoRegistroRequest;
+import xyz.pangosoft.dtodo.dto.SucursalStockDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -175,18 +177,25 @@ public class ProductoApiController {
 
 	@Secured(value = { "ROLE_ADMIN" })
 	@PostMapping(value = "/productos")
-	public ResponseEntity<Producto> create(@RequestBody Producto producto, BindingResult result,
-			@RequestParam(value = "idSucursal", required = false) Integer idSucursal) {
+	public ResponseEntity<Producto> create(@RequestBody ProductoRegistroRequest request, BindingResult result) {
+		Producto producto = request.getProducto();
 		log.info("Registrando nuevo producto con codigo: {}", producto.getCodProducto());
 
-		int stockInicial = producto.getStock();
 		Producto newProducto = serviceProducto.save(producto);
+		List<SucursalStockDto> sucursales = request.getSucursales();
 
-		if (stockInicial > 0) {
-			Sucursal sucursal = serviceSucursal.findById(resolverSucursal(idSucursal));
-			InventarioSucursal inventario = serviceInventarioSucursal.obtenerOCrear(sucursal, newProducto);
-			inventario.setStock(stockInicial);
-			serviceInventarioSucursal.guardar(inventario);
+		if (sucursales == null || sucursales.isEmpty()) {
+			// El frontend siempre debería enviar al menos la sucursal activa; este resguardo evita
+			// dejar un producto "huérfano" sin ninguna fila de inventario si eso llegara a fallar.
+			Sucursal sucursal = serviceSucursal.findById(resolverSucursal(null));
+			serviceInventarioSucursal.obtenerOCrear(sucursal, newProducto);
+		} else {
+			for (SucursalStockDto item : sucursales) {
+				Sucursal sucursal = serviceSucursal.findById(item.getIdSucursal());
+				InventarioSucursal inventario = serviceInventarioSucursal.obtenerOCrear(sucursal, newProducto);
+				inventario.setStock(item.getStock() == null ? 0 : item.getStock());
+				serviceInventarioSucursal.guardar(inventario);
+			}
 		}
 
 		return new ResponseEntity<>(newProducto, HttpStatus.CREATED);
@@ -198,7 +207,7 @@ public class ProductoApiController {
 		log.info("Actualizando producto con ID: {}", producto.getIdProducto());
 
 		Producto productoUpdated = null;
-		productoUpdated = serviceProducto.save(producto);
+		productoUpdated = serviceProducto.actualizarYSincronizar(producto);
 		return new ResponseEntity<>(productoUpdated, HttpStatus.CREATED);
 	}
 

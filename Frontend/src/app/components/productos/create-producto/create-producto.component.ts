@@ -4,12 +4,23 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MarcaProductoService } from 'src/app/services/marca-producto.service';
 import { ProductoService } from 'src/app/services/producto.service';
 import { TipoProductoService } from 'src/app/services/tipo-producto.service';
+import { SucursalService } from 'src/app/services/sucursal.service';
+import { AuthService } from 'src/app/services/auth.service';
 
 import { MarcaProducto } from 'src/app/models/marca-producto';
 import { Producto } from 'src/app/models/producto';
 import { TipoProducto } from 'src/app/models/tipo-producto';
+import { Sucursal } from 'src/app/models/sucursal';
+import { SucursalStock } from 'src/app/models/sucursal-stock';
 
 import swal from 'sweetalert2';
+
+/** Fila del selector de sucursales al registrar un producto nuevo. */
+interface SeleccionSucursal {
+  sucursal: Sucursal;
+  seleccionada: boolean;
+  stock: number;
+}
 
 @Component({
   selector: 'app-create-producto',
@@ -24,10 +35,15 @@ export class CreateProductoComponent implements OnInit {
   tipos: TipoProducto[];
   marcas: MarcaProducto[];
 
+  // Selección de sucursales donde sembrar el producto nuevo (solo aplica al registrar, no al editar)
+  seleccionSucursales: SeleccionSucursal[] = [];
+
   constructor(
     private serviceMarca: MarcaProductoService,
     private serviceTipo: TipoProductoService,
     private serviceProducto: ProductoService,
+    private serviceSucursal: SucursalService,
+    private auth: AuthService,
     private router: Router,
     private activatedRoute: ActivatedRoute
   ) {
@@ -46,10 +62,31 @@ export class CreateProductoComponent implements OnInit {
         this.serviceProducto.getProducto(id).subscribe(
           producto => this.producto = producto
         );
+      } else {
+        this.cargarSucursales();
       }
     });
     this.cargarMarcas();
     this.cargarTipos();
+  }
+
+  private cargarSucursales(): void {
+    this.serviceSucursal.getSucursales().subscribe(sucursales => {
+      const idSucursalActiva = this.auth.usuario?.sucursal?.idSucursal;
+      this.seleccionSucursales = sucursales.map(sucursal => ({
+        sucursal,
+        seleccionada: sucursal.idSucursal === idSucursalActiva,
+        stock: null
+      }));
+
+      // Si el usuario no tiene sucursal asignada (ej. sin sesión con sucursal), preselecciona la principal.
+      if (!this.seleccionSucursales.some(s => s.seleccionada)) {
+        const principal = this.seleccionSucursales.find(s => s.sucursal.esPrincipal);
+        if (principal) {
+          principal.seleccionada = true;
+        }
+      }
+    });
   }
 
   cargarProducto(): void {
@@ -80,22 +117,33 @@ export class CreateProductoComponent implements OnInit {
   create(): void {
     // this.producto.porcentajeGanancia = Number.parseFloat((document.getElementById('porcentaje-ganancia') as HTMLInputElement).value);
     this.producto.precioVenta = Number.parseFloat((document.getElementById('precio-venta') as HTMLInputElement).value);
-    if (this.producto.codProducto) {
-      this.serviceProducto.create(this.producto).subscribe(
-        producto => {
-          this.router.navigate(['/productos/index']);
-          swal.fire('Producto Guardado', `El producto ${producto.nombre} ha sido registrado con éxito`, 'success');
-        }
-      );
-    } else {
-      this.producto.codProducto = this.producto.generarCodigo();
-      this.serviceProducto.create(this.producto).subscribe(
-        producto => {
-          this.router.navigate(['/productos/index']);
-          swal.fire('Producto Guardado', `El producto ${producto.nombre} ha sido registrado con éxito`, 'success');
-        }
-      );
+
+    const sucursales = this.sucursalesSeleccionadasParaEnvio();
+    if (sucursales.length === 0) {
+      swal.fire('Selecciona al menos una sucursal', 'Elige en qué sucursal(es) va a estar disponible el producto.', 'warning');
+      return;
     }
+
+    if (!this.producto.codProducto) {
+      this.producto.codProducto = this.producto.generarCodigo();
+    }
+
+    this.serviceProducto.create(this.producto, sucursales).subscribe(
+      producto => {
+        this.router.navigate(['/productos/index']);
+        swal.fire('Producto Guardado', `El producto ${producto.nombre} ha sido registrado con éxito`, 'success');
+      }
+    );
+  }
+
+  private sucursalesSeleccionadasParaEnvio(): SucursalStock[] {
+    return this.seleccionSucursales
+      .filter(s => s.seleccionada)
+      .map(s => ({ idSucursal: s.sucursal.idSucursal, stock: s.stock || 0 }));
+  }
+
+  get algunaSucursalSeleccionada(): boolean {
+    return this.seleccionSucursales.some(s => s.seleccionada);
   }
 
   update(): void {

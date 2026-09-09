@@ -33,7 +33,12 @@ public interface IProductoService {
 	public Integer totalProductos(Integer idSucursal);
 	
 	public Producto save(Producto producto);
-	
+
+	// Actualiza un producto y propaga los campos compartidos (nombre, precios, marca, tipo, etc.)
+	// a todas las demás filas de Producto que tengan el mismo codProducto, sin tocar el stock,
+	// la fecha de registro ni el estado de cada una (esos campos son propios de cada sucursal).
+	public Producto actualizarYSincronizar(Producto producto);
+
 	public void delete(Producto producto);
 	
 	// Busqueda de Productos desde el frontend

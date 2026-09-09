@@ -5,6 +5,7 @@ import { catchError, map } from 'rxjs/operators';
 
 import { Producto } from '../models/producto';
 import { MovimientoProducto } from '../models/movimiento-producto';
+import { SucursalStock } from '../models/sucursal-stock';
 
 import { global } from './global';
 import swal from 'sweetalert2';
@@ -125,9 +126,13 @@ export class ProductoService {
     );
   }
 
-  create(producto: Producto): Observable<any> {
-    const params = this.conSucursal(new HttpParams());
-    return this.http.post<any>(`${this.url}/productos`, producto, { params }).pipe(
+  /**
+   * Registra un producto nuevo y lo siembra (con su stock inicial respectivo) en cada
+   * sucursal seleccionada, para minimizar que la misma referencia termine con un
+   * idProducto distinto por sucursal.
+   */
+  create(producto: Producto, sucursales: SucursalStock[]): Observable<any> {
+    return this.http.post<any>(`${this.url}/productos`, { producto, sucursales }).pipe(
       catchError(e => {
         swal.fire(e.error.mensaje, e.error.error, 'error');
         return throwError(e);
@@ -135,6 +140,8 @@ export class ProductoService {
     );
   }
 
+  // Al actualizar, el backend sincroniza los campos compartidos en todas las filas de
+  // Producto que tengan el mismo codProducto (una por cada sucursal donde esté registrado).
   update(producto: Producto): Observable<any> {
     return this.http.put<any>(`${this.url}/productos`, producto).pipe(
       catchError(e => {

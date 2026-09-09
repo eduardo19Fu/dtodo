@@ -13,7 +13,8 @@
       <div class="hero-icon" aria-hidden="true"><i class="fas fa-cube"></i></div>
       <div>
         <h2>{{ producto.idProducto ? 'Editar producto' : 'Nuevo producto' }}</h2>
-        <p>Los campos marcados con <span aria-hidden="true">*</span> son obligatorios.</p>
+        <p *ngIf="!producto.idProducto">Los campos marcados con <span aria-hidden="true">*</span> son obligatorios.</p>
+        <p *ngIf="producto.idProducto">Los cambios se aplican en todas las sucursales donde este producto está registrado.</p>
       </div>
       <span class="status-pill">
         <i class="fas fa-circle" aria-hidden="true"></i>
@@ -55,19 +56,36 @@
             </div>
           </div>
 
-          <div class="field-group" *ngIf="!producto.idProducto">
-            <label for="stock">Existencias iniciales <span class="required-mark">*</span></label>
-            <div class="control-with-icon">
-              <i class="fas fa-boxes" aria-hidden="true"></i>
-              <input type="number" id="stock" name="stock" class="form-control" [(ngModel)]="producto.stock"
-                required #stock="ngModel" placeholder="Cantidad disponible">
-            </div>
-            <div class="validation-message" *ngIf="stock.invalid && (stock.dirty || stock.touched)">
-              <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
-              <span *ngIf="stock.errors.required">El stock no puede estar vacío.</span>
-            </div>
-            <small>Se registra como inventario inicial de tu sucursal. Para ajustar existencias despu&eacute;s, usa el bot&oacute;n de stock en el listado de Productos.</small>
+        </div>
+      </section>
+
+      <section class="form-section" aria-labelledby="sucursales-title" *ngIf="!producto.idProducto">
+        <div class="section-heading">
+          <span class="section-number"><i class="fas fa-store" aria-hidden="true"></i></span>
+          <div>
+            <h3 id="sucursales-title">Sucursales</h3>
+            <p>Selecciona en qué sucursal(es) va a estar disponible este producto y su existencia inicial en cada una.</p>
           </div>
+        </div>
+
+        <div class="sucursales-grid">
+          <div class="sucursal-row" *ngFor="let item of seleccionSucursales">
+            <label class="sucursal-checkbox">
+              <input type="checkbox" [(ngModel)]="item.seleccionada" [name]="'sucursal-' + item.sucursal.idSucursal">
+              <span>{{ item.sucursal.nombre }}</span>
+            </label>
+            <div class="control-with-icon sucursal-stock">
+              <i class="fas fa-boxes" aria-hidden="true"></i>
+              <input type="number" min="0" class="form-control" placeholder="Existencias"
+                [name]="'stock-' + item.sucursal.idSucursal"
+                [(ngModel)]="item.stock" [disabled]="!item.seleccionada">
+            </div>
+          </div>
+        </div>
+
+        <div class="validation-message" *ngIf="!algunaSucursalSeleccionada">
+          <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+          <span>Selecciona al menos una sucursal.</span>
         </div>
       </section>
 

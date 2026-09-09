@@ -41,7 +41,11 @@ public interface IProductoRepository extends JpaRepository<Producto, Integer>, J
 	
 	@Query("select p from Producto p where p.codProducto = :codigo")
 	Optional<Producto> findByCodigo(@Param("codigo") String codigo);
-	
+
+	// Todas las filas de Producto que comparten el mismo código, sin importar en qué sucursal
+	// se hayan registrado (ver IProductoService.actualizarYSincronizar).
+	List<Producto> findByCodProducto(String codProducto);
+
 	@Query(value = "select p from Producto p where p.fechaVencimiento <= :fecha")
 	List<Producto> findCaducados(@Param("fecha") Date fecha);
 
