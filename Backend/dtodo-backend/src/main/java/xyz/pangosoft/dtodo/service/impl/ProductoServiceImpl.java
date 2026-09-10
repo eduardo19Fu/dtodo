@@ -532,6 +532,59 @@ public class ProductoServiceImpl implements IProductoService {
 
 	@Transactional
 	@Override
+	public Producto actualizarYSincronizar(Producto producto) {
+		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
+		log.debug("Enter {}", __method);
+
+		if (producto.getIdProducto() == null) {
+			return save(producto);
+		}
+
+		Producto productoExistente = findById(producto.getIdProducto());
+		producto.setNombre(producto.getNombre().trim().toUpperCase());
+
+		try {
+			// El código antes de la edición determina la "familia" de filas a sincronizar, para
+			// no perder el vínculo con las demás sucursales si el usuario también cambia el código.
+			String codigoAnterior = productoExistente.getCodProducto();
+			List<Producto> familia = (codigoAnterior == null || codigoAnterior.isBlank())
+					? Arrays.asList(productoExistente)
+					: repoProducto.findByCodProducto(codigoAnterior);
+
+			Producto filaActualizada = null;
+
+			for (Producto fila : familia) {
+				fila.setCodProducto(producto.getCodProducto());
+				fila.setNombre(producto.getNombre());
+				fila.setPrecioCompra(producto.getPrecioCompra());
+				fila.setPrecioVenta(producto.getPrecioVenta());
+				fila.setPorcentajeGanancia(producto.getPorcentajeGanancia());
+				fila.setDescripcion(producto.getDescripcion());
+				fila.setLink(producto.getLink());
+				fila.setFechaVencimiento(producto.getFechaVencimiento());
+				fila.setFechaIngreso(producto.getFechaIngreso());
+				fila.setMarcaProducto(producto.getMarcaProducto());
+				fila.setTipoProducto(producto.getTipoProducto());
+				// No se toca: stock (deprecada, propia de cada fila), fechaRegistro, estado, imagen.
+
+				Producto filaGuardada = repoProducto.save(fila);
+				if (filaGuardada.getIdProducto().equals(producto.getIdProducto())) {
+					filaActualizada = filaGuardada;
+				}
+			}
+
+			log.info("Producto con código {} sincronizado en {} fila(s)", producto.getCodProducto(), familia.size());
+			return filaActualizada != null ? filaActualizada : save(producto);
+		} catch (DataAccessException e) {
+			log.error("Ha ocurrido un error a nivel de base de datos: {}", e);
+			throw new xyz.pangosoft.dtodo.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos => ", e);
+		} finally {
+			log.debug("{} Exit", __method);
+		}
+	}
+
+	@Transactional
+	@Override
 	public void delete(Producto producto) {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
 		log.debug("Enter {}", __method);

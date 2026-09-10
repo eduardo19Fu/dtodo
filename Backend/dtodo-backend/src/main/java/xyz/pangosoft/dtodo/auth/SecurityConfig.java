@@ -46,7 +46,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/facturas/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/correlativos",
                                 "/api/correlativos/page/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/movimientos", "/api/movimientos/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2

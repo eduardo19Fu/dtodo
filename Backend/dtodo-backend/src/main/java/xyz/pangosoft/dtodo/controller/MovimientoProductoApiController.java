@@ -56,12 +56,14 @@ public class MovimientoProductoApiController {
 
 	private final ISucursalService serviceSucursal;
 
+	@Secured({"ROLE_ADMIN", "ROLE_INVENTARIO"})
 	@GetMapping(value = "/movimientos")
 	public ResponseEntity<List<MovimientoProducto>> index() {
 		log.info("Listando movimientos de productos realizados.");
 		return ResponseEntity.ok(serviceMove.findAll());
 	}
 
+	@Secured({"ROLE_ADMIN", "ROLE_INVENTARIO"})
 	@GetMapping(value = "/movimientos-dto/page/{page}")
 	public ResponseEntity<Page<MovimientoProductoDto>> getPageDto(@PathVariable("page") Integer page,
 																  @RequestParam(value = "size", defaultValue = "5") Integer size)
@@ -69,6 +71,7 @@ public class MovimientoProductoApiController {
 		return ResponseEntity.ok(serviceMove.findAllDtoMejorado(PageRequest.of(page, size)));
 	}
 
+	@Secured({"ROLE_ADMIN", "ROLE_INVENTARIO"})
 	@GetMapping(value = "/movimientos-dto/search/{page}")
 	public ResponseEntity<Page<MovimientoProductoDto>> searchMovimientosDto(
 																  @PathVariable("page") Integer page,
@@ -150,6 +153,7 @@ public class MovimientoProductoApiController {
 	 * @throws JRException 
 	 * @throws FileNotFoundException *****************/
 	
+	@Secured({"ROLE_ADMIN", "ROLE_INVENTARIO"})
 	@PostMapping(value = "/movimientos/inventario")
 	public void inventario(@RequestParam("fechaIni") String paramFechaIni, @RequestParam("fechaFin") String paramFechaFin,
 			@RequestParam(value = "idSucursal", required = false) Integer idSucursal,
