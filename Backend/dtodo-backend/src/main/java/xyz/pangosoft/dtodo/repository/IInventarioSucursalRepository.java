@@ -5,9 +5,12 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import jakarta.persistence.LockModeType;
 
 import xyz.pangosoft.dtodo.dto.InventarioSucursalDto;
 import xyz.pangosoft.dtodo.model.InventarioSucursal;
@@ -15,6 +18,12 @@ import xyz.pangosoft.dtodo.model.InventarioSucursal;
 public interface IInventarioSucursalRepository extends JpaRepository<InventarioSucursal, Long> {
 
 	Optional<InventarioSucursal> findBySucursal_IdSucursalAndProducto_IdProducto(Integer idSucursal, Integer idProducto);
+
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@Query("SELECT i FROM InventarioSucursal i WHERE i.sucursal.idSucursal = :idSucursal " +
+			"AND i.producto.idProducto = :idProducto")
+	Optional<InventarioSucursal> findByProductoParaActualizar(
+			@Param("idSucursal") Integer idSucursal, @Param("idProducto") Integer idProducto);
 
 	boolean existsBySucursal_IdSucursal(Integer idSucursal);
 

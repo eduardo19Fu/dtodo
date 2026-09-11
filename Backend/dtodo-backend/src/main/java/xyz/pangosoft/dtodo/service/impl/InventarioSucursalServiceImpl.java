@@ -55,6 +55,14 @@ public class InventarioSucursalServiceImpl implements IInventarioSucursalService
 				});
 	}
 
+	@Transactional
+	@Override
+	public InventarioSucursal obtenerParaActualizar(Sucursal sucursal, Producto producto) {
+		return inventarioRepo.findByProductoParaActualizar(
+				sucursal.getIdSucursal(), producto.getIdProducto())
+				.orElseGet(() -> obtenerOCrear(sucursal, producto));
+	}
+
 	@Transactional(readOnly = true)
 	@Override
 	public int obtenerStock(Integer idSucursal, Integer idProducto) {

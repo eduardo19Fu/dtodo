@@ -64,8 +64,12 @@
             aria-describedby="efectivo-ayuda" [attr.aria-invalid]="factura.total > 0 && !pagoSuficiente()">
         </div>
         <small id="efectivo-ayuda" class="checkout-payment-hint"
-          [class.payment-ready]="pagoSuficiente()">
-          {{ pagoSuficiente()
+          [class.payment-ready]="!stockProformaCargando && cantidadesValidas() && pagoSuficiente()">
+          {{ stockProformaCargando
+            ? 'Verificando existencias de la sucursal.'
+            : !cantidadesValidas()
+            ? 'Uno o más productos no tienen existencias suficientes en esta sucursal.'
+            : pagoSuficiente()
             ? 'Pago suficiente para confirmar.'
             : 'Ingresa al menos ' + (factura.total | currency: 'Q' : 'symbol') + '.' }}
         </small>
@@ -81,7 +85,7 @@
 
       <div class="checkout-action">
         <button type="button" class="checkout-pay-button"
-          [disabled]="!cliente.idCliente || factura.itemsFactura.length <= 0 || !cantidadesValidas() || !pagoSuficiente() || isSaving"
+          [disabled]="stockProformaCargando || !cliente.idCliente || factura.itemsFactura.length <= 0 || !cantidadesValidas() || !pagoSuficiente() || isSaving"
           (click)="createFactura()">
           <i class="fas" [ngClass]="isSaving ? 'fa-spinner fa-spin' : 'fa-check-circle'" aria-hidden="true"></i>
           {{ isSaving ? 'Procesando...' : 'Confirmar pago' }}
@@ -273,7 +277,8 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let item of factura.itemsFactura; let i = index">
+              <tr *ngFor="let item of factura.itemsFactura; let i = index"
+                [class.insufficient-stock-row]="stockInsuficiente(item)">
                 <td data-label="Código"><span class="listing-id-pill">#{{ item.producto.codProducto }}</span></td>
                 <td data-label="Producto">
                   <div class="table-product-name">
@@ -291,6 +296,9 @@
                       <i class="fas fa-pencil-alt" aria-hidden="true"></i>
                     </button>
                   </div>
+                  <small class="detail-stock-warning" *ngIf="stockInsuficiente(item)">
+                    Disponibles en sucursal: {{ item.producto.stock }}
+                  </small>
                 </td>
                 <td data-label="Descuento">
                   <div class="detail-value-with-action">

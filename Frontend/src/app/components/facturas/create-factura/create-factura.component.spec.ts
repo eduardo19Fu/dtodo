@@ -89,6 +89,40 @@ describe('CreateFacturaComponent - edición de detalle', () => {
     expect(component.errorEdicionDetalle).toContain('stock disponible');
   });
 
+  it('identifica los productos que no tienen stock suficiente en la sucursal', () => {
+    item.cantidad = 21;
+
+    expect(component.cantidadesValidas()).toBeFalse();
+    expect(component.productosSinStock()).toEqual([item]);
+  });
+
+  it('considera la cantidad acumulada cuando el producto aparece más de una vez', () => {
+    const segundoItem = new DetalleFactura();
+    segundoItem.producto = item.producto;
+    segundoItem.cantidad = 11;
+    item.cantidad = 10;
+    component.factura.itemsFactura = [item, segundoItem];
+
+    expect(component.stockInsuficiente(item)).toBeTrue();
+    expect(component.stockInsuficiente(segundoItem)).toBeTrue();
+    expect(component.cantidadesValidas()).toBeFalse();
+  });
+
+  it('muestra una alerta con los códigos que no tienen stock suficiente', () => {
+    item.producto.codProducto = 'COD-123';
+    item.cantidad = 21;
+    spyOn(swal, 'fire');
+
+    (component as any).mostrarAlertaStockInsuficiente();
+
+    const configuracion = (swal.fire as jasmine.Spy).calls.mostRecent().args[0];
+    expect(configuracion.title).toBe('Revisa las existencias');
+    expect(configuracion.html).toContain('COD-123');
+    expect(configuracion.html).toContain('Solicitadas</small><strong>21');
+    expect(configuracion.html).toContain('Disponibles</small><strong>20');
+    expect(configuracion.customClass.popup).toBe('stock-alert-popup');
+  });
+
   it('conserva la cantidad y sus cálculos cuando el nuevo valor está vacío', () => {
     component.abrirEdicionDetalle(0, 'cantidad', document.createElement('button'));
 

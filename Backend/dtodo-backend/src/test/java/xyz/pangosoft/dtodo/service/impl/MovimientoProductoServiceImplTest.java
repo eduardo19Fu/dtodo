@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 
 import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
 import xyz.pangosoft.dtodo.model.InventarioSucursal;
+import xyz.pangosoft.dtodo.model.DetalleFactura;
 import xyz.pangosoft.dtodo.model.MovimientoProducto;
 import xyz.pangosoft.dtodo.model.Producto;
 import xyz.pangosoft.dtodo.model.Sucursal;
@@ -22,11 +23,13 @@ import xyz.pangosoft.dtodo.service.IProductoService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 
 class MovimientoProductoServiceImplTest {
@@ -83,7 +86,7 @@ class MovimientoProductoServiceImplTest {
         Producto producto = Producto.builder().idProducto(10).build();
         InventarioSucursal inventario = InventarioSucursal.builder()
                 .sucursal(sucursal).producto(producto).stock(50).build();
-        when(inventarioSucursalService.obtenerOCrear(sucursal, producto)).thenReturn(inventario);
+        when(inventarioSucursalService.obtenerParaActualizar(sucursal, producto)).thenReturn(inventario);
         when(inventarioSucursalService.guardar(any(InventarioSucursal.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -105,7 +108,7 @@ class MovimientoProductoServiceImplTest {
         Producto producto = Producto.builder().idProducto(11).build();
         InventarioSucursal inventario = InventarioSucursal.builder()
                 .sucursal(sucursal).producto(producto).stock(10).build();
-        when(inventarioSucursalService.obtenerOCrear(sucursal, producto)).thenReturn(inventario);
+        when(inventarioSucursalService.obtenerParaActualizar(sucursal, producto)).thenReturn(inventario);
         when(inventarioSucursalService.guardar(any(InventarioSucursal.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -118,5 +121,42 @@ class MovimientoProductoServiceImplTest {
 
         assertEquals(true, resultado);
         assertEquals(30, inventario.getStock());
+    }
+
+    @Test
+    void rechazaUnaSalidaQueDejariaElStockNegativo() {
+        Sucursal sucursal = Sucursal.builder().idSucursal(1).build();
+        Producto producto = Producto.builder().idProducto(12).nombre("Producto sin existencias").build();
+        InventarioSucursal inventario = InventarioSucursal.builder()
+                .sucursal(sucursal).producto(producto).stock(2).build();
+        when(inventarioSucursalService.obtenerParaActualizar(sucursal, producto)).thenReturn(inventario);
+
+        MovimientoProducto movimiento = MovimientoProducto.builder()
+                .sucursal(sucursal).producto(producto)
+                .tipoMovimiento(TipoMovimientoEnum.VENTA).cantidad(3)
+                .build();
+
+        BadRequestException exception = assertThrows(BadRequestException.class,
+                () -> service.calcularStock(movimiento));
+
+        assertEquals(2, inventario.getStock());
+        assertTrue(exception.getMessage().contains("Stock insuficiente"));
+        verify(inventarioSucursalService, never()).guardar(any(InventarioSucursal.class));
+    }
+
+    @Test
+    void validaLaSumaDeLineasRepetidasAntesDeFacturar() {
+        Sucursal sucursal = Sucursal.builder().idSucursal(1).build();
+        Producto producto = Producto.builder().idProducto(13).nombre("Producto repetido").build();
+        InventarioSucursal inventario = InventarioSucursal.builder()
+                .sucursal(sucursal).producto(producto).stock(5).build();
+        when(inventarioSucursalService.obtenerParaActualizar(sucursal, producto)).thenReturn(inventario);
+        DetalleFactura primera = DetalleFactura.builder().producto(producto).cantidad(3).build();
+        DetalleFactura segunda = DetalleFactura.builder().producto(producto).cantidad(3).build();
+
+        BadRequestException exception = assertThrows(BadRequestException.class,
+                () -> service.validarStockDisponible(Arrays.asList(primera, segunda), sucursal));
+
+        assertTrue(exception.getMessage().contains("solicitado: 6"));
     }
 }
