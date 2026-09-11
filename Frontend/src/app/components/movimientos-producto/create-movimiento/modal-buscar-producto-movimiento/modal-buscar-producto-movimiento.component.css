@@ -32,6 +32,8 @@
   background: #fff;
   border-radius: 18px;
   box-shadow: 0 28px 75px rgba(18, 10, 27, 0.32);
+  display: flex;
+  flex-direction: column;
   margin: 24px auto;
   max-height: calc(100vh - 48px);
   overflow: hidden;
@@ -43,6 +45,7 @@
   border: 0;
   color: #fff;
   display: flex;
+  flex-shrink: 0;
   gap: 16px;
   min-height: 116px;
   overflow: hidden;
@@ -142,8 +145,12 @@
 
 .product-picker-body {
   background: #f8f9fc;
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 24px 28px 20px;
+  -webkit-overflow-scrolling: touch;
 }
 
 .search-panel {
@@ -558,6 +565,7 @@
   .product-picker-dialog {
     margin: 0 auto;
     max-height: calc(100vh - 20px);
+    max-height: calc(100dvh - 20px);
   }
 
   .product-picker-header {

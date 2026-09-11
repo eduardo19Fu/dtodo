@@ -1,9 +1,12 @@
+-- Idempotente: solo crea "Sucursal Central" si todavía no existe una sucursal principal,
+-- para que este script se pueda volver a correr sin duplicarla (p. ej. tras una corrida parcial).
 INSERT INTO sucursales (nombre, direccion, telefono, encargado, codigo_establecimiento_sat, es_principal, fecha_registro, id_estado, id_usuario)
 SELECT 'Sucursal Central',
        COALESCE((SELECT direccion FROM emisores LIMIT 1), 'Por definir'),
        NULL, NULL, 1, TRUE, NOW(),
        (SELECT id_estado FROM estados WHERE estado = 'ACTIVO' LIMIT 1),
-       NULL;
+       NULL
+WHERE NOT EXISTS (SELECT 1 FROM sucursales WHERE es_principal = TRUE);
 
 SET @id_sucursal_central = (SELECT id_sucursal FROM sucursales WHERE es_principal = TRUE LIMIT 1);
 
@@ -16,4 +19,8 @@ UPDATE movimientos_producto SET id_sucursal = @id_sucursal_central WHERE id_sucu
 
 INSERT INTO inventario_sucursal (id_sucursal, id_producto, stock, stock_minimo, fecha_actualizacion)
 SELECT @id_sucursal_central, p.id_producto, p.stock, NULL, NOW()
-FROM productos p;
+FROM productos p
+WHERE NOT EXISTS (
+    SELECT 1 FROM inventario_sucursal inv
+    WHERE inv.id_sucursal = @id_sucursal_central AND inv.id_producto = p.id_producto
+);
