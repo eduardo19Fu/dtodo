@@ -741,3 +741,185 @@ select.page-size-select:focus {
   margin: 0 0 0 0.8rem;
   width: 1.5rem;
 }
+
+/* Alerta de inventario alineada con la identidad visual de facturación. */
+.swal2-popup.stock-alert-popup {
+  border: 1px solid #dfe8f3;
+  border-radius: 20px;
+  box-shadow: 0 24px 65px rgba(11, 31, 68, 0.28);
+  overflow: hidden;
+  padding: 1.6rem 1.7rem 1.45rem;
+  position: relative;
+}
+
+.swal2-popup.stock-alert-popup::before {
+  background: linear-gradient(90deg, #102a56, #1769d2 58%, #d31791);
+  content: '';
+  height: 6px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.stock-alert-popup .swal2-icon.stock-alert-icon {
+  background: linear-gradient(145deg, #fff2fa, #f3f8ff);
+  border: 1px solid #f8cfe9;
+  color: #b51276;
+  height: 58px;
+  margin: 0 auto 0.8rem;
+  width: 58px;
+}
+
+.stock-alert-popup .stock-alert-icon .swal2-icon-content {
+  font-size: 2.2rem;
+}
+
+.stock-alert-popup .swal2-title.stock-alert-title {
+  color: #102a56;
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.25px;
+  line-height: 1.2;
+  padding: 0;
+}
+
+.stock-alert-popup .swal2-html-container.stock-alert-content {
+  color: #405068;
+  font-size: 0.92rem;
+  margin: 0.6rem 0 0;
+  overflow: visible;
+  padding: 0;
+  text-align: left;
+}
+
+.stock-alert-intro {
+  line-height: 1.5;
+  margin: 0 auto 1rem;
+  max-width: 430px;
+  text-align: center;
+}
+
+.stock-alert-products {
+  display: grid;
+  gap: 0.65rem;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 2px 4px 2px 2px;
+}
+
+.stock-alert-product {
+  align-items: center;
+  background: #f6f9fd;
+  border: 1px solid #dce7f4;
+  border-left: 4px solid #d31791;
+  border-radius: 11px;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 0.8rem 0.9rem;
+}
+
+.stock-alert-product-code {
+  min-width: 0;
+}
+
+.stock-alert-product-code span,
+.stock-alert-quantities small {
+  color: #7a879a;
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 750;
+  letter-spacing: 0.45px;
+  text-transform: uppercase;
+}
+
+.stock-alert-product-code strong {
+  color: #1557b0;
+  display: block;
+  font-family: Consolas, 'Courier New', monospace;
+  font-size: 0.9rem;
+  margin-top: 0.2rem;
+  overflow-wrap: anywhere;
+}
+
+.stock-alert-quantities {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+  text-align: center;
+}
+
+.stock-alert-quantities span {
+  min-width: 62px;
+}
+
+.stock-alert-quantities strong {
+  color: #102a56;
+  display: block;
+  font-size: 1.05rem;
+  margin-top: 0.15rem;
+}
+
+.stock-alert-quantities span:first-child strong,
+.stock-alert-quantities > i {
+  color: #c24855;
+}
+
+.stock-alert-note {
+  align-items: center;
+  background: #fff2fa;
+  border-radius: 9px;
+  color: #81536f;
+  display: flex;
+  font-size: 0.78rem;
+  gap: 0.5rem;
+  line-height: 1.4;
+  margin: 0.9rem 0 0;
+  padding: 0.7rem 0.8rem;
+}
+
+.stock-alert-note i {
+  color: #d31791;
+  font-size: 0.95rem;
+}
+
+.stock-alert-popup .swal2-actions.stock-alert-actions {
+  margin: 1.1rem 0 0;
+}
+
+.stock-alert-confirm {
+  background: linear-gradient(135deg, #1557b0, #2784ee);
+  border: 0;
+  border-radius: 9px;
+  box-shadow: 0 7px 16px rgba(21, 87, 176, 0.25);
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 750;
+  min-height: 42px;
+  padding: 0.7rem 1.35rem;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.stock-alert-confirm:hover,
+.stock-alert-confirm:focus {
+  box-shadow: 0 10px 21px rgba(21, 87, 176, 0.34);
+  color: #fff;
+  outline: 0;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 575px) {
+  .swal2-popup.stock-alert-popup {
+    padding: 1.35rem 1rem 1.15rem;
+  }
+
+  .stock-alert-product {
+    grid-template-columns: 1fr;
+  }
+
+  .stock-alert-quantities {
+    justify-content: space-between;
+  }
+}

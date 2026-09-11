@@ -582,16 +582,41 @@ export class CreateFacturaComponent implements OnInit {
     const listado = productos.map(item => {
       const codigo = this.escaparHtml(item.producto.codProducto);
       const solicitadas = this.cantidadSolicitada(item);
-      return `<li><strong>${codigo}</strong> — solicitadas: ${solicitadas}, disponibles: ${item.producto.stock}</li>`;
+      return `<article class="stock-alert-product">
+        <div class="stock-alert-product-code">
+          <span>Código de producto</span>
+          <strong>${codigo}</strong>
+        </div>
+        <div class="stock-alert-quantities">
+          <span><small>Solicitadas</small><strong>${solicitadas}</strong></span>
+          <i class="fas fa-long-arrow-alt-right" aria-hidden="true"></i>
+          <span><small>Disponibles</small><strong>${item.producto.stock}</strong></span>
+        </div>
+      </article>`;
     }).join('');
 
     swal.fire({
-      title: 'Stock insuficiente en esta sucursal',
-      html: `<p>No se puede facturar la proforma porque no hay suficientes existencias para:</p>
-        <ul style="text-align: left; margin: 1rem 0;">${listado}</ul>
-        <p>Los productos afectados están resaltados en el detalle.</p>`,
+      title: 'Revisa las existencias',
+      html: `<p class="stock-alert-intro">
+          Esta proforma solicita más unidades de las disponibles en tu sucursal.
+        </p>
+        <div class="stock-alert-products">${listado}</div>
+        <p class="stock-alert-note">
+          <i class="fas fa-info-circle" aria-hidden="true"></i>
+          Los renglones afectados están resaltados en rojo dentro del detalle.
+        </p>`,
       icon: 'warning',
-      confirmButtonText: 'Entendido'
+      confirmButtonText: 'Revisar productos',
+      width: 560,
+      buttonsStyling: false,
+      customClass: {
+        popup: 'stock-alert-popup',
+        icon: 'stock-alert-icon',
+        title: 'stock-alert-title',
+        htmlContainer: 'stock-alert-content',
+        actions: 'stock-alert-actions',
+        confirmButton: 'stock-alert-confirm'
+      }
     });
   }
 

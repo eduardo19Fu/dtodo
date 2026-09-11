@@ -116,10 +116,11 @@ describe('CreateFacturaComponent - edición de detalle', () => {
     (component as any).mostrarAlertaStockInsuficiente();
 
     const configuracion = (swal.fire as jasmine.Spy).calls.mostRecent().args[0];
-    expect(configuracion.title).toBe('Stock insuficiente en esta sucursal');
+    expect(configuracion.title).toBe('Revisa las existencias');
     expect(configuracion.html).toContain('COD-123');
-    expect(configuracion.html).toContain('solicitadas: 21');
-    expect(configuracion.html).toContain('disponibles: 20');
+    expect(configuracion.html).toContain('Solicitadas</small><strong>21');
+    expect(configuracion.html).toContain('Disponibles</small><strong>20');
+    expect(configuracion.customClass.popup).toBe('stock-alert-popup');
   });
 
   it('conserva la cantidad y sus cálculos cuando el nuevo valor está vacío', () => {
