@@ -60,7 +60,9 @@
         <footer class="inventory-report-footer">
           <span class="required-note"><i class="fas fa-info-circle" aria-hidden="true"></i> Ambos campos son obligatorios</span>
           <div class="report-actions">
-            <button type="button" class="report-cancel" (click)="cerrarModal()">Cancelar</button>
+            <button type="button" class="report-cancel" (click)="cerrarModal()">
+              <i class="fas fa-times" aria-hidden="true"></i> Cancelar
+            </button>
             <button type="submit" class="report-submit" [disabled]="!formBusqueda.form.valid">
               <i class="fas fa-file-pdf" aria-hidden="true"></i>
               Generar reporte

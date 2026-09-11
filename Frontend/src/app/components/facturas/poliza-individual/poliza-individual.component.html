@@ -64,7 +64,9 @@
         <footer class="policy-report-footer">
           <span class="required-note"><i class="fas fa-info-circle" aria-hidden="true"></i> Ambos campos son obligatorios</span>
           <div class="report-actions">
-            <button type="button" class="report-cancel" (click)="cerrarModal()" [disabled]="generando">Cancelar</button>
+            <button type="button" class="report-cancel" (click)="cerrarModal()" [disabled]="generando">
+              <i class="fas fa-times" aria-hidden="true"></i> Cancelar
+            </button>
             <button type="submit" class="report-submit" [disabled]="formBusqueda.form.invalid || generando">
               <span *ngIf="generando" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
               <i *ngIf="!generando" class="fas fa-file-pdf" aria-hidden="true"></i>

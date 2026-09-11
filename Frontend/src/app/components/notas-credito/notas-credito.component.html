@@ -148,7 +148,7 @@
                     </div>
                     <div class="dispatch-actions">
                         <button (click)="cerrarModalDespacho()" type="button" class="dispatch-cancel">
-                            Cancelar
+                            <i class="fas fa-times" aria-hidden="true"></i> Cancelar
                         </button>
                         <button (click)="confirmarDespacho()" type="button" class="dispatch-confirm"
                             [disabled]="!hayItemsParaDespachar()">
@@ -221,7 +221,7 @@
                         <div class="authorization-actions">
                         <button (click)="cerrarModalPassword()" type="button" class="authorization-cancel"
                             [disabled]="autorizando">
-                            Cancelar
+                            <i class="fas fa-times" aria-hidden="true"></i> Cancelar
                         </button>
                         <button type="submit" class="authorization-confirm"
                             [disabled]="autorizando || !passwordAutorizacion">
