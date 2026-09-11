@@ -3,7 +3,7 @@ import { Component, EventEmitter, HostListener, Input, Output } from '@angular/c
 import { UsuarioDto } from '../../../dtos/usuario-dto';
 
 export interface ExportacionProformas {
-  idUsuario: number;
+  idUsuario: number | null;
   nombreUsuario: string;
   fechaInicio?: string;
   fechaFin?: string;
@@ -15,6 +15,9 @@ export interface ExportacionProformas {
   styleUrls: ['./exportar-proformas.component.css']
 })
 export class ExportarProformasComponent {
+
+  /** Valor centinela del select que representa "no filtrar por usuario". */
+  readonly TODOS_USUARIOS = -1;
 
   @Input() usuarios: UsuarioDto[] = [];
   @Output() cerrar = new EventEmitter<void>();
@@ -58,6 +61,12 @@ export class ExportarProformasComponent {
   }
 
   private crearSolicitud(): ExportacionProformas | null {
+    if (this.idUsuario === undefined || this.idUsuario === null) {
+      return null;
+    }
+    if (Number(this.idUsuario) === this.TODOS_USUARIOS) {
+      return { idUsuario: null, nombreUsuario: 'todos los usuarios' };
+    }
     const usuario = this.usuarios.find(item => item.idUsuario === Number(this.idUsuario));
     if (!usuario) {
       return null;

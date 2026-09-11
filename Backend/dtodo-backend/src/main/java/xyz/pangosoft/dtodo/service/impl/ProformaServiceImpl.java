@@ -574,8 +574,8 @@ public class ProformaServiceImpl implements IProformaService {
     @Transactional(readOnly = true)
     @Override
     public byte[] proformasExcel(String fechaIni, String fechaFin, boolean todas, Integer idUsuario) {
-        if (idUsuario == null || idUsuario <= 0) {
-            throw new BadRequestException("Debe seleccionar el usuario que generó las proformas", null);
+        if (idUsuario != null && idUsuario <= 0) {
+            throw new BadRequestException("El usuario seleccionado no es válido", null);
         }
         Date[] rango = todas ? null : parseDateRange(fechaIni, fechaFin);
         try (Connection connection = dataSource.getConnection();
@@ -592,9 +592,10 @@ public class ProformaServiceImpl implements IProformaService {
             parameters.put("FECHA_FIN", todas ? null : rango[1]);
             parameters.put("EXPORTAR_TODAS", todas);
             parameters.put("ID_USUARIO", idUsuario);
-            parameters.put("RANGO", todas
+            String alcanceUsuario = idUsuario != null ? "" : " (todos los usuarios)";
+            parameters.put("RANGO", (todas
                     ? "Todas las proformas registradas"
-                    : String.format("Del %s al %s", fechaIni, fechaFin));
+                    : String.format("Del %s al %s", fechaIni, fechaFin)) + alcanceUsuario);
 
             JasperReport report = JasperCompileManager.compileReport(template);
             JasperPrint print = JasperFillManager.fillReport(report, parameters, connection);

@@ -186,11 +186,12 @@ export class ProformaService {
       .pipe(catchError(e => throwError(e)));
   }
 
-  exportarProformasExcel(idUsuario: number, fechaIni?: string, fechaFin?: string,
+  exportarProformasExcel(idUsuario: number | null, fechaIni?: string, fechaFin?: string,
                          todas: boolean = false): Observable<HttpResponse<Blob>> {
-    let params = new HttpParams()
-      .set('todas', todas.toString())
-      .set('idUsuario', idUsuario.toString());
+    let params = new HttpParams().set('todas', todas.toString());
+    if (idUsuario !== null && idUsuario !== undefined) {
+      params = params.set('idUsuario', idUsuario.toString());
+    }
     if (!todas) {
       params = params.set('fechaIni', fechaIni).set('fechaFin', fechaFin);
     }

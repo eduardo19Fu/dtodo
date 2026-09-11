@@ -63,7 +63,10 @@
 .date-control .form-control:focus {
   border-color: var(--teal-600); box-shadow: 0 0 0 3px rgba(95, 158, 160, 0.16); outline: 0;
 }
-.select-arrow { color: #728789 !important; left: auto !important; right: 14px; }
+.select-arrow {
+  color: #728789 !important; font-size: 14px; left: auto !important; pointer-events: none;
+  position: absolute; right: 14px; top: 16px; z-index: 2;
+}
 .date-section-heading { align-items: flex-end; display: flex; justify-content: space-between; margin-bottom: 11px; }
 .date-section-heading strong { color: #34494b; display: block; font-size: 13px; }
 .date-section-heading p { color: #7b8c8e; font-size: 11px; margin: 2px 0 0; }
@@ -94,6 +97,8 @@
   background: linear-gradient(135deg, var(--teal-700), var(--teal-600)); border: 0;
   box-shadow: 0 7px 16px rgba(75, 133, 135, 0.27); color: #fff; min-width: 143px;
 }
+.export-cancel i,
+.export-all i,
 .export-range i { margin-right: 5px; }
 .export-cancel:hover,
 .export-cancel:focus { background: #edf5f5; color: #395658; outline: 0; }

@@ -225,13 +225,13 @@ export class ProformasComponent implements OnInit, OnDestroy {
     this.confirmarExportacionCompleta(solicitud.idUsuario, solicitud.nombreUsuario);
   }
 
-  private confirmarExportacionCompleta(idUsuario: number, nombreUsuario: string): void {
+  private confirmarExportacionCompleta(idUsuario: number | null, nombreUsuario: string): void {
     Swal.fire({
-      title: '¿Exportar todas las proformas?',
-      text: `Se exportarán todas las proformas generadas por ${nombreUsuario}. El archivo puede tardar en generarse.`,
+      title: '¿Exportar todo el historial?',
+      text: `Se exportará todo el historial de proformas generadas por ${nombreUsuario}, sin límite de fecha. El archivo puede tardar en generarse.`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Sí, exportar todas',
+      confirmButtonText: 'Sí, exportar historial completo',
       cancelButtonText: 'Cancelar'
     }).then(result => {
       if (result.isConfirmed) {
@@ -240,13 +240,13 @@ export class ProformasComponent implements OnInit, OnDestroy {
     });
   }
 
-  private generarExcel(idUsuario: number, nombreUsuario: string,
+  private generarExcel(idUsuario: number | null, nombreUsuario: string,
                        fechaInicio: string, fechaFin: string, todas: boolean): void {
     this.exportando = true;
     Swal.fire({
       title: 'Generando reporte de proformas...',
       text: todas
-        ? `Consultando todas las proformas generadas por ${nombreUsuario}.`
+        ? `Consultando todo el historial de proformas generadas por ${nombreUsuario}.`
         : `Consultando las proformas de ${nombreUsuario} en el rango seleccionado.`,
       allowEscapeKey: false,
       allowOutsideClick: false,
