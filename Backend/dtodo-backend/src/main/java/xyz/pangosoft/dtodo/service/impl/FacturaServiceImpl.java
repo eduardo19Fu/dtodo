@@ -400,6 +400,7 @@ public class FacturaServiceImpl implements IFacturaService {
 
 			if(factura.getIdFactura() == null) {
 				log.info("********** Registrando nueva venta **********");
+				movimientoProductoService.validarStockDisponible(factura.getItemsFactura(), sucursal);
 
 				log.info("-----------> Iniciando Proceso de Certificación FEL");
 				documentoFel.setDatos_emisor(configurarDatosEmisor(emisor, sucursal));
@@ -441,6 +442,8 @@ public class FacturaServiceImpl implements IFacturaService {
 			}
 
 			return newFactura;
+		} catch (BadRequestException e) {
+			throw e;
 		} catch (DataAccessException e) {
 			log.error("Ha ocurrido un error a nivel de base de datos: {}", e.getMessage());
 			throw new xyz.pangosoft.dtodo.error.exceptions.DataAccessException("Ha ocurrido un error a nivel de base de datos => ", e);

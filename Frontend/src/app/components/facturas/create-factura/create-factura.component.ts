@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { forkJoin } from 'rxjs';
 
 import { UsuarioAuxiliar } from '../../../models/auxiliar/usuario-auxiliar';
 import { Cliente } from '../../../models/cliente';
@@ -40,6 +41,7 @@ export class CreateFacturaComponent implements OnInit {
   isSaving = false;
   modalProductoVisible = false;
   modalClienteVisible = false;
+  stockProformaCargando = false;
 
   edicionDetalleAbierta = false;
   campoDetalleEdicion: CampoDetalleEditable = null;
@@ -472,30 +474,52 @@ export class CreateFacturaComponent implements OnInit {
   }
 
   buscarProformaPorId(id: number): void {
+    this.stockProformaCargando = true;
     this.proformaService.getProforma(id).subscribe(
       proforma => {
         this.proforma = proforma;
-
         this.cliente = proforma.cliente;
         this.nitBusqueda = this.cliente.nit || '';
-        this.factura.total = this.proforma.total;
-
-        this.proforma.itemsProforma.forEach((itemProforma) => {
-          const item: DetalleFactura = new DetalleFactura();
-
-          item.cantidad = itemProforma.cantidad;
-          item.subTotal = itemProforma.subTotal;
-          item.subTotalDescuento = itemProforma.subTotalDescuento;
-          item.producto = itemProforma.producto;
-          item.descuento = itemProforma.descuento;
-
-          this.factura.itemsFactura = [...this.factura.itemsFactura, item];
-        });
-        this.recalcularTotal();
+        this.cargarStockActualDeProforma();
       }, error => {
+        this.stockProformaCargando = false;
         swal.fire(`Ha ocurrido un error: ${error.error.status}`, `${error.error.message}`, 'error');
       }
     );
+  }
+
+  private cargarStockActualDeProforma(): void {
+    const items = this.proforma.itemsProforma || [];
+    if (items.length === 0) {
+      this.cargarDetalleFacturaDesdeProforma();
+      return;
+    }
+
+    forkJoin(items.map(item => this.productoService.getProductoByCode(item.producto.codProducto))).subscribe(
+      productos => {
+        productos.forEach((producto, index) => items[index].producto.stock = producto.stock);
+        this.cargarDetalleFacturaDesdeProforma();
+        this.mostrarAlertaStockInsuficiente();
+      }, () => {
+        this.stockProformaCargando = false;
+        swal.fire('No fue posible verificar existencias',
+          'Actualice la página antes de intentar facturar esta proforma.', 'error');
+      }
+    );
+  }
+
+  private cargarDetalleFacturaDesdeProforma(): void {
+    this.factura.itemsFactura = this.proforma.itemsProforma.map(itemProforma => {
+      const item = new DetalleFactura();
+      item.cantidad = itemProforma.cantidad;
+      item.subTotal = itemProforma.subTotal;
+      item.subTotalDescuento = itemProforma.subTotalDescuento;
+      item.producto = itemProforma.producto;
+      item.descuento = itemProforma.descuento;
+      return item;
+    });
+    this.stockProformaCargando = false;
+    this.recalcularTotal();
   }
 
   calcularCambio(): void {
@@ -517,11 +541,89 @@ export class CreateFacturaComponent implements OnInit {
   }
 
   cantidadesValidas(): boolean {
-    return this.factura.itemsFactura.every((item: DetalleFactura) =>
+    const cantidadesCorrectas = this.factura.itemsFactura.every((item: DetalleFactura) =>
       Number.isInteger(Number(item.cantidad))
       && Number(item.cantidad) > 0
-      && Number(item.cantidad) <= item.producto.stock
     );
+    return cantidadesCorrectas && this.productosSinStock().length === 0;
+  }
+
+  productosSinStock(): DetalleFactura[] {
+    return this.factura.itemsFactura.filter((item: DetalleFactura) =>
+      this.stockInsuficiente(item)
+    );
+  }
+
+  stockInsuficiente(item: DetalleFactura): boolean {
+    return this.cantidadSolicitada(item) > Number(item.producto.stock);
+  }
+
+  private cantidadSolicitada(item: DetalleFactura): number {
+    return this.factura.itemsFactura
+      .filter(detalle => this.mismoProducto(detalle, item))
+      .reduce((cantidad, detalle) => cantidad + Number(detalle.cantidad), 0);
+  }
+
+  private mismoProducto(primerItem: DetalleFactura, segundoItem: DetalleFactura): boolean {
+    if (primerItem.producto.idProducto && segundoItem.producto.idProducto) {
+      return primerItem.producto.idProducto === segundoItem.producto.idProducto;
+    }
+    return primerItem.producto.codProducto === segundoItem.producto.codProducto;
+  }
+
+  private mostrarAlertaStockInsuficiente(): void {
+    const productos = this.productosSinStock().filter((item, index, items) =>
+      items.findIndex(otroItem => this.mismoProducto(otroItem, item)) === index
+    );
+    if (productos.length === 0) {
+      return;
+    }
+
+    const listado = productos.map(item => {
+      const codigo = this.escaparHtml(item.producto.codProducto);
+      const solicitadas = this.cantidadSolicitada(item);
+      return `<article class="stock-alert-product">
+        <div class="stock-alert-product-code">
+          <span>Código de producto</span>
+          <strong>${codigo}</strong>
+        </div>
+        <div class="stock-alert-quantities">
+          <span><small>Solicitadas</small><strong>${solicitadas}</strong></span>
+          <i class="fas fa-long-arrow-alt-right" aria-hidden="true"></i>
+          <span><small>Disponibles</small><strong>${item.producto.stock}</strong></span>
+        </div>
+      </article>`;
+    }).join('');
+
+    swal.fire({
+      title: 'Revisa las existencias',
+      html: `<p class="stock-alert-intro">
+          Esta proforma solicita más unidades de las disponibles en tu sucursal.
+        </p>
+        <div class="stock-alert-products">${listado}</div>
+        <p class="stock-alert-note">
+          <i class="fas fa-info-circle" aria-hidden="true"></i>
+          Los renglones afectados están resaltados en rojo dentro del detalle.
+        </p>`,
+      icon: 'warning',
+      confirmButtonText: 'Revisar productos',
+      width: 560,
+      buttonsStyling: false,
+      customClass: {
+        popup: 'stock-alert-popup',
+        icon: 'stock-alert-icon',
+        title: 'stock-alert-title',
+        htmlContainer: 'stock-alert-content',
+        actions: 'stock-alert-actions',
+        confirmButton: 'stock-alert-confirm'
+      }
+    });
+  }
+
+  private escaparHtml(valor: string): string {
+    const elemento = document.createElement('div');
+    elemento.textContent = valor;
+    return elemento.innerHTML;
   }
 
   private recalcularTotal(): void {
