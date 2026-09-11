@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { forkJoin } from 'rxjs';
 
 import { UsuarioAuxiliar } from '../../../models/auxiliar/usuario-auxiliar';
 import { Cliente } from '../../../models/cliente';
@@ -40,6 +41,7 @@ export class CreateFacturaComponent implements OnInit {
   isSaving = false;
   modalProductoVisible = false;
   modalClienteVisible = false;
+  stockProformaCargando = false;
 
   edicionDetalleAbierta = false;
   campoDetalleEdicion: CampoDetalleEditable = null;
@@ -472,30 +474,51 @@ export class CreateFacturaComponent implements OnInit {
   }
 
   buscarProformaPorId(id: number): void {
+    this.stockProformaCargando = true;
     this.proformaService.getProforma(id).subscribe(
       proforma => {
         this.proforma = proforma;
-
         this.cliente = proforma.cliente;
         this.nitBusqueda = this.cliente.nit || '';
-        this.factura.total = this.proforma.total;
-
-        this.proforma.itemsProforma.forEach((itemProforma) => {
-          const item: DetalleFactura = new DetalleFactura();
-
-          item.cantidad = itemProforma.cantidad;
-          item.subTotal = itemProforma.subTotal;
-          item.subTotalDescuento = itemProforma.subTotalDescuento;
-          item.producto = itemProforma.producto;
-          item.descuento = itemProforma.descuento;
-
-          this.factura.itemsFactura = [...this.factura.itemsFactura, item];
-        });
-        this.recalcularTotal();
+        this.cargarStockActualDeProforma();
       }, error => {
+        this.stockProformaCargando = false;
         swal.fire(`Ha ocurrido un error: ${error.error.status}`, `${error.error.message}`, 'error');
       }
     );
+  }
+
+  private cargarStockActualDeProforma(): void {
+    const items = this.proforma.itemsProforma || [];
+    if (items.length === 0) {
+      this.cargarDetalleFacturaDesdeProforma();
+      return;
+    }
+
+    forkJoin(items.map(item => this.productoService.getProductoByCode(item.producto.codProducto))).subscribe(
+      productos => {
+        productos.forEach((producto, index) => items[index].producto.stock = producto.stock);
+        this.cargarDetalleFacturaDesdeProforma();
+      }, () => {
+        this.stockProformaCargando = false;
+        swal.fire('No fue posible verificar existencias',
+          'Actualice la página antes de intentar facturar esta proforma.', 'error');
+      }
+    );
+  }
+
+  private cargarDetalleFacturaDesdeProforma(): void {
+    this.factura.itemsFactura = this.proforma.itemsProforma.map(itemProforma => {
+      const item = new DetalleFactura();
+      item.cantidad = itemProforma.cantidad;
+      item.subTotal = itemProforma.subTotal;
+      item.subTotalDescuento = itemProforma.subTotalDescuento;
+      item.producto = itemProforma.producto;
+      item.descuento = itemProforma.descuento;
+      return item;
+    });
+    this.stockProformaCargando = false;
+    this.recalcularTotal();
   }
 
   calcularCambio(): void {
@@ -521,6 +544,12 @@ export class CreateFacturaComponent implements OnInit {
       Number.isInteger(Number(item.cantidad))
       && Number(item.cantidad) > 0
       && Number(item.cantidad) <= item.producto.stock
+    );
+  }
+
+  productosSinStock(): DetalleFactura[] {
+    return this.factura.itemsFactura.filter((item: DetalleFactura) =>
+      Number(item.cantidad) > Number(item.producto.stock)
     );
   }
 

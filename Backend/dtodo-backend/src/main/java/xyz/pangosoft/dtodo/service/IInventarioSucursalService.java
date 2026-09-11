@@ -16,6 +16,9 @@ public interface IInventarioSucursalService {
 	// Devuelve la fila de inventario de un producto en una sucursal, creándola con stock 0 si aún no existe
 	public InventarioSucursal obtenerOCrear(Sucursal sucursal, Producto producto);
 
+	// Bloquea la fila mientras se registra un movimiento para evitar descuentos simultáneos sobre el mismo stock
+	public InventarioSucursal obtenerParaActualizar(Sucursal sucursal, Producto producto);
+
 	// Devuelve el stock actual de un producto en una sucursal (0 si no tiene fila de inventario registrada)
 	public int obtenerStock(Integer idSucursal, Integer idProducto);
 

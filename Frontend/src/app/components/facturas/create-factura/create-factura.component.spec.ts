@@ -89,6 +89,13 @@ describe('CreateFacturaComponent - edición de detalle', () => {
     expect(component.errorEdicionDetalle).toContain('stock disponible');
   });
 
+  it('identifica los productos que no tienen stock suficiente en la sucursal', () => {
+    item.cantidad = 21;
+
+    expect(component.cantidadesValidas()).toBeFalse();
+    expect(component.productosSinStock()).toEqual([item]);
+  });
+
   it('conserva la cantidad y sus cálculos cuando el nuevo valor está vacío', () => {
     component.abrirEdicionDetalle(0, 'cantidad', document.createElement('button'));
 

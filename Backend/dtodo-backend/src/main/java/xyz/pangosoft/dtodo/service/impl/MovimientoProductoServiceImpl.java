@@ -12,6 +12,7 @@ import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import javax.sql.DataSource;
 
@@ -20,6 +21,8 @@ import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
 import xyz.pangosoft.dtodo.error.exceptions.DataAccessException;
 import xyz.pangosoft.dtodo.error.exceptions.NoContentException;
 import xyz.pangosoft.dtodo.model.InventarioSucursal;
+import xyz.pangosoft.dtodo.model.DetalleFactura;
+import xyz.pangosoft.dtodo.model.Sucursal;
 import xyz.pangosoft.dtodo.model.enums.TipoMovimientoEnum;
 import xyz.pangosoft.dtodo.service.IEstadoService;
 import xyz.pangosoft.dtodo.service.IInventarioSucursalService;
@@ -225,6 +228,7 @@ public class MovimientoProductoServiceImpl implements IMovimientoProductoService
 		}
 	}
 
+	@Transactional
 	@Override
 	public MovimientoProducto save(MovimientoProducto movimientoProducto) {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
@@ -239,12 +243,45 @@ public class MovimientoProductoServiceImpl implements IMovimientoProductoService
 				log.warn("No se ha podido llevar a cabo el registro del movimiento");
 				throw new RuntimeException("No se ha podido llevar a cabo el registro");
 			}
+		} catch (BadRequestException e) {
+			throw e;
 		} catch (DataAccessException e) {
 			log.error("Ha ocurrido un error a nivel de base de datos: {}", e);
 			throw new DataAccessException("Ha ocurrido un error a nivel de base de datos => ", e);
 		} catch (Exception e) {
 			log.error("Ha ocurrido un error inesperado: {}", e.getMessage());
 			throw new RuntimeException("Ha ocurrido un error inesperado: " + e.getMessage());
+		}
+	}
+
+	@Transactional
+	@Override
+	public void validarStockDisponible(List<DetalleFactura> items, Sucursal sucursal) {
+		if (sucursal == null) {
+			throw new BadRequestException("No se pudo determinar la sucursal de la venta.", null);
+		}
+		if (items == null || items.isEmpty()) {
+			throw new BadRequestException("La factura debe incluir al menos un producto.", null);
+		}
+
+		Map<Integer, Integer> cantidadesPorProducto = new TreeMap<>();
+		Map<Integer, Producto> productos = new HashMap<>();
+		for (DetalleFactura item : items) {
+			if (item.getProducto() == null || item.getProducto().getIdProducto() == null
+					|| item.getCantidad() == null || item.getCantidad() <= 0) {
+				throw new BadRequestException("El detalle de la factura contiene un producto o cantidad inválida.", null);
+			}
+			Integer idProducto = item.getProducto().getIdProducto();
+			cantidadesPorProducto.merge(idProducto, item.getCantidad(), Integer::sum);
+			productos.putIfAbsent(idProducto, item.getProducto());
+		}
+
+		for (Map.Entry<Integer, Integer> entry : cantidadesPorProducto.entrySet()) {
+			Producto producto = productos.get(entry.getKey());
+			InventarioSucursal inventario = inventarioSucursalService.obtenerParaActualizar(sucursal, producto);
+			if (inventario.getStock() < entry.getValue()) {
+				throw stockInsuficiente(producto, inventario.getStock(), entry.getValue());
+			}
 		}
 	}
 
@@ -266,7 +303,7 @@ public class MovimientoProductoServiceImpl implements IMovimientoProductoService
 		InventarioSucursal inventarioSaved = null;
 
 		try {
-			InventarioSucursal inventario = inventarioSucursalService.obtenerOCrear(
+			InventarioSucursal inventario = inventarioSucursalService.obtenerParaActualizar(
 					movimientoProducto.getSucursal(), movimientoProducto.getProducto());
 			int tmpStock = inventario.getStock();
 			movimientoProducto.setStockInicial(tmpStock);
@@ -277,6 +314,10 @@ public class MovimientoProductoServiceImpl implements IMovimientoProductoService
 				case ELIMINAR_COMPRA:
 				case ENTREGA_PRODUCTO_NOTA:
 					log.debug("Operando salidas al stock por operaciones de tipo VENTA, SALIDA");
+					if (tmpStock < movimientoProducto.getCantidad()) {
+						throw stockInsuficiente(
+								movimientoProducto.getProducto(), tmpStock, movimientoProducto.getCantidad());
+					}
 					inventario.setStock(tmpStock - movimientoProducto.getCantidad());
 					break;
 				case COMPRA:
@@ -292,10 +333,19 @@ public class MovimientoProductoServiceImpl implements IMovimientoProductoService
 			}
 
 			inventarioSaved = inventarioSucursalService.guardar(inventario);
+		} catch (BadRequestException ex) {
+			throw ex;
 		} catch (Exception ex) {
 			log.error("Error: {}", ex.getMessage());
 		}
 		return (inventarioSaved != null);
+	}
+
+	private BadRequestException stockInsuficiente(Producto producto, int disponible, int solicitado) {
+		String nombre = producto.getNombre() == null ? producto.getIdProducto().toString() : producto.getNombre();
+		return new BadRequestException(
+				"Stock insuficiente para " + nombre + ". Disponible: " + disponible + ", solicitado: " + solicitado + ".",
+				null);
 	}
 
 	/********* PDF REPORTS SERVICES ***********/

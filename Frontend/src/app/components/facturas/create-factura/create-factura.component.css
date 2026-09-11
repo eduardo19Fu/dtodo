@@ -189,6 +189,15 @@
   opacity: 0.46;
 }
 
+.detail-stock-warning {
+  display: block;
+  margin-top: 0.35rem;
+  color: #b42318;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
 .invoice-meta-grid {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
