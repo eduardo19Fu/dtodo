@@ -499,6 +499,7 @@ export class CreateFacturaComponent implements OnInit {
       productos => {
         productos.forEach((producto, index) => items[index].producto.stock = producto.stock);
         this.cargarDetalleFacturaDesdeProforma();
+        this.mostrarAlertaStockInsuficiente();
       }, () => {
         this.stockProformaCargando = false;
         swal.fire('No fue posible verificar existencias',
@@ -540,17 +541,64 @@ export class CreateFacturaComponent implements OnInit {
   }
 
   cantidadesValidas(): boolean {
-    return this.factura.itemsFactura.every((item: DetalleFactura) =>
+    const cantidadesCorrectas = this.factura.itemsFactura.every((item: DetalleFactura) =>
       Number.isInteger(Number(item.cantidad))
       && Number(item.cantidad) > 0
-      && Number(item.cantidad) <= item.producto.stock
     );
+    return cantidadesCorrectas && this.productosSinStock().length === 0;
   }
 
   productosSinStock(): DetalleFactura[] {
     return this.factura.itemsFactura.filter((item: DetalleFactura) =>
-      Number(item.cantidad) > Number(item.producto.stock)
+      this.stockInsuficiente(item)
     );
+  }
+
+  stockInsuficiente(item: DetalleFactura): boolean {
+    return this.cantidadSolicitada(item) > Number(item.producto.stock);
+  }
+
+  private cantidadSolicitada(item: DetalleFactura): number {
+    return this.factura.itemsFactura
+      .filter(detalle => this.mismoProducto(detalle, item))
+      .reduce((cantidad, detalle) => cantidad + Number(detalle.cantidad), 0);
+  }
+
+  private mismoProducto(primerItem: DetalleFactura, segundoItem: DetalleFactura): boolean {
+    if (primerItem.producto.idProducto && segundoItem.producto.idProducto) {
+      return primerItem.producto.idProducto === segundoItem.producto.idProducto;
+    }
+    return primerItem.producto.codProducto === segundoItem.producto.codProducto;
+  }
+
+  private mostrarAlertaStockInsuficiente(): void {
+    const productos = this.productosSinStock().filter((item, index, items) =>
+      items.findIndex(otroItem => this.mismoProducto(otroItem, item)) === index
+    );
+    if (productos.length === 0) {
+      return;
+    }
+
+    const listado = productos.map(item => {
+      const codigo = this.escaparHtml(item.producto.codProducto);
+      const solicitadas = this.cantidadSolicitada(item);
+      return `<li><strong>${codigo}</strong> — solicitadas: ${solicitadas}, disponibles: ${item.producto.stock}</li>`;
+    }).join('');
+
+    swal.fire({
+      title: 'Stock insuficiente en esta sucursal',
+      html: `<p>No se puede facturar la proforma porque no hay suficientes existencias para:</p>
+        <ul style="text-align: left; margin: 1rem 0;">${listado}</ul>
+        <p>Los productos afectados están resaltados en el detalle.</p>`,
+      icon: 'warning',
+      confirmButtonText: 'Entendido'
+    });
+  }
+
+  private escaparHtml(valor: string): string {
+    const elemento = document.createElement('div');
+    elemento.textContent = valor;
+    return elemento.innerHTML;
   }
 
   private recalcularTotal(): void {

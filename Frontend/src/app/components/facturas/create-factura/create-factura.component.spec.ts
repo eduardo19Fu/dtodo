@@ -96,6 +96,32 @@ describe('CreateFacturaComponent - edición de detalle', () => {
     expect(component.productosSinStock()).toEqual([item]);
   });
 
+  it('considera la cantidad acumulada cuando el producto aparece más de una vez', () => {
+    const segundoItem = new DetalleFactura();
+    segundoItem.producto = item.producto;
+    segundoItem.cantidad = 11;
+    item.cantidad = 10;
+    component.factura.itemsFactura = [item, segundoItem];
+
+    expect(component.stockInsuficiente(item)).toBeTrue();
+    expect(component.stockInsuficiente(segundoItem)).toBeTrue();
+    expect(component.cantidadesValidas()).toBeFalse();
+  });
+
+  it('muestra una alerta con los códigos que no tienen stock suficiente', () => {
+    item.producto.codProducto = 'COD-123';
+    item.cantidad = 21;
+    spyOn(swal, 'fire');
+
+    (component as any).mostrarAlertaStockInsuficiente();
+
+    const configuracion = (swal.fire as jasmine.Spy).calls.mostRecent().args[0];
+    expect(configuracion.title).toBe('Stock insuficiente en esta sucursal');
+    expect(configuracion.html).toContain('COD-123');
+    expect(configuracion.html).toContain('solicitadas: 21');
+    expect(configuracion.html).toContain('disponibles: 20');
+  });
+
   it('conserva la cantidad y sus cálculos cuando el nuevo valor está vacío', () => {
     component.abrirEdicionDetalle(0, 'cantidad', document.createElement('button'));
 

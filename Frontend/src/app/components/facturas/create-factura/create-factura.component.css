@@ -198,6 +198,16 @@
   line-height: 1.25;
 }
 
+.invoice-detail-table tbody tr.insufficient-stock-row,
+.invoice-detail-table tbody tr.insufficient-stock-row:hover {
+  background: #fff1f2;
+  box-shadow: inset 4px 0 #e57373;
+}
+
+.invoice-detail-table tbody tr.insufficient-stock-row td {
+  border-bottom-color: #f5c2c7;
+}
+
 .invoice-meta-grid {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
