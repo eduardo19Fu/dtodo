@@ -3,7 +3,13 @@
 	<property name="ireport.zoom" value="1.3995221406292004"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<parameter name="fecha" class="java.util.Date">
+	<parameter name="fechaInicio" class="java.util.Date">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="fechaFin" class="java.util.Date">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="sucursal" class="java.lang.Integer">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<parameter name="usuario" class="java.lang.Integer">
@@ -16,13 +22,18 @@
 	p.precio_compra * sum(fd.cantidad) as pc_total,
 	sum(fd.sub_total_descuento) as pv_total,
 	sum(fd.sub_total_descuento) - (p.precio_compra * sum(fd.cantidad)) as ganancia,
-	concat(u.primer_nombre,' ',u.apellido) as vendedor
+	concat(u.primer_nombre,' ',u.apellido) as vendedor,
+	s.nombre as sucursal
 from facturas_detalle fd
 inner join facturas f on f.id_factura = fd.id_factura
 inner join productos p on p.id_producto = fd.id_producto
 inner join usuarios u on u.id_usuario = f.id_usuario
-where f.id_estado != 4 and date(f.fecha) = $P{fecha} and f.id_usuario = $P{usuario}
-group by p.id_producto
+inner join sucursales s on s.id_sucursal = f.id_sucursal
+where f.id_estado != 4
+	and date(f.fecha) between $P{fechaInicio} and $P{fechaFin}
+	and f.id_sucursal = $P{sucursal}
+	and f.id_usuario = $P{usuario}
+group by p.id_producto, p.nombre, p.precio_compra, u.primer_nombre, u.apellido, s.nombre
 order by p.nombre asc;]]>
 	</queryString>
 	<field name="cantidad" class="java.math.BigDecimal"/>
@@ -31,6 +42,7 @@ order by p.nombre asc;]]>
 	<field name="pv_total" class="java.math.BigDecimal"/>
 	<field name="ganancia" class="java.math.BigDecimal"/>
 	<field name="vendedor" class="java.lang.String"/>
+	<field name="sucursal" class="java.lang.String"/>
 	<variable name="pcTotal" class="java.math.BigDecimal" resetType="Column" calculation="Sum">
 		<variableExpression><![CDATA[$F{pc_total}]]></variableExpression>
 	</variable>
@@ -79,7 +91,7 @@ order by p.nombre asc;]]>
 		</band>
 	</title>
 	<pageHeader>
-		<band height="50" splitType="Stretch">
+		<band height="66" splitType="Stretch">
 			<textField>
 				<reportElement x="60" y="0" width="294" height="16"/>
 				<textElement textAlignment="Center">
@@ -99,14 +111,27 @@ order by p.nombre asc;]]>
 				<textElement>
 					<font size="12" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Ventas:]]></text>
+				<text><![CDATA[Sucursal:]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="60" y="20" width="100" height="16"/>
+				<reportElement x="60" y="20" width="294" height="16"/>
 				<textElement textAlignment="Center">
 					<font size="12"/>
 				</textElement>
-				<textFieldExpression class="java.util.Date"><![CDATA[$P{fecha}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{sucursal}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="40" width="60" height="16"/>
+				<textElement><font size="12" isBold="true"/></textElement>
+				<text><![CDATA[Período:]]></text>
+			</staticText>
+			<textField pattern="dd/MM/yyyy">
+				<reportElement x="60" y="40" width="225" height="16"/>
+				<textElement textAlignment="Center"><font size="12"/></textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[
+					new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fechaInicio})
+					+ " al " + new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fechaFin})
+				]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd/MM/yyyy h.mm a">
 				<reportElement x="482" y="0" width="100" height="20"/>
@@ -114,10 +139,10 @@ order by p.nombre asc;]]>
 				<textFieldExpression class="java.util.Date"><![CDATA[new java.util.Date()]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement x="0" y="39" width="580" height="1"/>
+				<reportElement x="0" y="57" width="580" height="1"/>
 			</line>
 			<line>
-				<reportElement x="0" y="46" width="580" height="1"/>
+				<reportElement x="0" y="64" width="580" height="1"/>
 			</line>
 		</band>
 	</pageHeader>

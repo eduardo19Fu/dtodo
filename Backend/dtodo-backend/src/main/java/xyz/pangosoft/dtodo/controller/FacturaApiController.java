@@ -187,9 +187,24 @@ public class FacturaApiController {
     }
 
     // CONTROLADOR VENTAS DIARIAS
+    @Secured(value = {"ROLE_ADMIN"})
     @GetMapping(value = "/facturas/daily-sales")
-    public ResponseEntity<byte[]> dailySales(@RequestParam("usuario") Integer usuario, @RequestParam("fecha") String fecha) {
-        byte[] bytesDailySalesReport = serviceFactura.resportDailySales(usuario, fecha);
+    public ResponseEntity<byte[]> dailySales(
+            @RequestParam("sucursal") Integer sucursal,
+            @RequestParam("usuario") Integer usuario,
+            @RequestParam("fechaInicio") String fechaInicio,
+            @RequestParam("fechaFin") String fechaFin) {
+        byte[] bytesDailySalesReport = serviceFactura.resportDailySales(sucursal, usuario, fechaInicio, fechaFin);
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_PDF).body(bytesDailySalesReport);
+    }
+
+    @Secured(value = {"ROLE_ADMIN"})
+    @GetMapping(value = "/facturas/general-policy")
+    public ResponseEntity<byte[]> generalPolicy(
+            @RequestParam("sucursal") Integer sucursal,
+            @RequestParam("fechaInicio") String fechaInicio,
+            @RequestParam("fechaFin") String fechaFin) {
+        byte[] report = serviceFactura.reportGeneralPolicy(sucursal, fechaInicio, fechaFin);
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_PDF).body(report);
     }
 }

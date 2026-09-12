@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="poliza_general" pageWidth="612" pageHeight="792" columnWidth="582"
+              isSummaryWithPageHeaderAndFooter="true"
+              leftMargin="20" rightMargin="10" topMargin="20" bottomMargin="30">
+    <parameter name="fechaInicio" class="java.util.Date"/>
+    <parameter name="fechaFin" class="java.util.Date"/>
+    <parameter name="sucursal" class="java.lang.Integer"/>
+    <queryString>
+        <![CDATA[select
+    u.id_usuario,
+    concat(u.primer_nombre, ' ', u.apellido) as vendedor,
+    s.nombre as sucursal,
+    p.id_producto,
+    p.nombre as nombre_producto,
+    sum(fd.cantidad) as cantidad,
+    p.precio_compra * sum(fd.cantidad) as pc_total,
+    sum(fd.sub_total_descuento) as pv_total,
+    sum(fd.sub_total_descuento) - (p.precio_compra * sum(fd.cantidad)) as ganancia
+from facturas_detalle fd
+inner join facturas f on f.id_factura = fd.id_factura
+inner join productos p on p.id_producto = fd.id_producto
+inner join usuarios u on u.id_usuario = f.id_usuario
+inner join sucursales s on s.id_sucursal = f.id_sucursal
+where f.id_estado != 4
+    and date(f.fecha) between $P{fechaInicio} and $P{fechaFin}
+    and f.id_sucursal = $P{sucursal}
+group by u.id_usuario, u.primer_nombre, u.apellido, s.nombre,
+    p.id_producto, p.nombre, p.precio_compra
+order by vendedor asc, p.nombre asc]]>
+    </queryString>
+    <field name="id_usuario" class="java.lang.Integer"/>
+    <field name="vendedor" class="java.lang.String"/>
+    <field name="sucursal" class="java.lang.String"/>
+    <field name="id_producto" class="java.lang.Integer"/>
+    <field name="nombre_producto" class="java.lang.String"/>
+    <field name="cantidad" class="java.math.BigDecimal"/>
+    <field name="pc_total" class="java.math.BigDecimal"/>
+    <field name="pv_total" class="java.math.BigDecimal"/>
+    <field name="ganancia" class="java.math.BigDecimal"/>
+
+    <variable name="vendedorPcTotal" class="java.math.BigDecimal" resetType="Group"
+              resetGroup="VendedorGroup" calculation="Sum">
+        <variableExpression><![CDATA[$F{pc_total}]]></variableExpression>
+    </variable>
+    <variable name="vendedorPvTotal" class="java.math.BigDecimal" resetType="Group"
+              resetGroup="VendedorGroup" calculation="Sum">
+        <variableExpression><![CDATA[$F{pv_total}]]></variableExpression>
+    </variable>
+    <variable name="vendedorGananciaTotal" class="java.math.BigDecimal" resetType="Group"
+              resetGroup="VendedorGroup" calculation="Sum">
+        <variableExpression><![CDATA[$F{ganancia}]]></variableExpression>
+    </variable>
+    <variable name="pcTotal" class="java.math.BigDecimal" calculation="Sum">
+        <variableExpression><![CDATA[$F{pc_total}]]></variableExpression>
+    </variable>
+    <variable name="pvTotal" class="java.math.BigDecimal" calculation="Sum">
+        <variableExpression><![CDATA[$F{pv_total}]]></variableExpression>
+    </variable>
+    <variable name="gananciaTotal" class="java.math.BigDecimal" calculation="Sum">
+        <variableExpression><![CDATA[$F{ganancia}]]></variableExpression>
+    </variable>
+
+    <group name="VendedorGroup" keepTogether="true">
+        <groupExpression><![CDATA[$F{id_usuario}]]></groupExpression>
+        <groupHeader>
+            <band height="30">
+                <rectangle radius="5">
+                    <reportElement mode="Opaque" x="0" y="3" width="572" height="24" backcolor="#DDEEEE" forecolor="#A8CCCC"/>
+                </rectangle>
+                <staticText>
+                    <reportElement x="12" y="8" width="70" height="16" forecolor="#315F61"/>
+                    <textElement><font size="11" isBold="true"/></textElement>
+                    <text><![CDATA[Vendedor:]]></text>
+                </staticText>
+                <textField>
+                    <reportElement x="82" y="8" width="470" height="16" forecolor="#315F61"/>
+                    <textElement><font size="11" isBold="true"/></textElement>
+                    <textFieldExpression><![CDATA[$F{vendedor}]]></textFieldExpression>
+                </textField>
+            </band>
+        </groupHeader>
+        <groupFooter>
+            <band height="54">
+                <line><reportElement x="240" y="3" width="327" height="1" forecolor="#A8CCCC"/></line>
+                <staticText>
+                    <reportElement x="240" y="9" width="105" height="16"/>
+                    <textElement textAlignment="Right"><font size="10" isBold="true"/></textElement>
+                    <text><![CDATA[Subtotal vendedor:]]></text>
+                </staticText>
+                <textField pattern="Q#,##0.00;Q-#,##0.00">
+                    <reportElement x="345" y="9" width="72" height="16"/>
+                    <textElement textAlignment="Right"><font size="10" isBold="true"/></textElement>
+                    <textFieldExpression><![CDATA[$V{vendedorPcTotal}]]></textFieldExpression>
+                </textField>
+                <textField pattern="Q#,##0.00;Q-#,##0.00">
+                    <reportElement x="421" y="9" width="72" height="16"/>
+                    <textElement textAlignment="Right"><font size="10" isBold="true"/></textElement>
+                    <textFieldExpression><![CDATA[$V{vendedorPvTotal}]]></textFieldExpression>
+                </textField>
+                <textField pattern="Q#,##0.00;Q-#,##0.00">
+                    <reportElement x="497" y="9" width="70" height="16" forecolor="#1878A8"/>
+                    <textElement textAlignment="Right"><font size="10" isBold="true"/></textElement>
+                    <textFieldExpression><![CDATA[$V{vendedorGananciaTotal}]]></textFieldExpression>
+                </textField>
+            </band>
+        </groupFooter>
+    </group>
+
+    <background><band/></background>
+    <title>
+        <band height="80">
+            <image>
+                <reportElement x="11" y="1" width="120" height="70"/>
+                <imageExpression><![CDATA[this.getClass().getResourceAsStream("/static/images/reports-image/logo-dtodo.jpg")]]></imageExpression>
+            </image>
+            <staticText>
+                <reportElement x="131" y="13" width="385" height="32"/>
+                <textElement textAlignment="Center"><font size="23" isBold="true"/></textElement>
+                <text><![CDATA[PÓLIZA GENERAL DE VENTAS]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="131" y="47" width="385" height="18" forecolor="#4B8587"/>
+                <textElement textAlignment="Center"><font size="11"/></textElement>
+                <text><![CDATA[Resumen agrupado por vendedor]]></text>
+            </staticText>
+            <line>
+                <reportElement x="0" y="74" width="572" height="1" forecolor="#29ABE2"/>
+                <graphicElement><pen lineWidth="2.0" lineStyle="Double"/></graphicElement>
+            </line>
+        </band>
+    </title>
+    <pageHeader>
+        <band height="46">
+            <staticText>
+                <reportElement x="0" y="0" width="60" height="16"/>
+                <textElement><font size="11" isBold="true"/></textElement>
+                <text><![CDATA[Sucursal:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="60" y="0" width="300" height="16"/>
+                <textElement><font size="11"/></textElement>
+                <textFieldExpression><![CDATA[$F{sucursal}]]></textFieldExpression>
+            </textField>
+            <staticText>
+                <reportElement x="0" y="20" width="60" height="16"/>
+                <textElement><font size="11" isBold="true"/></textElement>
+                <text><![CDATA[Período:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="60" y="20" width="230" height="16"/>
+                <textElement><font size="11"/></textElement>
+                <textFieldExpression><![CDATA[new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fechaInicio})
+                    + " al " + new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fechaFin})]]></textFieldExpression>
+            </textField>
+            <textField pattern="dd/MM/yyyy h:mm a">
+                <reportElement x="452" y="0" width="120" height="16"/>
+                <textElement textAlignment="Right"/>
+                <textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+            </textField>
+            <line><reportElement x="0" y="42" width="572" height="1"/></line>
+        </band>
+    </pageHeader>
+    <columnHeader>
+        <band height="28">
+            <rectangle radius="5">
+                <reportElement mode="Opaque" x="0" y="2" width="572" height="23" backcolor="#EAF6FC" forecolor="#CFEBF7"/>
+            </rectangle>
+            <staticText><reportElement x="0" y="7" width="64" height="16"/><textElement textAlignment="Center"><font size="10" isBold="true"/></textElement><text><![CDATA[Cantidad]]></text></staticText>
+            <staticText><reportElement x="68" y="7" width="185" height="16"/><textElement><font size="10" isBold="true"/></textElement><text><![CDATA[Producto]]></text></staticText>
+            <staticText><reportElement x="263" y="7" width="96" height="16"/><textElement textAlignment="Right"><font size="10" isBold="true"/></textElement><text><![CDATA[P.C. Total]]></text></staticText>
+            <staticText><reportElement x="363" y="7" width="96" height="16"/><textElement textAlignment="Right"><font size="10" isBold="true"/></textElement><text><![CDATA[P.V. Total]]></text></staticText>
+            <staticText><reportElement x="463" y="7" width="104" height="16"/><textElement textAlignment="Right"><font size="10" isBold="true"/></textElement><text><![CDATA[Ganancia]]></text></staticText>
+        </band>
+    </columnHeader>
+    <detail>
+        <band height="28">
+            <textField><reportElement x="0" y="2" width="64" height="16"/><textElement textAlignment="Center"><font size="9"/></textElement><textFieldExpression><![CDATA[$F{cantidad}]]></textFieldExpression></textField>
+            <textField textAdjust="StretchHeight"><reportElement x="68" y="2" width="185" height="22"/><textElement><font size="8"/></textElement><textFieldExpression><![CDATA[$F{nombre_producto}]]></textFieldExpression></textField>
+            <textField pattern="Q#,##0.00;Q-#,##0.00"><reportElement x="263" y="2" width="96" height="16"/><textElement textAlignment="Right"><font size="9"/></textElement><textFieldExpression><![CDATA[$F{pc_total}]]></textFieldExpression></textField>
+            <textField pattern="Q#,##0.00;Q-#,##0.00"><reportElement x="363" y="2" width="96" height="16"/><textElement textAlignment="Right"><font size="9"/></textElement><textFieldExpression><![CDATA[$F{pv_total}]]></textFieldExpression></textField>
+            <textField pattern="Q#,##0.00;Q-#,##0.00"><reportElement x="463" y="2" width="104" height="16"/><textElement textAlignment="Right"><font size="9"/></textElement><textFieldExpression><![CDATA[$F{ganancia}]]></textFieldExpression></textField>
+            <line><reportElement positionType="FixRelativeToBottom" x="0" y="26" width="572" height="1" forecolor="#E2E2E2"/></line>
+        </band>
+    </detail>
+    <pageFooter>
+        <band height="20">
+            <textField><reportElement x="0" y="0" width="90" height="16"/><textElement textAlignment="Right"><font size="9"/></textElement><textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER} + " de"]]></textFieldExpression></textField>
+            <textField evaluationTime="Report"><reportElement x="90" y="0" width="35" height="16"/><textElement><font size="9"/></textElement><textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression></textField>
+        </band>
+    </pageFooter>
+    <summary>
+        <band height="92">
+            <rectangle radius="8"><reportElement mode="Opaque" x="230" y="8" width="342" height="70" backcolor="#F2F8F8" forecolor="#A8CCCC"/></rectangle>
+            <staticText><reportElement x="245" y="17" width="135" height="18" forecolor="#315F61"/><textElement><font size="13" isBold="true"/></textElement><text><![CDATA[TOTALES GENERALES]]></text></staticText>
+            <staticText><reportElement x="245" y="43" width="70" height="16"/><textElement><font size="9" isBold="true"/></textElement><text><![CDATA[P.C. Total]]></text></staticText>
+            <staticText><reportElement x="355" y="43" width="70" height="16"/><textElement><font size="9" isBold="true"/></textElement><text><![CDATA[P.V. Total]]></text></staticText>
+            <staticText><reportElement x="465" y="43" width="70" height="16"/><textElement><font size="9" isBold="true"/></textElement><text><![CDATA[Ganancia]]></text></staticText>
+            <textField pattern="Q#,##0.00;Q-#,##0.00"><reportElement x="245" y="58" width="95" height="16"/><textElement><font size="11" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{pcTotal}]]></textFieldExpression></textField>
+            <textField pattern="Q#,##0.00;Q-#,##0.00"><reportElement x="355" y="58" width="95" height="16"/><textElement><font size="11" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{pvTotal}]]></textFieldExpression></textField>
+            <textField pattern="Q#,##0.00;Q-#,##0.00"><reportElement x="465" y="58" width="95" height="16" forecolor="#1878A8"/><textElement><font size="11" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{gananciaTotal}]]></textFieldExpression></textField>
+        </band>
+    </summary>
+</jasperReport>

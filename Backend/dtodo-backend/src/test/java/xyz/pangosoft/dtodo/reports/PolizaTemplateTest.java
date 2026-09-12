@@ -24,7 +24,8 @@ class PolizaTemplateTest {
         // La plantilla apuntaba a tablas de un esquema anterior (tbl_documento, tbl_usuario,
         // tbl_producto, tbl_detalle_documento) y declaraba el parametro de fecha como "fechaIni"
         // mientras el backend siempre envio la clave "fecha" -- se corrigio para usar las tablas
-        // actuales (facturas, facturas_detalle, productos, usuarios) y el mismo nombre de parametro.
+        // actuales (facturas, facturas_detalle, productos, usuarios y sucursales) y ahora recibe
+        // el rango de fechas, la sucursal y el usuario que envía el backend.
         try (InputStream template = getClass().getResourceAsStream("/reports/poliza.jrxml")) {
             assertNotNull(template, "La plantilla de poliza debe existir");
             JasperReport report = JasperCompileManager.compileReport(template);
@@ -33,8 +34,16 @@ class PolizaTemplateTest {
             java.util.List<String> nombresParametros = Arrays.stream(report.getParameters())
                     .map(JRParameter::getName)
                     .collect(java.util.stream.Collectors.toList());
-            assertTrue(nombresParametros.contains("fecha"), "El reporte debe aceptar el parametro 'fecha'");
+            assertTrue(nombresParametros.contains("fechaInicio"), "El reporte debe aceptar el parametro 'fechaInicio'");
+            assertTrue(nombresParametros.contains("fechaFin"), "El reporte debe aceptar el parametro 'fechaFin'");
+            assertTrue(nombresParametros.contains("sucursal"), "El reporte debe aceptar el parametro 'sucursal'");
             assertTrue(nombresParametros.contains("usuario"), "El reporte debe aceptar el parametro 'usuario'");
+            assertTrue(report.getQuery().getText().contains("between $P{fechaInicio} and $P{fechaFin}"),
+                    "La consulta debe filtrar el rango de fechas");
+            assertTrue(report.getQuery().getText().contains("f.id_sucursal = $P{sucursal}"),
+                    "La consulta debe filtrar la sucursal");
+            assertTrue(report.getQuery().getText().contains("f.id_usuario = $P{usuario}"),
+                    "La consulta debe filtrar el usuario");
         }
     }
 
@@ -47,7 +56,9 @@ class PolizaTemplateTest {
             JasperReport report = JasperCompileManager.compileReport(template);
 
             Map<String, Object> params = new HashMap<>();
-            params.put("fecha", new Date());
+            params.put("fechaInicio", new Date());
+            params.put("fechaFin", new Date());
+            params.put("sucursal", 1);
             params.put("usuario", 1);
 
             assertDoesNotThrow(() -> JasperFillManager.fillReport(report, params, new JREmptyDataSource()));

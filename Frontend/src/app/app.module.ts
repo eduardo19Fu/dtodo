@@ -35,6 +35,7 @@ import { MovimientosProductoComponent } from './components/movimientos-producto/
 import { CreateMovimientoComponent } from './components/movimientos-producto/create-movimiento/create-movimiento.component';
 import { BusquedaMovimientosComponent } from './components/movimientos-producto/busqueda-movimientos/busqueda-movimientos.component';
 import { PolizaIndividualComponent } from './components/facturas/poliza-individual/poliza-individual.component';
+import { PolizaGeneralComponent } from './components/facturas/poliza-general/poliza-general.component';
 import { ModalBuscarProductoComponent } from './components/facturas/create-factura/modal-buscar-producto/modal-buscar-producto.component';
 import { ModalBuscarClienteComponent } from './components/facturas/create-factura/modal-buscar-cliente/modal-buscar-cliente.component';
 import { ModalBuscarProductoMovimientoComponent } from './components/movimientos-producto/create-movimiento/modal-buscar-producto-movimiento/modal-buscar-producto-movimiento.component';
@@ -82,6 +83,7 @@ import { TooltipDirective } from './directives/tooltip.directive';
     CreateMovimientoComponent,
     BusquedaMovimientosComponent,
     PolizaIndividualComponent,
+    PolizaGeneralComponent,
     ModalBuscarProductoComponent,
     ModalBuscarClienteComponent,
     ModalBuscarProductoMovimientoComponent,
