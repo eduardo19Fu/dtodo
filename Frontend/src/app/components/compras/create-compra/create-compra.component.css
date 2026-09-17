@@ -31,7 +31,7 @@
 }
 
 .compra-search-control {
-  grid-template-columns: minmax(0, 1fr) 46px 46px 46px;
+  grid-template-columns: minmax(0, 1fr) 46px 46px;
 }
 
 .quick-action-new {
@@ -82,7 +82,7 @@
   }
 
   .compra-search-control {
-    grid-template-columns: minmax(0, 1fr) repeat(3, 1fr);
+    grid-template-columns: minmax(0, 1fr) repeat(2, 1fr);
   }
 
   .compra-quantity-control {

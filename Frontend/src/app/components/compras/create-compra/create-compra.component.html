@@ -141,20 +141,16 @@
                   [(ngModel)]="codigoBusqueda" (keyup.enter)="buscarProductoPorCodigo()"
                   placeholder="Escanea o escribe el c&oacute;digo">
               </div>
-              <button type="button" class="inline-search-button" (click)="buscarProductoPorCodigo()"
-                aria-label="Buscar por c&oacute;digo" title="Buscar por c&oacute;digo">
+              <button type="button" class="inline-search-button" (click)="abrirModalProducto()"
+                aria-label="Buscar producto" title="Buscar producto">
                 <i class="fas fa-search" aria-hidden="true"></i>
-              </button>
-              <button type="button" class="inline-search-button quick-action-catalog" (click)="abrirModalProducto()"
-                aria-label="Ver cat&aacute;logo de productos" title="Ver cat&aacute;logo de productos">
-                <i class="fas fa-th-list" aria-hidden="true"></i>
               </button>
               <button type="button" class="inline-search-button quick-action-new" (click)="abrirModalNuevoProducto()"
                 aria-label="Registrar producto nuevo" title="Registrar producto nuevo">
-                <i class="fas fa-plus" aria-hidden="true"></i>
+                <i class="fas fa-box-open" aria-hidden="true"></i>
               </button>
             </div>
-            <small>Presiona Enter para buscar, o usa el cat&aacute;logo / producto nuevo.</small>
+            <small>Presiona Enter para buscar por c&oacute;digo, o usa el buscador / producto nuevo.</small>
           </div>
 
           <div class="field-group">
