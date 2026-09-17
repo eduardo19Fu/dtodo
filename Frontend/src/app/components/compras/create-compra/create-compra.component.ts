@@ -16,11 +16,14 @@ import { Sucursal } from 'src/app/models/sucursal';
 
 import swal from 'sweetalert2';
 
+type CampoDetalleEditableCompra = 'cantidad' | 'precioUnitario';
+
 @Component({
   selector: 'app-create-compra',
   templateUrl: './create-compra.component.html',
   styleUrls: [
     '../../productos/create-producto/create-producto.component.css',
+    '../../proformas/create-proforma/create-proforma.component.css',
     './create-compra.component.css'
   ]
 })
@@ -41,6 +44,15 @@ export class CreateCompraComponent implements OnInit {
 
   modalProductoVisible = false;
   modalNuevoProductoVisible = false;
+
+  edicionDetalleAbierta = false;
+  campoDetalleEdicion: CampoDetalleEditableCompra = null;
+  indiceDetalleEdicion = -1;
+  valorDetalleAnterior: number = null;
+  valorDetalleNuevo: number = null;
+  errorEdicionDetalle = '';
+
+  private elementoOrigenEdicion: HTMLElement;
 
   guardando = false;
 
@@ -153,11 +165,96 @@ export class CreateCompraComponent implements OnInit {
   }
 
   eliminarLinea(detalle: DetalleCompra): void {
-    this.compra.items = this.compra.items.filter(item => item !== detalle);
+    swal.fire({
+      title: '&iquest;Eliminar producto?',
+      text: `Se eliminar&aacute; ${detalle.producto.nombre} del detalle de la compra.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'S&iacute;, eliminar',
+      cancelButtonText: 'Cancelar',
+      reverseButtons: true,
+      focusCancel: true
+    }).then(resultado => {
+      if (resultado.isConfirmed) {
+        this.compra.items = this.compra.items.filter(item => item !== detalle);
+      }
+    });
   }
 
-  recalcularSubTotal(detalle: DetalleCompra): void {
-    detalle.subTotal = detalle.calcularSubTotal();
+  abrirEdicionDetalle(index: number, campo: CampoDetalleEditableCompra, origen: EventTarget): void {
+    const item = this.compra.items[index];
+    if (!item) {
+      return;
+    }
+
+    this.indiceDetalleEdicion = index;
+    this.campoDetalleEdicion = campo;
+    this.valorDetalleAnterior = campo === 'cantidad' ? Number(item.cantidad) : Number(item.precioUnitario);
+    this.valorDetalleNuevo = null;
+    this.errorEdicionDetalle = '';
+    this.elementoOrigenEdicion = origen as HTMLElement;
+    this.edicionDetalleAbierta = true;
+
+    setTimeout(() => (document.getElementById('compra-nuevo-valor-detalle') as HTMLInputElement)?.focus());
+  }
+
+  confirmarEdicionDetalle(): void {
+    const item = this.compra.items[this.indiceDetalleEdicion];
+    const valorVacio = this.valorDetalleNuevo === null || this.valorDetalleNuevo === undefined
+      || String(this.valorDetalleNuevo).trim() === '';
+
+    if (!item || valorVacio) {
+      this.errorEdicionDetalle = 'Ingresa un valor nuevo.';
+      return;
+    }
+
+    const nuevoValor = Number(this.valorDetalleNuevo);
+    if (!Number.isFinite(nuevoValor)) {
+      this.errorEdicionDetalle = 'Ingresa un valor num&eacute;rico v&aacute;lido.';
+      return;
+    }
+
+    if (this.campoDetalleEdicion === 'cantidad') {
+      if (!Number.isInteger(nuevoValor) || nuevoValor <= 0) {
+        this.errorEdicionDetalle = 'La cantidad debe ser un n&uacute;mero entero mayor a 0.';
+        return;
+      }
+      item.cantidad = nuevoValor;
+    } else {
+      if (nuevoValor <= 0) {
+        this.errorEdicionDetalle = 'El precio unitario debe ser mayor a 0.';
+        return;
+      }
+      item.precioUnitario = nuevoValor;
+    }
+
+    item.subTotal = item.calcularSubTotal();
+    this.compra.items = [...this.compra.items];
+    this.cerrarEdicionDetalle();
+  }
+
+  cancelarEdicionDetalle(): void {
+    this.cerrarEdicionDetalle();
+  }
+
+  evitarCambioConRueda(event: WheelEvent): void {
+    (event.target as HTMLInputElement).blur();
+  }
+
+  get tituloEdicionDetalle(): string {
+    return this.campoDetalleEdicion === 'cantidad' ? 'Editar cantidad' : 'Editar precio unitario';
+  }
+
+  private cerrarEdicionDetalle(): void {
+    const elementoOrigen = this.elementoOrigenEdicion;
+    this.edicionDetalleAbierta = false;
+    this.campoDetalleEdicion = null;
+    this.indiceDetalleEdicion = -1;
+    this.valorDetalleAnterior = null;
+    this.valorDetalleNuevo = null;
+    this.errorEdicionDetalle = '';
+    this.elementoOrigenEdicion = null;
+    setTimeout(() => elementoOrigen?.focus());
   }
 
   get subTotalDetalle(): number {

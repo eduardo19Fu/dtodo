@@ -31,6 +31,14 @@ Registro, listado, visualización y anulación de compras a proveedores. Cada co
 - Vista de detalle de compra (modal de solo lectura, mismo componente/estilo que el detalle de Sucursales) y confirmación explícita antes de anular, con aviso de que el stock se revertirá.
 - Pruebas unitarias nuevas para `CreateCompraComponent` (cálculo de totales, validaciones de `agregarLinea`), `ModalCrearProductoComponent`, `ComprasComponent`, `ProveedoresComponent` y el modelo `DetalleCompra`.
 
+### Corregido — Registro de compra no coincidía visualmente con Facturas/Proformas
+
+El formulario de "Registrar compra" se rediseñó para reutilizar el mismo lenguaje visual que `create-factura`/`create-proforma`, en lugar de una tabla de Bootstrap genérica:
+- El botón "Guardar compra" y el total ya no viven en un pie de página fijo al final del formulario: ahora es una tarjeta flotante (`sticky-summary`) debajo del encabezado, igual que en Facturas/Proformas, visible en todo momento mientras se hace scroll por el detalle.
+- La sección de detalle reutiliza `create-proforma.component.css` como hoja de estilos compartida (mismo patrón que ya usa `create-sucursal` con `create-producto.component.css`): estado vacío ilustrado, contador de productos, y la tabla de detalle (`detail-table`) con el mismo lenguaje visual de celdas, encabezados y responsividad en móvil.
+- **Cantidad y precio unitario del detalle dejaron de ser editables directamente en la tabla** (se detectó en revisión que permitía cambios accidentales sin confirmación): ahora, igual que `cantidad`/`descuento` en Facturas y Proformas, se muestran como valor de solo lectura con un botón de lápiz que abre un diálogo de confirmación (`abrirEdicionDetalle`/`confirmarEdicionDetalle`/`cancelarEdicionDetalle`) antes de aplicar el cambio. Eliminar una línea también pide confirmación explícita ahora, mismo patrón que `eliminarItem` en Facturas.
+- Se agregaron accesos directos de un solo clic junto al campo de código (buscar por código, ver catálogo, registrar producto nuevo) en vez de tres controles sueltos sin agrupar visualmente.
+
 ### Agregado — Perfiles de entorno en el Frontend
 
 - `global.ts` y `AuthService` ya no tienen la URL del backend escrita a mano con bloques comentados para alternar entre Local/Producción/Desarrollo — ahora leen `environment.apiUrl` de `src/environments/`. Se agregó `environment.test.ts` (VPS de pruebas, `dtodojalapa.xyz:8383`) junto a los ya existentes `environment.ts` (local, `localhost:8383`) y `environment.prod.ts` (producción, `dtodojalapa.xyz:8382`), con su propia configuración `test` en `angular.json` (build y serve) y los scripts `pnpm run start:test`/`pnpm run build:test`/`pnpm run build:prod`.

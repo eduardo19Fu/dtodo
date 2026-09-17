@@ -1,7 +1,7 @@
 <app-modal-buscar-producto *ngIf="modalProductoVisible" (producto)="loadProducto($event)" (cerrar)="cerrarModalProducto()"></app-modal-buscar-producto>
 <app-modal-crear-producto *ngIf="modalNuevoProductoVisible" (producto)="productoNuevoCreado($event)" (cerrar)="cerrarModalNuevoProducto()"></app-modal-crear-producto>
 
-<div class="product-form-page">
+<div class="product-form-page compra-page">
   <header class="page-heading">
     <div>
       <span class="page-eyebrow">Compras</span>
@@ -22,6 +22,27 @@
         <i class="fas fa-circle" aria-hidden="true"></i>
         Nuevo registro
       </span>
+    </div>
+
+    <div class="form-actions compra-actions sticky-summary">
+      <div class="save-note">
+        <i class="fas fa-shopping-basket" aria-hidden="true"></i>
+        <span>
+          {{ compra.items.length }}
+          {{ compra.items.length === 1 ? 'producto agregado' : 'productos agregados' }}
+        </span>
+      </div>
+
+      <div class="total-summary">
+        <span>Total de la compra</span>
+        <strong>{{ totalCompra | currency: "Q" : "symbol" }}</strong>
+      </div>
+
+      <button type="submit" class="primary-action" (click)="crear()"
+        [disabled]="!compraForm.form.valid || compra.items.length === 0 || guardando">
+        <i class="fas" [ngClass]="guardando ? 'fa-spinner fa-spin' : 'fa-save'" aria-hidden="true"></i>
+        {{ guardando ? 'Guardando...' : 'Guardar compra' }}
+      </button>
     </div>
 
     <div class="form-content">
@@ -97,117 +118,203 @@
         </div>
       </section>
 
-      <section class="form-section" aria-labelledby="detalle-compra-title">
-        <div class="section-heading">
+      <section class="form-section last-section" aria-labelledby="detalle-compra-title">
+        <div class="section-heading detail-heading">
           <span class="section-number">02</span>
           <div>
             <h3 id="detalle-compra-title">Detalle de productos</h3>
             <p>Busca un producto existente por c&oacute;digo o desde el cat&aacute;logo, o registra uno nuevo.</p>
           </div>
+          <span class="items-count">
+            {{ compra.items.length }}
+            {{ compra.items.length === 1 ? 'producto' : 'productos' }}
+          </span>
         </div>
 
-        <div class="detail-search-row">
-          <div class="control-with-icon detail-code-input">
-            <i class="fas fa-barcode" aria-hidden="true"></i>
-            <input type="text" class="form-control" [(ngModel)]="codigoBusqueda" name="codigoBusqueda"
-              placeholder="C&oacute;digo de producto" (keyup.enter)="buscarProductoPorCodigo()">
+        <div class="form-grid add-product-grid compra-add-grid">
+          <div class="field-group">
+            <label for="codigo">C&oacute;digo de producto</label>
+            <div class="inline-search-control compra-search-control">
+              <div class="control-with-icon">
+                <i class="fas fa-barcode" aria-hidden="true"></i>
+                <input type="text" class="form-control" name="codigo" id="codigo"
+                  [(ngModel)]="codigoBusqueda" (keyup.enter)="buscarProductoPorCodigo()"
+                  placeholder="Escanea o escribe el c&oacute;digo">
+              </div>
+              <button type="button" class="inline-search-button" (click)="buscarProductoPorCodigo()"
+                aria-label="Buscar por c&oacute;digo" title="Buscar por c&oacute;digo">
+                <i class="fas fa-search" aria-hidden="true"></i>
+              </button>
+              <button type="button" class="inline-search-button quick-action-catalog" (click)="abrirModalProducto()"
+                aria-label="Ver cat&aacute;logo de productos" title="Ver cat&aacute;logo de productos">
+                <i class="fas fa-th-list" aria-hidden="true"></i>
+              </button>
+              <button type="button" class="inline-search-button quick-action-new" (click)="abrirModalNuevoProducto()"
+                aria-label="Registrar producto nuevo" title="Registrar producto nuevo">
+                <i class="fas fa-plus" aria-hidden="true"></i>
+              </button>
+            </div>
+            <small>Presiona Enter para buscar, o usa el cat&aacute;logo / producto nuevo.</small>
           </div>
-          <button type="button" class="btn btn-outline-secondary" (click)="buscarProductoPorCodigo()">
-            <i class="fas fa-search" aria-hidden="true"></i> Buscar
-          </button>
-          <button type="button" class="btn btn-outline-secondary" (click)="abrirModalProducto()">
-            <i class="fas fa-th-list" aria-hidden="true"></i> Cat&aacute;logo
-          </button>
-          <button type="button" class="btn btn-outline-primary" (click)="abrirModalNuevoProducto()">
-            <i class="fas fa-plus" aria-hidden="true"></i> Producto nuevo
-          </button>
-        </div>
 
-        <div class="selected-product-row" *ngIf="productoActual">
-          <div class="selected-product-info">
-            <span class="selected-product-label">Producto seleccionado</span>
-            <strong>{{productoActual.nombre}}</strong>
-          </div>
           <div class="field-group">
-            <label for="cantidadActual">Cantidad</label>
-            <input type="number" id="cantidadActual" name="cantidadActual" class="form-control"
-              [(ngModel)]="cantidadActual" min="1">
-          </div>
-          <div class="field-group">
-            <label for="precioUnitarioActual">Precio unitario</label>
-            <div class="control-with-prefix">
-              <span>Q</span>
-              <input type="number" id="precioUnitarioActual" name="precioUnitarioActual" class="form-control"
-                [(ngModel)]="precioUnitarioActual" min="0.01">
+            <label for="producto-seleccionado">Producto seleccionado</label>
+            <div class="control-with-icon">
+              <i class="fas fa-box" aria-hidden="true"></i>
+              <input type="text" class="form-control" name="producto-seleccionado" id="producto-seleccionado"
+                [value]="productoActual ? productoActual.nombre : ''" disabled
+                placeholder="A&uacute;n no has seleccionado un producto">
             </div>
           </div>
-          <button type="button" class="btn btn-primary" (click)="agregarLinea()">
-            <i class="fas fa-plus" aria-hidden="true"></i> Agregar
-          </button>
+
+          <div class="field-group quantity-field">
+            <div class="quantity-add-control compra-quantity-control">
+              <div class="line-entry-field">
+                <label for="cantidadActual">Cantidad</label>
+                <div class="control-with-icon">
+                  <i class="fas fa-sort-numeric-up" aria-hidden="true"></i>
+                  <input type="number" id="cantidadActual" name="cantidadActual" class="form-control"
+                    [(ngModel)]="cantidadActual" min="1" placeholder="0" (keyup.enter)="agregarLinea()">
+                </div>
+              </div>
+              <div class="line-entry-field">
+                <label for="precioUnitarioActual">Precio unitario</label>
+                <div class="control-with-prefix">
+                  <span>Q</span>
+                  <input type="number" id="precioUnitarioActual" name="precioUnitarioActual" class="form-control"
+                    [(ngModel)]="precioUnitarioActual" min="0.01" placeholder="0.00" (keyup.enter)="agregarLinea()">
+                </div>
+              </div>
+              <button type="button" class="add-line-button" (click)="agregarLinea()" aria-label="Agregar producto"
+                title="Agregar producto">
+                <i class="fas fa-plus" aria-hidden="true"></i>
+                <span>Agregar</span>
+              </button>
+            </div>
+          </div>
         </div>
 
-        <table class="table table-sm table-bordered detail-table" *ngIf="compra.items.length > 0">
-          <thead>
-            <tr>
-              <th>Producto</th>
-              <th class="text-right">Cantidad</th>
-              <th class="text-right">Precio unitario</th>
-              <th class="text-right">Subtotal</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let item of compra.items">
-              <td>{{item.producto.nombre}}</td>
-              <td class="text-right">
-                <input type="number" class="form-control form-control-sm text-right" [(ngModel)]="item.cantidad"
-                  [name]="'cantidad-' + $index" min="1" (ngModelChange)="recalcularSubTotal(item)">
-              </td>
-              <td class="text-right">
-                <input type="number" class="form-control form-control-sm text-right" [(ngModel)]="item.precioUnitario"
-                  [name]="'precio-' + $index" min="0.01" (ngModelChange)="recalcularSubTotal(item)">
-              </td>
-              <td class="text-right">Q{{item.calcularSubTotal() | number: '1.2-2'}}</td>
-              <td class="text-center">
-                <button type="button" class="btn btn-sm btn-outline-danger" (click)="eliminarLinea(item)">
-                  <i class="fas fa-trash-alt"></i>
-                </button>
-              </td>
-            </tr>
-          </tbody>
-          <tfoot>
-            <tr>
-              <td colspan="3" class="text-right">Subtotal</td>
-              <td class="text-right">Q{{subTotalDetalle | number: '1.2-2'}}</td>
-              <td></td>
-            </tr>
-            <tr>
-              <td colspan="3" class="text-right">Costo de env&iacute;o</td>
-              <td class="text-right">Q{{(compra.costoEnvio || 0) | number: '1.2-2'}}</td>
-              <td></td>
-            </tr>
-            <tr class="total-row">
-              <td colspan="3" class="text-right"><strong>Total</strong></td>
-              <td class="text-right"><strong>Q{{totalCompra | number: '1.2-2'}}</strong></td>
-              <td></td>
-            </tr>
-          </tfoot>
-        </table>
+        <div class="empty-detail" *ngIf="compra.items.length === 0">
+          <span aria-hidden="true"><i class="fas fa-shopping-basket"></i></span>
+          <h4>A&uacute;n no hay productos</h4>
+          <p>Busca un producto y agr&eacute;galo para comenzar la compra.</p>
+        </div>
 
-        <div class="validation-message" *ngIf="compra.items.length === 0">
-          <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
-          <span>Agrega al menos un producto al detalle.</span>
+        <div class="detail-table-wrapper" *ngIf="compra.items.length > 0">
+          <table class="detail-table compra-detail-table">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio unitario</th>
+                <th>Subtotal</th>
+                <th><span class="sr-only">Acciones</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of compra.items; let i = index">
+                <td data-label="Producto">
+                  <div class="table-product-name">
+                    <span aria-hidden="true"><i class="fas fa-box"></i></span>
+                    <strong>{{ item.producto.nombre }}</strong>
+                  </div>
+                </td>
+                <td data-label="Cantidad">
+                  <div class="detail-value-with-action">
+                    <span class="detail-readonly-value">{{ item.cantidad }}</span>
+                    <button type="button" class="edit-detail-button"
+                      (click)="abrirEdicionDetalle(i, 'cantidad', $event.currentTarget)"
+                      [attr.aria-label]="'Editar cantidad de ' + item.producto.nombre" title="Editar cantidad">
+                      <i class="fas fa-pencil-alt" aria-hidden="true"></i>
+                    </button>
+                  </div>
+                </td>
+                <td data-label="Precio unitario">
+                  <div class="detail-value-with-action">
+                    <span class="detail-readonly-value">Q{{ item.precioUnitario | number: '1.2-2' }}</span>
+                    <button type="button" class="edit-detail-button"
+                      (click)="abrirEdicionDetalle(i, 'precioUnitario', $event.currentTarget)"
+                      [attr.aria-label]="'Editar precio unitario de ' + item.producto.nombre" title="Editar precio unitario">
+                      <i class="fas fa-pencil-alt" aria-hidden="true"></i>
+                    </button>
+                  </div>
+                </td>
+                <td data-label="Subtotal"><strong class="line-total">{{ item.calcularSubTotal() | currency: "Q" : "symbol" }}</strong></td>
+                <td data-label="Acciones" class="detail-action-cell">
+                  <button type="button" class="remove-line-button" (click)="eliminarLinea(item)"
+                    aria-label="Eliminar producto" title="Eliminar producto">
+                    <i class="fas fa-trash-alt" aria-hidden="true"></i>
+                    <span class="remove-line-label">Eliminar producto</span>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </section>
     </div>
+  </form>
+</div>
 
-    <footer class="form-actions">
-      <p><i class="fas fa-shield-alt" aria-hidden="true"></i> El inventario se actualizar&aacute; al guardar la compra.</p>
-      <button type="submit" class="primary-action" (click)="crear()"
-        [disabled]="!compraForm.form.valid || compra.items.length === 0 || guardando">
-        <i class="fas fa-save" aria-hidden="true"></i>
-        Guardar compra
+<div *ngIf="edicionDetalleAbierta" class="detail-edit-backdrop" (click)="cancelarEdicionDetalle()"
+  (keydown.escape)="cancelarEdicionDetalle()">
+  <section class="detail-edit-dialog" role="dialog" aria-modal="true" aria-labelledby="compra-detail-edit-title"
+    (click)="$event.stopPropagation()">
+    <header class="detail-edit-header">
+      <span class="detail-edit-icon" aria-hidden="true"><i class="fas fa-pencil-alt"></i></span>
+      <div>
+        <span class="detail-edit-eyebrow">Detalle de compra</span>
+        <h3 id="compra-detail-edit-title">{{ tituloEdicionDetalle }}</h3>
+      </div>
+      <button type="button" class="detail-edit-close" (click)="cancelarEdicionDetalle()" aria-label="Cancelar edici&oacute;n">
+        <i class="fas fa-times" aria-hidden="true"></i>
+      </button>
+    </header>
+
+    <div class="detail-edit-body">
+      <p>El cambio se aplicar&aacute; &uacute;nicamente al confirmar.</p>
+      <div class="detail-edit-fields">
+        <div class="detail-edit-field">
+          <label for="compra-valor-detalle-anterior">
+            {{ campoDetalleEdicion === 'cantidad' ? 'Cantidad anterior' : 'Precio unitario anterior' }}
+          </label>
+          <div class="detail-edit-input-wrap compra-edit-input-wrap readonly">
+            <span *ngIf="campoDetalleEdicion === 'precioUnitario'">Q</span>
+            <input id="compra-valor-detalle-anterior" type="number" class="form-control"
+              [value]="valorDetalleAnterior" readonly tabindex="-1">
+          </div>
+        </div>
+
+        <div class="detail-edit-field">
+          <label for="compra-nuevo-valor-detalle">
+            {{ campoDetalleEdicion === 'cantidad' ? 'Cantidad nueva' : 'Precio unitario nuevo' }}
+          </label>
+          <div class="detail-edit-input-wrap compra-edit-input-wrap">
+            <span *ngIf="campoDetalleEdicion === 'precioUnitario'">Q</span>
+            <input id="compra-nuevo-valor-detalle" name="compra-nuevo-valor-detalle" type="number"
+              class="form-control" [(ngModel)]="valorDetalleNuevo"
+              [min]="campoDetalleEdicion === 'cantidad' ? 1 : 0.01"
+              [step]="campoDetalleEdicion === 'cantidad' ? 1 : 0.01" autocomplete="off"
+              (wheel)="evitarCambioConRueda($event)" (keyup.enter)="confirmarEdicionDetalle()">
+          </div>
+        </div>
+      </div>
+
+      <p *ngIf="errorEdicionDetalle" class="detail-edit-error" role="alert">
+        <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+        {{ errorEdicionDetalle }}
+      </p>
+    </div>
+
+    <footer class="detail-edit-actions">
+      <button type="button" class="detail-edit-cancel" (click)="cancelarEdicionDetalle()">
+        <i class="fas fa-times" aria-hidden="true"></i>
+        Cancelar
+      </button>
+      <button type="button" class="detail-edit-confirm" (click)="confirmarEdicionDetalle()">
+        <i class="fas fa-check" aria-hidden="true"></i>
+        Confirmar
       </button>
     </footer>
-  </form>
+  </section>
 </div>
