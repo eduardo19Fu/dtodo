@@ -1,0 +1,125 @@
+<div *ngIf="detailCompraService.modal" class="sucursal-detail-overlay animacion fadeIn"
+  (click)="cerrarDesdeBackdrop($event)">
+  <section class="sucursal-detail-dialog compra-detail-dialog" tabindex="-1" role="dialog" aria-modal="true"
+    aria-labelledby="compra-detail-title" (click)="$event.stopPropagation()">
+    <div class="sucursal-detail-content">
+      <header class="sucursal-detail-header">
+        <div class="header-copy">
+          <span class="header-icon" aria-hidden="true"><i class="fas fa-shopping-basket"></i></span>
+          <div>
+            <span class="header-eyebrow">Compras</span>
+            <h5 id="compra-detail-title">{{title}} #{{compra?.idCompra}}</h5>
+          </div>
+        </div>
+        <button (click)="cerrarModal()" type="button" class="close-button" aria-label="Cerrar detalle de compra">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+      </header>
+
+      <div *ngIf="compra" class="sucursal-detail-body">
+        <section class="identity-section">
+          <div class="profile-summary">
+            <span class="profile-avatar" aria-hidden="true"><i class="fas fa-truck"></i></span>
+            <div class="profile-copy">
+              <span class="profile-label">Proveedor</span>
+              <h6>{{compra.proveedor?.nombre}}</h6>
+              <span class="address"><i class="fas fa-store" aria-hidden="true"></i>{{compra.sucursal?.nombre}}</span>
+            </div>
+            <div class="status-badges">
+              <span class="status-pill" [ngClass]="compra.estado === 'ACTIVA' ? 'status-active' : 'status-inactive'">
+                <i class="fas" [ngClass]="compra.estado === 'ACTIVA' ? 'fa-check-circle' : 'fa-ban'" aria-hidden="true"></i>
+                {{compra.estado}}
+              </span>
+            </div>
+          </div>
+
+          <div class="information-grid">
+            <article class="information-card">
+              <span class="card-icon"><i class="fas fa-file-invoice" aria-hidden="true"></i></span>
+              <div>
+                <span class="information-label">No. de comprobante</span>
+                <strong>{{compra.noComprobante}}</strong>
+              </div>
+            </article>
+            <article class="information-card">
+              <span class="card-icon"><i class="fas fa-receipt" aria-hidden="true"></i></span>
+              <div>
+                <span class="information-label">Tipo de comprobante</span>
+                <strong>{{compra.tipoComprobante}}</strong>
+              </div>
+            </article>
+            <article class="information-card">
+              <span class="card-icon"><i class="far fa-calendar-alt" aria-hidden="true"></i></span>
+              <div>
+                <span class="information-label">Fecha de compra</span>
+                <strong>{{compra.fechaCompra | date: 'dd/MM/yyyy'}}</strong>
+              </div>
+            </article>
+            <article class="information-card">
+              <span class="card-icon"><i class="fas fa-truck-loading" aria-hidden="true"></i></span>
+              <div>
+                <span class="information-label">Costo de env&iacute;o</span>
+                <strong>Q{{compra.costoEnvio | number: '1.2-2'}}</strong>
+              </div>
+            </article>
+            <article class="information-card">
+              <span class="card-icon"><i class="fas fa-user-plus" aria-hidden="true"></i></span>
+              <div>
+                <span class="information-label">Registrada por</span>
+                <strong>{{nombreRegistro}}</strong>
+              </div>
+            </article>
+            <article class="information-card registration-card">
+              <span class="card-icon"><i class="far fa-clock" aria-hidden="true"></i></span>
+              <div>
+                <span class="information-label">Fecha de registro</span>
+                <strong>{{compra.fechaRegistro | date: 'dd/MM/yyyy'}}</strong>
+                <small><i class="far fa-clock" aria-hidden="true"></i> {{compra.fechaRegistro | date: 'HH:mm'}} horas</small>
+              </div>
+            </article>
+          </div>
+
+          <div class="information-card" *ngIf="compra.observaciones">
+            <span class="card-icon"><i class="fas fa-sticky-note" aria-hidden="true"></i></span>
+            <div>
+              <span class="information-label">Observaciones</span>
+              <strong>{{compra.observaciones}}</strong>
+            </div>
+          </div>
+
+          <table class="table table-sm table-bordered compra-detail-table">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th class="text-right">Cantidad</th>
+                <th class="text-right">Precio unitario</th>
+                <th class="text-right">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of compra.items">
+                <td>{{item.producto?.nombre}}</td>
+                <td class="text-right">{{item.cantidad}}</td>
+                <td class="text-right">Q{{item.precioUnitario | number: '1.2-2'}}</td>
+                <td class="text-right">Q{{item.subTotal | number: '1.2-2'}}</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="3" class="text-right"><strong>Total</strong></td>
+                <td class="text-right"><strong>Q{{compra.total | number: '1.2-2'}}</strong></td>
+              </tr>
+            </tfoot>
+          </table>
+        </section>
+      </div>
+
+      <footer class="sucursal-detail-footer">
+        <span><i class="fas fa-shield-alt" aria-hidden="true"></i>Informaci&oacute;n administrativa de la compra</span>
+        <button (click)="cerrarModal()" type="button" class="close-action">
+          <i class="fas fa-times" aria-hidden="true"></i> Cerrar
+        </button>
+      </footer>
+    </div>
+  </section>
+</div>

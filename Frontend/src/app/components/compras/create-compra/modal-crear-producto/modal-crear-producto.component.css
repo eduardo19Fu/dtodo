@@ -1,0 +1,18 @@
+.new-product-form {
+  padding: 4px 2px;
+}
+
+.product-picker-footer {
+  align-items: center;
+  background: #fff;
+  border-top: 1px solid #e8eeeb;
+  display: flex;
+  flex: 0 0 auto;
+  gap: 10px;
+  justify-content: flex-end;
+  padding: 15px 28px;
+}
+
+.description-field {
+  grid-column: 1 / -1;
+}

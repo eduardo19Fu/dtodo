@@ -1,0 +1,213 @@
+<app-modal-buscar-producto *ngIf="modalProductoVisible" (producto)="loadProducto($event)" (cerrar)="cerrarModalProducto()"></app-modal-buscar-producto>
+<app-modal-crear-producto *ngIf="modalNuevoProductoVisible" (producto)="productoNuevoCreado($event)" (cerrar)="cerrarModalNuevoProducto()"></app-modal-crear-producto>
+
+<div class="product-form-page">
+  <header class="page-heading">
+    <div>
+      <span class="page-eyebrow">Compras</span>
+      <h1>{{ title }}</h1>
+      <p>Registra el ingreso de mercader&iacute;a de un proveedor y actualiza el inventario autom&aacute;ticamente.</p>
+    </div>
+    <div class="heading-icon" aria-hidden="true"><i class="fas fa-shopping-basket"></i></div>
+  </header>
+
+  <form #compraForm="ngForm" class="product-card">
+    <div class="card-hero">
+      <div class="hero-icon" aria-hidden="true"><i class="fas fa-dolly-flatbed"></i></div>
+      <div>
+        <h2>Nueva compra</h2>
+        <p>Los campos marcados con <span aria-hidden="true">*</span> son obligatorios.</p>
+      </div>
+      <span class="status-pill">
+        <i class="fas fa-circle" aria-hidden="true"></i>
+        Nuevo registro
+      </span>
+    </div>
+
+    <div class="form-content">
+      <section class="form-section" aria-labelledby="datos-compra-title">
+        <div class="section-heading">
+          <span class="section-number">01</span>
+          <div>
+            <h3 id="datos-compra-title">Datos generales de la compra</h3>
+            <p>Informaci&oacute;n del comprobante y del proveedor.</p>
+          </div>
+        </div>
+
+        <div class="form-grid three-columns">
+          <div class="field-group">
+            <label for="fechaCompra">Fecha de compra <span class="required-mark">*</span></label>
+            <input type="date" id="fechaCompra" name="fechaCompra" class="form-control"
+              [(ngModel)]="compra.fechaCompra" required>
+          </div>
+
+          <div class="field-group">
+            <label for="proveedor">Proveedor <span class="required-mark">*</span></label>
+            <div class="select-control">
+              <i class="fas fa-truck" aria-hidden="true"></i>
+              <select id="proveedor" [compareWith]="compararProveedor" name="proveedor" class="form-control"
+                [(ngModel)]="compra.proveedor" required>
+                <option [ngValue]="undefined">Seleccionar proveedor</option>
+                <option *ngFor="let proveedor of proveedores" [ngValue]="proveedor">{{ proveedor.nombre }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="sucursal">Sucursal <span class="required-mark">*</span></label>
+            <div class="select-control">
+              <i class="fas fa-store" aria-hidden="true"></i>
+              <select id="sucursal" [compareWith]="compararSucursal" name="sucursal" class="form-control"
+                [(ngModel)]="compra.sucursal" required>
+                <option [ngValue]="undefined">Seleccionar sucursal</option>
+                <option *ngFor="let sucursal of sucursales" [ngValue]="sucursal">{{ sucursal.nombre }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="noComprobante">No. de comprobante <span class="required-mark">*</span></label>
+            <input type="text" id="noComprobante" name="noComprobante" class="form-control"
+              [(ngModel)]="compra.noComprobante" required placeholder="Ej. FAC-00123">
+          </div>
+
+          <div class="field-group">
+            <label for="tipoComprobante">Tipo de comprobante <span class="required-mark">*</span></label>
+            <select id="tipoComprobante" name="tipoComprobante" class="form-control"
+              [(ngModel)]="compra.tipoComprobante" required>
+              <option [ngValue]="undefined">Seleccionar tipo</option>
+              <option *ngFor="let tipo of tiposComprobante" [ngValue]="tipo">{{ tipo }}</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label for="costoEnvio">Costo de env&iacute;o</label>
+            <div class="control-with-prefix">
+              <span>Q</span>
+              <input type="number" id="costoEnvio" name="costoEnvio" class="form-control"
+                [(ngModel)]="compra.costoEnvio" min="0" placeholder="0.00">
+            </div>
+          </div>
+
+          <div class="field-group description-field">
+            <label for="observaciones">Observaciones</label>
+            <textarea id="observaciones" name="observaciones" class="form-control" rows="3"
+              [(ngModel)]="compra.observaciones" placeholder="Notas adicionales sobre esta compra..."></textarea>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section" aria-labelledby="detalle-compra-title">
+        <div class="section-heading">
+          <span class="section-number">02</span>
+          <div>
+            <h3 id="detalle-compra-title">Detalle de productos</h3>
+            <p>Busca un producto existente por c&oacute;digo o desde el cat&aacute;logo, o registra uno nuevo.</p>
+          </div>
+        </div>
+
+        <div class="detail-search-row">
+          <div class="control-with-icon detail-code-input">
+            <i class="fas fa-barcode" aria-hidden="true"></i>
+            <input type="text" class="form-control" [(ngModel)]="codigoBusqueda" name="codigoBusqueda"
+              placeholder="C&oacute;digo de producto" (keyup.enter)="buscarProductoPorCodigo()">
+          </div>
+          <button type="button" class="btn btn-outline-secondary" (click)="buscarProductoPorCodigo()">
+            <i class="fas fa-search" aria-hidden="true"></i> Buscar
+          </button>
+          <button type="button" class="btn btn-outline-secondary" (click)="abrirModalProducto()">
+            <i class="fas fa-th-list" aria-hidden="true"></i> Cat&aacute;logo
+          </button>
+          <button type="button" class="btn btn-outline-primary" (click)="abrirModalNuevoProducto()">
+            <i class="fas fa-plus" aria-hidden="true"></i> Producto nuevo
+          </button>
+        </div>
+
+        <div class="selected-product-row" *ngIf="productoActual">
+          <div class="selected-product-info">
+            <span class="selected-product-label">Producto seleccionado</span>
+            <strong>{{productoActual.nombre}}</strong>
+          </div>
+          <div class="field-group">
+            <label for="cantidadActual">Cantidad</label>
+            <input type="number" id="cantidadActual" name="cantidadActual" class="form-control"
+              [(ngModel)]="cantidadActual" min="1">
+          </div>
+          <div class="field-group">
+            <label for="precioUnitarioActual">Precio unitario</label>
+            <div class="control-with-prefix">
+              <span>Q</span>
+              <input type="number" id="precioUnitarioActual" name="precioUnitarioActual" class="form-control"
+                [(ngModel)]="precioUnitarioActual" min="0.01">
+            </div>
+          </div>
+          <button type="button" class="btn btn-primary" (click)="agregarLinea()">
+            <i class="fas fa-plus" aria-hidden="true"></i> Agregar
+          </button>
+        </div>
+
+        <table class="table table-sm table-bordered detail-table" *ngIf="compra.items.length > 0">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th class="text-right">Cantidad</th>
+              <th class="text-right">Precio unitario</th>
+              <th class="text-right">Subtotal</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of compra.items">
+              <td>{{item.producto.nombre}}</td>
+              <td class="text-right">
+                <input type="number" class="form-control form-control-sm text-right" [(ngModel)]="item.cantidad"
+                  [name]="'cantidad-' + $index" min="1" (ngModelChange)="recalcularSubTotal(item)">
+              </td>
+              <td class="text-right">
+                <input type="number" class="form-control form-control-sm text-right" [(ngModel)]="item.precioUnitario"
+                  [name]="'precio-' + $index" min="0.01" (ngModelChange)="recalcularSubTotal(item)">
+              </td>
+              <td class="text-right">Q{{item.calcularSubTotal() | number: '1.2-2'}}</td>
+              <td class="text-center">
+                <button type="button" class="btn btn-sm btn-outline-danger" (click)="eliminarLinea(item)">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="3" class="text-right">Subtotal</td>
+              <td class="text-right">Q{{subTotalDetalle | number: '1.2-2'}}</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td colspan="3" class="text-right">Costo de env&iacute;o</td>
+              <td class="text-right">Q{{(compra.costoEnvio || 0) | number: '1.2-2'}}</td>
+              <td></td>
+            </tr>
+            <tr class="total-row">
+              <td colspan="3" class="text-right"><strong>Total</strong></td>
+              <td class="text-right"><strong>Q{{totalCompra | number: '1.2-2'}}</strong></td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <div class="validation-message" *ngIf="compra.items.length === 0">
+          <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+          <span>Agrega al menos un producto al detalle.</span>
+        </div>
+      </section>
+    </div>
+
+    <footer class="form-actions">
+      <p><i class="fas fa-shield-alt" aria-hidden="true"></i> El inventario se actualizar&aacute; al guardar la compra.</p>
+      <button type="submit" class="primary-action" (click)="crear()"
+        [disabled]="!compraForm.form.valid || compra.items.length === 0 || guardando">
+        <i class="fas fa-save" aria-hidden="true"></i>
+        Guardar compra
+      </button>
+    </footer>
+  </form>
+</div>

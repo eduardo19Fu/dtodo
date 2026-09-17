@@ -51,6 +51,12 @@ import { ExportarProductosComponent } from './components/productos/exportar-prod
 import { SucursalesComponent } from './components/sucursales/sucursales.component';
 import { CreateSucursalComponent } from './components/sucursales/create-sucursal/create-sucursal.component';
 import { DetailSucursalComponent } from './components/sucursales/detail-sucursal/detail-sucursal.component';
+import { ProveedoresComponent } from './components/proveedores/proveedores.component';
+import { CreateProveedorComponent } from './components/proveedores/create-proveedor/create-proveedor.component';
+import { ComprasComponent } from './components/compras/compras.component';
+import { CreateCompraComponent } from './components/compras/create-compra/create-compra.component';
+import { DetailCompraComponent } from './components/compras/detail-compra/detail-compra.component';
+import { ModalCrearProductoComponent } from './components/compras/create-compra/modal-crear-producto/modal-crear-producto.component';
 import { TooltipDirective } from './directives/tooltip.directive';
 
 @NgModule({
@@ -99,6 +105,12 @@ import { TooltipDirective } from './directives/tooltip.directive';
     SucursalesComponent,
     CreateSucursalComponent,
     DetailSucursalComponent,
+    ProveedoresComponent,
+    CreateProveedorComponent,
+    ComprasComponent,
+    CreateCompraComponent,
+    DetailCompraComponent,
+    ModalCrearProductoComponent,
     TooltipDirective
   ],
   imports: [

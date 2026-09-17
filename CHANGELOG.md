@@ -6,6 +6,31 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Módulo de Compras
+
+Registro, listado, visualización y anulación de compras a proveedores. Cada compra suma existencias al inventario de la sucursal donde ingresa la mercadería; el módulo es exclusivo de `ROLE_ADMIN`.
+
+**Base de datos** (`Backend/dtodo-backend/sql/compras/`)
+- Tablas nuevas `paises` (catálogo simple, sembrado con 10 países comunes), `proveedores` (con país y estado ACTIVO/INACTIVO vía la tabla `estados` compartida), `compras` y `compras_detalle`.
+- `compras.estado` usa un enum propio (`ACTIVA`/`ANULADA`), igual patrón que `NotaCredito`, en vez de la tabla `estados` compartida — una compra anulada nunca se edita ni se borra.
+- A diferencia de `facturas_detalle`/`proformas_detalle` (que nunca persistieron el precio unitario histórico, ver nota de `sub_total` en este mismo archivo), `compras_detalle.precio_unitario` se guarda explícitamente desde el primer día para no repetir ese problema.
+- `compras_detalle.id_compra` se dejó `NULL` (no `NOT NULL`): Hibernate inserta la fila de detalle sin la FK y la completa con un `UPDATE` posterior porque la relación `Compra.items` es un `@OneToMany` unidireccional con `@JoinColumn` — mismo patrón ya usado por `facturas_detalle.id_factura`. Declararla `NOT NULL` (el primer intento) rompía ese `INSERT` inicial con `Field 'id_compra' doesn't have a default value`.
+
+**Backend**
+- Nuevo módulo `Compra`/`CompraDetalle`: el enum `TipoMovimientoEnum.COMPRA`/`ELIMINAR_COMPRA` ya existía (anticipado, nunca usado) y el mecanismo de suma/resta de `InventarioSucursal` en `MovimientoProductoServiceImpl.calcularStock()` no necesitó cambios — `CompraServiceImpl.crear()` solo genera un `MovimientoProducto` tipo `COMPRA` por cada línea del detalle.
+- Si una línea del detalle trae un producto sin `idProducto`, `CompraServiceImpl` lo crea primero vía `IProductoService.save()` (misma validación y normalización que el alta manual de productos) antes de guardar la compra; el producto nuevo no queda registrado si la compra falla, porque todo ocurre en la misma transacción.
+- Anular una compra (`PUT /compras/anular/{id}/{idusuario}`) no permite edición del detalle — solo cambia el estado a `ANULADA` y genera un movimiento `ELIMINAR_COMPRA` por línea para revertir el stock, igual que la anulación de facturas revierte con `ANULACION_FACTURA`.
+- Nuevos módulos simples `Pais` y `Proveedor` (CRUD estándar, `ROLE_ADMIN`); `Proveedor` nunca se elimina físicamente, solo se desactiva por estado, igual que `Sucursal`/`Producto`.
+- Pruebas unitarias nuevas: `CompraServiceImplTest`, `ProveedorServiceImplTest`, `PaisServiceImplTest`.
+
+**Frontend**
+- Nuevos módulos `/compras` y `/proveedores`, con entrada de menú "Compras" (submenú Listado/Registrar compra/Proveedores, `ROLE_ADMIN`) siguiendo el mismo patrón de grupo desplegable que Productos/Facturas.
+- El formulario de registro de compra reutiliza `app-modal-buscar-producto` (el mismo modal de Facturas/Proformas) para elegir un producto ya existente, y agrega `app-modal-crear-producto`: un modal nuevo con los mismos campos del alta normal de producto (menos la sección de sucursales, que no aplica aquí) que **no hace ninguna llamada HTTP** — solo arma el objeto en memoria; el producto se registra únicamente si la compra completa se guarda con éxito.
+- Al elegir un producto desde el catálogo (modal de búsqueda), se vuelve a consultar por código con `ProductoService.getProductoByCode()` antes de agregarlo al detalle — el modal de búsqueda solo emite un DTO liviano (`ProductoDto`), no la entidad completa, mismo patrón ya usado por `create-factura`. Enviar el DTO tal cual al backend rompía la deserialización de Jackson (`400 Bad Request: Failed to read request`).
+- El precio unitario de cada línea se precarga desde `producto.precioCompra` pero es editable (el precio realmente pagado en esa compra puede diferir del histórico); el total se recalcula en el backend (cantidad × precio unitario de cada línea + costo de envío) en vez de confiar en lo que envía el cliente.
+- Vista de detalle de compra (modal de solo lectura, mismo componente/estilo que el detalle de Sucursales) y confirmación explícita antes de anular, con aviso de que el stock se revertirá.
+- Pruebas unitarias nuevas para `CreateCompraComponent` (cálculo de totales, validaciones de `agregarLinea`), `ModalCrearProductoComponent`, `ComprasComponent`, `ProveedoresComponent` y el modelo `DetalleCompra`.
+
 ### Agregado — Perfiles de entorno en el Frontend
 
 - `global.ts` y `AuthService` ya no tienen la URL del backend escrita a mano con bloques comentados para alternar entre Local/Producción/Desarrollo — ahora leen `environment.apiUrl` de `src/environments/`. Se agregó `environment.test.ts` (VPS de pruebas, `dtodojalapa.xyz:8383`) junto a los ya existentes `environment.ts` (local, `localhost:8383`) y `environment.prod.ts` (producción, `dtodojalapa.xyz:8382`), con su propia configuración `test` en `angular.json` (build y serve) y los scripts `pnpm run start:test`/`pnpm run build:test`/`pnpm run build:prod`.

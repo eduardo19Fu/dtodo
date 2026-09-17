@@ -29,6 +29,10 @@ import { NotasCreditoComponent } from './components/notas-credito/notas-credito.
 import { CreateNotaComponent } from './components/notas-credito/create-nota/create-nota.component';
 import { SucursalesComponent } from './components/sucursales/sucursales.component';
 import { CreateSucursalComponent } from './components/sucursales/create-sucursal/create-sucursal.component';
+import { ProveedoresComponent } from './components/proveedores/proveedores.component';
+import { CreateProveedorComponent } from './components/proveedores/create-proveedor/create-proveedor.component';
+import { ComprasComponent } from './components/compras/compras.component';
+import { CreateCompraComponent } from './components/compras/create-compra/create-compra.component';
 
 const appRoutes: Routes = [
     { path: '', component: LoginComponent },
@@ -107,6 +111,25 @@ const appRoutes: Routes = [
         canActivate: [AuthGuard, RoleGuard],
         data: { role: ['ROLE_ADMIN'] }
     },
+
+    /****** MENUS DE PROVEEDORES ******/
+    { path: 'proveedores/index', component: ProveedoresComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN'] } },
+    {
+        path: 'proveedores/create',
+        component: CreateProveedorComponent,
+        canActivate: [AuthGuard, RoleGuard],
+        data: { role: ['ROLE_ADMIN'] }
+    },
+    {
+        path: 'proveedores/create/:id',
+        component: CreateProveedorComponent,
+        canActivate: [AuthGuard, RoleGuard],
+        data: { role: ['ROLE_ADMIN'] }
+    },
+
+    /****** MENUS DE COMPRAS ******/
+    { path: 'compras/index', component: ComprasComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN'] } },
+    { path: 'compras/create', component: CreateCompraComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN'] } },
 
     { path: '**', component: ErrorComponent }
 ];
