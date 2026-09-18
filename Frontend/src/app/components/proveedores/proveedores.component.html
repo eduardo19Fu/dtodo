@@ -1,3 +1,5 @@
+<app-detail-proveedor *ngIf="proveedorSeleccionado" [proveedor]="proveedorSeleccionado"></app-detail-proveedor>
+
 <section class="content-header">
   <div class="container-fluid">
     <div class="row mb-2">
@@ -95,6 +97,11 @@
           </td>
           <td class="col-opciones mobile-actions-cell" data-label="Opciones">
             <div class="action-buttons">
+              <button class="btn btn-sm listing-table-action listing-action-view" type="button"
+                      appTooltip="Ver detalle del proveedor" aria-label="Ver detalle del proveedor"
+                      (click)="abrirDetalle(proveedor)">
+                <i class="fas fa-eye"></i>
+              </button>
               <button class="btn btn-sm listing-table-action listing-action-edit" type="button"
                       appTooltip="Editar proveedor" aria-label="Editar proveedor"
                       [routerLink]="['/proveedores/create', proveedor.idProveedor]">

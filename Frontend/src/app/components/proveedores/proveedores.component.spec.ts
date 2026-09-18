@@ -4,7 +4,7 @@ describe('ProveedoresComponent - paginacion y orden', () => {
   let component: ProveedoresComponent;
 
   beforeEach(() => {
-    component = new ProveedoresComponent(null, { hasRole: () => true } as any);
+    component = new ProveedoresComponent(null, null, { hasRole: () => true } as any);
   });
 
   it('usa el icono neutro cuando la columna no es la ordenada actualmente', () => {
@@ -25,5 +25,24 @@ describe('ProveedoresComponent - paginacion y orden', () => {
     component.paginaActual = 5;
 
     expect(component.paginasVisibles).toEqual([3, 4, 5, 6, 7]);
+  });
+});
+
+describe('ProveedoresComponent - abrirDetalle', () => {
+  let component: ProveedoresComponent;
+  let detailProveedorService: any;
+
+  beforeEach(() => {
+    detailProveedorService = { abrirModal: jasmine.createSpy('abrirModal') };
+    component = new ProveedoresComponent(null, detailProveedorService, { hasRole: () => true } as any);
+  });
+
+  it('asigna el proveedor seleccionado y abre el modal de detalle', () => {
+    const proveedorDto: any = { idProveedor: 3, nombre: 'Distribuidora XYZ' };
+
+    component.abrirDetalle(proveedorDto);
+
+    expect(component.proveedorSeleccionado).toBe(proveedorDto);
+    expect(detailProveedorService.abrirModal).toHaveBeenCalled();
   });
 });

@@ -1,0 +1,125 @@
+<div *ngIf="detailProveedorService.modal" class="sucursal-detail-overlay animacion fadeIn"
+  (click)="cerrarDesdeBackdrop($event)">
+  <section class="sucursal-detail-dialog" tabindex="-1" role="dialog" aria-modal="true"
+    aria-labelledby="proveedor-detail-title" (click)="$event.stopPropagation()">
+    <div class="sucursal-detail-content">
+      <header class="sucursal-detail-header">
+        <div class="header-copy">
+          <span class="header-icon" aria-hidden="true"><i class="fas fa-truck"></i></span>
+          <div>
+            <span class="header-eyebrow">Proveedores</span>
+            <h5 id="proveedor-detail-title">{{title}}</h5>
+          </div>
+        </div>
+        <button (click)="cerrarModal()" type="button" class="close-button"
+          aria-label="Cerrar detalle de proveedor">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+      </header>
+
+      <div *ngIf="proveedor" class="sucursal-detail-body">
+        <section class="identity-section">
+          <div class="profile-summary">
+            <span class="profile-avatar" aria-hidden="true"><i class="fas fa-truck"></i></span>
+            <div class="profile-copy">
+              <span class="profile-label">Proveedor</span>
+              <h6>{{proveedor.nombre}}</h6>
+              <span class="address"><i class="fas fa-map-marker-alt" aria-hidden="true"></i>{{proveedor.direccion || 'Sin dirección registrada'}}</span>
+            </div>
+            <div class="status-badges">
+              <span class="status-pill" [ngClass]="proveedor.estado === 'ACTIVO' ? 'status-active' : 'status-inactive'">
+                <i class="fas" [ngClass]="proveedor.estado === 'ACTIVO' ? 'fa-check-circle' : 'fa-times-circle'" aria-hidden="true"></i>
+                {{proveedor.estado || 'Sin estado'}}
+              </span>
+            </div>
+          </div>
+
+          <div class="information-grid">
+            <article class="information-card">
+              <span class="card-icon"><i class="fas fa-id-badge" aria-hidden="true"></i></span>
+              <div>
+                <span class="information-label">Identificador</span>
+                <strong>#{{proveedor.idProveedor}}</strong>
+              </div>
+            </article>
+            <article class="information-card">
+              <span class="card-icon"><i class="fas fa-user" aria-hidden="true"></i></span>
+              <div>
+                <span class="information-label">Contacto</span>
+                <strong [class.empty-value]="!proveedor.contacto">{{proveedor.contacto || 'No registrado'}}</strong>
+              </div>
+            </article>
+            <article class="information-card">
+              <span class="card-icon"><i class="fas fa-globe-americas" aria-hidden="true"></i></span>
+              <div>
+                <span class="information-label">País</span>
+                <strong [class.empty-value]="!proveedor.pais">{{proveedor.pais || 'No registrado'}}</strong>
+              </div>
+            </article>
+            <article class="information-card">
+              <span class="card-icon"><i class="fas fa-phone-alt" aria-hidden="true"></i></span>
+              <div>
+                <span class="information-label">Teléfono de la entidad</span>
+                <strong [class.empty-value]="!proveedor.telefonoEntidad">{{proveedor.telefonoEntidad || 'No registrado'}}</strong>
+              </div>
+            </article>
+            <article class="information-card">
+              <span class="card-icon"><i class="fas fa-mobile-alt" aria-hidden="true"></i></span>
+              <div>
+                <span class="information-label">Teléfono de contacto</span>
+                <strong [class.empty-value]="!proveedor.telefonoContacto">{{proveedor.telefonoContacto || 'No registrado'}}</strong>
+              </div>
+            </article>
+            <article class="information-card">
+              <span class="card-icon"><i class="fas fa-envelope" aria-hidden="true"></i></span>
+              <div>
+                <span class="information-label">Correo de la entidad</span>
+                <strong [class.empty-value]="!proveedor.emailEntidad">{{proveedor.emailEntidad || 'No registrado'}}</strong>
+              </div>
+            </article>
+            <article class="information-card">
+              <span class="card-icon"><i class="fas fa-at" aria-hidden="true"></i></span>
+              <div>
+                <span class="information-label">Correo de contacto</span>
+                <strong [class.empty-value]="!proveedor.emailContacto">{{proveedor.emailContacto || 'No registrado'}}</strong>
+              </div>
+            </article>
+            <article class="information-card">
+              <span class="card-icon"><i class="fas fa-link" aria-hidden="true"></i></span>
+              <div>
+                <span class="information-label">Sitio web</span>
+                <a *ngIf="proveedor.sitioWeb; else sinSitioWeb" class="information-link" [href]="proveedor.sitioWeb"
+                  target="_blank" rel="noopener noreferrer">
+                  {{proveedor.sitioWeb}} <i class="fas fa-external-link-alt" aria-hidden="true"></i>
+                </a>
+                <ng-template #sinSitioWeb><strong class="empty-value">No registrado</strong></ng-template>
+              </div>
+            </article>
+            <article class="information-card">
+              <span class="card-icon"><i class="fas fa-user-plus" aria-hidden="true"></i></span>
+              <div>
+                <span class="information-label">Registrado por</span>
+                <strong>{{nombreRegistro}}</strong>
+              </div>
+            </article>
+            <article class="information-card registration-card">
+              <span class="card-icon"><i class="far fa-clock" aria-hidden="true"></i></span>
+              <div>
+                <span class="information-label">Fecha de registro</span>
+                <strong>{{proveedor.fechaRegistro | date: 'dd/MM/yyyy'}}</strong>
+                <small><i class="far fa-clock" aria-hidden="true"></i> {{proveedor.fechaRegistro | date: 'HH:mm'}} horas</small>
+              </div>
+            </article>
+          </div>
+        </section>
+      </div>
+
+      <footer class="sucursal-detail-footer">
+        <span><i class="fas fa-shield-alt" aria-hidden="true"></i>Información administrativa del proveedor</span>
+        <button (click)="cerrarModal()" type="button" class="close-action">
+          <i class="fas fa-times" aria-hidden="true"></i> Cerrar
+        </button>
+      </footer>
+    </div>
+  </section>
+</div>

@@ -23,4 +23,5 @@ public class ProveedorDto {
 	private String estado;
 	private LocalDateTime fechaRegistro;
 	private String usuario;
+	private String registradoPor;
 }

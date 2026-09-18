@@ -53,6 +53,7 @@ import { CreateSucursalComponent } from './components/sucursales/create-sucursal
 import { DetailSucursalComponent } from './components/sucursales/detail-sucursal/detail-sucursal.component';
 import { ProveedoresComponent } from './components/proveedores/proveedores.component';
 import { CreateProveedorComponent } from './components/proveedores/create-proveedor/create-proveedor.component';
+import { DetailProveedorComponent } from './components/proveedores/detail-proveedor/detail-proveedor.component';
 import { ComprasComponent } from './components/compras/compras.component';
 import { CreateCompraComponent } from './components/compras/create-compra/create-compra.component';
 import { DetailCompraComponent } from './components/compras/detail-compra/detail-compra.component';
@@ -107,6 +108,7 @@ import { TooltipDirective } from './directives/tooltip.directive';
     DetailSucursalComponent,
     ProveedoresComponent,
     CreateProveedorComponent,
+    DetailProveedorComponent,
     ComprasComponent,
     CreateCompraComponent,
     DetailCompraComponent,

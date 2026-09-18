@@ -5,6 +5,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ProveedorDto } from 'src/app/dtos/proveedor-dto';
 import { AuthService } from 'src/app/services/auth.service';
 import { ProveedorService } from 'src/app/services/proveedor.service';
+import { DetailProveedorService } from 'src/app/services/proveedores/detail-proveedor.service';
 
 import Swal from 'sweetalert2';
 
@@ -17,6 +18,7 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
 
   title = 'Proveedores';
   proveedores: ProveedorDto[] = [];
+  proveedorSeleccionado: ProveedorDto;
   paginaActual = 0;
   totalPaginas = 0;
   totalElementos = 0;
@@ -34,6 +36,7 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
 
   constructor(
     private proveedorService: ProveedorService,
+    public detailProveedorService: DetailProveedorService,
     public auth: AuthService
   ) { }
 
@@ -73,6 +76,11 @@ export class ProveedoresComponent implements OnInit, OnDestroy {
           error.error?.message || error.error?.mensaje || 'Ha ocurrido un error inesperado', 'error');
       }
     );
+  }
+
+  abrirDetalle(proveedor: ProveedorDto): void {
+    this.proveedorSeleccionado = proveedor;
+    this.detailProveedorService.abrirModal();
   }
 
   onBuscar(valor: string): void { this.busquedaSubject.next(valor); }

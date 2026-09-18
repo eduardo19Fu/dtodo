@@ -13,7 +13,8 @@ public interface IProveedorRepository extends JpaRepository<Proveedor, Integer> 
 
 	@Query(value = "SELECT new xyz.pangosoft.dtodo.dto.ProveedorDto(" +
 			"p.idProveedor, p.nombre, p.contacto, p.telefonoEntidad, p.telefonoContacto, " +
-			"p.emailEntidad, p.emailContacto, p.direccion, p.sitioWeb, pa.nombre, e.estado, p.fechaRegistro, u.usuario) " +
+			"p.emailEntidad, p.emailContacto, p.direccion, p.sitioWeb, pa.nombre, e.estado, p.fechaRegistro, u.usuario, " +
+			"concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, ''))) " +
 			"FROM Proveedor p LEFT JOIN p.pais pa LEFT JOIN p.estado e LEFT JOIN p.usuario u " +
 			"WHERE (:filtro = '' OR LOWER(p.nombre) LIKE LOWER(CONCAT('%', :filtro, '%')) " +
 			"OR LOWER(COALESCE(p.contacto, '')) LIKE LOWER(CONCAT('%', :filtro, '%')))",

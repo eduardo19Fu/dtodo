@@ -12,4 +12,5 @@ export class ProveedorDto {
   estado: string;
   fechaRegistro: Date;
   usuario: string;
+  registradoPor: string;
 }
