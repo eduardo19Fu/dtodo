@@ -39,6 +39,13 @@ export class CompraService {
     );
   }
 
+  getDetalleCompraDto(idCompra: number, page: number, size: number = 5): Observable<any> {
+    const params = new HttpParams().set('size', size.toString());
+    return this.http.get<any>(`${this.url}/compras/${idCompra}/detalle/${page}`, { params }).pipe(
+      catchError(e => throwError(e))
+    );
+  }
+
   create(compra: Compra): Observable<Compra> {
     return this.http.post<Compra>(`${this.url}/compras`, compra).pipe(
       catchError(e => {

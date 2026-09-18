@@ -94,12 +94,6 @@
         <span class="menu-label">Clientes</span>
       </a>
 
-      <a *ngIf="coincide('sucursales') && authService.hasRole('ROLE_ADMIN')" [routerLink]="['/sucursales/index']"
-        class="menu-link" [class.active]="router.url.startsWith('/sucursales')" (click)="notificarNavegacion()" title="Sucursales">
-        <span class="menu-icon"><i class="fas fa-store" aria-hidden="true"></i></span>
-        <span class="menu-label">Sucursales</span>
-      </a>
-
       <section class="menu-group" *ngIf="mostrarGrupo('compras') && authService.hasRole('ROLE_ADMIN')"
         [class.is-open]="menuAbierto('compras')" [class.is-active]="router.url.startsWith('/compras') || router.url.startsWith('/proveedores')">
         <button type="button" class="menu-link group-trigger" (click)="alternarMenu('compras')"
@@ -111,12 +105,18 @@
         <div class="submenu" *ngIf="menuAbierto('compras')">
           <a *ngIf="coincide('compras')" [routerLink]="['/compras/index']" class="submenu-link" routerLinkActive="active"
             (click)="notificarNavegacion()"><span></span>Listado</a>
-          <a *ngIf="coincide('registrar compra', 'compras')" [routerLink]="['/compras/create']" class="submenu-link"
-            [class.active]="router.url === '/compras/create'" (click)="notificarNavegacion()"><span></span>Registrar compra</a>
+          <!-- <a *ngIf="coincide('registrar compra', 'compras')" [routerLink]="['/compras/create']" class="submenu-link"
+            [class.active]="router.url === '/compras/create'" (click)="notificarNavegacion()"><span></span>Registrar compra</a> -->
           <a *ngIf="coincide('proveedores')" [routerLink]="['/proveedores/index']" class="submenu-link"
             [class.active]="router.url.startsWith('/proveedores')" (click)="notificarNavegacion()"><span></span>Proveedores</a>
         </div>
       </section>
+
+      <a *ngIf="coincide('sucursales') && authService.hasRole('ROLE_ADMIN')" [routerLink]="['/sucursales/index']"
+        class="menu-link" [class.active]="router.url.startsWith('/sucursales')" (click)="notificarNavegacion()" title="Sucursales">
+        <span class="menu-icon"><i class="fas fa-store" aria-hidden="true"></i></span>
+        <span class="menu-label">Sucursales</span>
+      </a>
 
       <a *ngIf="coincide('usuarios') && authService.hasRole('ROLE_ADMIN')" [routerLink]="['/usuarios/index']"
         class="menu-link" [class.active]="router.url.startsWith('/usuarios')" (click)="notificarNavegacion()" title="Usuarios">

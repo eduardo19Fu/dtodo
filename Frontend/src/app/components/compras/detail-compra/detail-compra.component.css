@@ -235,6 +235,21 @@
   padding: 15px;
 }
 
+.total-card {
+  background: linear-gradient(135deg, var(--green-900), var(--green-700));
+  border-color: transparent;
+  box-shadow: 0 8px 18px rgba(8, 116, 83, 0.2);
+}
+
+.total-card .card-icon {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+.total-card .information-label {
+  color: rgba(255, 255, 255, 0.7);
+}
+
 .registration-card {
   grid-column: span 2;
 }
@@ -263,6 +278,11 @@
   overflow-wrap: anywhere;
 }
 
+.total-card strong {
+  color: #fff;
+  font-size: 1.35rem;
+}
+
 .information-card small {
   color: #8a9892;
   display: block;
@@ -270,23 +290,239 @@
   margin-top: 2px;
 }
 
-.compra-detail-table {
-  margin-top: 18px;
+.lines-section {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  margin-top: 20px;
+  padding: 22px;
 }
 
-.compra-detail-table th {
-  background: #343a40;
+.lines-toolbar {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.section-icon {
+  align-items: center;
+  background: var(--green-100);
+  border-radius: 9px;
+  color: var(--green-800);
+  display: flex;
+  flex: 0 0 38px;
+  height: 38px;
+  justify-content: center;
+}
+
+.lines-toolbar .section-heading {
+  align-items: center;
+  display: flex;
+  gap: 11px;
+  margin: 0;
+}
+
+.lines-toolbar .section-heading strong {
+  color: var(--ink);
+  display: block;
+  font-size: 15px;
+}
+
+.lines-toolbar .section-heading small {
+  color: var(--muted);
+  display: block;
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.page-size-control {
+  align-items: center;
+  color: #53645d;
+  display: flex;
+  font-size: 12px;
+  font-weight: 700;
+  gap: 8px;
+  margin: 0;
+}
+
+.table-shell {
+  border: 1px solid #e1e8e4;
+  border-radius: 11px;
+  overflow-x: auto;
+}
+
+.document-lines-table {
+  border-collapse: collapse;
+  min-width: 760px;
+  width: 100%;
+}
+
+.document-lines-table th {
+  background: #26364d;
   color: #fff;
-  font-size: 0.8rem;
-}
-
-.compra-detail-table td,
-.compra-detail-table th {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 13px 14px;
+  text-transform: uppercase;
   vertical-align: middle;
 }
 
-.compra-detail-table tfoot td {
+.document-lines-table td {
+  border-bottom: 1px solid #e8eeeb;
+  color: #536078;
+  font-size: 13px;
+  padding: 14px;
+  vertical-align: middle;
+}
+
+.document-lines-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.document-lines-table tbody tr:hover {
+  background: var(--green-50);
+}
+
+.line-column {
+  width: 90px;
+}
+
+.quantity-column {
+  text-align: center;
+  width: 100px;
+}
+
+.money-column {
+  text-align: right;
+  width: 150px;
+}
+
+.line-badge {
+  background: #edf2ef;
+  border-radius: 6px;
+  color: #64736d;
+  display: inline-block;
+  font-family: Consolas, monospace;
+  font-size: 11px;
+  padding: 5px 7px;
+}
+
+.product-name {
+  color: var(--ink);
+  font-weight: 650;
+}
+
+.quantity-cell {
+  text-align: center;
+}
+
+.money-cell {
+  color: #344358;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.final-amount {
+  color: var(--green-800);
+  font-weight: 750;
+}
+
+.loading-state,
+.empty-state {
+  align-items: center;
   background: #f8faf9;
+  border: 1px dashed #cbdad3;
+  border-radius: 11px;
+  color: var(--muted);
+  display: flex;
+  justify-content: center;
+  min-height: 150px;
+}
+
+.loading-state {
+  flex-direction: row;
+  font-size: 13px;
+  gap: 10px;
+}
+
+.loading-state .spinner-border {
+  color: var(--green-700);
+  height: 24px;
+  width: 24px;
+}
+
+.empty-state {
+  flex-direction: column;
+  gap: 7px;
+  text-align: center;
+}
+
+.empty-state i {
+  color: #a8bcb3;
+  font-size: 28px;
+}
+
+.empty-state strong {
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.empty-state span {
+  font-size: 12px;
+}
+
+.table-navigation {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+
+.pagination-info {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.pagination {
+  gap: 5px;
+  margin: 0;
+}
+
+.pagination .page-link {
+  align-items: center;
+  background: #fff;
+  border: 1px solid #d7e1dc;
+  border-radius: 7px;
+  color: #586a62;
+  display: flex;
+  font-size: 12px;
+  height: 34px;
+  justify-content: center;
+  min-width: 34px;
+  padding: 5px 9px;
+}
+
+.pagination .page-item:not(.active):not(.disabled) .page-link:hover,
+.pagination .page-item:not(.active):not(.disabled) .page-link:focus {
+  background: var(--green-50);
+  border-color: #9bc9b5;
+  color: var(--green-900);
+  outline: 0;
+}
+
+.pagination .page-item.active .page-link {
+  background: var(--green-800);
+  border-color: var(--green-800);
+  color: #fff;
+}
+
+.pagination .page-item.disabled .page-link {
+  background: #f4f7f5;
+  color: #afbbb5;
+  cursor: not-allowed;
 }
 
 .sucursal-detail-footer {
@@ -379,6 +615,31 @@
 
   .registration-card {
     grid-column: auto;
+  }
+
+  .identity-section,
+  .lines-section {
+    padding: 16px;
+  }
+
+  .lines-toolbar,
+  .table-navigation {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .page-size-control {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .table-navigation nav {
+    align-self: center;
+  }
+
+  .pagination-info {
+    width: 100%;
   }
 }
 

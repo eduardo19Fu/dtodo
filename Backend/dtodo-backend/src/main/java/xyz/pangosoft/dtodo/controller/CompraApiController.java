@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import xyz.pangosoft.dtodo.dto.CompraDetalleDocumentoDto;
 import xyz.pangosoft.dtodo.dto.CompraDto;
 import xyz.pangosoft.dtodo.model.Compra;
 import xyz.pangosoft.dtodo.service.ICompraService;
@@ -49,6 +50,15 @@ public class CompraApiController {
 	public ResponseEntity<Compra> getById(@PathVariable("id") Long id) {
 		log.info("Buscando compra con ID: {}", id);
 		return ResponseEntity.ok(serviceCompra.findById(id));
+	}
+
+	@Secured(value = { "ROLE_ADMIN" })
+	@GetMapping(value = "/compras/{idCompra}/detalle/{page}")
+	public ResponseEntity<Page<CompraDetalleDocumentoDto>> getDetalleDto(
+			@PathVariable("idCompra") Long idCompra,
+			@PathVariable("page") Integer page,
+			@RequestParam(value = "size", defaultValue = "5") Integer size) {
+		return ResponseEntity.ok(serviceCompra.findDetalleDto(idCompra, PageRequest.of(page, size)));
 	}
 
 	@Secured(value = { "ROLE_ADMIN" })

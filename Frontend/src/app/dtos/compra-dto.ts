@@ -12,4 +12,6 @@ export class CompraDto {
   proveedor: string;
   sucursal: string;
   usuario: string;
+  registradoPor: string;
+  observaciones: string;
 }

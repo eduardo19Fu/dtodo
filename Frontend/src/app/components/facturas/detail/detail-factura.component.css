@@ -245,20 +245,6 @@
   margin: 0;
 }
 
-.page-size-control .form-control {
-  border: 1px solid #cfdcd6;
-  border-radius: 8px;
-  color: var(--ink);
-  height: 36px;
-  padding: 5px 28px 5px 10px;
-  width: 72px;
-}
-
-.page-size-control .form-control:focus {
-  border-color: var(--green-700);
-  box-shadow: 0 0 0 3px rgba(11, 143, 101, 0.12);
-}
-
 .table-shell {
   border: 1px solid #e1e8e4;
   border-radius: 11px;

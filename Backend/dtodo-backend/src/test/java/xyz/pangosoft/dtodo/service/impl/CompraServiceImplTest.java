@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
+import xyz.pangosoft.dtodo.dto.CompraDetalleDocumentoDto;
 import xyz.pangosoft.dtodo.dto.CompraDto;
 import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
 import xyz.pangosoft.dtodo.error.exceptions.NotFoundException;
@@ -200,6 +201,33 @@ class CompraServiceImplTest {
         when(compraRepository.findListado("", null, PageRequest.of(0, 5))).thenReturn(pagina);
 
         assertEquals(pagina, service.findListado(null, null, PageRequest.of(0, 5)));
+    }
+
+    @Test
+    void mapeaLasFilasDelDetalleDeLaCompraAlDto() {
+        Object[] fila = { 1L, 10, "PRD-010", "Producto A", 5, new BigDecimal("10.00"), new BigDecimal("50.00") };
+        Page<Object[]> pagina = new PageImpl<>(java.util.Collections.singletonList(fila));
+
+        when(compraRepository.existsById(1L)).thenReturn(true);
+        when(compraRepository.findDetalleDto(1L, PageRequest.of(0, 5))).thenReturn(pagina);
+
+        Page<CompraDetalleDocumentoDto> resultado = service.findDetalleDto(1L, PageRequest.of(0, 5));
+
+        CompraDetalleDocumentoDto dto = resultado.getContent().get(0);
+        assertEquals(1L, dto.getIdDetalle());
+        assertEquals(10, dto.getIdProducto());
+        assertEquals("PRD-010", dto.getCodigoProducto());
+        assertEquals("Producto A", dto.getProducto());
+        assertEquals(5, dto.getCantidad());
+        assertEquals(new BigDecimal("10.00"), dto.getPrecioUnitario());
+        assertEquals(new BigDecimal("50.00"), dto.getSubTotal());
+    }
+
+    @Test
+    void lanzaNotFoundAlConsultarElDetalleDeUnaCompraInexistente() {
+        when(compraRepository.existsById(99L)).thenReturn(false);
+
+        assertThrows(NotFoundException.class, () -> service.findDetalleDto(99L, PageRequest.of(0, 5)));
     }
 
     private static MovimientoProducto argThatMovimiento(

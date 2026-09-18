@@ -1,5 +1,6 @@
-import { of } from 'rxjs';
+import { fakeAsync, tick } from '@angular/core/testing';
 import { ComprasComponent } from './compras.component';
+import swal from 'sweetalert2';
 
 describe('ComprasComponent - paginacion', () => {
   let component: ComprasComponent;
@@ -25,34 +26,20 @@ describe('ComprasComponent - paginacion', () => {
 
 describe('ComprasComponent - abrirDetalle', () => {
   let component: ComprasComponent;
-  let compraService: any;
-  let detailCompraService: any;
 
   beforeEach(() => {
-    compraService = { getCompra: jasmine.createSpy('getCompra') };
-    detailCompraService = { abrirModal: jasmine.createSpy('abrirModal') };
-    component = new ComprasComponent(compraService, detailCompraService, { hasRole: () => true } as any);
+    spyOn(swal, 'fire');
+    component = new ComprasComponent(null, null, { hasRole: () => true } as any);
   });
 
-  it('consulta la compra seleccionada y abre el modal de detalle', () => {
-    const compraDetalle: any = { idCompra: 5 };
-    compraService.getCompra.and.returnValue(of(compraDetalle));
+  it('asigna la compra seleccionada para que el modal de detalle cargue su propio detalle', fakeAsync(() => {
+    const compraDto: any = { idCompra: 5 };
 
-    component.abrirDetalle({ idCompra: 5 } as any);
+    component.abrirDetalle(compraDto);
+    tick();
 
-    expect(compraService.getCompra).toHaveBeenCalledWith(5);
-    expect(component.compraSeleccionada).toBe(compraDetalle);
-    expect(component.detalleCargandoId).toBeNull();
-    expect(detailCompraService.abrirModal).toHaveBeenCalled();
-  });
-
-  it('no dispara una nueva consulta de detalle si ya hay una cargando', () => {
-    component.detalleCargandoId = 1;
-
-    component.abrirDetalle({ idCompra: 5 } as any);
-
-    expect(compraService.getCompra).not.toHaveBeenCalled();
-  });
+    expect(component.compraSeleccionada).toBe(compraDto);
+  }));
 });
 
 describe('ComprasComponent - anular', () => {

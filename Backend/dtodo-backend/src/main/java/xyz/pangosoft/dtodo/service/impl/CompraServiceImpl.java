@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import xyz.pangosoft.dtodo.dto.CompraDetalleDocumentoDto;
 import xyz.pangosoft.dtodo.dto.CompraDto;
 import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
 import xyz.pangosoft.dtodo.error.exceptions.NotFoundException;
@@ -58,6 +59,36 @@ public class CompraServiceImpl implements ICompraService {
 			log.error("Error al consultar el listado paginado de compras: {}", e.getMessage());
 			throw new xyz.pangosoft.dtodo.error.exceptions.DataAccessException("Ha ocurrido un error al consultar las compras", e);
 		}
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public Page<CompraDetalleDocumentoDto> findDetalleDto(Long idCompra, Pageable pageable) {
+		if (!compraRepository.existsById(idCompra)) {
+			throw new NotFoundException("La compra con ID " + idCompra + " no existe");
+		}
+		try {
+			return compraRepository.findDetalleDto(idCompra, pageable).map(this::mapDetalleDocumentoDto);
+		} catch (DataAccessException e) {
+			log.error("Error al consultar el detalle de la compra {}: {}", idCompra, e.getMessage());
+			throw new xyz.pangosoft.dtodo.error.exceptions.DataAccessException(
+					"Ha ocurrido un error al consultar el detalle de la compra", e);
+		}
+	}
+
+	private CompraDetalleDocumentoDto mapDetalleDocumentoDto(Object[] fila) {
+		return new CompraDetalleDocumentoDto(
+				((Number) fila[0]).longValue(),
+				((Number) fila[1]).intValue(),
+				(String) fila[2],
+				(String) fila[3],
+				((Number) fila[4]).intValue(),
+				toBigDecimal(fila[5]),
+				toBigDecimal(fila[6]));
+	}
+
+	private BigDecimal toBigDecimal(Object valor) {
+		return valor instanceof BigDecimal ? (BigDecimal) valor : new BigDecimal(valor.toString());
 	}
 
 	@Transactional(readOnly = true)

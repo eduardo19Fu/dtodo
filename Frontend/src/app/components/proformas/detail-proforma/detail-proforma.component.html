@@ -84,7 +84,7 @@
             </div>
             <label class="page-size-control">
               <span>Mostrar</span>
-              <select class="form-control form-control-sm" [ngModel]="pageSize"
+              <select class="form-control form-control-sm page-size-select" [ngModel]="pageSize"
                 (ngModelChange)="cambiarPageSize($event)" aria-label="Líneas por página">
                 <option *ngFor="let opt of pageSizeOptions" [ngValue]="opt">{{opt}}</option>
               </select>

@@ -3,7 +3,6 @@ import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 import { CompraDto } from 'src/app/dtos/compra-dto';
-import { Compra } from 'src/app/models/compra';
 import { AuthService } from 'src/app/services/auth.service';
 import { CompraService } from 'src/app/services/compra.service';
 import { DetailCompraService } from 'src/app/services/compras/detail-compra.service';
@@ -19,8 +18,7 @@ export class ComprasComponent implements OnInit, OnDestroy {
 
   title = 'Compras';
   compras: CompraDto[] = [];
-  compraSeleccionada: Compra;
-  detalleCargandoId: number = null;
+  compraSeleccionada: CompraDto;
   anulandoId: number = null;
   paginaActual = 0;
   totalPaginas = 0;
@@ -100,10 +98,6 @@ export class ComprasComponent implements OnInit, OnDestroy {
   }
 
   abrirDetalle(compra: CompraDto): void {
-    if (this.detalleCargandoId !== null) {
-      return;
-    }
-    this.detalleCargandoId = compra.idCompra;
     Swal.fire({
       toast: true,
       position: 'top-end',
@@ -114,18 +108,9 @@ export class ComprasComponent implements OnInit, OnDestroy {
       customClass: { popup: 'app-loading-toast' },
       didOpen: () => Swal.showLoading()
     });
-    this.compraService.getCompra(compra.idCompra).subscribe(
-      detalle => {
-        this.compraSeleccionada = detalle;
-        this.detalleCargandoId = null;
-        Swal.close();
-        this.detailCompraService.abrirModal();
-      },
-      () => {
-        this.detalleCargandoId = null;
-        Swal.close();
-      }
-    );
+
+    this.compraSeleccionada = null;
+    setTimeout(() => this.compraSeleccionada = compra);
   }
 
   anular(compra: CompraDto): void {

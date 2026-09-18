@@ -1,7 +1,7 @@
 <div class="product-picker-overlay" (click)="cerrarModal()">
   <div class="product-picker-modal" tabindex="-1" role="dialog" aria-modal="true"
     aria-labelledby="nuevo-producto-title" (click)="$event.stopPropagation()">
-    <div class="product-picker-dialog">
+    <div class="product-picker-dialog np-dialog">
       <header class="product-picker-header">
         <div class="modal-heading-icon" aria-hidden="true"><i class="fas fa-box-open"></i></div>
         <div>
@@ -14,84 +14,134 @@
         </button>
       </header>
 
-      <div class="product-picker-body">
+      <div class="product-picker-body np-body">
         <form #nuevoProductoForm="ngForm" class="new-product-form">
-          <div class="form-grid three-columns">
-            <div class="field-group">
-              <label for="np-codigo">C&oacute;digo</label>
-              <input type="text" id="np-codigo" class="form-control" name="codigo"
-                [(ngModel)]="nuevoProducto.codProducto" placeholder="Se genera autom&aacute;ticamente si se deja vac&iacute;o">
-            </div>
 
-            <div class="field-group">
-              <label for="np-nombre">Nombre <span class="required-mark">*</span></label>
-              <input type="text" id="np-nombre" class="form-control" name="nombre"
-                [(ngModel)]="nuevoProducto.nombre" required placeholder="Nombre del producto">
-            </div>
-
-            <div class="field-group">
-              <label for="np-marca">Marca <span class="required-mark">*</span></label>
-              <select id="np-marca" [compareWith]="compararMarca" name="marca" class="form-control"
-                [(ngModel)]="nuevoProducto.marcaProducto">
-                <option [ngValue]="undefined">Seleccionar marca</option>
-                <option *ngFor="let marca of marcas" [ngValue]="marca">{{ marca.marca }}</option>
-              </select>
-            </div>
-
-            <div class="field-group">
-              <label for="np-tipo">Tipo de producto <span class="required-mark">*</span></label>
-              <select id="np-tipo" [compareWith]="compararTipo" name="tipo" class="form-control"
-                [(ngModel)]="nuevoProducto.tipoProducto">
-                <option [ngValue]="undefined">Seleccionar tipo</option>
-                <option *ngFor="let tipo of tipos" [ngValue]="tipo">{{ tipo.tipoProducto }}</option>
-              </select>
-            </div>
-
-            <div class="field-group">
-              <label for="np-precio-compra">Precio de compra <span class="required-mark">*</span></label>
-              <input type="number" id="np-precio-compra" class="form-control" name="precioCompra"
-                [(ngModel)]="nuevoProducto.precioCompra" (blur)="calcularPrecioVenta()" required placeholder="0.00">
-            </div>
-
-            <div class="field-group">
-              <label for="np-ganancia">Ganancia esperada</label>
-              <div class="control-with-suffix">
-                <input type="number" id="np-ganancia" class="form-control" name="porcentajeGanancia"
-                  [(ngModel)]="nuevoProducto.porcentajeGanancia" (blur)="calcularPrecioVenta()" placeholder="0">
-                <span>%</span>
+          <section class="np-section">
+            <div class="np-section-heading">
+              <span class="np-section-mark">01</span>
+              <div>
+                <h5>Identidad del producto</h5>
+                <p>C&oacute;mo se buscar&aacute; y se mostrar&aacute; en el cat&aacute;logo.</p>
               </div>
             </div>
+            <div class="form-grid two-columns">
+              <div class="field-group">
+                <label for="np-codigo">C&oacute;digo</label>
+                <input type="text" id="np-codigo" class="form-control" name="codigo"
+                  [(ngModel)]="nuevoProducto.codProducto" placeholder="Autom&aacute;tico si se deja vac&iacute;o">
+                <small>Se genera autom&aacute;ticamente si no indicas uno.</small>
+              </div>
 
-            <div class="field-group">
-              <label for="np-precio-venta">Precio de venta</label>
-              <input type="number" id="np-precio-venta" class="form-control" name="precioVenta"
-                [(ngModel)]="nuevoProducto.precioVenta" placeholder="0.00">
-            </div>
+              <div class="field-group">
+                <label for="np-nombre">Nombre <span class="required-mark">*</span></label>
+                <input type="text" id="np-nombre" class="form-control" name="nombre"
+                  [(ngModel)]="nuevoProducto.nombre" required placeholder="Nombre del producto">
+              </div>
 
-            <div class="field-group">
-              <label for="np-fecha-ingreso">Fecha de ingreso</label>
-              <input type="date" id="np-fecha-ingreso" class="form-control" name="fechaIngreso"
-                [(ngModel)]="nuevoProducto.fechaIngreso">
-            </div>
+              <div class="field-group">
+                <label for="np-marca">Marca <span class="required-mark">*</span></label>
+                <div class="select-control">
+                  <select id="np-marca" [compareWith]="compararMarca" name="marca" class="form-control"
+                    [(ngModel)]="nuevoProducto.marcaProducto">
+                    <option [ngValue]="undefined">Seleccionar marca</option>
+                    <option *ngFor="let marca of marcas" [ngValue]="marca">{{ marca.marca }}</option>
+                  </select>
+                </div>
+              </div>
 
-            <div class="field-group">
-              <label for="np-link">Sitio web</label>
-              <input type="text" id="np-link" class="form-control" name="link"
-                [(ngModel)]="nuevoProducto.link" placeholder="https://ejemplo.com">
+              <div class="field-group">
+                <label for="np-tipo">Tipo de producto <span class="required-mark">*</span></label>
+                <div class="select-control">
+                  <select id="np-tipo" [compareWith]="compararTipo" name="tipo" class="form-control"
+                    [(ngModel)]="nuevoProducto.tipoProducto">
+                    <option [ngValue]="undefined">Seleccionar tipo</option>
+                    <option *ngFor="let tipo of tipos" [ngValue]="tipo">{{ tipo.tipoProducto }}</option>
+                  </select>
+                </div>
+              </div>
             </div>
+          </section>
 
-            <div class="field-group description-field">
-              <label for="np-descripcion">Descripci&oacute;n</label>
-              <textarea id="np-descripcion" class="form-control" name="descripcion" rows="3"
-                [(ngModel)]="nuevoProducto.descripcion" placeholder="Describe el producto..."></textarea>
+          <section class="np-section">
+            <div class="np-section-heading">
+              <span class="np-section-mark">02</span>
+              <div>
+                <h5>Precios</h5>
+                <p>Define el costo y el margen; el precio de venta se sugiere autom&aacute;ticamente.</p>
+              </div>
             </div>
-          </div>
+            <div class="np-pricing-grid">
+              <div class="field-group">
+                <label for="np-precio-compra">Precio de compra <span class="required-mark">*</span></label>
+                <div class="control-with-prefix">
+                  <span>Q</span>
+                  <input type="number" id="np-precio-compra" class="form-control" name="precioCompra"
+                    [(ngModel)]="nuevoProducto.precioCompra" (blur)="calcularPrecioVenta()" required placeholder="0.00">
+                </div>
+              </div>
+
+              <div class="np-pricing-operator" aria-hidden="true"><i class="fas fa-plus"></i></div>
+
+              <div class="field-group">
+                <label for="np-ganancia">Ganancia esperada</label>
+                <div class="control-with-suffix">
+                  <input type="number" id="np-ganancia" class="form-control" name="porcentajeGanancia"
+                    [(ngModel)]="nuevoProducto.porcentajeGanancia" (blur)="calcularPrecioVenta()" placeholder="0">
+                  <span>%</span>
+                </div>
+              </div>
+
+              <div class="np-pricing-operator" aria-hidden="true"><i class="fas fa-equals"></i></div>
+
+              <div class="field-group np-result-field">
+                <label for="np-precio-venta">Precio de venta sugerido</label>
+                <div class="control-with-prefix np-result-control">
+                  <span>Q</span>
+                  <input type="number" id="np-precio-venta" class="form-control" name="precioVenta"
+                    [(ngModel)]="nuevoProducto.precioVenta" placeholder="0.00">
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="np-section np-section-last">
+            <div class="np-section-heading">
+              <span class="np-section-mark">03</span>
+              <div>
+                <h5>Detalles adicionales</h5>
+                <p>Informaci&oacute;n opcional para complementar la ficha del producto.</p>
+              </div>
+            </div>
+            <div class="form-grid two-columns">
+              <div class="field-group">
+                <label for="np-fecha-ingreso">Fecha de ingreso</label>
+                <input type="date" id="np-fecha-ingreso" class="form-control" name="fechaIngreso"
+                  [(ngModel)]="nuevoProducto.fechaIngreso">
+              </div>
+
+              <div class="field-group">
+                <label for="np-link">Sitio web</label>
+                <input type="text" id="np-link" class="form-control" name="link"
+                  [(ngModel)]="nuevoProducto.link" placeholder="https://ejemplo.com">
+              </div>
+
+              <div class="field-group description-field">
+                <label for="np-descripcion">Descripci&oacute;n</label>
+                <textarea id="np-descripcion" class="form-control" name="descripcion" rows="3"
+                  [(ngModel)]="nuevoProducto.descripcion" placeholder="Describe el producto..."></textarea>
+              </div>
+            </div>
+          </section>
+
         </form>
       </div>
 
       <footer class="product-picker-footer">
-        <button type="button" class="btn btn-outline-secondary" (click)="cerrarModal()">Cancelar</button>
-        <button type="button" class="btn btn-primary" (click)="confirmar()">
+        <button type="button" class="np-cancel" (click)="cerrarModal()">
+          <i class="fas fa-times" aria-hidden="true"></i> Cancelar
+        </button>
+        <button type="button" class="np-submit" (click)="confirmar()">
           <i class="fas fa-plus" aria-hidden="true"></i> Agregar a la compra
         </button>
       </footer>

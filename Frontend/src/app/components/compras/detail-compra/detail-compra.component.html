@@ -22,8 +22,8 @@
             <span class="profile-avatar" aria-hidden="true"><i class="fas fa-truck"></i></span>
             <div class="profile-copy">
               <span class="profile-label">Proveedor</span>
-              <h6>{{compra.proveedor?.nombre}}</h6>
-              <span class="address"><i class="fas fa-store" aria-hidden="true"></i>{{compra.sucursal?.nombre}}</span>
+              <h6>{{compra.proveedor}}</h6>
+              <span class="address"><i class="fas fa-store" aria-hidden="true"></i>{{compra.sucursal}}</span>
             </div>
             <div class="status-badges">
               <span class="status-pill" [ngClass]="compra.estado === 'ACTIVA' ? 'status-active' : 'status-inactive'">
@@ -34,6 +34,13 @@
           </div>
 
           <div class="information-grid">
+            <article class="information-card total-card">
+              <span class="card-icon"><i class="fas fa-coins" aria-hidden="true"></i></span>
+              <div>
+                <span class="information-label">Total</span>
+                <strong>{{compra.total | currency: "Q" : "symbol"}}</strong>
+              </div>
+            </article>
             <article class="information-card">
               <span class="card-icon"><i class="fas fa-file-invoice" aria-hidden="true"></i></span>
               <div>
@@ -59,7 +66,7 @@
               <span class="card-icon"><i class="fas fa-truck-loading" aria-hidden="true"></i></span>
               <div>
                 <span class="information-label">Costo de env&iacute;o</span>
-                <strong>Q{{compra.costoEnvio | number: '1.2-2'}}</strong>
+                <strong>{{compra.costoEnvio | currency: "Q" : "symbol"}}</strong>
               </div>
             </article>
             <article class="information-card">
@@ -86,31 +93,82 @@
               <strong>{{compra.observaciones}}</strong>
             </div>
           </div>
+        </section>
 
-          <table class="table table-sm table-bordered compra-detail-table">
-            <thead>
-              <tr>
-                <th>Producto</th>
-                <th class="text-right">Cantidad</th>
-                <th class="text-right">Precio unitario</th>
-                <th class="text-right">Subtotal</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let item of compra.items">
-                <td>{{item.producto?.nombre}}</td>
-                <td class="text-right">{{item.cantidad}}</td>
-                <td class="text-right">Q{{item.precioUnitario | number: '1.2-2'}}</td>
-                <td class="text-right">Q{{item.subTotal | number: '1.2-2'}}</td>
-              </tr>
-            </tbody>
-            <tfoot>
-              <tr>
-                <td colspan="3" class="text-right"><strong>Total</strong></td>
-                <td class="text-right"><strong>Q{{compra.total | number: '1.2-2'}}</strong></td>
-              </tr>
-            </tfoot>
-          </table>
+        <section class="lines-section">
+          <div class="lines-toolbar">
+            <div class="section-heading">
+              <span class="section-icon"><i class="fas fa-list-ul" aria-hidden="true"></i></span>
+              <div>
+                <strong>Detalle de productos</strong>
+                <small>{{totalElementos}} {{totalElementos === 1 ? 'línea registrada' : 'líneas registradas'}}</small>
+              </div>
+            </div>
+            <label class="page-size-control">
+              <span>Mostrar</span>
+              <select class="form-control form-control-sm page-size-select" [ngModel]="pageSize"
+                (ngModelChange)="cambiarPageSize($event)" aria-label="Líneas por página">
+                <option *ngFor="let opt of pageSizeOptions" [ngValue]="opt">{{opt}}</option>
+              </select>
+            </label>
+          </div>
+
+          <div *ngIf="cargando" class="loading-state">
+            <div class="spinner-border" role="status"><span class="sr-only">Cargando...</span></div>
+            <span>Cargando productos...</span>
+          </div>
+
+          <div *ngIf="!cargando && totalElementos > 0" class="table-shell">
+            <table class="document-lines-table mobile-data-table">
+              <thead>
+                <tr>
+                  <th class="line-column">Fila</th>
+                  <th>Producto</th>
+                  <th class="quantity-column">Cantidad</th>
+                  <th class="money-column">Precio unitario</th>
+                  <th class="money-column">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of items">
+                  <td data-label="Fila"><span class="line-badge">{{item.idDetalle}}</span></td>
+                  <td class="mobile-primary-cell" data-label="Producto"><strong class="product-name">{{item.producto}}</strong></td>
+                  <td class="quantity-cell" data-label="Cantidad">{{item.cantidad}}</td>
+                  <td class="money-cell" data-label="Precio unitario">{{item.precioUnitario | currency: "Q" : "symbol"}}</td>
+                  <td class="money-cell final-amount" data-label="Subtotal">{{item.subTotal | currency: "Q" : "symbol"}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div *ngIf="!cargando && totalElementos === 0" class="empty-state">
+            <i class="fas fa-box-open" aria-hidden="true"></i>
+            <strong>Sin productos registrados</strong>
+            <span>Esta compra todavía no contiene líneas de detalle.</span>
+          </div>
+
+          <div *ngIf="!cargando && totalElementos > 0" class="table-navigation">
+            <span class="pagination-info">
+              Mostrando {{paginaActual * pageSize + 1}} a
+              {{paginaActual * pageSize + items.length}} de {{totalElementos}}
+            </span>
+            <nav *ngIf="totalPaginas > 1" aria-label="Paginación del detalle de compra">
+              <ul class="pagination">
+                <li class="page-item" [ngClass]="{'disabled': isFirst}">
+                  <button class="page-link" type="button" [disabled]="isFirst" (click)="irPaginaAnterior()"
+                    aria-label="Página anterior"><i class="fas fa-angle-left" aria-hidden="true"></i></button>
+                </li>
+                <li class="page-item" *ngFor="let pagina of paginasVisibles"
+                  [ngClass]="{'active': pagina === paginaActual}">
+                  <button class="page-link" type="button" (click)="irAPagina(pagina)">{{pagina + 1}}</button>
+                </li>
+                <li class="page-item" [ngClass]="{'disabled': isLast}">
+                  <button class="page-link" type="button" [disabled]="isLast" (click)="irPaginaSiguiente()"
+                    aria-label="Página siguiente"><i class="fas fa-angle-right" aria-hidden="true"></i></button>
+                </li>
+              </ul>
+            </nav>
+          </div>
         </section>
       </div>
 

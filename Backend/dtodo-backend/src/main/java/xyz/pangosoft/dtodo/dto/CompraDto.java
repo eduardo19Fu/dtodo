@@ -26,4 +26,6 @@ public class CompraDto {
 	private String proveedor;
 	private String sucursal;
 	private String usuario;
+	private String registradoPor;
+	private String observaciones;
 }
