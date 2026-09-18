@@ -22,6 +22,11 @@ describe('ComprasComponent - paginacion', () => {
 
     expect(component.paginasVisibles).toEqual([0, 1, 2, 3, 4]);
   });
+
+  it('presenta el tipo de comprobante con una etiqueta legible', () => {
+    expect(component.formatearTipoComprobante('NOTA_ENVIO')).toBe('Nota de envío');
+    expect(component.formatearTipoComprobante('FACTURA')).toBe('Factura');
+  });
 });
 
 describe('ComprasComponent - abrirDetalle', () => {

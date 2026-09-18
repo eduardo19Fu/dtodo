@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
@@ -8,6 +8,15 @@ import { AuthService } from 'src/app/services/auth.service';
 import { MovimientosProductoService } from '../../services/movimientos/movimientos-producto.service';
 
 import Swal from 'sweetalert2';
+
+interface DiaCalendario {
+  fecha: Date;
+  iso: string;
+  numero: number;
+  mesActual: boolean;
+  esHoy: boolean;
+  etiqueta: string;
+}
 
 @Component({
   selector: 'app-movimientos-producto',
@@ -36,6 +45,15 @@ export class MovimientosProductoComponent implements OnInit, OnDestroy {
   fechaFin: string;
   fechaIniAplicada: string;
   fechaFinAplicada: string;
+  calendarioAbierto = false;
+  selectorFechaActivo: 'inicio' | 'fin' = 'inicio';
+  mesVisible = new Date();
+  diasCalendario: DiaCalendario[] = [];
+  readonly diasSemana: string[] = ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá'];
+  private readonly nombresMes: string[] = [
+    'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+    'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+  ];
   private busquedaSubject = new Subject<string>();
   private busquedaSubscription: Subscription;
 
@@ -50,6 +68,7 @@ export class MovimientosProductoComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.construirCalendario();
     this.cargarMovimientos(0);
 
     this.busquedaSubscription = this.busquedaSubject.pipe(
@@ -135,6 +154,7 @@ export class MovimientosProductoComponent implements OnInit, OnDestroy {
     }
     this.fechaIniAplicada = this.fechaIni;
     this.fechaFinAplicada = this.fechaFin;
+    this.cerrarCalendario();
     this.cargarMovimientos(0);
   }
 
@@ -143,7 +163,155 @@ export class MovimientosProductoComponent implements OnInit, OnDestroy {
     this.fechaFin = null;
     this.fechaIniAplicada = null;
     this.fechaFinAplicada = null;
+    this.cerrarCalendario();
     this.cargarMovimientos(0);
+  }
+
+  abrirCalendario(selector: 'inicio' | 'fin'): void {
+    if (this.calendarioAbierto && this.selectorFechaActivo === selector) {
+      this.cerrarCalendario();
+      return;
+    }
+
+    this.selectorFechaActivo = selector;
+    const fechaSeleccionada = selector === 'inicio' ? this.fechaIni : this.fechaFin;
+    this.mesVisible = fechaSeleccionada ? this.fechaDesdeIso(fechaSeleccionada) : new Date();
+    this.calendarioAbierto = true;
+    this.construirCalendario();
+  }
+
+  cerrarCalendario(): void {
+    this.calendarioAbierto = false;
+  }
+
+  @HostListener('document:keydown.escape')
+  cerrarCalendarioConEscape(): void {
+    this.cerrarCalendario();
+  }
+
+  @HostListener('document:click', ['$event'])
+  cerrarCalendarioAlHacerClickFuera(evento: MouseEvent): void {
+    const elemento = evento.target as HTMLElement;
+    if (this.calendarioAbierto && (!elemento || !elemento.closest('.date-picker-column'))) {
+      this.cerrarCalendario();
+    }
+  }
+
+  cambiarMes(desplazamiento: number): void {
+    this.mesVisible = new Date(
+      this.mesVisible.getFullYear(), this.mesVisible.getMonth() + desplazamiento, 1
+    );
+    this.construirCalendario();
+  }
+
+  mostrarMesActual(): void {
+    this.mesVisible = new Date();
+    this.construirCalendario();
+  }
+
+  seleccionarFecha(dia: DiaCalendario): void {
+    if (this.selectorFechaActivo === 'inicio') {
+      this.fechaIni = dia.iso;
+      if (this.fechaFin && this.fechaFin < this.fechaIni) {
+        this.fechaFin = null;
+      }
+      this.mesVisible = new Date(dia.fecha.getFullYear(), dia.fecha.getMonth(), 1);
+      this.construirCalendario();
+      this.cerrarCalendario();
+      return;
+    }
+
+    this.fechaFin = dia.iso;
+    this.construirCalendario();
+    this.cerrarCalendario();
+  }
+
+  seleccionarRangoRapido(cantidadDias: number): void {
+    const fin = new Date();
+    const inicio = new Date(fin.getFullYear(), fin.getMonth(), fin.getDate() - cantidadDias + 1);
+    this.fechaIni = this.fechaAIso(inicio);
+    this.fechaFin = this.fechaAIso(fin);
+    this.mesVisible = new Date(fin.getFullYear(), fin.getMonth(), 1);
+    this.selectorFechaActivo = 'fin';
+    this.construirCalendario();
+  }
+
+  seleccionarMesActual(): void {
+    const hoy = new Date();
+    this.fechaIni = this.fechaAIso(new Date(hoy.getFullYear(), hoy.getMonth(), 1));
+    this.fechaFin = this.fechaAIso(hoy);
+    this.mesVisible = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+    this.selectorFechaActivo = 'fin';
+    this.construirCalendario();
+  }
+
+  limpiarSeleccionCalendario(): void {
+    this.fechaIni = null;
+    this.fechaFin = null;
+    this.selectorFechaActivo = 'inicio';
+    this.mostrarMesActual();
+  }
+
+  estaEnRango(fecha: string): boolean {
+    return Boolean(this.fechaIni && this.fechaFin && fecha > this.fechaIni && fecha < this.fechaFin);
+  }
+
+  formatearFechaVisible(fecha: string): string {
+    if (!fecha) {
+      return 'Seleccionar fecha';
+    }
+    const partes = fecha.split('-');
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+  }
+
+  get tituloMesVisible(): string {
+    return `${this.nombresMes[this.mesVisible.getMonth()]} de ${this.mesVisible.getFullYear()}`;
+  }
+
+  get resumenRango(): string {
+    if (!this.fechaIni && !this.fechaFin) {
+      return 'Sin fechas seleccionadas';
+    }
+    if (this.fechaIni && !this.fechaFin) {
+      return `Desde ${this.formatearFechaVisible(this.fechaIni)}`;
+    }
+    return `${this.formatearFechaVisible(this.fechaIni)} – ${this.formatearFechaVisible(this.fechaFin)}`;
+  }
+
+  private construirCalendario(): void {
+    const anio = this.mesVisible.getFullYear();
+    const mes = this.mesVisible.getMonth();
+    const primerDia = new Date(anio, mes, 1);
+    const inicioGrilla = new Date(anio, mes, 1 - primerDia.getDay());
+    const hoy = this.fechaAIso(new Date());
+    const dias: DiaCalendario[] = [];
+
+    for (let indice = 0; indice < 42; indice++) {
+      const fecha = new Date(
+        inicioGrilla.getFullYear(), inicioGrilla.getMonth(), inicioGrilla.getDate() + indice
+      );
+      const iso = this.fechaAIso(fecha);
+      dias.push({
+        fecha,
+        iso,
+        numero: fecha.getDate(),
+        mesActual: fecha.getMonth() === mes,
+        esHoy: iso === hoy,
+        etiqueta: `${fecha.getDate()} de ${this.nombresMes[fecha.getMonth()]} de ${fecha.getFullYear()}`
+      });
+    }
+    this.diasCalendario = dias;
+  }
+
+  private fechaAIso(fecha: Date): string {
+    const mes = (`0${fecha.getMonth() + 1}`).slice(-2);
+    const dia = (`0${fecha.getDate()}`).slice(-2);
+    return `${fecha.getFullYear()}-${mes}-${dia}`;
+  }
+
+  private fechaDesdeIso(fecha: string): Date {
+    const partes = fecha.split('-').map(valor => Number(valor));
+    return new Date(partes[0], partes[1] - 1, partes[2]);
   }
 
   abrirModalReporte(): void {

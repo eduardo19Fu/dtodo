@@ -30,6 +30,10 @@ export class CompraService {
     return this.http.get(`${this.url}/compras/listado`, { params });
   }
 
+  getTotalCompras(): Observable<number> {
+    return this.http.get<number>(`${this.url}/compras/cantidad-compras`);
+  }
+
   getCompra(id: number): Observable<Compra> {
     return this.http.get<Compra>(`${this.url}/compras/${id}`).pipe(
       catchError(e => {

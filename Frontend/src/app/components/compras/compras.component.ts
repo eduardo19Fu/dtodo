@@ -3,6 +3,7 @@ import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 import { CompraDto } from 'src/app/dtos/compra-dto';
+import { TipoComprobanteCompra } from 'src/app/models/compra';
 import { AuthService } from 'src/app/services/auth.service';
 import { CompraService } from 'src/app/services/compra.service';
 import { DetailCompraService } from 'src/app/services/compras/detail-compra.service';
@@ -86,6 +87,18 @@ export class ComprasComponent implements OnInit, OnDestroy {
   irPaginaAnterior(): void { if (!this.isFirst) { this.cargarCompras(this.paginaActual - 1); } }
   irPaginaSiguiente(): void { if (!this.isLast) { this.cargarCompras(this.paginaActual + 1); } }
   irAPagina(pagina: number): void { this.cargarCompras(pagina); }
+
+  formatearTipoComprobante(tipo: TipoComprobanteCompra): string {
+    const etiquetas: Record<TipoComprobanteCompra, string> = {
+      FACTURA: 'Factura',
+      RECIBO: 'Recibo',
+      NOTA_ENVIO: 'Nota de envío',
+      TICKET: 'Ticket',
+      OTRO: 'Otro'
+    };
+
+    return etiquetas[tipo] || tipo;
+  }
 
   get paginasVisibles(): number[] {
     const paginas: number[] = [];

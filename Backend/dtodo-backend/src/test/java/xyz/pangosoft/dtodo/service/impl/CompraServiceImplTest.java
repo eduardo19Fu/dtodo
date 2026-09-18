@@ -62,6 +62,13 @@ class CompraServiceImplTest {
     }
 
     @Test
+    void devuelveElTotalDeComprasRegistradas() {
+        when(compraRepository.count()).thenReturn(8L);
+
+        assertEquals(8L, service.totalCompras());
+    }
+
+    @Test
     void registraUnaCompraConProductoExistenteYGeneraElMovimientoDeCompra() {
         Usuario usuario = usuario();
         Sucursal sucursal = sucursal();

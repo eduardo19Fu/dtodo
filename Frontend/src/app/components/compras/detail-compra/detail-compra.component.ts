@@ -5,6 +5,7 @@ import {
 
 import { CompraDetalleDocumentoDto } from 'src/app/dtos/compra-detalle-documento-dto';
 import { CompraDto } from 'src/app/dtos/compra-dto';
+import { TipoComprobanteCompra } from 'src/app/models/compra';
 import { CompraService } from 'src/app/services/compra.service';
 import { DetailCompraService } from 'src/app/services/compras/detail-compra.service';
 
@@ -90,6 +91,22 @@ export class DetailCompraComponent implements OnChanges, AfterViewInit, OnDestro
       return 'No registrado';
     }
     return this.compra.registradoPor?.trim() || this.compra.usuario || 'No registrado';
+  }
+
+  get tipoComprobanteLegible(): string {
+    if (!this.compra?.tipoComprobante) {
+      return 'Sin tipo especificado';
+    }
+
+    const etiquetas: Record<TipoComprobanteCompra, string> = {
+      FACTURA: 'Factura',
+      RECIBO: 'Recibo',
+      NOTA_ENVIO: 'Nota de envío',
+      TICKET: 'Ticket',
+      OTRO: 'Otro'
+    };
+
+    return etiquetas[this.compra.tipoComprobante] || this.compra.tipoComprobante;
   }
 
   cerrarModal(): void {

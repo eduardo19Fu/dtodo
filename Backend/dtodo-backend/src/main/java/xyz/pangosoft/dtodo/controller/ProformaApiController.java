@@ -98,6 +98,13 @@ public class ProformaApiController {
                 filtro, idUsuario, PageRequest.of(page, size, obtenerOrden(orden, direccion))));
     }
 
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
+    @GetMapping("/proformas/cantidad-proformas")
+    public ResponseEntity<Long> cantidadProformas(
+            @RequestParam(value = "idUsuario", required = false) Integer idUsuario) {
+        return ResponseEntity.ok(proformaService.totalProformas(idUsuario));
+    }
+
     private Sort obtenerOrden(String orden, String direccion) {
         Sort.Direction sentido = "desc".equalsIgnoreCase(direccion)
                 ? Sort.Direction.DESC : Sort.Direction.ASC;

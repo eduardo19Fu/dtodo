@@ -13,6 +13,8 @@ public interface ICompraService {
 
 	public Page<CompraDetalleDocumentoDto> findDetalleDto(Long idCompra, Pageable pageable);
 
+	public Long totalCompras();
+
 	public Compra findById(Long idCompra);
 
 	public Compra crear(Compra compra);

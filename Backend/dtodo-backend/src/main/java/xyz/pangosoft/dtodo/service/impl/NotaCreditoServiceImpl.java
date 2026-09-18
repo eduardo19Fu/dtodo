@@ -121,6 +121,18 @@ public class NotaCreditoServiceImpl implements INotaCreditoService {
 
     @Transactional(readOnly = true)
     @Override
+    public Long totalNotasCredito(Integer idUsuario) {
+        try {
+            return notaCreditoRepository.countByUsuario(idUsuario);
+        } catch (DataAccessException e) {
+            log.error("Error al contar las notas de crédito: {}", e.getMessage());
+            throw new xyz.pangosoft.dtodo.error.exceptions.DataAccessException(
+                    "Ha ocurrido un error al contar las notas de crédito", e);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    @Override
     public Page<NotaCreditoDto> findPorFechas(String fechaIni, String fechaFin,
                                                    String filtro, Integer idUsuario, Pageable pageable) {
         try {

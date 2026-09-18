@@ -589,6 +589,14 @@
 }
 
 .credit-note-page {
+    --blue-950: #4e1939;
+    --blue-900: #64234b;
+    --blue-800: #843164;
+    --blue-700: #993873;
+    --blue-600: #b04486;
+    --blue-500: #c55e9b;
+    --blue-100: #f0d3e4;
+    --blue-50: #fdf7fa;
     max-width: 1500px;
 }
 
@@ -825,8 +833,8 @@
 
 .credit-note-form .form-control:focus {
     background: #fff;
-    border-color: #2784ee;
-    box-shadow: 0 0 0 3px rgba(39, 132, 238, 0.13);
+    border-color: #b04486;
+    box-shadow: 0 0 0 3px rgba(176, 68, 134, 0.14);
     outline: 0;
 }
 
@@ -843,10 +851,10 @@
 
 .credit-note-form .bg-fuchsia {
     align-items: center;
-    background: linear-gradient(135deg, #1268d3, #0b52aa) !important;
+    background: linear-gradient(135deg, #b04486, #843164) !important;
     border: 0;
     border-radius: 9px;
-    box-shadow: 0 6px 14px rgba(18, 104, 211, 0.2);
+    box-shadow: 0 6px 14px rgba(176, 68, 134, 0.22);
     display: inline-flex;
     height: 46px;
     justify-content: center;

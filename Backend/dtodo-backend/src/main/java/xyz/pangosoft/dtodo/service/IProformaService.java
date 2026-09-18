@@ -27,6 +27,8 @@ public interface IProformaService {
 
     Page<ProformaDto> findUltimasListadoDto(String filtro, Integer idUsuario, Pageable pageable);
 
+    Long totalProformas(Integer idUsuario);
+
     Page<DetalleDocumentoDto> findDetalleDto(Long idProforma, Pageable pageable);
 
     DocumentoOrigenNotaDto findOrigenNotaDto(String noProforma);

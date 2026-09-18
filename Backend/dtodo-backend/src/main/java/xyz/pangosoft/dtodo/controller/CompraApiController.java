@@ -46,6 +46,13 @@ public class CompraApiController {
 	}
 
 	@Secured(value = { "ROLE_ADMIN" })
+	@GetMapping(value = "/compras/cantidad-compras")
+	public ResponseEntity<Long> getTotalCompras() {
+		log.info("Obteniendo cantidad de compras");
+		return ResponseEntity.ok(serviceCompra.totalCompras());
+	}
+
+	@Secured(value = { "ROLE_ADMIN" })
 	@GetMapping(value = "/compras/{id}")
 	public ResponseEntity<Compra> getById(@PathVariable("id") Long id) {
 		log.info("Buscando compra con ID: {}", id);

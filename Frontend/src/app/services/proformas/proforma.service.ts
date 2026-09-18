@@ -126,6 +126,12 @@ export class ProformaService {
     );
   }
 
+  getTotalProformas(idUsuario?: number): Observable<number> {
+    const params = idUsuario ? new HttpParams().set('idUsuario', idUsuario.toString()) : new HttpParams();
+    return this.httpClient.get<number>(`${this.url}/proformas/cantidad-proformas`, { params })
+      .pipe(catchError(e => throwError(e)));
+  }
+
   getDetalleProformaDto(idProforma: number, page: number, size: number = 5): Observable<any> {
     const params = new HttpParams().set('size', size.toString());
     return this.httpClient.get<any>(`${this.url}/proformas-dto/${idProforma}/detalle/${page}`, { params }).pipe(

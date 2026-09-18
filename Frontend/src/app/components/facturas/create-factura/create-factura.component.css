@@ -1,13 +1,21 @@
 :host {
-  --fuchsia-800: #99115f;
-  --fuchsia-700: #b51276;
-  --fuchsia-600: #d31791;
-  --fuchsia-500: #e629a7;
-  --fuchsia-100: #f8cfe9;
-  --fuchsia-50: #fff2fa;
+  --fuchsia-800: #8f681c;
+  --fuchsia-700: #a57920;
+  --fuchsia-600: #b78626;
+  --fuchsia-500: #c99a3b;
+  --fuchsia-100: #f1dfb5;
+  --fuchsia-50: #fffaf0;
 }
 
 .invoice-page {
+  --blue-950: #563d0e;
+  --blue-900: #6f4f13;
+  --blue-800: #8f681c;
+  --blue-700: #a57920;
+  --blue-600: #b78626;
+  --blue-500: #c99a3b;
+  --blue-100: #f1dfb5;
+  --blue-50: #fffaf0;
   max-width: 1500px;
 }
 
@@ -103,7 +111,7 @@
 .checkout-cash.field-group .form-control:focus {
   background: #fff;
   border-color: var(--fuchsia-500);
-  box-shadow: 0 0 0 3px rgba(230, 41, 167, 0.13);
+  box-shadow: 0 0 0 3px rgba(183, 134, 38, 0.14);
 }
 
 .checkout-cash .control-with-icon > i {
@@ -160,7 +168,7 @@
   background: linear-gradient(135deg, var(--fuchsia-700), var(--fuchsia-500));
   border: 0;
   border-radius: 9px;
-  box-shadow: 0 7px 16px rgba(211, 23, 145, 0.24);
+  box-shadow: 0 7px 16px rgba(183, 134, 38, 0.24);
   color: #fff;
   cursor: pointer;
   display: inline-flex;
@@ -177,7 +185,7 @@
 
 .checkout-pay-button:not(:disabled):hover,
 .checkout-pay-button:not(:disabled):focus {
-  box-shadow: 0 10px 21px rgba(211, 23, 145, 0.34);
+  box-shadow: 0 10px 21px rgba(183, 134, 38, 0.34);
   color: #fff;
   outline: 0;
   transform: translateY(-1px);
@@ -254,7 +262,7 @@
     background: linear-gradient(135deg, var(--fuchsia-800), var(--fuchsia-500));
     border: 1px solid rgba(255, 255, 255, 0.22);
     border-radius: 11px;
-    box-shadow: 0 9px 24px rgba(153, 17, 95, 0.28);
+    box-shadow: 0 9px 24px rgba(143, 104, 28, 0.28);
     color: #fff;
     display: flex;
     justify-content: space-between;

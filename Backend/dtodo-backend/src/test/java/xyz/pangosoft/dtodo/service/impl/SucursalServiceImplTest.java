@@ -27,6 +27,16 @@ class SucursalServiceImplTest {
     private final SucursalServiceImpl service = new SucursalServiceImpl(repository, estadoService);
 
     @Test
+    void totalSucursalesDevuelveElConteoDelRepositorio() {
+        when(repository.count()).thenReturn(6L);
+
+        Long total = service.totalSucursales();
+
+        assertEquals(6L, total);
+        verify(repository).count();
+    }
+
+    @Test
     void registraUnaSucursalNuevaConEstadoActivo() {
         Estado activo = Estado.builder().idEstado(1).estado("ACTIVO").build();
         Sucursal nueva = Sucursal.builder().nombre("Sucursal Norte").direccion("Km 5").build();

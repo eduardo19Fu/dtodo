@@ -63,6 +63,12 @@ public class CompraServiceImpl implements ICompraService {
 
 	@Transactional(readOnly = true)
 	@Override
+	public Long totalCompras() {
+		return compraRepository.count();
+	}
+
+	@Transactional(readOnly = true)
+	@Override
 	public Page<CompraDetalleDocumentoDto> findDetalleDto(Long idCompra, Pageable pageable) {
 		if (!compraRepository.existsById(idCompra)) {
 			throw new NotFoundException("La compra con ID " + idCompra + " no existe");

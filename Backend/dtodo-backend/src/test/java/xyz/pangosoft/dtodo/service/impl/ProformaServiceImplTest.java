@@ -99,4 +99,24 @@ class ProformaServiceImplTest {
 
         assertTrue(exception.getMessage().contains("fecha"));
     }
+
+    @Test
+    void totalProformasRespetaElUsuarioIndicado() {
+        when(proformaRepository.countByUsuario(12)).thenReturn(4L);
+
+        Long total = service.totalProformas(12);
+
+        assertEquals(4L, total);
+        verify(proformaRepository).countByUsuario(12);
+    }
+
+    @Test
+    void totalProformasSinUsuarioDevuelveElConteoGlobal() {
+        when(proformaRepository.countByUsuario(null)).thenReturn(25L);
+
+        Long total = service.totalProformas(null);
+
+        assertEquals(25L, total);
+        verify(proformaRepository).countByUsuario(null);
+    }
 }

@@ -105,6 +105,18 @@ public class SucursalServiceImpl implements ISucursalService {
 
 	@Transactional(readOnly = true)
 	@Override
+	public Long totalSucursales() {
+		try {
+			return sucursalRepo.count();
+		} catch (DataAccessException e) {
+			log.error("Error al contar las sucursales: {}", e.getMessage());
+			throw new xyz.pangosoft.dtodo.error.exceptions.DataAccessException(
+					"Ha ocurrido un error al contar las sucursales", e);
+		}
+	}
+
+	@Transactional(readOnly = true)
+	@Override
 	public Sucursal findById(Integer idSucursal) {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
 		log.debug("Enter {}", __method);

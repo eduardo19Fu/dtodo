@@ -65,6 +65,7 @@
         <tr>
           <th class="col-id">ID</th>
           <th class="col-fecha">Fecha de compra</th>
+          <th class="col-fecha-registro">Fecha de registro</th>
           <th class="col-comprobante">No. Comprobante</th>
           <th class="col-proveedor">Proveedor</th>
           <th class="col-sucursal">Sucursal</th>
@@ -77,8 +78,15 @@
         <tr *ngFor="let compra of compras">
           <td class="col-id" data-label="ID"><span class="listing-id-pill">#{{compra.idCompra}}</span></td>
           <td class="col-fecha" data-label="Fecha de compra">{{compra.fechaCompra | date: 'dd/MM/yyyy'}}</td>
+          <td class="col-fecha-registro" data-label="Fecha de registro">
+            <span class="fecha-principal">{{compra.fechaRegistro | date: 'dd/MM/yyyy'}}</span>
+            <small class="fecha-hora"><i class="far fa-clock" aria-hidden="true"></i>
+              {{compra.fechaRegistro | date: 'HH:mm'}}</small>
+          </td>
           <td class="col-comprobante" data-label="No. Comprobante">
-            <span class="cell-ellipsis" [title]="compra.noComprobante">{{compra.noComprobante}}</span>
+            <span class="cell-ellipsis comprobante-principal"
+                  [title]="compra.noComprobante">{{compra.noComprobante}}</span>
+            <small class="comprobante-tipo">{{formatearTipoComprobante(compra.tipoComprobante)}}</small>
           </td>
           <td class="col-proveedor" data-label="Proveedor">
             <span class="cell-ellipsis" [title]="compra.proveedor">{{compra.proveedor}}</span>

@@ -177,6 +177,17 @@ public class ProformaServiceImpl implements IProformaService {
         }
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public Long totalProformas(Integer idUsuario) {
+        try {
+            return proformaRepository.countByUsuario(idUsuario);
+        } catch (org.springframework.dao.DataAccessException e) {
+            log.error("Error al contar las proformas: {}", e.getMessage());
+            throw new DataAccessException("Ha ocurrido un error al contar las proformas", e);
+        }
+    }
+
     private boolean coincideFiltro(ProformaDto proforma, String filtro) {
         return contiene(proforma.getCliente(), filtro)
                 || contiene(proforma.getNitCliente(), filtro)

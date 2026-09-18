@@ -19,6 +19,8 @@ public interface INotaCreditoService {
 
     Page<NotaCreditoDto> findPorFechas(String fechaIni, String fechaFin, String filtro, Integer idUsuario, Pageable pageable);
 
+    Long totalNotasCredito(Integer idUsuario);
+
     public NotaCredito findNota(Long idNota);
 
     NotaCreditoDetalleDto findDetalle(Long idNota);

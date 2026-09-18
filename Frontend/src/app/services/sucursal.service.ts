@@ -44,6 +44,10 @@ export class SucursalService {
     return this.http.get(`${this.url}/sucursales/listado`, { params });
   }
 
+  getTotalSucursales(): Observable<number> {
+    return this.http.get<number>(`${this.url}/sucursales/cantidad-sucursales`);
+  }
+
   getSucursal(id: number): Observable<Sucursal> {
     return this.http.get<Sucursal>(`${this.url}/sucursales/${id}`).pipe(
       catchError(e => {

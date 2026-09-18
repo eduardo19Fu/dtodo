@@ -54,6 +54,68 @@
       </a>
     </article>
 
+    <article class="summary-card summary-card-proformas"
+      *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR')">
+      <div class="summary-card-body">
+        <div class="summary-icon" aria-hidden="true"><i class="fas fa-file-alt"></i></div>
+        <div class="summary-content">
+          <p class="summary-label">Proformas</p>
+          <p class="summary-value">{{totalProformas}}</p>
+          <p class="summary-description">
+            {{auth.esSoloCobrador() ? 'Creadas por ti' : 'Registradas en el sistema'}}
+          </p>
+        </div>
+      </div>
+      <a [routerLink]="['/proformas/index']" class="summary-link" aria-label="Ver proformas">
+        <span>Ver proformas</span><i class="fas fa-arrow-right" aria-hidden="true"></i>
+      </a>
+    </article>
+
+    <article class="summary-card summary-card-credit-notes"
+      *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR')">
+      <div class="summary-card-body">
+        <div class="summary-icon" aria-hidden="true"><i class="fas fa-file-invoice"></i></div>
+        <div class="summary-content">
+          <p class="summary-label">Notas de crédito</p>
+          <p class="summary-value">{{totalNotasCredito}}</p>
+          <p class="summary-description">
+            {{auth.esSoloCobrador() ? 'Creadas por ti' : 'Registradas en el sistema'}}
+          </p>
+        </div>
+      </div>
+      <a [routerLink]="['/notas-credito/index']" class="summary-link" aria-label="Ver notas de crédito">
+        <span>Ver notas de crédito</span><i class="fas fa-arrow-right" aria-hidden="true"></i>
+      </a>
+    </article>
+
+    <article class="summary-card summary-card-purchases" *ngIf="auth.hasRole('ROLE_ADMIN')">
+      <div class="summary-card-body">
+        <div class="summary-icon" aria-hidden="true"><i class="fas fa-shopping-basket"></i></div>
+        <div class="summary-content">
+          <p class="summary-label">Compras</p>
+          <p class="summary-value">{{totalCompras}}</p>
+          <p class="summary-description">Compras registradas</p>
+        </div>
+      </div>
+      <a [routerLink]="['/compras/index']" class="summary-link" aria-label="Ver todas las compras">
+        <span>Ver compras</span><i class="fas fa-arrow-right" aria-hidden="true"></i>
+      </a>
+    </article>
+
+    <article class="summary-card summary-card-branches" *ngIf="auth.hasRole('ROLE_ADMIN')">
+      <div class="summary-card-body">
+        <div class="summary-icon" aria-hidden="true"><i class="fas fa-store-alt"></i></div>
+        <div class="summary-content">
+          <p class="summary-label">Sucursales</p>
+          <p class="summary-value">{{totalSucursales}}</p>
+          <p class="summary-description">Registradas en el sistema</p>
+        </div>
+      </div>
+      <a [routerLink]="['/sucursales/index']" class="summary-link" aria-label="Ver todas las sucursales">
+        <span>Ver sucursales</span><i class="fas fa-arrow-right" aria-hidden="true"></i>
+      </a>
+    </article>
+
     <article class="summary-card summary-card-users" *ngIf="auth.hasRole('ROLE_ADMIN')">
       <div class="summary-card-body">
         <div class="summary-icon" aria-hidden="true"><i class="fas fa-users-cog"></i></div>

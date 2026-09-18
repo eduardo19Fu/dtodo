@@ -79,6 +79,12 @@ public class SucursalApiController {
 				filtro, PageRequest.of(page, size, Sort.by(sentido, propiedad))));
 	}
 
+	@Secured(value = {"ROLE_ADMIN"})
+	@GetMapping(value = "/sucursales/cantidad-sucursales")
+	public ResponseEntity<Long> cantidadSucursales() {
+		return ResponseEntity.ok(serviceSucursal.totalSucursales());
+	}
+
 	private String obtenerPropiedadOrden(String orden) {
 		if ("id".equalsIgnoreCase(orden)) {
 			return "idSucursal";

@@ -37,6 +37,32 @@ import static org.mockito.Mockito.when;
 class NotaCreditoServiceImplTest {
 
     @Test
+    void totalNotasCreditoRespetaElUsuarioIndicado() {
+        INotaCreditoRepository repository = mock(INotaCreditoRepository.class);
+        NotaCreditoServiceImpl service = new NotaCreditoServiceImpl(
+                repository, mock(IMovimientoProductoService.class), mock(IUsuarioService.class), mock(DataSource.class));
+        when(repository.countByUsuario(7)).thenReturn(3L);
+
+        Long total = service.totalNotasCredito(7);
+
+        assertEquals(3L, total);
+        verify(repository).countByUsuario(7);
+    }
+
+    @Test
+    void totalNotasCreditoSinUsuarioDevuelveElConteoGlobal() {
+        INotaCreditoRepository repository = mock(INotaCreditoRepository.class);
+        NotaCreditoServiceImpl service = new NotaCreditoServiceImpl(
+                repository, mock(IMovimientoProductoService.class), mock(IUsuarioService.class), mock(DataSource.class));
+        when(repository.countByUsuario(null)).thenReturn(18L);
+
+        Long total = service.totalNotasCredito(null);
+
+        assertEquals(18L, total);
+        verify(repository).countByUsuario(null);
+    }
+
+    @Test
     void propagaElIdUsuarioAlListadoPorFechasParaUnUsuarioNoAdmin() {
         INotaCreditoRepository repository = mock(INotaCreditoRepository.class);
         NotaCreditoServiceImpl service = new NotaCreditoServiceImpl(

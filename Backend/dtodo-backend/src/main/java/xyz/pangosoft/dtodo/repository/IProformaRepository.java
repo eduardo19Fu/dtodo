@@ -18,6 +18,9 @@ import java.util.Optional;
 
 public interface IProformaRepository extends JpaRepository<Proforma, Long> {
 
+    @Query("select count(p) from Proforma p where (:idUsuario is null or p.usuario.idUsuario = :idUsuario)")
+    Long countByUsuario(@Param("idUsuario") Integer idUsuario);
+
     List<Proforma> findAllByFechaEmisionBetween(Date date1, Date date2);
 
     @Query(value = "{call sp_get_proformas(:date1, :date2)}", nativeQuery = true)
