@@ -18,6 +18,8 @@ public interface ISucursalService {
 
 	public Page<SucursalDto> findListado(String filtro, Pageable pageable);
 
+	public Long totalSucursales();
+
 	// Devuelve la sucursal encontrada por su id en la base de datos
 	public Sucursal findById(Integer idSucursal);
 

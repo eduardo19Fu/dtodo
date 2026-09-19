@@ -84,7 +84,7 @@
             </div>
             <label class="page-size-control">
               <span>Mostrar</span>
-              <select class="form-control form-control-sm" [ngModel]="pageSize"
+              <select class="form-control form-control-sm page-size-select" [ngModel]="pageSize"
                 (ngModelChange)="cambiarPageSize($event)" aria-label="Líneas por página">
                 <option *ngFor="let opt of pageSizeOptions" [ngValue]="opt">{{opt}}</option>
               </select>
@@ -154,7 +154,9 @@
 
       <footer class="document-detail-footer">
         <span><i class="fas fa-shield-alt" aria-hidden="true"></i> Información de factura</span>
-        <button (click)="cerrarModal()" type="button" class="btn close-action">Cerrar</button>
+        <button (click)="cerrarModal()" type="button" class="btn close-action">
+          <i class="fas fa-times" aria-hidden="true"></i> Cerrar
+        </button>
       </footer>
     </div>
   </section>

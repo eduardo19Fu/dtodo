@@ -54,7 +54,9 @@ public interface IFacturaService {
 	
 	/********* PDF REPORTS SERVICES ***********/
 	
-	public byte[] resportDailySales(Integer usuario, String fecha);
+	public byte[] resportDailySales(Integer sucursal, Integer usuario, String fechaInicio, String fechaFin);
+
+	public byte[] reportGeneralPolicy(Integer sucursal, String fechaInicio, String fechaFin);
 	
 	public byte[] showBill(Long idfactura) throws JRException, FileNotFoundException, SQLException;
 

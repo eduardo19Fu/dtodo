@@ -14,6 +14,10 @@ import java.util.List;
 
 public interface INotaCreditoRepository extends JpaRepository<NotaCredito, Long> {
 
+    @Query("SELECT count(nc) FROM NotaCredito nc "
+            + "WHERE (:idUsuario is null or nc.usuario.idUsuario = :idUsuario)")
+    Long countByUsuario(@Param("idUsuario") Integer idUsuario);
+
     List<NotaCredito> findNotasByEstado(EstadoNotaCreditoEnum estado);
 
     /**

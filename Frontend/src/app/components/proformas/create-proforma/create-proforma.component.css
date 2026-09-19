@@ -1,4 +1,12 @@
 .proforma-page {
+  --blue-950: #2a3566;
+  --blue-900: #35447e;
+  --blue-800: #43559b;
+  --blue-700: #4d61ad;
+  --blue-600: #5b6fc0;
+  --blue-500: #7183cc;
+  --blue-100: #e3e7f7;
+  --blue-50: #f7f8fd;
   max-width: 1500px;
 }
 
@@ -377,7 +385,7 @@
 .table-control:focus {
   background: #fff;
   border-color: var(--blue-500);
-  box-shadow: 0 0 0 2px rgba(39, 132, 238, 0.12);
+  box-shadow: 0 0 0 2px rgba(91, 111, 192, 0.14);
   outline: 0;
 }
 

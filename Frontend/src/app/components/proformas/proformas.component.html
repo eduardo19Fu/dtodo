@@ -47,26 +47,8 @@
   <form #searchForm="ngForm" (ngSubmit)="buscarPorFechas()">
     <div class="card-body filter-card-body">
       <div class="row align-items-end">
-        <div class="col-lg-4 col-md-6 mb-3 mb-lg-0">
-          <label for="fecha-inicio" class="filter-label">Fecha de inicio</label>
-          <div class="input-group filter-input-group">
-            <div class="input-group-prepend">
-              <span class="input-group-text"><i class="far fa-calendar-alt"></i></span>
-            </div>
-            <input type="date" name="fecha-inicio" id="fecha-inicio" class="form-control"
-                   [(ngModel)]="fechaIni" aria-label="Fecha de inicio">
-          </div>
-        </div>
-        <div class="col-lg-4 col-md-6 mb-3 mb-lg-0">
-          <label for="fecha-fin" class="filter-label">Fecha de fin</label>
-          <div class="input-group filter-input-group">
-            <div class="input-group-prepend">
-              <span class="input-group-text"><i class="far fa-calendar-check"></i></span>
-            </div>
-            <input type="date" name="fecha-fin" id="fecha-fin" class="form-control"
-                   [(ngModel)]="fechaFin" aria-label="Fecha de fin">
-          </div>
-        </div>
+        <app-date-range-picker [(fechaInicio)]="fechaIni" [(fechaFin)]="fechaFin"
+          tema="proformas"></app-date-range-picker>
         <div class="col-lg-4 filter-actions">
           <button type="submit" class="btn filter-button search-button">
             <i class="fas fa-search"></i><span>Buscar</span>

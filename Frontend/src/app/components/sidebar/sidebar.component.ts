@@ -6,7 +6,7 @@ import { filter } from 'rxjs/operators';
 import { Usuario } from '../../models/usuario';
 import { AuthService } from '../../services/auth.service';
 
-type MenuDesplegable = 'productos' | 'facturas';
+type MenuDesplegable = 'productos' | 'facturas' | 'compras';
 
 @Component({
   selector: 'app-sidebar',
@@ -22,6 +22,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   filtro = '';
   productosAbierto = false;
   facturasAbierto = false;
+  comprasAbierto = false;
 
   private routerSubscription: Subscription;
 
@@ -53,20 +54,31 @@ export class SidebarComponent implements OnInit, OnDestroy {
       this.productosAbierto = !this.productosAbierto;
       return;
     }
-    this.facturasAbierto = !this.facturasAbierto;
+    if (menu === 'facturas') {
+      this.facturasAbierto = !this.facturasAbierto;
+      return;
+    }
+    this.comprasAbierto = !this.comprasAbierto;
   }
 
   menuAbierto(menu: MenuDesplegable): boolean {
     if (this.filtroNormalizado) {
       return this.mostrarGrupo(menu);
     }
-    return menu === 'productos' ? this.productosAbierto : this.facturasAbierto;
+    if (menu === 'productos') {
+      return this.productosAbierto;
+    }
+    return menu === 'facturas' ? this.facturasAbierto : this.comprasAbierto;
   }
 
   mostrarGrupo(menu: MenuDesplegable): boolean {
-    return menu === 'productos'
-      ? this.coincide('productos', 'listado', 'marcas', 'categorías', 'categorias')
-      : this.coincide('facturas', 'facturas emitidas', 'correlativos');
+    if (menu === 'productos') {
+      return this.coincide('productos', 'listado', 'marcas', 'categorías', 'categorias');
+    }
+    if (menu === 'facturas') {
+      return this.coincide('facturas', 'facturas emitidas', 'correlativos');
+    }
+    return this.coincide('compras', 'registrar compra', 'proveedores');
   }
 
   coincide(...terminos: string[]): boolean {
@@ -96,6 +108,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     if (!this.filtroNormalizado) {
       this.productosAbierto = url.startsWith('/productos') && !url.includes('/inventario');
       this.facturasAbierto = url.startsWith('/facturas');
+      this.comprasAbierto = url.startsWith('/compras') || url.startsWith('/proveedores');
     }
   }
 }

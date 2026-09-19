@@ -1,0 +1,354 @@
+:host {
+  --np-ink: #2c2438;
+  --np-muted: #7c7288;
+  --np-border: #e6dcee;
+}
+
+.np-dialog {
+  max-width: 900px;
+}
+
+.np-body {
+  background: #f8f9fc;
+  padding: 28px 32px 24px;
+}
+
+.new-product-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.np-section {
+  animation: np-rise 0.5s cubic-bezier(0.16, 0.84, 0.44, 1) both;
+  border-bottom: 1px dashed var(--np-border);
+  padding: 22px 0 26px;
+}
+
+.np-section:first-child {
+  padding-top: 2px;
+}
+
+.np-section:nth-child(1) { animation-delay: 0.02s; }
+.np-section:nth-child(2) { animation-delay: 0.08s; }
+.np-section:nth-child(3) { animation-delay: 0.14s; }
+
+.np-section-last {
+  border-bottom: 0;
+  padding-bottom: 4px;
+}
+
+@keyframes np-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.np-section-heading {
+  align-items: flex-start;
+  display: flex;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.np-section-mark {
+  color: var(--purple-600);
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding-top: 2px;
+  position: relative;
+}
+
+.np-section-mark::after {
+  background: linear-gradient(180deg, var(--purple-600), transparent);
+  bottom: -24px;
+  content: '';
+  height: 16px;
+  left: 6px;
+  position: absolute;
+  width: 1px;
+}
+
+.np-section-heading h5 {
+  color: var(--np-ink);
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 3px;
+}
+
+.np-section-heading p {
+  color: var(--np-muted);
+  font-size: 12px;
+  margin: 0;
+}
+
+.form-grid {
+  display: grid;
+  gap: 20px 22px;
+}
+
+.two-columns {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.field-group label {
+  color: #453a56;
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.1px;
+  margin-bottom: 7px;
+}
+
+.required-mark {
+  color: var(--purple-600);
+}
+
+.field-group small {
+  color: #9a91a8;
+  display: block;
+  font-size: 10.5px;
+  margin-top: 6px;
+}
+
+.field-group .form-control {
+  background-color: #fff;
+  border: 1px solid var(--np-border);
+  border-radius: 9px;
+  color: var(--np-ink);
+  font-size: 13.5px;
+  height: 44px;
+  padding: 9px 13px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.field-group textarea.form-control {
+  height: 92px;
+  line-height: 1.55;
+  padding-top: 11px;
+  resize: vertical;
+}
+
+.field-group .form-control::placeholder {
+  color: #b3a9c2;
+}
+
+.field-group .form-control:focus {
+  border-color: var(--purple-600);
+  box-shadow: 0 0 0 3px rgba(128, 68, 175, 0.14);
+  outline: 0;
+}
+
+.select-control {
+  position: relative;
+}
+
+.select-control select {
+  appearance: none;
+  cursor: pointer;
+  padding-right: 32px;
+}
+
+.select-control::after {
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--purple-600);
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  right: 15px;
+  top: 20px;
+}
+
+.control-with-prefix,
+.control-with-suffix {
+  position: relative;
+}
+
+.control-with-prefix > span,
+.control-with-suffix > span {
+  align-items: center;
+  background: var(--purple-50);
+  color: var(--purple-700);
+  display: flex;
+  font-size: 13px;
+  font-weight: 800;
+  height: 42px;
+  justify-content: center;
+  position: absolute;
+  top: 1px;
+  width: 40px;
+  z-index: 2;
+}
+
+.control-with-prefix > span {
+  border-radius: 8px 0 0 8px;
+  left: 1px;
+}
+
+.control-with-prefix .form-control {
+  padding-left: 49px;
+}
+
+.control-with-suffix > span {
+  border-radius: 0 8px 8px 0;
+  right: 1px;
+}
+
+.control-with-suffix .form-control {
+  padding-right: 49px;
+}
+
+.description-field {
+  grid-column: 1 / -1;
+}
+
+.np-pricing-grid {
+  align-items: end;
+  display: grid;
+  gap: 20px 14px;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1.2fr);
+}
+
+.np-pricing-operator {
+  align-items: center;
+  color: #c3b4d6;
+  display: flex;
+  font-size: 12px;
+  height: 44px;
+  justify-content: center;
+}
+
+.np-result-field {
+  background: #fff;
+  border: 1.5px solid var(--purple-600);
+  border-radius: 11px;
+  box-shadow: 0 0 0 4px var(--purple-50), 0 10px 22px rgba(87, 39, 124, 0.14);
+  padding: 12px 14px 14px;
+  position: relative;
+}
+
+.np-result-field label {
+  align-items: center;
+  color: var(--purple-700);
+  display: flex;
+  gap: 6px;
+}
+
+.np-result-field label::before {
+  content: '\f0e7';
+  font-family: 'Font Awesome 5 Free';
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.np-result-control > span {
+  background: var(--purple-50);
+  color: var(--purple-700);
+}
+
+.np-result-control .form-control {
+  background-color: #fff;
+  border-color: var(--np-border);
+  color: var(--purple-800);
+  font-weight: 700;
+}
+
+.np-result-control .form-control:focus {
+  border-color: var(--purple-600);
+  box-shadow: 0 0 0 3px rgba(128, 68, 175, 0.14);
+}
+
+.product-picker-footer {
+  align-items: center;
+  background: #fff;
+  border-top: 1px solid #e8eeeb;
+  display: flex;
+  flex: 0 0 auto;
+  gap: 10px;
+  justify-content: flex-end;
+  padding: 16px 28px;
+}
+
+.np-cancel,
+.np-submit {
+  align-items: center;
+  border-radius: 9px;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 700;
+  gap: 8px;
+  justify-content: center;
+  min-height: 42px;
+  padding: 9px 18px;
+  transition: box-shadow 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
+}
+
+.np-cancel {
+  background: #fff;
+  border: 1px solid #d7c4e6;
+  color: #6a5580;
+}
+
+.np-cancel:hover,
+.np-cancel:focus {
+  background: var(--purple-50);
+  color: var(--purple-700);
+}
+
+.np-submit {
+  background: linear-gradient(120deg, var(--purple-800), var(--purple-600));
+  border: 0;
+  box-shadow: 0 8px 18px rgba(87, 39, 124, 0.26);
+  color: #fff;
+  min-width: 190px;
+}
+
+.np-submit:hover,
+.np-submit:focus {
+  box-shadow: 0 11px 22px rgba(87, 39, 124, 0.34);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 767px) {
+  .np-dialog {
+    max-width: 100%;
+  }
+
+  .np-body {
+    padding: 20px 18px 16px;
+  }
+
+  .two-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .np-pricing-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .np-pricing-operator {
+    height: auto;
+    padding: 2px 0;
+  }
+
+  .description-field {
+    grid-column: auto;
+  }
+
+  .product-picker-footer {
+    padding: 14px 16px;
+  }
+
+  .np-cancel,
+  .np-submit {
+    flex: 1;
+  }
+}

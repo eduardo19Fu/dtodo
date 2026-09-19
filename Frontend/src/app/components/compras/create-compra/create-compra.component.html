@@ -1,0 +1,316 @@
+<app-modal-buscar-producto *ngIf="modalProductoVisible" (producto)="loadProducto($event)" (cerrar)="cerrarModalProducto()"></app-modal-buscar-producto>
+<app-modal-crear-producto *ngIf="modalNuevoProductoVisible" (producto)="productoNuevoCreado($event)" (cerrar)="cerrarModalNuevoProducto()"></app-modal-crear-producto>
+
+<div class="product-form-page compra-page">
+  <header class="page-heading">
+    <div>
+      <span class="page-eyebrow">Compras</span>
+      <h1>{{ title }}</h1>
+      <p>Registra el ingreso de mercader&iacute;a de un proveedor y actualiza el inventario autom&aacute;ticamente.</p>
+    </div>
+    <div class="heading-icon" aria-hidden="true"><i class="fas fa-shopping-basket"></i></div>
+  </header>
+
+  <form #compraForm="ngForm" class="product-card">
+    <div class="card-hero">
+      <div class="hero-icon" aria-hidden="true"><i class="fas fa-dolly-flatbed"></i></div>
+      <div>
+        <h2>Nueva compra</h2>
+        <p>Los campos marcados con <span aria-hidden="true">*</span> son obligatorios.</p>
+      </div>
+      <span class="status-pill">
+        <i class="fas fa-circle" aria-hidden="true"></i>
+        Nuevo registro
+      </span>
+    </div>
+
+    <div class="form-actions compra-actions sticky-summary">
+      <div class="save-note">
+        <i class="fas fa-shopping-basket" aria-hidden="true"></i>
+        <span>
+          {{ compra.items.length }}
+          {{ compra.items.length === 1 ? 'producto agregado' : 'productos agregados' }}
+        </span>
+      </div>
+
+      <div class="total-summary">
+        <span>Total de la compra</span>
+        <strong>{{ totalCompra | currency: "Q" : "symbol" }}</strong>
+      </div>
+
+      <button type="submit" class="primary-action" (click)="crear()"
+        [disabled]="!compraForm.form.valid || compra.items.length === 0 || guardando">
+        <i class="fas" [ngClass]="guardando ? 'fa-spinner fa-spin' : 'fa-save'" aria-hidden="true"></i>
+        {{ guardando ? 'Guardando...' : 'Guardar compra' }}
+      </button>
+    </div>
+
+    <div class="form-content">
+      <section class="form-section" aria-labelledby="datos-compra-title">
+        <div class="section-heading">
+          <span class="section-number">01</span>
+          <div>
+            <h3 id="datos-compra-title">Datos generales de la compra</h3>
+            <p>Informaci&oacute;n del comprobante y del proveedor.</p>
+          </div>
+        </div>
+
+        <div class="form-grid three-columns">
+          <div class="field-group">
+            <label for="fechaCompra">Fecha de compra <span class="required-mark">*</span></label>
+            <input type="date" id="fechaCompra" name="fechaCompra" class="form-control"
+              [(ngModel)]="compra.fechaCompra" required>
+          </div>
+
+          <div class="field-group">
+            <label for="proveedor">Proveedor <span class="required-mark">*</span></label>
+            <div class="select-control">
+              <i class="fas fa-truck" aria-hidden="true"></i>
+              <select id="proveedor" [compareWith]="compararProveedor" name="proveedor" class="form-control"
+                [(ngModel)]="compra.proveedor" required>
+                <option [ngValue]="undefined">Seleccionar proveedor</option>
+                <option *ngFor="let proveedor of proveedores" [ngValue]="proveedor">{{ proveedor.nombre }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="sucursal">Sucursal <span class="required-mark">*</span></label>
+            <div class="select-control">
+              <i class="fas fa-store" aria-hidden="true"></i>
+              <select id="sucursal" [compareWith]="compararSucursal" name="sucursal" class="form-control"
+                [(ngModel)]="compra.sucursal" required>
+                <option [ngValue]="undefined">Seleccionar sucursal</option>
+                <option *ngFor="let sucursal of sucursales" [ngValue]="sucursal">{{ sucursal.nombre }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="noComprobante">No. de comprobante <span class="required-mark">*</span></label>
+            <input type="text" id="noComprobante" name="noComprobante" class="form-control"
+              [(ngModel)]="compra.noComprobante" required placeholder="Ej. FAC-00123">
+          </div>
+
+          <div class="field-group">
+            <label for="tipoComprobante">Tipo de comprobante <span class="required-mark">*</span></label>
+            <select id="tipoComprobante" name="tipoComprobante" class="form-control"
+              [(ngModel)]="compra.tipoComprobante" required>
+              <option [ngValue]="undefined">Seleccionar tipo</option>
+              <option *ngFor="let tipo of tiposComprobante" [ngValue]="tipo">{{ tipo }}</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label for="costoEnvio">Costo de env&iacute;o</label>
+            <div class="control-with-prefix">
+              <span>Q</span>
+              <input type="number" id="costoEnvio" name="costoEnvio" class="form-control"
+                [(ngModel)]="compra.costoEnvio" min="0" placeholder="0.00">
+            </div>
+          </div>
+
+          <div class="field-group description-field">
+            <label for="observaciones">Observaciones</label>
+            <textarea id="observaciones" name="observaciones" class="form-control" rows="3"
+              [(ngModel)]="compra.observaciones" placeholder="Notas adicionales sobre esta compra..."></textarea>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section last-section" aria-labelledby="detalle-compra-title">
+        <div class="section-heading detail-heading">
+          <span class="section-number">02</span>
+          <div>
+            <h3 id="detalle-compra-title">Detalle de productos</h3>
+            <p>Busca un producto existente por c&oacute;digo o desde el cat&aacute;logo, o registra uno nuevo.</p>
+          </div>
+          <span class="items-count">
+            {{ compra.items.length }}
+            {{ compra.items.length === 1 ? 'producto' : 'productos' }}
+          </span>
+        </div>
+
+        <div class="form-grid add-product-grid compra-add-grid">
+          <div class="field-group">
+            <label for="codigo">C&oacute;digo de producto</label>
+            <div class="inline-search-control compra-search-control">
+              <div class="control-with-icon">
+                <i class="fas fa-barcode" aria-hidden="true"></i>
+                <input type="text" class="form-control" name="codigo" id="codigo"
+                  [(ngModel)]="codigoBusqueda" (keyup.enter)="buscarProductoPorCodigo()"
+                  placeholder="Escanea o escribe el c&oacute;digo">
+              </div>
+              <button type="button" class="inline-search-button" (click)="abrirModalProducto()"
+                aria-label="Buscar producto" title="Buscar producto">
+                <i class="fas fa-search" aria-hidden="true"></i>
+              </button>
+              <button type="button" class="inline-search-button quick-action-new" (click)="abrirModalNuevoProducto()"
+                aria-label="Registrar producto nuevo" title="Registrar producto nuevo">
+                <i class="fas fa-box-open" aria-hidden="true"></i>
+              </button>
+            </div>
+            <small>Presiona Enter para buscar por c&oacute;digo, o usa el buscador / producto nuevo.</small>
+          </div>
+
+          <div class="field-group">
+            <label for="producto-seleccionado">Producto seleccionado</label>
+            <div class="control-with-icon">
+              <i class="fas fa-box" aria-hidden="true"></i>
+              <input type="text" class="form-control" name="producto-seleccionado" id="producto-seleccionado"
+                [value]="productoActual ? productoActual.nombre : ''" disabled
+                placeholder="A&uacute;n no has seleccionado un producto">
+            </div>
+          </div>
+
+          <div class="field-group quantity-field">
+            <div class="quantity-add-control compra-quantity-control">
+              <div class="line-entry-field">
+                <label for="cantidadActual">Cantidad</label>
+                <div class="control-with-icon">
+                  <i class="fas fa-sort-numeric-up" aria-hidden="true"></i>
+                  <input type="number" id="cantidadActual" name="cantidadActual" class="form-control"
+                    [(ngModel)]="cantidadActual" min="1" placeholder="0" (keyup.enter)="agregarLinea()">
+                </div>
+              </div>
+              <div class="line-entry-field">
+                <label for="precioUnitarioActual">Precio unitario</label>
+                <div class="control-with-prefix">
+                  <span>Q</span>
+                  <input type="number" id="precioUnitarioActual" name="precioUnitarioActual" class="form-control"
+                    [(ngModel)]="precioUnitarioActual" min="0.01" placeholder="0.00" (keyup.enter)="agregarLinea()">
+                </div>
+              </div>
+              <button type="button" class="add-line-button" (click)="agregarLinea()" aria-label="Agregar producto"
+                title="Agregar producto">
+                <i class="fas fa-plus" aria-hidden="true"></i>
+                <span>Agregar</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="empty-detail" *ngIf="compra.items.length === 0">
+          <span aria-hidden="true"><i class="fas fa-shopping-basket"></i></span>
+          <h4>A&uacute;n no hay productos</h4>
+          <p>Busca un producto y agr&eacute;galo para comenzar la compra.</p>
+        </div>
+
+        <div class="detail-table-wrapper" *ngIf="compra.items.length > 0">
+          <table class="detail-table compra-detail-table">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio unitario</th>
+                <th>Subtotal</th>
+                <th><span class="sr-only">Acciones</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of compra.items; let i = index">
+                <td data-label="Producto">
+                  <div class="table-product-name">
+                    <span aria-hidden="true"><i class="fas fa-box"></i></span>
+                    <strong>{{ item.producto.nombre }}</strong>
+                  </div>
+                </td>
+                <td data-label="Cantidad">
+                  <div class="detail-value-with-action">
+                    <span class="detail-readonly-value">{{ item.cantidad }}</span>
+                    <button type="button" class="edit-detail-button"
+                      (click)="abrirEdicionDetalle(i, 'cantidad', $event.currentTarget)"
+                      [attr.aria-label]="'Editar cantidad de ' + item.producto.nombre" title="Editar cantidad">
+                      <i class="fas fa-pencil-alt" aria-hidden="true"></i>
+                    </button>
+                  </div>
+                </td>
+                <td data-label="Precio unitario">
+                  <div class="detail-value-with-action">
+                    <span class="detail-readonly-value">Q{{ item.precioUnitario | number: '1.2-2' }}</span>
+                    <button type="button" class="edit-detail-button"
+                      (click)="abrirEdicionDetalle(i, 'precioUnitario', $event.currentTarget)"
+                      [attr.aria-label]="'Editar precio unitario de ' + item.producto.nombre" title="Editar precio unitario">
+                      <i class="fas fa-pencil-alt" aria-hidden="true"></i>
+                    </button>
+                  </div>
+                </td>
+                <td data-label="Subtotal"><strong class="line-total">{{ item.calcularSubTotal() | currency: "Q" : "symbol" }}</strong></td>
+                <td data-label="Acciones" class="detail-action-cell">
+                  <button type="button" class="remove-line-button" (click)="eliminarLinea(item)"
+                    aria-label="Eliminar producto" title="Eliminar producto">
+                    <i class="fas fa-trash-alt" aria-hidden="true"></i>
+                    <span class="remove-line-label">Eliminar producto</span>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </form>
+</div>
+
+<div *ngIf="edicionDetalleAbierta" class="detail-edit-backdrop" (click)="cancelarEdicionDetalle()"
+  (keydown.escape)="cancelarEdicionDetalle()">
+  <section class="detail-edit-dialog" role="dialog" aria-modal="true" aria-labelledby="compra-detail-edit-title"
+    (click)="$event.stopPropagation()">
+    <header class="detail-edit-header">
+      <span class="detail-edit-icon" aria-hidden="true"><i class="fas fa-pencil-alt"></i></span>
+      <div>
+        <span class="detail-edit-eyebrow">Detalle de compra</span>
+        <h3 id="compra-detail-edit-title">{{ tituloEdicionDetalle }}</h3>
+      </div>
+      <button type="button" class="detail-edit-close" (click)="cancelarEdicionDetalle()" aria-label="Cancelar edici&oacute;n">
+        <i class="fas fa-times" aria-hidden="true"></i>
+      </button>
+    </header>
+
+    <div class="detail-edit-body">
+      <p>El cambio se aplicar&aacute; &uacute;nicamente al confirmar.</p>
+      <div class="detail-edit-fields">
+        <div class="detail-edit-field">
+          <label for="compra-valor-detalle-anterior">
+            {{ campoDetalleEdicion === 'cantidad' ? 'Cantidad anterior' : 'Precio unitario anterior' }}
+          </label>
+          <div class="detail-edit-input-wrap compra-edit-input-wrap readonly">
+            <span *ngIf="campoDetalleEdicion === 'precioUnitario'">Q</span>
+            <input id="compra-valor-detalle-anterior" type="number" class="form-control"
+              [value]="valorDetalleAnterior" readonly tabindex="-1">
+          </div>
+        </div>
+
+        <div class="detail-edit-field">
+          <label for="compra-nuevo-valor-detalle">
+            {{ campoDetalleEdicion === 'cantidad' ? 'Cantidad nueva' : 'Precio unitario nuevo' }}
+          </label>
+          <div class="detail-edit-input-wrap compra-edit-input-wrap">
+            <span *ngIf="campoDetalleEdicion === 'precioUnitario'">Q</span>
+            <input id="compra-nuevo-valor-detalle" name="compra-nuevo-valor-detalle" type="number"
+              class="form-control" [(ngModel)]="valorDetalleNuevo"
+              [min]="campoDetalleEdicion === 'cantidad' ? 1 : 0.01"
+              [step]="campoDetalleEdicion === 'cantidad' ? 1 : 0.01" autocomplete="off"
+              (wheel)="evitarCambioConRueda($event)" (keyup.enter)="confirmarEdicionDetalle()">
+          </div>
+        </div>
+      </div>
+
+      <p *ngIf="errorEdicionDetalle" class="detail-edit-error" role="alert">
+        <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+        {{ errorEdicionDetalle }}
+      </p>
+    </div>
+
+    <footer class="detail-edit-actions">
+      <button type="button" class="detail-edit-cancel" (click)="cancelarEdicionDetalle()">
+        <i class="fas fa-times" aria-hidden="true"></i>
+        Cancelar
+      </button>
+      <button type="button" class="detail-edit-confirm" (click)="confirmarEdicionDetalle()">
+        <i class="fas fa-check" aria-hidden="true"></i>
+        Confirmar
+      </button>
+    </footer>
+  </section>
+</div>

@@ -54,6 +54,13 @@ public class NotaCreditoApiController {
                 filtro, idUsuario, PageRequest.of(page, size, obtenerOrden(orden, direccion))));
     }
 
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
+    @GetMapping(value = "/notas-credito/cantidad-notas")
+    public ResponseEntity<Long> cantidadNotasCredito(
+            @RequestParam(value = "idUsuario", required = false) Integer idUsuario) {
+        return ResponseEntity.ok(notaCreditoService.totalNotasCredito(idUsuario));
+    }
+
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @GetMapping(value = "/notas-credito-dto/fechas/{page}")
     public ResponseEntity<Page<NotaCreditoDto>> getNotasPorFechas(

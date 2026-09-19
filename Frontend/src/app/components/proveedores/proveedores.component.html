@@ -1,0 +1,126 @@
+<app-detail-proveedor *ngIf="proveedorSeleccionado" [proveedor]="proveedorSeleccionado"></app-detail-proveedor>
+
+<section class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1>{{title}}</h1>
+        <p class="sucursal-subtitle" *ngIf="auth.usuario?.sucursal">
+          <i class="fas fa-store"></i> {{ auth.usuario.sucursal.nombre }}
+        </p>
+        <br>
+        <a [routerLink]="['/proveedores/create']" class="btn listing-page-action listing-primary-action">
+          <i class="fas fa-plus"></i> Nuevo
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="card listing-card">
+  <div class="card-header listing-card-header">Listado de Proveedores</div>
+  <div class="card-body table-responsive">
+    <div class="row mb-2 align-items-center table-controls">
+      <div class="col-sm-4">
+        <div class="d-inline-flex align-items-center">
+          <label class="mb-0 mr-2">Mostrar</label>
+          <select class="form-control form-control-sm page-size-select"
+                  [ngModel]="pageSize" (ngModelChange)="cambiarPageSize($event)">
+            <option *ngFor="let opt of pageSizeOptions" [ngValue]="opt">{{opt}}</option>
+          </select>
+          <label class="mb-0 ml-2">registros</label>
+        </div>
+      </div>
+      <div class="col-sm-4 text-center">
+        <span *ngIf="proveedores.length > 0" class="info-paginacion">
+          Mostrando registros del <strong>{{paginaActual * pageSize + 1}}</strong>
+          al <strong>{{paginaActual * pageSize + proveedores.length}}</strong>
+          de un total de <strong>{{totalElementos}}</strong> registros
+        </span>
+      </div>
+      <div class="col-sm-4">
+        <div class="listing-search-control float-right search-control">
+          <label class="mb-0 mr-2">B&uacute;squeda:</label>
+          <input type="text" class="form-control form-control-sm" [value]="filtro"
+                 (input)="onBuscar($event.target.value)" placeholder="Nombre o contacto">
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="cargando" class="text-center p-4">
+      <div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div>
+    </div>
+
+    <div *ngIf="!cargando && proveedores.length === 0" class="listing-empty-state">
+      <span class="listing-empty-icon" aria-hidden="true"><i class="fas fa-truck"></i></span>
+      <div class="listing-empty-state-body">
+        <h5>No se encontraron proveedores</h5>
+        <p>No hay resultados para el filtro indicado.</p>
+      </div>
+    </div>
+
+    <table class="table table-hover table-striped table-bordered table-sm mt-0 catalog-table mobile-data-table"
+           *ngIf="!cargando && proveedores.length > 0">
+      <thead>
+        <tr>
+          <th class="col-id">
+            <button type="button" class="sort-header" (click)="ordenarPor('id')">
+              ID <i [class]="iconoOrden('id')"></i>
+            </button>
+          </th>
+          <th class="col-nombre">
+            <button type="button" class="sort-header" (click)="ordenarPor('nombre')">
+              Nombre <i [class]="iconoOrden('nombre')"></i>
+            </button>
+          </th>
+          <th class="col-contacto">Contacto</th>
+          <th class="col-telefono">Tel&eacute;fono</th>
+          <th class="col-pais">Pa&iacute;s</th>
+          <th class="col-estado">Estado</th>
+          <th class="col-opciones">Opciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let proveedor of proveedores">
+          <td class="col-id" data-label="ID"><span class="listing-id-pill">#{{proveedor.idProveedor}}</span></td>
+          <td class="col-nombre mobile-primary-cell" data-label="Nombre">
+            <span class="cell-ellipsis" [title]="proveedor.nombre">{{proveedor.nombre}}</span>
+          </td>
+          <td class="col-contacto" data-label="Contacto">
+            <span class="cell-ellipsis" [title]="proveedor.contacto">{{proveedor.contacto || 'No registrado'}}</span>
+          </td>
+          <td class="col-telefono" data-label="Tel&eacute;fono">{{proveedor.telefonoEntidad || proveedor.telefonoContacto || '-'}}</td>
+          <td class="col-pais" data-label="Pa&iacute;s">{{proveedor.pais || 'No registrado'}}</td>
+          <td class="col-estado" data-label="Estado">
+            <span class="listing-status-pill"
+                  [ngClass]="proveedor.estado === 'ACTIVO' ? 'listing-status-success' : 'listing-status-danger'">{{proveedor.estado}}</span>
+          </td>
+          <td class="col-opciones mobile-actions-cell" data-label="Opciones">
+            <div class="action-buttons">
+              <button class="btn btn-sm listing-table-action listing-action-view" type="button"
+                      appTooltip="Ver detalle del proveedor" aria-label="Ver detalle del proveedor"
+                      (click)="abrirDetalle(proveedor)">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button class="btn btn-sm listing-table-action listing-action-edit" type="button"
+                      appTooltip="Editar proveedor" aria-label="Editar proveedor"
+                      [routerLink]="['/proveedores/create', proveedor.idProveedor]">
+                <i class="fas fa-edit"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <nav class="listing-pagination" *ngIf="!cargando && proveedores.length > 0" aria-label="Paginaci&oacute;n de proveedores">
+      <ul class="pagination justify-content-center mt-3 mb-0">
+        <li class="page-item" [ngClass]="{'disabled': isFirst}"><a class="page-link" href="javascript:void(0)" (click)="irPrimeraPagina()"><i class="fas fa-angle-double-left"></i></a></li>
+        <li class="page-item" [ngClass]="{'disabled': isFirst}"><a class="page-link" href="javascript:void(0)" (click)="irPaginaAnterior()"><i class="fas fa-angle-left"></i></a></li>
+        <li class="page-item" *ngFor="let pagina of paginasVisibles" [ngClass]="{'active': pagina === paginaActual}"><a class="page-link" href="javascript:void(0)" (click)="irAPagina(pagina)">{{pagina + 1}}</a></li>
+        <li class="page-item" [ngClass]="{'disabled': isLast}"><a class="page-link" href="javascript:void(0)" (click)="irPaginaSiguiente()"><i class="fas fa-angle-right"></i></a></li>
+        <li class="page-item" [ngClass]="{'disabled': isLast}"><a class="page-link" href="javascript:void(0)" (click)="irUltimaPagina()"><i class="fas fa-angle-double-right"></i></a></li>
+      </ul>
+    </nav>
+  </div>
+</div>

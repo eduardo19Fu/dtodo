@@ -1,3 +1,12 @@
+:host {
+    --product-accent: #2783b7;
+    --product-dark: #1c688f;
+    --product-tint: #e5f3f8;
+}
+
+.sucursal-subtitle i,
+.spinner-border { color: var(--product-accent); }
+
 .info-paginacion {
     color: #6c757d;
     font-size: 0.9rem;
@@ -148,8 +157,8 @@
 }
 
 .import-inventory-select:focus {
-    border-color: #0d6efd;
-    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+    border-color: #2783b7;
+    box-shadow: 0 0 0 3px rgba(39, 131, 183, 0.15);
     outline: 0;
 }
 
@@ -232,4 +241,72 @@
     margin: 0;
     padding: 0;
     width: 38px;
+}
+
+.btn.listing-primary-action {
+    background: linear-gradient(135deg, var(--product-accent), var(--product-dark));
+    border-color: var(--product-accent);
+    box-shadow: 0 6px 15px rgba(28, 104, 143, 0.23);
+}
+
+.btn.listing-primary-action:hover,
+.btn.listing-primary-action:focus {
+    background: linear-gradient(135deg, #3291c2, var(--product-dark));
+    border-color: var(--product-accent);
+    box-shadow: 0 9px 19px rgba(28, 104, 143, 0.33);
+}
+
+.btn.listing-secondary-action {
+    border-color: #a9ccdc;
+    color: var(--product-dark);
+}
+
+.btn.listing-secondary-action:hover,
+.btn.listing-secondary-action:focus {
+    background: var(--product-tint);
+    border-color: #78afc7;
+    box-shadow: 0 6px 14px rgba(28, 104, 143, 0.15);
+    color: #155675;
+}
+
+.listing-search-control .form-control:focus,
+select.page-size-select:focus,
+.import-inventory-select:focus,
+.stock-input:focus {
+    border-color: var(--product-accent);
+    box-shadow: 0 0 0 3px rgba(39, 131, 183, 0.15);
+}
+
+.listing-id-pill,
+.empty-state-icon-info {
+    background: var(--product-tint);
+    color: var(--product-dark);
+}
+
+.btn.listing-action-view,
+.btn.listing-action-edit {
+    color: var(--product-dark);
+}
+
+.btn.listing-action-view:not(:disabled):hover,
+.btn.listing-action-view:not(:disabled):focus,
+.btn.listing-action-edit:not(:disabled):hover,
+.btn.listing-action-edit:not(:disabled):focus {
+    background: var(--product-dark);
+    border-color: var(--product-dark);
+    color: #fff;
+}
+
+.listing-pagination .page-item:not(.active):not(.disabled) .page-link:hover,
+.listing-pagination .page-item:not(.active):not(.disabled) .page-link:focus {
+    background: var(--product-tint);
+    border-color: #9dc6d8;
+    box-shadow: 0 4px 10px rgba(28, 104, 143, 0.13);
+    color: var(--product-dark);
+}
+
+.listing-pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, var(--product-accent), var(--product-dark));
+    border-color: var(--product-accent);
+    box-shadow: 0 6px 13px rgba(28, 104, 143, 0.27);
 }

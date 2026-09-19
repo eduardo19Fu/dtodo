@@ -1,3 +1,49 @@
+.sucursal-subtitle i { color: #2783b7; }
+
+:host {
+  --catalog-accent: #2783b7;
+  --catalog-dark: #1c688f;
+  --catalog-tint: #e5f3f8;
+}
+
+.btn.listing-primary-action {
+  background: linear-gradient(135deg, var(--catalog-accent), var(--catalog-dark));
+  border-color: var(--catalog-accent);
+  box-shadow: 0 6px 15px rgba(28, 104, 143, 0.23);
+}
+.btn.listing-primary-action:hover,
+.btn.listing-primary-action:focus {
+  background: linear-gradient(135deg, #3291c2, var(--catalog-dark));
+  border-color: var(--catalog-accent);
+  box-shadow: 0 9px 19px rgba(28, 104, 143, 0.33);
+}
+.listing-search-control .form-control:focus,
+select.page-size-select:focus {
+  border-color: var(--catalog-accent);
+  box-shadow: 0 0 0 3px rgba(39, 131, 183, 0.15);
+}
+.listing-id-pill,
+.listing-empty-icon { background: var(--catalog-tint); color: var(--catalog-dark); }
+.btn.listing-action-edit { color: var(--catalog-dark); }
+.btn.listing-action-edit:not(:disabled):hover,
+.btn.listing-action-edit:not(:disabled):focus {
+  background: var(--catalog-dark);
+  border-color: var(--catalog-dark);
+  color: #fff;
+}
+.listing-pagination .page-item:not(.active):not(.disabled) .page-link:hover,
+.listing-pagination .page-item:not(.active):not(.disabled) .page-link:focus {
+  background: var(--catalog-tint);
+  border-color: #9dc6d8;
+  box-shadow: 0 4px 10px rgba(28, 104, 143, 0.13);
+  color: var(--catalog-dark);
+}
+.listing-pagination .page-item.active .page-link {
+  background: linear-gradient(135deg, var(--catalog-accent), var(--catalog-dark));
+  border-color: var(--catalog-accent);
+  box-shadow: 0 6px 13px rgba(28, 104, 143, 0.27);
+}
+
 .info-paginacion { color: #6c757d; font-size: 0.9rem; }
 .pagination .page-link { cursor: pointer; }
 .pagination .page-item.disabled .page-link { cursor: not-allowed; }

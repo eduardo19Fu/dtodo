@@ -35,6 +35,7 @@ import { MovimientosProductoComponent } from './components/movimientos-producto/
 import { CreateMovimientoComponent } from './components/movimientos-producto/create-movimiento/create-movimiento.component';
 import { BusquedaMovimientosComponent } from './components/movimientos-producto/busqueda-movimientos/busqueda-movimientos.component';
 import { PolizaIndividualComponent } from './components/facturas/poliza-individual/poliza-individual.component';
+import { PolizaGeneralComponent } from './components/facturas/poliza-general/poliza-general.component';
 import { ModalBuscarProductoComponent } from './components/facturas/create-factura/modal-buscar-producto/modal-buscar-producto.component';
 import { ModalBuscarClienteComponent } from './components/facturas/create-factura/modal-buscar-cliente/modal-buscar-cliente.component';
 import { ModalBuscarProductoMovimientoComponent } from './components/movimientos-producto/create-movimiento/modal-buscar-producto-movimiento/modal-buscar-producto-movimiento.component';
@@ -50,7 +51,15 @@ import { ExportarProductosComponent } from './components/productos/exportar-prod
 import { SucursalesComponent } from './components/sucursales/sucursales.component';
 import { CreateSucursalComponent } from './components/sucursales/create-sucursal/create-sucursal.component';
 import { DetailSucursalComponent } from './components/sucursales/detail-sucursal/detail-sucursal.component';
+import { ProveedoresComponent } from './components/proveedores/proveedores.component';
+import { CreateProveedorComponent } from './components/proveedores/create-proveedor/create-proveedor.component';
+import { DetailProveedorComponent } from './components/proveedores/detail-proveedor/detail-proveedor.component';
+import { ComprasComponent } from './components/compras/compras.component';
+import { CreateCompraComponent } from './components/compras/create-compra/create-compra.component';
+import { DetailCompraComponent } from './components/compras/detail-compra/detail-compra.component';
+import { ModalCrearProductoComponent } from './components/compras/create-compra/modal-crear-producto/modal-crear-producto.component';
 import { TooltipDirective } from './directives/tooltip.directive';
+import { DateRangePickerComponent } from './components/shared/date-range-picker/date-range-picker.component';
 
 @NgModule({
   declarations: [
@@ -82,6 +91,7 @@ import { TooltipDirective } from './directives/tooltip.directive';
     CreateMovimientoComponent,
     BusquedaMovimientosComponent,
     PolizaIndividualComponent,
+    PolizaGeneralComponent,
     ModalBuscarProductoComponent,
     ModalBuscarClienteComponent,
     ModalBuscarProductoMovimientoComponent,
@@ -97,7 +107,15 @@ import { TooltipDirective } from './directives/tooltip.directive';
     SucursalesComponent,
     CreateSucursalComponent,
     DetailSucursalComponent,
-    TooltipDirective
+    ProveedoresComponent,
+    CreateProveedorComponent,
+    DetailProveedorComponent,
+    ComprasComponent,
+    CreateCompraComponent,
+    DetailCompraComponent,
+    ModalCrearProductoComponent,
+    TooltipDirective,
+    DateRangePickerComponent
   ],
   imports: [
     BrowserModule,

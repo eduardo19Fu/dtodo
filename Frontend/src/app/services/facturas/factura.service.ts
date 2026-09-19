@@ -194,15 +194,48 @@ export class FacturaService {
     );
   }
 
-  getSellsDaillyReportPDF(cajero: number, fecha: Date): Observable<any> {
+  getSellsDaillyReportPDF(
+    sucursal: number,
+    usuario: number,
+    fechaInicio: string,
+    fechaFin: string
+  ): Observable<any> {
     const headers = new HttpHeaders();
     headers.append('Accept', 'application/pdf');
-    const requestOptions: any = { headers, responseType: 'blob' };
+    const params = new HttpParams()
+      .set('sucursal', sucursal.toString())
+      .set('usuario', usuario.toString())
+      .set('fechaInicio', fechaInicio)
+      .set('fechaFin', fechaFin);
+    const requestOptions: any = { headers, params, responseType: 'blob' };
 
-    return this.http.get<any>(`${this.url}/facturas/daily-sales?usuario=${cajero}&fecha=${fecha.toString()}`, requestOptions).pipe(
+    return this.http.get<any>(`${this.url}/facturas/daily-sales`, requestOptions).pipe(
       map((response: any) => {
         return {
           filename: 'poliza.pdf',
+          data: new Blob([response], { type: 'application/pdf' })
+        };
+      }),
+      catchError(e => {
+        console.log(e);
+        return throwError(e);
+      })
+    );
+  }
+
+  getGeneralPolicyPDF(sucursal: number, fechaInicio: string, fechaFin: string): Observable<any> {
+    const headers = new HttpHeaders();
+    headers.append('Accept', 'application/pdf');
+    const params = new HttpParams()
+      .set('sucursal', sucursal.toString())
+      .set('fechaInicio', fechaInicio)
+      .set('fechaFin', fechaFin);
+    const requestOptions: any = { headers, params, responseType: 'blob' };
+
+    return this.http.get<any>(`${this.url}/facturas/general-policy`, requestOptions).pipe(
+      map((response: any) => {
+        return {
+          filename: 'poliza-general.pdf',
           data: new Blob([response], { type: 'application/pdf' })
         };
       }),

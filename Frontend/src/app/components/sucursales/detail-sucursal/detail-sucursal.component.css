@@ -1,17 +1,17 @@
 :host {
-  --green-900: #07583f;
-  --green-800: #087453;
-  --green-700: #0b8f65;
-  --green-100: #dff5eb;
-  --green-50: #f2fbf7;
+  --branch-900: #293d4c;
+  --branch-800: #3d576b;
+  --branch-700: #52728a;
+  --branch-100: #dce6ec;
+  --branch-50: #f3f7f9;
   --ink: #243247;
   --muted: #6d7b8f;
-  --border: #dfe7e3;
+  --border: #d7e0e6;
 }
 
 .sucursal-detail-overlay {
   align-items: flex-start;
-  background: rgba(14, 25, 22, 0.72);
+  background: rgba(18, 29, 38, 0.72);
   display: flex;
   inset: 0;
   justify-content: center;
@@ -31,7 +31,7 @@
 .sucursal-detail-content {
   background: #fff;
   border-radius: 18px;
-  box-shadow: 0 24px 70px rgba(5, 43, 31, 0.3);
+  box-shadow: 0 24px 70px rgba(41, 61, 76, 0.3);
   display: flex;
   flex-direction: column;
   max-height: calc(100vh - 56px);
@@ -40,7 +40,7 @@
 
 .sucursal-detail-header {
   align-items: center;
-  background: linear-gradient(135deg, var(--green-900), var(--green-700));
+  background: linear-gradient(135deg, var(--branch-900), var(--branch-700));
   color: #fff;
   display: flex;
   flex: 0 0 auto;
@@ -105,11 +105,11 @@
 }
 
 .sucursal-detail-body {
-  background: #f7faf8;
+  background: #f6f8fa;
   min-height: 0;
   overflow-y: auto;
   padding: 26px 28px;
-  scrollbar-color: #9fc9b7 transparent;
+  scrollbar-color: #a8bbc8 transparent;
   scrollbar-width: thin;
 }
 
@@ -122,8 +122,8 @@
 
 .profile-summary {
   align-items: center;
-  background: linear-gradient(135deg, #f0faf5, #f8fbfa);
-  border: 1px solid #d8e9e1;
+  background: linear-gradient(135deg, var(--branch-50), #fafcfd);
+  border: 1px solid #dce5eb;
   border-radius: 13px;
   display: flex;
   flex-wrap: wrap;
@@ -133,10 +133,10 @@
 
 .profile-avatar {
   align-items: center;
-  background: linear-gradient(135deg, var(--green-800), var(--green-700));
+  background: linear-gradient(135deg, var(--branch-800), var(--branch-700));
   border: 4px solid #fff;
   border-radius: 50%;
-  box-shadow: 0 6px 16px rgba(8, 116, 83, 0.2);
+  box-shadow: 0 6px 16px rgba(61, 87, 107, 0.22);
   color: #fff;
   display: flex;
   flex: 0 0 66px;
@@ -170,7 +170,7 @@
 }
 
 .address {
-  color: var(--green-800);
+  color: var(--branch-800);
   font-size: 12px;
   font-weight: 700;
   overflow-wrap: anywhere;
@@ -213,8 +213,8 @@
 }
 
 .status-principal {
-  background: #e4eefc;
-  color: #1559ad;
+  background: var(--branch-100);
+  color: var(--branch-800);
 }
 
 .information-grid {
@@ -226,8 +226,8 @@
 
 .information-card {
   align-items: center;
-  background: #f8faf9;
-  border: 1px solid #e5ebe8;
+  background: #f8fafb;
+  border: 1px solid #e1e7eb;
   border-radius: 11px;
   display: flex;
   gap: 12px;
@@ -242,9 +242,9 @@
 
 .card-icon {
   align-items: center;
-  background: var(--green-100);
+  background: var(--branch-100);
   border-radius: 9px;
-  color: var(--green-800);
+  color: var(--branch-800);
   display: flex;
   flex: 0 0 38px;
   height: 38px;
@@ -280,7 +280,7 @@
 .sucursal-detail-footer {
   align-items: center;
   background: #fff;
-  border-top: 1px solid #e8eeeb;
+  border-top: 1px solid #e4eaee;
   display: flex;
   flex: 0 0 auto;
   justify-content: space-between;
@@ -293,15 +293,15 @@
 }
 
 .sucursal-detail-footer > span i {
-  color: var(--green-700);
+  color: var(--branch-700);
   margin-right: 5px;
 }
 
 .close-action {
   background: #fff;
-  border: 1px solid #cfd9d4;
+  border: 1px solid #cbd7de;
   border-radius: 8px;
-  color: #42544c;
+  color: #425766;
   font-size: 13px;
   font-weight: 700;
   min-width: 92px;
@@ -310,9 +310,9 @@
 
 .close-action:hover,
 .close-action:focus {
-  background: var(--green-50);
-  border-color: #9bc9b5;
-  color: var(--green-900);
+  background: var(--branch-50);
+  border-color: #a8bbc8;
+  color: var(--branch-900);
   outline: 0;
 }
 

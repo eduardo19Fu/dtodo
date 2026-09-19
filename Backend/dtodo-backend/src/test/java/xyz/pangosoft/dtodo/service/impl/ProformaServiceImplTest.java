@@ -85,10 +85,38 @@ class ProformaServiceImplTest {
     }
 
     @Test
-    void exigeUsuarioParaExportarProformas() {
+    void rechazaUsuarioInvalidoParaExportarProformas() {
         BadRequestException exception = assertThrows(BadRequestException.class,
-                () -> service.proformasExcel(null, null, true, null));
+                () -> service.proformasExcel(null, null, true, -1));
 
         assertTrue(exception.getMessage().contains("usuario"));
+    }
+
+    @Test
+    void permiteExportarProformasSinUsuarioEspecificoYExigeRangoDeFechas() {
+        BadRequestException exception = assertThrows(BadRequestException.class,
+                () -> service.proformasExcel(null, null, false, null));
+
+        assertTrue(exception.getMessage().contains("fecha"));
+    }
+
+    @Test
+    void totalProformasRespetaElUsuarioIndicado() {
+        when(proformaRepository.countByUsuario(12)).thenReturn(4L);
+
+        Long total = service.totalProformas(12);
+
+        assertEquals(4L, total);
+        verify(proformaRepository).countByUsuario(12);
+    }
+
+    @Test
+    void totalProformasSinUsuarioDevuelveElConteoGlobal() {
+        when(proformaRepository.countByUsuario(null)).thenReturn(25L);
+
+        Long total = service.totalProformas(null);
+
+        assertEquals(25L, total);
+        verify(proformaRepository).countByUsuario(null);
     }
 }

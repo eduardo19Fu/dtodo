@@ -1,13 +1,13 @@
 :host {
-  --blue-950: #0b1f44;
-  --blue-700: #1557b0;
-  --blue-600: #1769d2;
-  --blue-500: #2784ee;
-  --blue-100: #dcecff;
-  --blue-50: #f3f8ff;
+  --blue-950: #163d2d;
+  --blue-700: #2d7153;
+  --blue-600: #3b8c68;
+  --blue-500: #55a77f;
+  --blue-100: #dceee5;
+  --blue-50: #f1f8f4;
   --ink: #17233b;
   --muted: #6c7890;
-  --border: #dce4ef;
+  --border: #d7e5dd;
   display: block;
 }
 
@@ -20,13 +20,13 @@
 .page-heading h1 { color: var(--ink); font-size: 32px; font-weight: 700; letter-spacing: -0.7px; margin: 0 0 4px; }
 .page-heading p { color: var(--muted); margin: 0; }
 .heading-icon {
-  align-items: center; background: var(--blue-100); border: 1px solid #c5defc; border-radius: 16px;
+  align-items: center; background: var(--blue-100); border: 1px solid #c6dfd1; border-radius: 16px;
   color: var(--blue-700); display: flex; font-size: 24px; height: 58px; justify-content: center; width: 58px;
 }
 
 .client-card {
-  background: #fff; border: 1px solid rgba(16, 42, 86, 0.08); border-radius: 18px;
-  box-shadow: 0 18px 50px rgba(20, 52, 101, 0.1); overflow: hidden;
+  background: #fff; border: 1px solid rgba(45, 113, 83, 0.1); border-radius: 18px;
+  box-shadow: 0 18px 50px rgba(45, 113, 83, 0.12); overflow: hidden;
 }
 .card-hero {
   align-items: center; background: linear-gradient(120deg, var(--blue-950), var(--blue-700) 65%, var(--blue-500));
@@ -42,13 +42,13 @@
 }
 .card-hero h2 { font-size: 21px; font-weight: 700; margin: 0 0 5px; }
 .card-hero p { color: rgba(255, 255, 255, 0.75); font-size: 13px; margin: 0; }
-.card-hero p span { color: #8fc8ff; font-weight: 700; }
+.card-hero p span { color: #bfe8d3; font-weight: 700; }
 .status-pill {
   align-items: center; background: rgba(255, 255, 255, 0.13); border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 999px; display: flex; font-size: 12px; font-weight: 600; gap: 8px;
   margin-left: auto; padding: 8px 13px; position: relative; z-index: 1;
 }
-.status-pill i { color: #79d5ff; font-size: 7px; }
+.status-pill i { color: #8ed6af; font-size: 7px; }
 
 .form-content { padding: 4px 34px 0; }
 .form-section { border-bottom: 1px solid #edf1f6; padding: 30px 0 32px; }
@@ -71,31 +71,31 @@
 }
 .field-group .form-control::placeholder { color: #9aa6b8; }
 .field-group .form-control:focus {
-  background-color: #fff; border-color: var(--blue-500); box-shadow: 0 0 0 3px rgba(39, 132, 238, 0.13); outline: 0;
+  background-color: #fff; border-color: var(--blue-500); box-shadow: 0 0 0 3px rgba(59, 140, 104, 0.14); outline: 0;
 }
 .field-group small { color: #8a96a9; display: block; font-size: 11px; margin-top: 7px; }
 .control-with-icon { position: relative; }
 .control-with-icon > i {
-  color: #7890ad; font-size: 14px; left: 14px; pointer-events: none; position: absolute; top: 16px; z-index: 2;
+  color: #668c78; font-size: 14px; left: 14px; pointer-events: none; position: absolute; top: 16px; z-index: 2;
 }
 .control-with-icon .form-control { padding-left: 40px; }
 .validation-message { align-items: center; color: #c83e51; display: flex; font-size: 11px; gap: 5px; margin-top: 7px; }
 
 .form-actions {
-  align-items: center; background: #f8fafe; border-top: 1px solid #edf1f6;
+  align-items: center; background: #f6faf8; border-top: 1px solid #e4eee8;
   display: flex; justify-content: space-between; padding: 20px 34px;
 }
 .form-actions p { color: #8490a5; font-size: 11px; margin: 0; }
 .form-actions p i { color: var(--blue-500); margin-right: 5px; }
 .primary-action {
   align-items: center; background: linear-gradient(135deg, var(--blue-700), var(--blue-500)); border: 0;
-  border-radius: 9px; box-shadow: 0 7px 16px rgba(21, 87, 176, 0.25); color: #fff; cursor: pointer;
+  border-radius: 9px; box-shadow: 0 7px 16px rgba(45, 113, 83, 0.25); color: #fff; cursor: pointer;
   display: inline-flex; font-size: 13px; font-weight: 700; gap: 9px; min-height: 44px; padding: 11px 21px;
   transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 .primary-action:hover,
 .primary-action:focus {
-  box-shadow: 0 10px 22px rgba(21, 87, 176, 0.34); color: #fff; outline: 0; transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(45, 113, 83, 0.34); color: #fff; outline: 0; transform: translateY(-1px);
 }
 .primary-action:disabled,
 .primary-action:disabled:hover { box-shadow: none; cursor: not-allowed; opacity: 0.5; transform: none; }

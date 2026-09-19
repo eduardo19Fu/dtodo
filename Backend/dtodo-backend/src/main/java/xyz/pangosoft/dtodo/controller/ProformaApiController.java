@@ -98,6 +98,13 @@ public class ProformaApiController {
                 filtro, idUsuario, PageRequest.of(page, size, obtenerOrden(orden, direccion))));
     }
 
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
+    @GetMapping("/proformas/cantidad-proformas")
+    public ResponseEntity<Long> cantidadProformas(
+            @RequestParam(value = "idUsuario", required = false) Integer idUsuario) {
+        return ResponseEntity.ok(proformaService.totalProformas(idUsuario));
+    }
+
     private Sort obtenerOrden(String orden, String direccion) {
         Sort.Direction sentido = "desc".equalsIgnoreCase(direccion)
                 ? Sort.Direction.DESC : Sort.Direction.ASC;
@@ -232,12 +239,19 @@ public class ProformaApiController {
             @RequestParam(value = "fechaIni", required = false) String fechaIni,
             @RequestParam(value = "fechaFin", required = false) String fechaFin,
             @RequestParam(value = "todas", defaultValue = "false") boolean todas,
-            @RequestParam(value = "idUsuario") Integer idUsuario) {
+            @RequestParam(value = "idUsuario", required = false) Integer idUsuario) {
         log.info("Generando reporte Excel de proformas. Todas: {}, usuario: {}", todas, idUsuario);
         byte[] reporte = proformaService.proformasExcel(fechaIni, fechaFin, todas, idUsuario);
-        String nombreArchivo = todas
-                ? String.format("proformas_usuario_%s_todas.xlsx", idUsuario)
-                : String.format("proformas_usuario_%s_%s_%s.xlsx", idUsuario, fechaIni, fechaFin);
+        String nombreArchivo;
+        if (todas) {
+            nombreArchivo = idUsuario != null
+                    ? String.format("proformas_usuario_%s_todas.xlsx", idUsuario)
+                    : "proformas_todas.xlsx";
+        } else {
+            nombreArchivo = idUsuario != null
+                    ? String.format("proformas_usuario_%s_%s_%s.xlsx", idUsuario, fechaIni, fechaFin)
+                    : String.format("proformas_%s_%s.xlsx", fechaIni, fechaFin);
+        }
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + nombreArchivo)
                 .contentType(MediaType.parseMediaType(

@@ -18,14 +18,15 @@ export class PolizaIndividualComponent implements OnInit, AfterViewInit, OnDestr
 
   title: string;
 
-  fecha: Date;
+  fechaInicio: string;
+  fechaFin: string;
   cerrando = false;
 
   private cierreTimer: ReturnType<typeof setTimeout>;
 
   idCajero: number = null;
   cajeros: Usuario[];
-  generando: boolean = false;
+  generando = false;
 
   // Elegir la sucursal cuyos cajeros se listan (ROLE_ADMIN y ROLE_COBRADOR)
   sucursales: Sucursal[] = [];
@@ -38,6 +39,7 @@ export class PolizaIndividualComponent implements OnInit, AfterViewInit, OnDestr
     private sucursalService: SucursalService
   ) {
     this.title = 'Póliza Individual';
+    this.seleccionarHoy();
   }
 
   ngOnInit(): void {
@@ -66,8 +68,18 @@ export class PolizaIndividualComponent implements OnInit, AfterViewInit, OnDestr
       return;
     }
 
+    if (this.fechaFin < this.fechaInicio) {
+      Swal.fire('Rango de fechas inválido', 'La fecha final no puede ser anterior a la fecha inicial.', 'warning');
+      return;
+    }
+
     this.generando = true;
-    this.facturaService.getSellsDaillyReportPDF(this.idCajero, this.fecha).subscribe(response => {
+    this.facturaService.getSellsDaillyReportPDF(
+      this.idSucursal,
+      this.idCajero,
+      this.fechaInicio,
+      this.fechaFin
+    ).subscribe(response => {
       const url = window.URL.createObjectURL(response.data);
       const a = document.createElement('a');
       document.body.appendChild(a);
@@ -92,6 +104,16 @@ export class PolizaIndividualComponent implements OnInit, AfterViewInit, OnDestr
 
   getCajeros(): void {
     this.usuarioService.getCajeros(this.idSucursal).subscribe(cajeros => this.cajeros = cajeros);
+  }
+
+  seleccionarHoy(): void {
+    const hoy = new Date();
+    const anio = hoy.getFullYear();
+    const mes = (hoy.getMonth() + 1).toString().padStart(2, '0');
+    const dia = hoy.getDate().toString().padStart(2, '0');
+    const fechaHoy = `${anio}-${mes}-${dia}`;
+    this.fechaInicio = fechaHoy;
+    this.fechaFin = fechaHoy;
   }
 
   cerrarModal(): void {

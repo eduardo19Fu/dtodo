@@ -1,3 +1,47 @@
+.sucursal-subtitle i { color: #7f704f; }
+
+:host {
+  --invoice-accent: #7f704f;
+  --invoice-dark: #5c5038;
+  --invoice-tint: #f3efe7;
+}
+
+.primary-action {
+  background: linear-gradient(135deg, var(--invoice-accent), var(--invoice-dark));
+  border-color: var(--invoice-accent);
+  box-shadow: 0 6px 15px rgba(92, 80, 56, 0.23);
+}
+.primary-action:hover,
+.primary-action:focus {
+  box-shadow: 0 9px 19px rgba(92, 80, 56, 0.33);
+}
+.listing-search-control .form-control:focus,
+select.page-size-select:focus {
+  border-color: var(--invoice-accent);
+  box-shadow: 0 0 0 3px rgba(127, 112, 79, 0.15);
+}
+.listing-id-pill,
+.listing-empty-icon { background: var(--invoice-tint); color: var(--invoice-dark); }
+.table-action.action-edit { color: var(--invoice-dark); }
+.table-action.action-edit:not(:disabled):hover,
+.table-action.action-edit:not(:disabled):focus {
+  background: var(--invoice-dark);
+  border-color: var(--invoice-dark);
+  color: #fff;
+}
+.document-pagination .page-item:not(.active):not(.disabled) .page-link:hover,
+.document-pagination .page-item:not(.active):not(.disabled) .page-link:focus {
+  background: var(--invoice-tint);
+  border-color: #d8bd81;
+  box-shadow: 0 4px 10px rgba(92, 80, 56, 0.13);
+  color: var(--invoice-dark);
+}
+.document-pagination .page-item.active .page-link {
+  background: linear-gradient(135deg, var(--invoice-accent), var(--invoice-dark));
+  border-color: var(--invoice-accent);
+  box-shadow: 0 6px 13px rgba(92, 80, 56, 0.27);
+}
+
 .info-paginacion { color: #6c757d; font-size: 0.9rem; }
 .pagination .page-link { cursor: pointer; }
 .pagination .page-item.disabled .page-link { cursor: not-allowed; }

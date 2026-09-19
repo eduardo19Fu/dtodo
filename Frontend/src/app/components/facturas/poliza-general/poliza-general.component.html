@@ -1,0 +1,79 @@
+<div class="report-modal-overlay" [class.report-modal-closing]="cerrando" (click)="cerrarModal()">
+  <div class="policy-report-modal" tabindex="-1" role="dialog" aria-modal="true"
+    aria-labelledby="general-policy-title" (click)="$event.stopPropagation()">
+    <div class="report-modal-dialog policy-report-content">
+      <header class="policy-report-header">
+        <div class="report-heading-icon" aria-hidden="true"><i class="fas fa-users"></i></div>
+        <div class="report-heading-copy">
+          <span>Reportes</span>
+          <h4 class="report-title" id="general-policy-title">Póliza General</h4>
+          <p>Consulta todas las ventas de una sucursal agrupadas por vendedor.</p>
+        </div>
+        <button type="button" class="report-close" (click)="cerrarModal()" aria-label="Cerrar">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+      </header>
+
+      <form #formBusqueda="ngForm" (ngSubmit)="onSubmit()">
+        <div class="policy-report-body">
+          <div class="report-intro">
+            <span class="report-intro-icon" aria-hidden="true"><i class="fas fa-store"></i></span>
+            <div>
+              <strong>Define los datos de la póliza general</strong>
+              <p>Se incluirán todos los vendedores con ventas en el período seleccionado.</p>
+            </div>
+          </div>
+
+          <div class="report-field">
+            <label for="general-poliza-sucursal">Sucursal <span aria-hidden="true">*</span></label>
+            <div class="field-control select-control">
+              <i class="fas fa-store" aria-hidden="true"></i>
+              <select class="form-control" name="sucursal" id="general-poliza-sucursal"
+                [(ngModel)]="idSucursal" required aria-required="true">
+                <option [ngValue]="null" disabled>Selecciona una sucursal</option>
+                <option *ngFor="let sucursal of sucursales" [ngValue]="sucursal.idSucursal">{{ sucursal.nombre }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="report-field-grid date-field-grid">
+            <div class="report-field">
+              <label for="general-poliza-fecha-inicio">Desde <span aria-hidden="true">*</span></label>
+              <div class="field-control date-control">
+                <i class="far fa-calendar-check" aria-hidden="true"></i>
+                <input type="date" class="form-control" name="fechaInicio" id="general-poliza-fecha-inicio"
+                  [(ngModel)]="fechaInicio" [max]="fechaFin" required aria-required="true">
+              </div>
+            </div>
+            <div class="report-field">
+              <label for="general-poliza-fecha-fin">Hasta <span aria-hidden="true">*</span></label>
+              <div class="field-control date-control">
+                <i class="far fa-calendar-check" aria-hidden="true"></i>
+                <input type="date" class="form-control" name="fechaFin" id="general-poliza-fecha-fin"
+                  [(ngModel)]="fechaFin" [min]="fechaInicio" required aria-required="true">
+              </div>
+            </div>
+          </div>
+
+          <button type="button" class="report-today" (click)="seleccionarHoy()" [disabled]="generando">
+            <i class="far fa-calendar-alt" aria-hidden="true"></i> Usar fecha de hoy
+          </button>
+        </div>
+
+        <footer class="policy-report-footer">
+          <span class="required-note"><i class="fas fa-info-circle" aria-hidden="true"></i> Todos los campos son obligatorios</span>
+          <div class="report-actions">
+            <button type="button" class="report-cancel" (click)="cerrarModal()" [disabled]="generando">
+              <i class="fas fa-times" aria-hidden="true"></i> Cancelar
+            </button>
+            <button type="submit" class="report-submit" [disabled]="formBusqueda.form.invalid || generando">
+              <span *ngIf="generando" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              <i *ngIf="!generando" class="fas fa-file-pdf" aria-hidden="true"></i>
+              {{ generando ? 'Generando...' : 'Generar reporte' }}
+            </button>
+          </div>
+        </footer>
+      </form>
+    </div>
+  </div>
+</div>

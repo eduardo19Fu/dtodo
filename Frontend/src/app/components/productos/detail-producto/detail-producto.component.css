@@ -1,9 +1,10 @@
 :host {
-  --green-900: #07583f;
-  --green-800: #087453;
-  --green-700: #0b8f65;
-  --green-100: #dff5eb;
-  --green-50: #f2fbf7;
+  /* Identidad de Productos: azul, alineada con su tarjeta del panel principal. */
+  --green-900: #155675;
+  --green-800: #1c688f;
+  --green-700: #2783b7;
+  --green-100: #e5f3f8;
+  --green-50: #f3fafd;
   --ink: #243247;
   --muted: #6d7b8f;
   --border: #dfe7e3;
@@ -12,7 +13,7 @@
 .product-detail-overlay {
   align-items: flex-start;
   animation: product-detail-overlay-in 180ms ease-out;
-  background: rgba(14, 25, 22, 0.72);
+  background: rgba(15, 23, 42, 0.72);
   display: flex;
   inset: 0;
   justify-content: center;
@@ -41,7 +42,7 @@
 .product-detail-content {
   border: 0;
   border-radius: 18px;
-  box-shadow: 0 24px 70px rgba(5, 43, 31, 0.3);
+  box-shadow: 0 24px 70px rgba(20, 31, 49, 0.3);
   display: flex;
   flex-direction: column;
   max-height: calc(100vh - 56px);
@@ -50,7 +51,7 @@
 
 .product-detail-header {
   align-items: center;
-  background: linear-gradient(135deg, var(--green-900), var(--green-700));
+  background: linear-gradient(135deg, var(--green-900), var(--green-800));
   border: 0;
   color: #fff;
   display: flex;
@@ -118,7 +119,7 @@
   min-height: 0;
   overflow-y: auto;
   padding: 28px;
-  scrollbar-color: #9fc9b7 transparent;
+  scrollbar-color: #9bc8dc transparent;
   scrollbar-width: thin;
 }
 
@@ -266,7 +267,7 @@
 }
 
 .upload-control .custom-file-label::after {
-  background: #edf5f1;
+  background: var(--green-100);
   border-left-color: #d8e2dd;
   color: var(--green-800);
   content: 'Buscar';
@@ -322,7 +323,7 @@
 }
 
 .progress-bar {
-  background: linear-gradient(90deg, var(--green-800), #32b883);
+  background: linear-gradient(90deg, var(--green-800), #52a8d3);
   border-radius: 999px;
 }
 
@@ -350,7 +351,7 @@
 }
 
 .detail-card::before {
-  background: #acd6c4;
+  background: var(--green-700);
   border-radius: 999px;
   content: '';
   height: 3px;
@@ -474,7 +475,7 @@
 .close-action:hover,
 .close-action:focus {
   background: var(--green-50);
-  border-color: #9bc9b5;
+  border-color: var(--green-700);
   color: var(--green-900);
 }
 

@@ -59,6 +59,12 @@ export class NotasCreditoService {
     );
   }
 
+  getTotalNotasCredito(idUsuario?: number): Observable<number> {
+    const params = idUsuario ? new HttpParams().set('idUsuario', idUsuario.toString()) : new HttpParams();
+    return this.httpClient.get<number>(`${this.url}/notas-credito/cantidad-notas`, { params })
+      .pipe(catchError(e => throwError(e)));
+  }
+
   getNotasCreditoPorFechas(page: number, fechaIni: string, fechaFin: string,
                            filtro: string = '', size: number = 5,
                            orden: string = 'fecha', direccion: string = 'desc'): Observable<any> {

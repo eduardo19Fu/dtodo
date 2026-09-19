@@ -37,6 +37,7 @@ export class FacturasComponent implements OnInit, OnDestroy {
   orden = 'fecha';
   direccion: 'asc' | 'desc' = 'desc';
   modalPolizaVisible = false;
+  modalPolizaGeneralVisible = false;
 
   private busquedaSubject = new Subject<string>();
   private busquedaSubscription: Subscription;
@@ -90,7 +91,9 @@ export class FacturasComponent implements OnInit, OnDestroy {
     this.cargarFacturas(0);
   }
 
-  onBuscar(valor: string): void {
+  onBuscar(event: any): void {
+    let valor: string;
+    valor = event.target.value;
     this.busquedaSubject.next(valor);
   }
 
@@ -125,8 +128,8 @@ export class FacturasComponent implements OnInit, OnDestroy {
   }
 
   limpiar(): void {
-    this.fechaIni = null;
-    this.fechaFin = null;
+    this.fechaIni = '';
+    this.fechaFin = '';
     this.filtro = '';
     this.mostrandoUltimas = true;
     this.busquedaRealizada = true;
@@ -139,6 +142,14 @@ export class FacturasComponent implements OnInit, OnDestroy {
 
   cerrarModalPoliza(): void {
     this.modalPolizaVisible = false;
+  }
+
+  abrirModalPolizaGeneral(): void {
+    this.modalPolizaGeneralVisible = true;
+  }
+
+  cerrarModalPolizaGeneral(): void {
+    this.modalPolizaGeneralVisible = false;
   }
 
   ordenarPor(campo: string): void {

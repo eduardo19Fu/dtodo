@@ -1,4 +1,13 @@
 .correlative-form-page {
+  --blue-950: #403829;
+  --blue-900: #514735;
+  --blue-800: #625641;
+  --blue-700: #706248;
+  --blue-600: #7f704f;
+  --blue-500: #96845c;
+  --blue-100: #e7dfcf;
+  --blue-50: #faf8f3;
+  --border: #e3ddd1;
   max-width: 1240px;
 }
 
@@ -12,6 +21,45 @@
 
 .correlative-form-page .form-section {
   padding-bottom: 38px;
+}
+
+.correlative-form-page .heading-icon {
+  background: #f3efe7;
+  border-color: #ded5c3;
+  color: #5c5038;
+}
+
+.correlative-form-page .product-card {
+  border-color: rgba(92, 80, 56, 0.13);
+  box-shadow: 0 18px 50px rgba(92, 80, 56, 0.13);
+}
+
+.correlative-form-page .card-hero p span,
+.correlative-form-page .status-pill i { color: #e4dbc7; }
+
+.correlative-form-page .section-number {
+  background: #faf8f3;
+  border-color: #e7dfcf;
+}
+
+.correlative-form-page .control-with-icon > i { color: #827354; }
+
+.correlative-form-page .field-group .form-control:focus {
+  box-shadow: 0 0 0 3px rgba(127, 112, 79, 0.15);
+}
+
+.correlative-form-page .form-actions {
+  background: #fbfaf7;
+  border-top-color: #ebe6dc;
+}
+
+.correlative-form-page .primary-action {
+  box-shadow: 0 7px 16px rgba(92, 80, 56, 0.27);
+}
+
+.correlative-form-page .primary-action:hover,
+.correlative-form-page .primary-action:focus {
+  box-shadow: 0 10px 22px rgba(92, 80, 56, 0.36);
 }
 
 @media (max-width: 767.98px) {

@@ -1,3 +1,9 @@
+:host {
+  --branch-accent: #52728a;
+  --branch-dark: #3d576b;
+  --branch-tint: #eaf0f4;
+}
+
 .info-paginacion { color: #6c757d; font-size: 0.9rem; }
 .pagination .page-link { cursor: pointer; }
 .pagination .page-item.disabled .page-link { cursor: not-allowed; }
@@ -66,6 +72,69 @@
 .sort-header .fa-sort-up,
 .sort-header .fa-sort-down { color: #fff; }
 .sort-header:focus { outline: 2px solid rgba(255, 255, 255, 0.65); outline-offset: 2px; }
+
+.sucursal-subtitle i,
+.spinner-border {
+  color: var(--branch-accent);
+}
+
+.btn.listing-primary-action {
+  background: linear-gradient(135deg, var(--branch-accent), var(--branch-dark));
+  border-color: var(--branch-accent);
+  box-shadow: 0 6px 15px rgba(61, 87, 107, 0.23);
+}
+
+.btn.listing-primary-action:hover,
+.btn.listing-primary-action:focus {
+  background: linear-gradient(135deg, #5e7e96, var(--branch-dark));
+  border-color: var(--branch-accent);
+  box-shadow: 0 9px 19px rgba(61, 87, 107, 0.33);
+}
+
+.listing-search-control .form-control:focus,
+select.page-size-select:focus {
+  border-color: var(--branch-accent);
+  box-shadow: 0 0 0 3px rgba(82, 114, 138, 0.15);
+}
+
+.listing-id-pill,
+.principal-badge {
+  background: var(--branch-tint);
+  color: var(--branch-dark);
+}
+
+.listing-empty-icon {
+  background: var(--branch-tint);
+  color: var(--branch-dark);
+}
+
+.btn.listing-action-view,
+.btn.listing-action-edit {
+  color: var(--branch-dark);
+}
+
+.btn.listing-action-view:not(:disabled):hover,
+.btn.listing-action-view:not(:disabled):focus,
+.btn.listing-action-edit:not(:disabled):hover,
+.btn.listing-action-edit:not(:disabled):focus {
+  background: var(--branch-dark);
+  border-color: var(--branch-dark);
+  color: #fff;
+}
+
+.listing-pagination .page-item:not(.active):not(.disabled) .page-link:hover,
+.listing-pagination .page-item:not(.active):not(.disabled) .page-link:focus {
+  background: var(--branch-tint);
+  border-color: #a8bbc8;
+  box-shadow: 0 4px 10px rgba(61, 87, 107, 0.13);
+  color: var(--branch-dark);
+}
+
+.listing-pagination .page-item.active .page-link {
+  background: linear-gradient(135deg, var(--branch-accent), var(--branch-dark));
+  border-color: var(--branch-accent);
+  box-shadow: 0 6px 13px rgba(61, 87, 107, 0.27);
+}
 
 @media (max-width: 767.98px) {
   .table-controls > div { margin-bottom: 0.75rem; text-align: left !important; }

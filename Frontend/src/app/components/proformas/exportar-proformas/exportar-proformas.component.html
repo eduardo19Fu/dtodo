@@ -33,7 +33,8 @@
                 <i class="fas fa-user" aria-hidden="true"></i>
                 <select id="export-usuario" name="export-usuario" class="form-control"
                   [(ngModel)]="idUsuario" required>
-                  <option [ngValue]="null" disabled>Selecciona un usuario</option>
+                  <option [ngValue]="null" disabled>Selecciona una opción</option>
+                  <option [ngValue]="TODOS_USUARIOS">Todos los usuarios</option>
                   <option *ngFor="let usuario of usuarios" [ngValue]="usuario.idUsuario">
                     {{ usuario.usuario }}<ng-container *ngIf="usuario.primerNombre || usuario.apellido">
                       — {{ usuario.primerNombre }} {{ usuario.segundoNombre }} {{ usuario.apellido }}
@@ -49,7 +50,7 @@
                 <strong>Rango de fechas</strong>
                 <p>Necesario únicamente para exportar un período específico.</p>
               </div>
-              <span>Opcional para exportación completa</span>
+              <span>Opcional si exportas todo el historial</span>
             </div>
 
             <div class="export-date-grid">
@@ -78,17 +79,19 @@
 
             <div class="export-warning">
               <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
-              <span><strong>Exportación completa</strong> Puede demorar según la cantidad de registros disponibles.</span>
+              <span><strong>Historial completo</strong> Ignora el rango de fechas y exporta todos los registros disponibles; puede demorar según la cantidad.</span>
             </div>
           </div>
 
           <footer class="modal-footer export-footer">
-            <span class="required-note"><i class="fas fa-info-circle" aria-hidden="true"></i> El usuario es obligatorio</span>
+            <span class="required-note"><i class="fas fa-info-circle" aria-hidden="true"></i> Debes seleccionar un usuario o "Todos los usuarios"</span>
             <div class="export-actions">
-              <button type="button" class="export-cancel" (click)="cerrar.emit()">Cancelar</button>
+              <button type="button" class="export-cancel" (click)="cerrar.emit()">
+                <i class="fas fa-times" aria-hidden="true"></i> Cancelar
+              </button>
               <button type="button" class="export-all" [disabled]="!idUsuario"
                 (click)="solicitarExportacionCompleta()">
-                Exportar todas
+                <i class="fas fa-history" aria-hidden="true"></i> Exportar historial completo
               </button>
               <button type="submit" class="export-range" [disabled]="!exportForm.form.valid || !rangoValido">
                 <i class="fas fa-file-excel" aria-hidden="true"></i> Exportar rango

@@ -9,7 +9,7 @@
         <div class="report-heading-copy">
           <span>Reportes</span>
           <h4 class="report-title" id="policy-report-title">{{ title }}</h4>
-          <p>Selecciona el cajero y la fecha que deseas consultar.</p>
+          <p>Selecciona la sucursal, el usuario y el período que deseas consultar.</p>
         </div>
         <button type="button" class="report-close" (click)="cerrarModal()" aria-label="Cerrar">
           <i class="fas fa-times" aria-hidden="true"></i>
@@ -22,49 +22,67 @@
             <span class="report-intro-icon" aria-hidden="true"><i class="fas fa-cash-register"></i></span>
             <div>
               <strong>Define los datos de la póliza</strong>
-              <p>El reporte incluirá las ventas registradas por el cajero durante la fecha seleccionada.</p>
-            </div>
-          </div>
-
-          <div class="report-field sucursal-field" *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR')">
-            <label for="poliza-sucursal">Sucursal</label>
-            <div class="field-control select-control">
-              <i class="fas fa-store" aria-hidden="true"></i>
-              <select class="form-control" name="sucursal" id="poliza-sucursal"
-                [ngModel]="idSucursal" (ngModelChange)="onSucursalChange($event)">
-                <option *ngFor="let sucursal of sucursales" [ngValue]="sucursal.idSucursal">{{ sucursal.nombre }}</option>
-              </select>
+              <p>El reporte incluirá las ventas del usuario y sucursal durante el período seleccionado.</p>
             </div>
           </div>
 
           <div class="report-field-grid">
-            <div class="report-field">
-              <label for="poliza-cajero">Cajero <span aria-hidden="true">*</span></label>
+            <div class="report-field" *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR')">
+              <label for="poliza-sucursal">Sucursal <span aria-hidden="true">*</span></label>
               <div class="field-control select-control">
-                <i class="fas fa-user" aria-hidden="true"></i>
-                <select class="form-control" name="cajero" id="poliza-cajero"
-                  [(ngModel)]="idCajero" required aria-required="true">
-                  <option [ngValue]="null" disabled>Selecciona un cajero</option>
-                  <option *ngFor="let cajero of cajeros" [ngValue]="cajero.idUsuario">{{ cajero.usuario }}</option>
+                <i class="fas fa-store" aria-hidden="true"></i>
+                <select class="form-control" name="sucursal" id="poliza-sucursal"
+                  [ngModel]="idSucursal" (ngModelChange)="onSucursalChange($event)" required aria-required="true">
+                  <option [ngValue]="null" disabled>Selecciona una sucursal</option>
+                  <option *ngFor="let sucursal of sucursales" [ngValue]="sucursal.idSucursal">{{ sucursal.nombre }}</option>
                 </select>
               </div>
             </div>
 
             <div class="report-field">
-              <label for="poliza-fecha">Fecha <span aria-hidden="true">*</span></label>
-              <div class="field-control date-control">
-                <i class="far fa-calendar-check" aria-hidden="true"></i>
-                <input type="date" class="form-control" name="fecha" id="poliza-fecha"
-                  [(ngModel)]="fecha" required aria-required="true">
+              <label for="poliza-cajero">Usuario <span aria-hidden="true">*</span></label>
+              <div class="field-control select-control">
+                <i class="fas fa-user" aria-hidden="true"></i>
+                <select class="form-control" name="cajero" id="poliza-cajero"
+                  [(ngModel)]="idCajero" required aria-required="true">
+                  <option [ngValue]="null" disabled>Selecciona un usuario</option>
+                  <option *ngFor="let cajero of cajeros" [ngValue]="cajero.idUsuario">{{ cajero.usuario }}</option>
+                </select>
               </div>
             </div>
           </div>
+
+          <div class="report-field-grid date-field-grid">
+            <div class="report-field">
+              <label for="poliza-fecha-inicio">Desde <span aria-hidden="true">*</span></label>
+              <div class="field-control date-control">
+                <i class="far fa-calendar-check" aria-hidden="true"></i>
+                <input type="date" class="form-control" name="fechaInicio" id="poliza-fecha-inicio"
+                  [(ngModel)]="fechaInicio" [max]="fechaFin" required aria-required="true">
+              </div>
+            </div>
+
+            <div class="report-field">
+              <label for="poliza-fecha-fin">Hasta <span aria-hidden="true">*</span></label>
+              <div class="field-control date-control">
+                <i class="far fa-calendar-check" aria-hidden="true"></i>
+                <input type="date" class="form-control" name="fechaFin" id="poliza-fecha-fin"
+                  [(ngModel)]="fechaFin" [min]="fechaInicio" required aria-required="true">
+              </div>
+            </div>
+          </div>
+
+          <button type="button" class="report-today" (click)="seleccionarHoy()" [disabled]="generando">
+            <i class="far fa-calendar-alt" aria-hidden="true"></i> Usar fecha de hoy
+          </button>
         </div>
 
         <footer class="policy-report-footer">
-          <span class="required-note"><i class="fas fa-info-circle" aria-hidden="true"></i> Ambos campos son obligatorios</span>
+          <span class="required-note"><i class="fas fa-info-circle" aria-hidden="true"></i> Todos los campos son obligatorios</span>
           <div class="report-actions">
-            <button type="button" class="report-cancel" (click)="cerrarModal()" [disabled]="generando">Cancelar</button>
+            <button type="button" class="report-cancel" (click)="cerrarModal()" [disabled]="generando">
+              <i class="fas fa-times" aria-hidden="true"></i> Cancelar
+            </button>
             <button type="submit" class="report-submit" [disabled]="formBusqueda.form.invalid || generando">
               <span *ngIf="generando" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
               <i *ngIf="!generando" class="fas fa-file-pdf" aria-hidden="true"></i>

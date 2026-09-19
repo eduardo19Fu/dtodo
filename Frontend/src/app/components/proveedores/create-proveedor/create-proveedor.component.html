@@ -1,0 +1,154 @@
+<div class="product-form-page purchase-family-form-page">
+  <header class="page-heading">
+    <div>
+      <span class="page-eyebrow">Proveedores</span>
+      <h1>{{ title }}</h1>
+      <p>Administra los datos de contacto del proveedor para usarlos al registrar compras.</p>
+    </div>
+    <div class="heading-icon" aria-hidden="true"><i class="fas fa-truck"></i></div>
+  </header>
+
+  <form #proveedorForm="ngForm" class="product-card">
+    <div class="card-hero">
+      <div class="hero-icon" aria-hidden="true"><i class="fas fa-industry"></i></div>
+      <div>
+        <h2>{{ esNuevo ? 'Nuevo proveedor' : 'Editar proveedor' }}</h2>
+        <p>Los campos marcados con <span aria-hidden="true">*</span> son obligatorios.</p>
+      </div>
+      <span class="status-pill">
+        <i class="fas fa-circle" aria-hidden="true"></i>
+        {{ esNuevo ? 'Nuevo registro' : 'Edición' }}
+      </span>
+    </div>
+
+    <div class="form-content">
+      <section class="form-section" aria-labelledby="datos-entidad-title">
+        <div class="section-heading">
+          <span class="section-number">01</span>
+          <div>
+            <h3 id="datos-entidad-title">Datos de la entidad</h3>
+            <p>Nombre y ubicaci&oacute;n de la empresa o entidad proveedora.</p>
+          </div>
+        </div>
+
+        <div class="form-grid three-columns">
+          <div class="field-group">
+            <label for="nombre">Nombre <span class="required-mark">*</span></label>
+            <div class="control-with-icon">
+              <i class="fas fa-signature" aria-hidden="true"></i>
+              <input type="text" class="form-control" id="nombre" name="nombre" [(ngModel)]="proveedor.nombre"
+                placeholder="Nombre de la entidad o empresa" required #nombre="ngModel" autocomplete="off">
+            </div>
+            <div class="validation-message" *ngIf="nombre.invalid && (nombre.dirty || nombre.touched)">
+              <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+              <span *ngIf="nombre.errors.required">El nombre no puede estar vac&iacute;o.</span>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="direccion">Direcci&oacute;n</label>
+            <div class="control-with-icon">
+              <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+              <input type="text" class="form-control" id="direccion" name="direccion" [(ngModel)]="proveedor.direccion"
+                placeholder="Direcci&oacute;n de la entidad" autocomplete="off">
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="pais">Pa&iacute;s</label>
+            <div class="select-control">
+              <i class="fas fa-globe-americas" aria-hidden="true"></i>
+              <select id="pais" [compareWith]="compararPais" name="pais" class="form-control"
+                [(ngModel)]="proveedor.pais">
+                <option [ngValue]="undefined">Seleccionar pa&iacute;s</option>
+                <option *ngFor="let pais of paises" [ngValue]="pais">{{ pais.nombre }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="telefonoEntidad">Tel&eacute;fono de la entidad</label>
+            <div class="control-with-icon">
+              <i class="fas fa-phone" aria-hidden="true"></i>
+              <input type="text" class="form-control" id="telefonoEntidad" name="telefonoEntidad"
+                [(ngModel)]="proveedor.telefonoEntidad" placeholder="Opcional" autocomplete="off">
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="emailEntidad">E-mail de la entidad</label>
+            <div class="control-with-icon">
+              <i class="fas fa-envelope" aria-hidden="true"></i>
+              <input type="email" class="form-control" id="emailEntidad" name="emailEntidad"
+                [(ngModel)]="proveedor.emailEntidad" placeholder="Opcional" autocomplete="off">
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="sitioWeb">Sitio web</label>
+            <div class="control-with-icon">
+              <i class="fas fa-link" aria-hidden="true"></i>
+              <input type="text" class="form-control" id="sitioWeb" name="sitioWeb"
+                [(ngModel)]="proveedor.sitioWeb" placeholder="https://ejemplo.com" autocomplete="off">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section last-section" aria-labelledby="datos-contacto-title">
+        <div class="section-heading">
+          <span class="section-number">02</span>
+          <div>
+            <h3 id="datos-contacto-title">Contacto directo</h3>
+            <p>Persona de contacto dentro de la entidad proveedora.</p>
+          </div>
+        </div>
+
+        <div class="form-grid three-columns">
+          <div class="field-group">
+            <label for="contacto">Nombre del contacto</label>
+            <div class="control-with-icon">
+              <i class="fas fa-user" aria-hidden="true"></i>
+              <input type="text" class="form-control" id="contacto" name="contacto"
+                [(ngModel)]="proveedor.contacto" placeholder="Opcional" autocomplete="off">
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="telefonoContacto">Tel&eacute;fono del contacto</label>
+            <div class="control-with-icon">
+              <i class="fas fa-phone" aria-hidden="true"></i>
+              <input type="text" class="form-control" id="telefonoContacto" name="telefonoContacto"
+                [(ngModel)]="proveedor.telefonoContacto" placeholder="Opcional" autocomplete="off">
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="emailContacto">E-mail del contacto</label>
+            <div class="control-with-icon">
+              <i class="fas fa-envelope" aria-hidden="true"></i>
+              <input type="email" class="form-control" id="emailContacto" name="emailContacto"
+                [(ngModel)]="proveedor.emailContacto" placeholder="Opcional" autocomplete="off">
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <footer class="form-actions">
+      <p><i class="fas fa-shield-alt" aria-hidden="true"></i> Tu informaci&oacute;n se guardar&aacute; de forma segura.</p>
+      <button type="submit" class="primary-action" (click)="create()"
+        *ngIf="esNuevo else elseBlock" [disabled]="!proveedorForm.form.valid || guardando">
+        <i class="fas fa-save" aria-hidden="true"></i>
+        Guardar proveedor
+      </button>
+
+      <ng-template #elseBlock>
+        <button type="submit" class="primary-action" (click)="update()" [disabled]="!proveedorForm.form.valid || guardando">
+          <i class="fas fa-check" aria-hidden="true"></i>
+          Actualizar proveedor
+        </button>
+      </ng-template>
+    </footer>
+  </form>
+</div>

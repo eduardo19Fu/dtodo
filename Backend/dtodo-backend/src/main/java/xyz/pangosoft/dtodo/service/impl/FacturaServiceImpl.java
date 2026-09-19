@@ -865,20 +865,20 @@ public class FacturaServiceImpl implements IFacturaService {
 
 	// REPORTE DE VENTAS DIARIAS
 	@Override
-	public byte[] resportDailySales(Integer usuario, String fecha) {
+	public byte[] resportDailySales(Integer sucursal, Integer usuario, String fechaInicio, String fechaFin) {
+		Date[] rango = parsePolicyDateRange(fechaInicio, fechaFin);
 
 		try(Connection con = localDataSource.getConnection()) { // Obtiene la conexión actual a la base de datos
-			Date fechaBusqueda;
-			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-			fechaBusqueda = format.parse(fecha);
 			Map<String, Object> params = new HashMap<>();
 			InputStream file = getClass().getResourceAsStream("/reports/poliza.jrxml");
 
 			if(file == null) {
 				throw new NotFoundException("Archivo no encontrado");
 			}
+			params.put("sucursal", sucursal);
 			params.put("usuario", usuario);
-			params.put("fecha", fechaBusqueda);
+			params.put("fechaInicio", rango[0]);
+			params.put("fechaFin", rango[1]);
 
 			JasperReport jasperReport = JasperCompileManager.compileReport(file);
 			JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, params, con);
@@ -893,6 +893,51 @@ public class FacturaServiceImpl implements IFacturaService {
 		} catch (Exception e) {
 			log.error("Ha ocurrido un error inesperado: {}", e.getMessage());
 			throw new RuntimeException("Ha ocurrido un error inesperado: {}", e);
+		}
+	}
+
+	@Override
+	public byte[] reportGeneralPolicy(Integer sucursal, String fechaInicio, String fechaFin) {
+		Date[] rango = parsePolicyDateRange(fechaInicio, fechaFin);
+
+		try (Connection con = localDataSource.getConnection()) {
+			Map<String, Object> params = new HashMap<>();
+			InputStream file = getClass().getResourceAsStream("/reports/poliza_general.jrxml");
+
+			if (file == null) {
+				throw new NotFoundException("Archivo no encontrado");
+			}
+			params.put("sucursal", sucursal);
+			params.put("fechaInicio", rango[0]);
+			params.put("fechaFin", rango[1]);
+
+			JasperReport jasperReport = JasperCompileManager.compileReport(file);
+			JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, params, con);
+			return JasperExportManager.exportReportToPdf(jasperPrint);
+		} catch (JRException e) {
+			log.error("Ha ocurrido un error durante la generación de la póliza general: {}", e.getMessage());
+			throw new ReportGenerationException(e.getMessage(), e.getCause());
+		} catch (SQLException e) {
+			log.error("Ha ocurrido un error al ejecutar la consulta de la póliza general: {}", e.getMessage());
+			throw new xyz.pangosoft.dtodo.error.exceptions.SQLException(e.getMessage(), e.getCause());
+		} catch (Exception e) {
+			log.error("Ha ocurrido un error inesperado al generar la póliza general: {}", e.getMessage());
+			throw new RuntimeException("Ha ocurrido un error inesperado al generar la póliza general", e);
+		}
+	}
+
+	private Date[] parsePolicyDateRange(String fechaInicio, String fechaFin) {
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+		format.setLenient(false);
+		try {
+			Date inicio = format.parse(fechaInicio);
+			Date fin = format.parse(fechaFin);
+			if (fin.before(inicio)) {
+				throw new BadRequestException("La fecha final no puede ser anterior a la fecha inicial", null);
+			}
+			return new Date[] { inicio, fin };
+		} catch (ParseException e) {
+			throw new BadRequestException("El formato del rango de fechas no es válido", e);
 		}
 	}
 

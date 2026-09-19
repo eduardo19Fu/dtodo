@@ -82,7 +82,9 @@
           <div class="modal-footer quick-client-footer">
             <p><i class="fas fa-shield-alt" aria-hidden="true"></i> Los datos se guardarán en el directorio de clientes.</p>
             <div class="quick-client-actions">
-              <button (click)="cerrarModal()" type="button" class="quick-client-cancel">Cancelar</button>
+              <button (click)="cerrarModal()" type="button" class="quick-client-cancel">
+                <i class="fas fa-times" aria-hidden="true"></i> Cancelar
+              </button>
               <button type="submit" class="quick-client-confirm" (click)="create()"
                 [disabled]="!clienteForm.form.valid">
                 <i class="fas fa-save" aria-hidden="true"></i> Guardar cliente
