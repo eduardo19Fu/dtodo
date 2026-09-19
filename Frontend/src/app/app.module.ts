@@ -60,6 +60,7 @@ import { DetailCompraComponent } from './components/compras/detail-compra/detail
 import { ModalCrearProductoComponent } from './components/compras/create-compra/modal-crear-producto/modal-crear-producto.component';
 import { TooltipDirective } from './directives/tooltip.directive';
 import { DateRangePickerComponent } from './components/shared/date-range-picker/date-range-picker.component';
+import { ReportesComponent } from './components/reportes/reportes.component';
 
 @NgModule({
   declarations: [
@@ -115,7 +116,8 @@ import { DateRangePickerComponent } from './components/shared/date-range-picker/
     DetailCompraComponent,
     ModalCrearProductoComponent,
     TooltipDirective,
-    DateRangePickerComponent
+    DateRangePickerComponent,
+    ReportesComponent
   ],
   imports: [
     BrowserModule,

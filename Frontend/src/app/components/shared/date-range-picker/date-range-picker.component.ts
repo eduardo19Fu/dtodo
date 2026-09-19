@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, HostListener, Input, Output } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Input, OnDestroy, Output } from '@angular/core';
 
 interface DiaCalendario {
   fecha: Date;
@@ -14,7 +14,7 @@ interface DiaCalendario {
   templateUrl: './date-range-picker.component.html',
   styleUrls: ['./date-range-picker.component.css']
 })
-export class DateRangePickerComponent {
+export class DateRangePickerComponent implements OnDestroy {
 
   private static siguienteId = 0;
 
@@ -30,6 +30,11 @@ export class DateRangePickerComponent {
   selectorFechaActivo: 'inicio' | 'fin' = 'inicio';
   mesVisible = new Date();
   diasCalendario: DiaCalendario[] = [];
+  estilosCalendario: { [propiedad: string]: string } = {};
+  calendarioArriba = false;
+
+  private posicionPendiente = false;
+  private readonly escucharScroll = () => this.programarPosicionCalendario();
 
   private readonly nombresMes: string[] = [
     'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
@@ -38,6 +43,11 @@ export class DateRangePickerComponent {
 
   constructor(private elementRef: ElementRef) {
     this.construirCalendario();
+    window.addEventListener('scroll', this.escucharScroll, true);
+  }
+
+  ngOnDestroy(): void {
+    window.removeEventListener('scroll', this.escucharScroll, true);
   }
 
   abrirCalendario(selector: 'inicio' | 'fin'): void {
@@ -51,10 +61,18 @@ export class DateRangePickerComponent {
     this.mesVisible = fechaSeleccionada ? this.fechaDesdeIso(fechaSeleccionada) : new Date();
     this.calendarioAbierto = true;
     this.construirCalendario();
+    this.programarPosicionCalendario();
   }
 
   cerrarCalendario(): void {
     this.calendarioAbierto = false;
+    this.estilosCalendario = {};
+    this.calendarioArriba = false;
+  }
+
+  @HostListener('window:resize')
+  reposicionarCalendario(): void {
+    this.programarPosicionCalendario();
   }
 
   @HostListener('document:keydown.escape')
@@ -178,6 +196,56 @@ export class DateRangePickerComponent {
       });
     }
     this.diasCalendario = dias;
+  }
+
+  private programarPosicionCalendario(): void {
+    if (!this.calendarioAbierto || this.posicionPendiente) {
+      return;
+    }
+    this.posicionPendiente = true;
+    window.requestAnimationFrame(() => {
+      this.posicionPendiente = false;
+      this.actualizarPosicionCalendario();
+    });
+  }
+
+  private actualizarPosicionCalendario(): void {
+    if (!this.calendarioAbierto || window.innerWidth <= 767) {
+      this.estilosCalendario = {};
+      this.calendarioArriba = false;
+      return;
+    }
+
+    const selector = this.selectorFechaActivo;
+    const trigger = document.getElementById(`${this.idComponente}-${selector}-trigger`);
+    const panel = document.getElementById(`${this.idComponente}-calendar`);
+    if (!trigger || !panel) {
+      return;
+    }
+
+    const margen = 12;
+    const separacion = 8;
+    const triggerRect = trigger.getBoundingClientRect();
+    const ancho = Math.min(760, window.innerWidth - margen * 2);
+    const alto = Math.min(panel.scrollHeight, window.innerHeight - margen * 2);
+    const espacioAbajo = window.innerHeight - triggerRect.bottom - margen;
+    const espacioArriba = triggerRect.top - margen;
+    this.calendarioArriba = espacioAbajo < alto && espacioArriba > espacioAbajo;
+
+    let superior = this.calendarioArriba
+      ? triggerRect.top - alto - separacion
+      : triggerRect.bottom + separacion;
+    superior = Math.max(margen, Math.min(superior, window.innerHeight - alto - margen));
+
+    let izquierda = selector === 'fin' ? triggerRect.right - ancho : triggerRect.left;
+    izquierda = Math.max(margen, Math.min(izquierda, window.innerWidth - ancho - margen));
+
+    this.estilosCalendario = {
+      left: `${Math.round(izquierda)}px`,
+      top: `${Math.round(superior)}px`,
+      width: `${Math.round(ancho)}px`,
+      maxHeight: `${Math.round(alto)}px`
+    };
   }
 
   private fechaAIso(fecha: Date): string {

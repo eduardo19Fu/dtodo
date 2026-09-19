@@ -1,0 +1,128 @@
+<section class="reports-page" aria-labelledby="reports-title">
+  <header class="reports-heading">
+    <div>
+      <span class="reports-eyebrow">Análisis y control</span>
+      <h1 id="reports-title">Reportes</h1>
+      <p>Consulta información consolidada y exporta los resultados según tus permisos.</p>
+    </div>
+    <span class="reports-heading-icon" aria-hidden="true"><i class="fas fa-chart-bar"></i></span>
+  </header>
+
+  <div class="reports-notice">
+    <i class="fas fa-info-circle" aria-hidden="true"></i>
+    <span>Los reportes marcados como <strong>En preparación</strong> forman parte del alcance aprobado y se habilitarán progresivamente.</span>
+  </div>
+
+  <ng-container *ngFor="let categoria of categorias">
+    <section class="report-category" *ngIf="reportesPorCategoria(categoria.codigo).length > 0">
+      <header class="category-heading">
+        <span class="category-icon" aria-hidden="true"><i class="fas" [ngClass]="categoria.icono"></i></span>
+        <div>
+          <h2>{{categoria.titulo}}</h2>
+          <small>{{reportesPorCategoria(categoria.codigo).length}} reportes contemplados</small>
+        </div>
+      </header>
+
+      <div class="report-grid">
+        <button type="button" class="report-card" *ngFor="let reporte of reportesPorCategoria(categoria.codigo)"
+          [id]="'reporte-card-' + reporte.codigo"
+          [class.report-card-disabled]="!reporte.disponible"
+          [class.report-card-selected]="reporteSeleccionado?.codigo === reporte.codigo"
+          [disabled]="!reporte.disponible" (click)="seleccionarReporte(reporte, $event)">
+          <span class="report-card-status" [class.status-ready]="reporte.disponible">
+            {{reporte.disponible ? 'Disponible' : 'En preparación'}}
+          </span>
+          <span class="report-card-icon" aria-hidden="true"><i class="fas" [ngClass]="reporte.icono"></i></span>
+          <span class="report-card-copy">
+            <strong>{{reporte.titulo}}</strong>
+            <small>{{reporte.descripcion}}</small>
+          </span>
+          <span class="report-formats">
+            <span *ngFor="let formato of reporte.formatos" [class.format-pdf]="formato === 'PDF'"
+              [class.format-excel]="formato === 'XLSX'">{{formato}}</span>
+          </span>
+          <span class="report-card-action" *ngIf="reporte.disponible">
+            Configurar <i class="fas fa-arrow-right" aria-hidden="true"></i>
+          </span>
+        </button>
+      </div>
+    </section>
+  </ng-container>
+
+  <aside class="report-config" *ngIf="reporteSeleccionado" id="report-config-panel"
+    [ngClass]="'guide-' + guiaLado" [ngStyle]="estilosGuia" aria-labelledby="report-config-title">
+    <header class="config-heading">
+      <div class="config-title">
+        <span class="config-icon" aria-hidden="true"><i class="fas" [ngClass]="reporteSeleccionado.icono"></i></span>
+        <div>
+          <div class="config-context">
+            <span>Configurar reporte</span>
+            <span class="config-category">{{categoriaSeleccionada}}</span>
+          </div>
+          <h2 id="report-config-title">{{reporteSeleccionado.titulo}}</h2>
+          <p>{{reporteSeleccionado.descripcion}}</p>
+        </div>
+      </div>
+      <button type="button" class="config-close" (click)="cerrarConfiguracion()" aria-label="Cerrar configuración">
+        <i class="fas fa-times" aria-hidden="true"></i>
+      </button>
+    </header>
+
+    <form (ngSubmit)="generar()">
+      <div class="config-body">
+        <div class="config-field" *ngIf="requiereFiltro('SUCURSAL')">
+          <label for="reporte-sucursal">Sucursal <span>*</span></label>
+          <div class="config-control">
+            <i class="fas fa-store" aria-hidden="true"></i>
+            <select id="reporte-sucursal" name="reporte-sucursal" class="form-control"
+              [(ngModel)]="idSucursal" (ngModelChange)="onSucursalChange()" required
+              [disabled]="!auth.hasRole('ROLE_ADMIN')">
+              <option [ngValue]="null" disabled>Selecciona una sucursal</option>
+              <option *ngFor="let sucursal of sucursales" [ngValue]="sucursal.idSucursal">{{sucursal.nombre}}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="config-field" *ngIf="requiereFiltro('USUARIO')">
+          <label for="reporte-usuario">Usuario <span>*</span></label>
+          <div class="config-control">
+            <i class="fas fa-user" aria-hidden="true"></i>
+            <select id="reporte-usuario" name="reporte-usuario" class="form-control"
+              [(ngModel)]="idUsuario" required>
+              <option [ngValue]="null" disabled>Selecciona un usuario</option>
+              <option *ngFor="let usuario of usuarios" [ngValue]="usuario.idUsuario">
+                {{usuario.usuario}} — {{usuario.primerNombre}} {{usuario.apellido}}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="config-dates" *ngIf="requiereFiltro('FECHAS')">
+          <app-date-range-picker [(fechaInicio)]="fechaInicio" [(fechaFin)]="fechaFin"
+            tema="ventas"></app-date-range-picker>
+        </div>
+
+        <div class="config-error" *ngIf="requiereFiltro('FECHAS') && fechaInicio && fechaFin && fechaFin < fechaInicio">
+          <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+          La fecha final no puede ser anterior a la fecha inicial.
+        </div>
+      </div>
+
+      <footer class="config-footer">
+        <span><i class="fas fa-shield-alt" aria-hidden="true"></i> Los permisos también se validan en el servidor.</span>
+        <div class="config-actions">
+          <button type="button" class="config-cancel" (click)="cerrarConfiguracion()" [disabled]="generando">
+            Cancelar
+          </button>
+          <button type="submit" class="config-submit" [disabled]="!puedeGenerar()">
+            <span *ngIf="generando" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+            <i *ngIf="!generando" class="fas"
+              [ngClass]="reporteSeleccionado.formatos[0] === 'PDF' ? 'fa-file-pdf' : 'fa-file-excel'"
+              aria-hidden="true"></i>
+            {{generando ? 'Generando...' : 'Generar ' + reporteSeleccionado.formatos[0]}}
+          </button>
+        </div>
+      </footer>
+    </form>
+  </aside>
+</section>

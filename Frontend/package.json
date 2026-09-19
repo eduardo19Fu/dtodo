@@ -9,7 +9,7 @@
     "build": "set NODE_OPTIONS=--openssl-legacy-provider && ng build",
     "build:test": "set NODE_OPTIONS=--openssl-legacy-provider && ng build --configuration test",
     "build:prod": "set NODE_OPTIONS=--openssl-legacy-provider && ng build --configuration production",
-    "test": "ng test",
+    "test": "set NODE_OPTIONS=--openssl-legacy-provider && ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
   },
