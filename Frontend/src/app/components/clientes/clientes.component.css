@@ -1,3 +1,9 @@
+:host {
+  --client-accent: #3b8c68;
+  --client-dark: #2d7153;
+  --client-tint: #e8f4ed;
+}
+
 .info-paginacion { color: #6c757d; font-size: 0.9rem; }
 
 :host ::ng-deep .table-bordered { border-top: 2px solid #dee2e6; }
@@ -78,6 +84,61 @@
   margin: 0;
   padding: 0;
   width: 38px;
+}
+
+.sucursal-subtitle i,
+.spinner-border {
+  color: var(--client-accent);
+}
+
+.btn.listing-primary-action {
+  background: linear-gradient(135deg, var(--client-accent), var(--client-dark));
+  border-color: var(--client-accent);
+  box-shadow: 0 6px 15px rgba(45, 113, 83, 0.23);
+}
+
+.btn.listing-primary-action:hover,
+.btn.listing-primary-action:focus {
+  background: linear-gradient(135deg, #469b76, var(--client-dark));
+  border-color: var(--client-accent);
+  box-shadow: 0 9px 19px rgba(45, 113, 83, 0.33);
+}
+
+.listing-search-control .form-control:focus,
+select.page-size-select:focus {
+  border-color: var(--client-accent);
+  box-shadow: 0 0 0 3px rgba(59, 140, 104, 0.15);
+}
+
+.listing-id-pill,
+.listing-empty-icon {
+  background: var(--client-tint);
+  color: var(--client-dark);
+}
+
+.btn.listing-action-edit {
+  color: var(--client-dark);
+}
+
+.btn.listing-action-edit:not(:disabled):hover,
+.btn.listing-action-edit:not(:disabled):focus {
+  background: var(--client-dark);
+  border-color: var(--client-dark);
+  color: #fff;
+}
+
+.listing-pagination .page-item:not(.active):not(.disabled) .page-link:hover,
+.listing-pagination .page-item:not(.active):not(.disabled) .page-link:focus {
+  background: var(--client-tint);
+  border-color: #a5cbb7;
+  box-shadow: 0 4px 10px rgba(45, 113, 83, 0.13);
+  color: var(--client-dark);
+}
+
+.listing-pagination .page-item.active .page-link {
+  background: linear-gradient(135deg, var(--client-accent), var(--client-dark));
+  border-color: var(--client-accent);
+  box-shadow: 0 6px 13px rgba(45, 113, 83, 0.27);
 }
 
 @media (max-width: 767.98px) {

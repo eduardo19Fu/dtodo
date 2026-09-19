@@ -8,10 +8,10 @@
   display: contents;
 }
 .date-range-theme-ventas {
-  --date-accent: #b78626;
-  --date-accent-dark: #8f681c;
-  --date-accent-rgb: 183, 134, 38;
-  --date-tint: #fbf2df;
+  --date-accent: #7f704f;
+  --date-accent-dark: #5c5038;
+  --date-accent-rgb: 127, 112, 79;
+  --date-tint: #f3efe7;
 }
 .date-range-theme-proformas {
   --date-accent: #5b6fc0;

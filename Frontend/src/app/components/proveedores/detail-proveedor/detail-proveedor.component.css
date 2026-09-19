@@ -1,17 +1,17 @@
 :host {
-  --green-900: #07583f;
-  --green-800: #087453;
-  --green-700: #0b8f65;
-  --green-100: #dff5eb;
-  --green-50: #f2fbf7;
+  --green-900: #33214f;
+  --green-800: #5b3e91;
+  --green-700: #7654b5;
+  --green-100: #e5dcf2;
+  --green-50: #f8f5fb;
   --ink: #243247;
   --muted: #6d7b8f;
-  --border: #dfe7e3;
+  --border: #e3ddec;
 }
 
 .sucursal-detail-overlay {
   align-items: flex-start;
-  background: rgba(14, 25, 22, 0.72);
+  background: rgba(24, 17, 37, 0.72);
   display: flex;
   inset: 0;
   justify-content: center;
@@ -31,7 +31,7 @@
 .sucursal-detail-content {
   background: #fff;
   border-radius: 18px;
-  box-shadow: 0 24px 70px rgba(5, 43, 31, 0.3);
+  box-shadow: 0 24px 70px rgba(51, 33, 79, 0.3);
   display: flex;
   flex-direction: column;
   max-height: calc(100vh - 56px);
@@ -105,11 +105,11 @@
 }
 
 .sucursal-detail-body {
-  background: #f7faf8;
+  background: #faf8fc;
   min-height: 0;
   overflow-y: auto;
   padding: 26px 28px;
-  scrollbar-color: #9fc9b7 transparent;
+  scrollbar-color: #baa9d7 transparent;
   scrollbar-width: thin;
 }
 
@@ -122,8 +122,8 @@
 
 .profile-summary {
   align-items: center;
-  background: linear-gradient(135deg, #f0faf5, #f8fbfa);
-  border: 1px solid #d8e9e1;
+  background: linear-gradient(135deg, #f5f1fa, #fbf9fd);
+  border: 1px solid #e5ddef;
   border-radius: 13px;
   display: flex;
   flex-wrap: wrap;
@@ -136,7 +136,7 @@
   background: linear-gradient(135deg, var(--green-800), var(--green-700));
   border: 4px solid #fff;
   border-radius: 50%;
-  box-shadow: 0 6px 16px rgba(8, 116, 83, 0.2);
+  box-shadow: 0 6px 16px rgba(91, 62, 145, 0.22);
   color: #fff;
   display: flex;
   flex: 0 0 66px;
@@ -221,8 +221,8 @@
 
 .information-card {
   align-items: center;
-  background: #f8faf9;
-  border: 1px solid #e5ebe8;
+  background: #faf9fc;
+  border: 1px solid #e8e2ef;
   border-radius: 11px;
   display: flex;
   gap: 12px;
@@ -260,14 +260,14 @@
 }
 
 .information-card small {
-  color: #8a9892;
+  color: #887d96;
   display: block;
   font-size: 11px;
   margin-top: 2px;
 }
 
 .information-card .empty-value {
-  color: #96a19c;
+  color: #988fa3;
   font-style: italic;
   font-weight: 500;
 }
@@ -289,7 +289,7 @@
 .sucursal-detail-footer {
   align-items: center;
   background: #fff;
-  border-top: 1px solid #e8eeeb;
+  border-top: 1px solid #e9e3ef;
   display: flex;
   flex: 0 0 auto;
   justify-content: space-between;
@@ -297,7 +297,7 @@
 }
 
 .sucursal-detail-footer > span {
-  color: #8a9892;
+  color: #887d96;
   font-size: 11px;
 }
 
@@ -308,9 +308,9 @@
 
 .close-action {
   background: #fff;
-  border: 1px solid #cfd9d4;
+  border: 1px solid #d8cfdf;
   border-radius: 8px;
-  color: #42544c;
+  color: #51445f;
   font-size: 13px;
   font-weight: 700;
   min-width: 92px;
@@ -320,7 +320,7 @@
 .close-action:hover,
 .close-action:focus {
   background: var(--green-50);
-  border-color: #9bc9b5;
+  border-color: #ad9acb;
   color: var(--green-900);
   outline: 0;
 }

@@ -1,10 +1,10 @@
 :host {
-  /* Identidad de Ventas: dorado, alineada con su tarjeta del panel principal. */
-  --green-900: #6f4f13;
-  --green-800: #8f681c;
-  --green-700: #b78626;
-  --green-100: #fbf2df;
-  --green-50: #fffaf0;
+  /* Identidad de Ventas: bronce oliva, alineada con su tarjeta del panel principal. */
+  --green-900: #514735;
+  --green-800: #625641;
+  --green-700: #7f704f;
+  --green-100: #e7dfcf;
+  --green-50: #faf8f3;
   --ink: #243247;
   --muted: #6d7b8f;
   --border: #dfe7e3;
