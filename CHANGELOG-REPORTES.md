@@ -12,7 +12,7 @@ verificado.
 - Hito completado: **R1 — Base técnica y centralización de reportes existentes**.
 - Hito siguiente: **R2 — Cobertura operativa nueva**.
 - Alcance aprobado: 16 reportes distribuidos entre ventas, inventario, proformas, notas de crédito y compras.
-- Última actualización: 2026-09-19.
+- Última actualización: 2026-09-20.
 
 ## Cambios realizados
 
@@ -112,6 +112,39 @@ verificado.
 - Los comprobantes individuales no se trasladarán al catálogo gerencial.
 - Los reportes nuevos se habilitarán en la interfaz solamente cuando su endpoint esté terminado.
 
+### 2026-09-19 — Resumen de notas de crédito
+
+- Se agregó `ResumenNotasCreditoReporteServiceImpl` como servicio dedicado para generar PDF y XLSX desde una única
+  plantilla Jasper.
+- Se creó `resumen_notas_credito.jrxml` en formato A4 horizontal, con detalle de nota, fecha, cliente, NIT,
+  documento origen, vendedor, estado, importe, cantidad total e importe acumulado.
+- El período incluye el día final completo mediante una fecha final exclusiva calculada en el servicio.
+- Se agregó el endpoint administrativo `GET /api/reportes/notas-credito/resumen` con filtros de sucursal, período,
+  estado opcional y formato.
+- El encabezado del reporte muestra el nombre real de la sucursal y el estado seleccionado.
+- Se habilitó la tarjeta del reporte en Angular, junto con el selector de estado y la elección PDF/XLSX.
+- Se añadió una prueba de compilación, llenado y exportación PDF de la plantilla con datos representativos.
+- Verificación: build Angular correcto, 92 pruebas frontend correctas, 7 pruebas backend focalizadas correctas y
+  suite backend completa con 100 pruebas correctas bajo JDK 17.
+- Se generó y revisó visualmente `output/pdf/resumen-notas-credito-muestra.pdf`; no presenta recortes, solapamientos
+  ni problemas de legibilidad.
+- A solicitud del usuario, se incorporó el logo oficial de D'TODO al encabezado y se reajustó la composición del
+  título para conservar la jerarquía y separación de los filtros.
+- Se preparó una segunda composición con el logo reducido y alineado al extremo derecho, un encabezado menos alto y
+  el estado separado del identificador visual.
+- En la tercera composición, el rectángulo azul termina antes del logo y deja una separación blanca; el logo queda
+  aislado sobre el fondo blanco del documento para evitar la superposición de tonos azules.
+- En la composición final propuesta, el logo vuelve al lado izquierdo, permanece sobre fondo blanco y tiene la misma
+  altura que el rectángulo azul; ambos elementos se separan mediante un margen blanco.
+- Se corrigió el estado sin resultados: ahora muestra un mensaje informativo, cantidad `0` e importe `Q 0.00`, sin
+  valores `null`.
+- Se añadió un margen seguro de 10 puntos a la columna Total, la línea de resumen y el pie de página para evitar
+  recortes en el extremo derecho durante la exportación PDF.
+- El pie muestra `Página X de Y` en todas las páginas, incluida la página final que contiene el resumen.
+- La plantilla usa `DejaVu Sans` como fuente predeterminada, suministrada por `jasperreports-fonts`, para conservar
+  métricas y glifos al compilar en AlmaLinux sin depender de fuentes de Microsoft instaladas en el sistema.
+- Estado: implementación terminada y aprobada visualmente por el usuario.
+
 ## Verificación acumulada
 
 - `pnpm run build`: **correcto**.
@@ -128,11 +161,10 @@ verificado.
 
 ## Pendiente inmediato
 
-1. Implementar resumen de notas de crédito en PDF/XLSX.
-2. Implementar compras por período en PDF/XLSX.
-3. Agregar XLSX al reporte de movimientos de inventario.
-4. Habilitar las tres opciones en el catálogo solamente después de verificar sus endpoints.
-5. Iniciar la centralización/caché de compilación Jasper para evitar compilar `.jrxml` por solicitud.
+1. Implementar compras por período en PDF/XLSX.
+2. Agregar XLSX al reporte de movimientos de inventario.
+3. Habilitar cada opción en el catálogo solamente después de verificar su endpoint.
+4. Iniciar la centralización/caché de compilación Jasper para evitar compilar `.jrxml` por solicitud.
 
 ## Riesgos o decisiones pendientes
 

@@ -113,6 +113,12 @@
 .config-dates { margin: 0 -15px; position: relative; }
 .config-dates::after { clear: both; content: ''; display: block; }
 .config-error { background: #fff1f1; border: 1px solid #f0caca; border-radius: 9px; color: #963842; margin-top: 14px; padding: 10px 12px; }
+.config-format { border: 0; margin: 0 0 18px; padding: 0; }
+.config-format legend { color: #36465d; font-size: 13px; font-weight: 700; margin-bottom: 7px; }
+.config-format > div { display: flex; gap: 8px; }
+.config-format button { background: #f5f8fc; border: 1px solid #d7e1ed; border-radius: 9px; color: #5d6d82; font-weight: 700; padding: 9px 16px; }
+.config-format button.active { background: #e7f1ff; border-color: #448bd2; box-shadow: 0 0 0 2px rgba(68, 139, 210, .1); color: #1769d2; }
+.config-format button i { margin-right: 5px; }
 .config-footer { background: #f8fafc; border-top: 1px solid #e7edf4; justify-content: space-between; padding: 16px 22px; }
 .config-footer > span { color: #718097; font-size: 11px; }
 .config-actions { gap: 9px; }

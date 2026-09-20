@@ -15,6 +15,7 @@ import xyz.pangosoft.dtodo.service.IFacturaService;
 import xyz.pangosoft.dtodo.service.IMovimientoProductoService;
 import xyz.pangosoft.dtodo.service.IProductoService;
 import xyz.pangosoft.dtodo.service.IProformaService;
+import xyz.pangosoft.dtodo.service.IResumenNotasCreditoReporteService;
 
 class ReporteServiceImplTest {
 
@@ -22,6 +23,7 @@ class ReporteServiceImplTest {
     private IMovimientoProductoService movimientoService;
     private IProductoService productoService;
     private IProformaService proformaService;
+    private IResumenNotasCreditoReporteService resumenNotasCreditoReporteService;
     private ReporteServiceImpl service;
 
     @BeforeEach
@@ -30,8 +32,10 @@ class ReporteServiceImplTest {
         movimientoService = mock(IMovimientoProductoService.class);
         productoService = mock(IProductoService.class);
         proformaService = mock(IProformaService.class);
+        resumenNotasCreditoReporteService = mock(IResumenNotasCreditoReporteService.class);
         service = new ReporteServiceImpl(
-                facturaService, movimientoService, productoService, proformaService);
+                facturaService, movimientoService, productoService, proformaService,
+                resumenNotasCreditoReporteService);
     }
 
     @Test
@@ -52,7 +56,8 @@ class ReporteServiceImplTest {
         assertThrows(BadRequestException.class, () -> service.generarPolizaGeneral(
                 1, "2026-09-20", "2026-09-19"));
 
-        verifyNoInteractions(facturaService, movimientoService, productoService, proformaService);
+        verifyNoInteractions(facturaService, movimientoService, productoService, proformaService,
+                resumenNotasCreditoReporteService);
     }
 
     @Test
@@ -70,5 +75,30 @@ class ReporteServiceImplTest {
 
         assertArrayEquals(esperado, resultado);
         verify(productoService).productosExcel(3);
+    }
+
+    @Test
+    void resumenNotasCreditoDelegaFiltrosValidados() {
+        byte[] esperado = new byte[] { 8, 9 };
+        when(resumenNotasCreditoReporteService.generar(
+                2, java.time.LocalDate.of(2026, 9, 1), java.time.LocalDate.of(2026, 9, 19),
+                xyz.pangosoft.dtodo.model.enums.EstadoNotaCreditoEnum.ENTREGADO, "XLSX"))
+                .thenReturn(esperado);
+
+        byte[] resultado = service.generarResumenNotasCredito(
+                2, "2026-09-01", "2026-09-19", "entregado", "xlsx");
+
+        assertArrayEquals(esperado, resultado);
+        verify(resumenNotasCreditoReporteService).generar(
+                2, java.time.LocalDate.of(2026, 9, 1), java.time.LocalDate.of(2026, 9, 19),
+                xyz.pangosoft.dtodo.model.enums.EstadoNotaCreditoEnum.ENTREGADO, "XLSX");
+    }
+
+    @Test
+    void resumenNotasCreditoRechazaEstadoInvalido() {
+        assertThrows(BadRequestException.class, () -> service.generarResumenNotasCredito(
+                1, "2026-09-01", "2026-09-19", "DESCONOCIDO", "PDF"));
+
+        verifyNoInteractions(resumenNotasCreditoReporteService);
     }
 }

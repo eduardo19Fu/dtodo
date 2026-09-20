@@ -3,5 +3,6 @@ export interface ReporteFiltroDto {
   fechaFin?: string;
   idSucursal?: number;
   idUsuario?: number;
+  estado?: string;
   formato?: 'PDF' | 'XLSX';
 }

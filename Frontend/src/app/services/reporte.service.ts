@@ -15,7 +15,7 @@ export class ReporteService {
   generar(codigo: string, filtros: ReporteFiltroDto): Observable<HttpResponse<Blob>> {
     const configuracion = this.configuracion(codigo);
     return this.http.get(`${this.url}/${configuracion.ruta}`, {
-      params: this.construirParametros(filtros, configuracion.incluirUsuario),
+      params: this.construirParametros(filtros, configuracion.incluirUsuario, configuracion.incluirOpciones),
       observe: 'response',
       responseType: 'blob'
     });
@@ -31,7 +31,7 @@ export class ReporteService {
     return coincidencia && coincidencia[1] ? decodeURIComponent(coincidencia[1].trim()) : respaldo;
   }
 
-  private configuracion(codigo: string): { ruta: string; incluirUsuario: boolean } {
+  private configuracion(codigo: string): { ruta: string; incluirUsuario: boolean; incluirOpciones?: boolean } {
     switch (codigo) {
       case 'POLIZA_INDIVIDUAL':
         return { ruta: 'ventas/poliza-individual', incluirUsuario: true };
@@ -43,12 +43,18 @@ export class ReporteService {
         return { ruta: 'inventario/existencias', incluirUsuario: false };
       case 'PROFORMAS_EMITIDAS':
         return { ruta: 'proformas', incluirUsuario: true };
+      case 'RESUMEN_NOTAS':
+        return { ruta: 'notas-credito/resumen', incluirUsuario: false, incluirOpciones: true };
       default:
         throw new Error(`El reporte ${codigo} todavía no tiene un endpoint habilitado.`);
     }
   }
 
-  private construirParametros(filtros: ReporteFiltroDto, incluirUsuario: boolean): HttpParams {
+  private construirParametros(
+    filtros: ReporteFiltroDto,
+    incluirUsuario: boolean,
+    incluirOpciones = false
+  ): HttpParams {
     let params = new HttpParams();
     if (filtros.fechaInicio) {
       params = params.set('fechaInicio', filtros.fechaInicio);
@@ -61,6 +67,12 @@ export class ReporteService {
     }
     if (incluirUsuario && filtros.idUsuario) {
       params = params.set('idUsuario', filtros.idUsuario.toString());
+    }
+    if (incluirOpciones && filtros.estado) {
+      params = params.set('estado', filtros.estado);
+    }
+    if (incluirOpciones && filtros.formato) {
+      params = params.set('formato', filtros.formato);
     }
     return params;
   }

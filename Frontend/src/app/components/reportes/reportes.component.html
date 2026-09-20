@@ -102,6 +102,27 @@
             tema="ventas"></app-date-range-picker>
         </div>
 
+        <div class="config-field" *ngIf="requiereFiltro('ESTADO')">
+          <label for="reporte-estado">Estado</label>
+          <div class="config-control">
+            <i class="fas fa-tasks" aria-hidden="true"></i>
+            <select id="reporte-estado" name="reporte-estado" class="form-control" [(ngModel)]="estado">
+              <option *ngFor="let opcion of estadosNotaCredito" [ngValue]="opcion.codigo">{{opcion.nombre}}</option>
+            </select>
+          </div>
+        </div>
+
+        <fieldset class="config-format" *ngIf="reporteSeleccionado.formatos.length > 1">
+          <legend>Formato de salida</legend>
+          <div>
+            <button type="button" *ngFor="let formato of reporteSeleccionado.formatos"
+              [class.active]="formatoSeleccionado === formato" (click)="formatoSeleccionado = formato">
+              <i class="fas" [ngClass]="formato === 'PDF' ? 'fa-file-pdf' : 'fa-file-excel'" aria-hidden="true"></i>
+              {{formato}}
+            </button>
+          </div>
+        </fieldset>
+
         <div class="config-error" *ngIf="requiereFiltro('FECHAS') && fechaInicio && fechaFin && fechaFin < fechaInicio">
           <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
           La fecha final no puede ser anterior a la fecha inicial.
@@ -117,9 +138,9 @@
           <button type="submit" class="config-submit" [disabled]="!puedeGenerar()">
             <span *ngIf="generando" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
             <i *ngIf="!generando" class="fas"
-              [ngClass]="reporteSeleccionado.formatos[0] === 'PDF' ? 'fa-file-pdf' : 'fa-file-excel'"
+              [ngClass]="formatoSeleccionado === 'PDF' ? 'fa-file-pdf' : 'fa-file-excel'"
               aria-hidden="true"></i>
-            {{generando ? 'Generando...' : 'Generar ' + reporteSeleccionado.formatos[0]}}
+            {{generando ? 'Generando...' : 'Generar ' + formatoSeleccionado}}
           </button>
         </div>
       </footer>

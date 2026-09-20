@@ -71,7 +71,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
       ['FECHAS', 'SUCURSAL', 'USUARIO'], ['ROLE_ADMIN'], false),
     this.reporte('RESUMEN_NOTAS', 'NOTAS_CREDITO', 'Resumen de notas de crédito',
       'Notas emitidas, importes y estados durante el período.', 'fa-file-invoice', ['PDF', 'XLSX'],
-      ['FECHAS', 'SUCURSAL', 'ESTADO'], ['ROLE_ADMIN'], false),
+      ['FECHAS', 'SUCURSAL', 'ESTADO'], ['ROLE_ADMIN'], true),
     this.reporte('PENDIENTES_DESPACHO', 'NOTAS_CREDITO', 'Pendientes de despacho',
       'Productos de notas de crédito aún pendientes de entregar.', 'fa-truck-loading', ['PDF', 'XLSX'],
       ['FECHAS', 'SUCURSAL', 'CLIENTE'], ['ROLE_ADMIN', 'ROLE_INVENTARIO'], false),
@@ -90,7 +90,16 @@ export class ReportesComponent implements OnInit, OnDestroy {
   fechaFin: string;
   idSucursal: number;
   idUsuario: number;
+  estado: string;
+  formatoSeleccionado: 'PDF' | 'XLSX' = 'PDF';
   generando = false;
+  readonly estadosNotaCredito = [
+    { codigo: '', nombre: 'Todos los estados' },
+    { codigo: 'ENTREGA_PENDIENTE', nombre: 'Entrega pendiente' },
+    { codigo: 'ENTREGADO', nombre: 'Entregado' },
+    { codigo: 'PAGADO', nombre: 'Pagado' },
+    { codigo: 'ANULADO', nombre: 'Anulado' }
+  ];
   guiaLado: 'top' | 'right' | 'bottom' | 'left' = 'top';
   estilosGuia: { [propiedad: string]: string } = { '--guide-offset': '50%' };
 
@@ -134,6 +143,8 @@ export class ReportesComponent implements OnInit, OnDestroy {
     this.cardOrigen = evento ? evento.currentTarget as HTMLElement : null;
     this.reporteSeleccionado = reporte;
     this.idUsuario = null;
+    this.estado = '';
+    this.formatoSeleccionado = reporte.formatos[0];
     if (reporte.filtros.includes('USUARIO')) {
       this.cargarUsuarios(reporte.codigo);
     }
@@ -179,7 +190,8 @@ export class ReportesComponent implements OnInit, OnDestroy {
       fechaFin: this.fechaFin,
       idSucursal: this.idSucursal,
       idUsuario: this.idUsuario,
-      formato: this.reporteSeleccionado.formatos[0]
+      estado: this.estado,
+      formato: this.formatoSeleccionado
     };
     this.generando = true;
     this.reporteService.generar(this.reporteSeleccionado.codigo, filtros).subscribe(
@@ -226,7 +238,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
   }
 
   private entregarArchivo(response: HttpResponse<Blob>): void {
-    const extension = this.reporteSeleccionado.formatos[0] === 'PDF' ? 'pdf' : 'xlsx';
+    const extension = this.formatoSeleccionado === 'PDF' ? 'pdf' : 'xlsx';
     const respaldo = `${this.reporteSeleccionado.codigo.toLowerCase()}.${extension}`;
     const nombre = this.reporteService.obtenerNombreArchivo(response, respaldo);
     const url = window.URL.createObjectURL(response.body);

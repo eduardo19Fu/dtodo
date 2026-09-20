@@ -114,6 +114,24 @@ public class ReporteApiController {
         return archivo(reporte, XLSX_MEDIA_TYPE, nombre, false);
     }
 
+    @Secured("ROLE_ADMIN")
+    @GetMapping("/notas-credito/resumen")
+    public ResponseEntity<byte[]> resumenNotasCredito(
+            @RequestParam Integer idSucursal,
+            @RequestParam String fechaInicio,
+            @RequestParam String fechaFin,
+            @RequestParam(required = false) String estado,
+            @RequestParam(defaultValue = "PDF") String formato) {
+        log.info("Generando resumen de notas de crédito. sucursal={}, estado={}, formato={}, periodo={}..{}",
+                idSucursal, estado, formato, fechaInicio, fechaFin);
+        byte[] reporte = reporteService.generarResumenNotasCredito(
+                idSucursal, fechaInicio, fechaFin, estado, formato);
+        boolean esPdf = "PDF".equalsIgnoreCase(formato);
+        String extension = esPdf ? "pdf" : "xlsx";
+        return archivo(reporte, esPdf ? MediaType.APPLICATION_PDF : XLSX_MEDIA_TYPE,
+                nombrePeriodo("resumen_notas_credito", fechaInicio, fechaFin, extension), esPdf);
+    }
+
     private Integer resolverSucursal(Integer solicitada, Jwt jwt, Authentication authentication) {
         Integer asignada = obtenerSucursalJwt(jwt);
         boolean esAdmin = authentication != null && authentication.getAuthorities().stream()

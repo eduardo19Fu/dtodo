@@ -12,11 +12,13 @@ import lombok.extern.slf4j.Slf4j;
 import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
 import xyz.pangosoft.dtodo.error.exceptions.ReportGenerationException;
 import xyz.pangosoft.dtodo.dto.UsuarioDto;
+import xyz.pangosoft.dtodo.model.enums.EstadoNotaCreditoEnum;
 import xyz.pangosoft.dtodo.service.IFacturaService;
 import xyz.pangosoft.dtodo.service.IMovimientoProductoService;
 import xyz.pangosoft.dtodo.service.IProductoService;
 import xyz.pangosoft.dtodo.service.IProformaService;
 import xyz.pangosoft.dtodo.service.IReporteService;
+import xyz.pangosoft.dtodo.service.IResumenNotasCreditoReporteService;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +29,7 @@ public class ReporteServiceImpl implements IReporteService {
     private final IMovimientoProductoService movimientoProductoService;
     private final IProductoService productoService;
     private final IProformaService proformaService;
+    private final IResumenNotasCreditoReporteService resumenNotasCreditoReporteService;
 
     @Override
     public byte[] generarPolizaIndividual(
@@ -86,6 +89,40 @@ public class ReporteServiceImpl implements IReporteService {
     @Override
     public List<UsuarioDto> listarUsuariosProformas() {
         return proformaService.findUsuariosExportacion();
+    }
+
+    @Override
+    public byte[] generarResumenNotasCredito(
+            Integer idSucursal,
+            String fechaInicio,
+            String fechaFin,
+            String estado,
+            String formato) {
+        validarId(idSucursal, "La sucursal seleccionada no es válida.");
+        LocalDate[] rango = validarRango(fechaInicio, fechaFin);
+        EstadoNotaCreditoEnum estadoValido = validarEstadoNotaCredito(estado);
+        String formatoValido = validarFormato(formato);
+        return resumenNotasCreditoReporteService.generar(
+                idSucursal, rango[0], rango[1], estadoValido, formatoValido);
+    }
+
+    private EstadoNotaCreditoEnum validarEstadoNotaCredito(String estado) {
+        if (estado == null || estado.isBlank()) {
+            return null;
+        }
+        try {
+            return EstadoNotaCreditoEnum.valueOf(estado.toUpperCase());
+        } catch (IllegalArgumentException exception) {
+            throw new BadRequestException("El estado de nota de crédito no es válido.", exception);
+        }
+    }
+
+    private String validarFormato(String formato) {
+        String valor = formato == null ? "PDF" : formato.toUpperCase();
+        if (!"PDF".equals(valor) && !"XLSX".equals(valor)) {
+            throw new BadRequestException("El formato solicitado no es válido.", null);
+        }
+        return valor;
     }
 
     private LocalDate[] validarRango(String fechaInicio, String fechaFin) {
