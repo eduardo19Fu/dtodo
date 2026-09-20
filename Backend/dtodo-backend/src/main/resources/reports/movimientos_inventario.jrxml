@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="movimientos_inventario" pageWidth="842" pageHeight="595" orientation="Landscape"
+              whenNoDataType="AllSectionsNoDetail" columnWidth="802" leftMargin="20" rightMargin="20"
+              topMargin="18" bottomMargin="18" isSummaryWithPageHeaderAndFooter="true"
+              uuid="633501b0-4cdb-4656-a7c6-caa6d2791196">
+    <property name="net.sf.jasperreports.export.xlsx.detect.cell.type" value="true"/>
+    <property name="net.sf.jasperreports.export.xlsx.remove.empty.space.between.rows" value="true"/>
+    <property name="net.sf.jasperreports.export.xlsx.white.page.background" value="false"/>
+
+    <style name="Base" isDefault="true" fontName="DejaVu Sans" fontSize="8" forecolor="#23344D"/>
+    <style name="Header" style="Base" mode="Opaque" backcolor="#1769D2" forecolor="#FFFFFF"
+           fontSize="8" isBold="true" vTextAlign="Middle"/>
+    <style name="Cell" style="Base" mode="Opaque" backcolor="#FFFFFF" vTextAlign="Middle">
+        <box><pen lineWidth="0.35" lineColor="#D9E3EF"/></box>
+    </style>
+
+    <parameter name="ID_SUCURSAL" class="java.lang.Integer"/>
+    <parameter name="FECHA_INICIO" class="java.sql.Timestamp"/>
+    <parameter name="FECHA_FIN_EXCLUSIVA" class="java.sql.Timestamp"/>
+    <parameter name="RANGO" class="java.lang.String"/>
+    <parameter name="SUCURSAL" class="java.lang.String"/>
+
+    <queryString language="SQL"><![CDATA[
+        SELECT base.codigo,
+               base.producto,
+               base.categoria,
+               base.stock_inicial,
+               base.entradas,
+               base.salidas,
+               base.stock_inicial + base.entradas - base.salidas AS saldo_final
+          FROM (
+                SELECT p.cod_producto AS codigo,
+                       p.nombre AS producto,
+                       tp.tipo_producto AS categoria,
+                       CAST(COALESCE((
+                           SELECT mp0.stock_inicial
+                             FROM movimientos_producto mp0
+                            WHERE mp0.id_producto = p.id_producto
+                              AND mp0.id_sucursal = $P{ID_SUCURSAL}
+                              AND mp0.fecha_movimiento >= $P{FECHA_INICIO}
+                              AND mp0.fecha_movimiento < $P{FECHA_FIN_EXCLUSIVA}
+                            ORDER BY mp0.fecha_movimiento ASC, mp0.id_movimiento ASC
+                            LIMIT 1
+                       ), inv.stock, 0) AS SIGNED) AS stock_inicial,
+                       CAST(COALESCE(SUM(CASE
+                           WHEN mp.tipo_movimiento IN ('COMPRA', 'ENTRADA', 'ANULACION_FACTURA', 'ANULACION_NOTA')
+                           THEN mp.cantidad ELSE 0 END), 0) AS SIGNED) AS entradas,
+                       CAST(COALESCE(SUM(CASE
+                           WHEN mp.tipo_movimiento IN ('VENTA', 'SALIDA', 'ELIMINAR_COMPRA', 'ENTREGA_PRODUCTO_NOTA')
+                           THEN mp.cantidad ELSE 0 END), 0) AS SIGNED) AS salidas
+                  FROM inventario_sucursal inv
+                  INNER JOIN productos p ON p.id_producto = inv.id_producto
+                  INNER JOIN tipos_producto tp ON tp.id_tipo_producto = p.id_tipo_producto
+                  LEFT JOIN movimientos_producto mp
+                    ON mp.id_producto = p.id_producto
+                   AND mp.id_sucursal = $P{ID_SUCURSAL}
+                   AND mp.fecha_movimiento >= $P{FECHA_INICIO}
+                   AND mp.fecha_movimiento < $P{FECHA_FIN_EXCLUSIVA}
+                 WHERE inv.id_sucursal = $P{ID_SUCURSAL}
+                 GROUP BY p.id_producto, p.cod_producto, p.nombre, tp.tipo_producto, inv.stock
+          ) base
+         ORDER BY base.producto, base.codigo
+    ]]></queryString>
+
+    <field name="codigo" class="java.lang.String"/>
+    <field name="producto" class="java.lang.String"/>
+    <field name="categoria" class="java.lang.String"/>
+    <field name="stock_inicial" class="java.lang.Long"/>
+    <field name="entradas" class="java.lang.Long"/>
+    <field name="salidas" class="java.lang.Long"/>
+    <field name="saldo_final" class="java.lang.Long"/>
+
+    <variable name="CANTIDAD_PRODUCTOS" class="java.lang.Integer" calculation="Count">
+        <variableExpression><![CDATA[$F{codigo}]]></variableExpression>
+    </variable>
+    <variable name="TOTAL_ENTRADAS" class="java.lang.Long" calculation="Sum">
+        <variableExpression><![CDATA[$F{entradas}]]></variableExpression>
+        <initialValueExpression><![CDATA[0L]]></initialValueExpression>
+    </variable>
+    <variable name="TOTAL_SALIDAS" class="java.lang.Long" calculation="Sum">
+        <variableExpression><![CDATA[$F{salidas}]]></variableExpression>
+        <initialValueExpression><![CDATA[0L]]></initialValueExpression>
+    </variable>
+
+    <title>
+        <band height="72">
+            <rectangle radius="8">
+                <reportElement x="90" y="0" width="712" height="48" forecolor="#1769D2" backcolor="#1769D2"/>
+            </rectangle>
+            <image scaleImage="RetainShape" hAlign="Center">
+                <reportElement x="0" y="0" width="72" height="48"/>
+                <imageExpression><![CDATA[this.getClass().getResourceAsStream("/static/images/reports-image/logo-dtodo.jpg")]]></imageExpression>
+            </image>
+            <staticText>
+                <reportElement x="108" y="5" width="440" height="22" forecolor="#FFFFFF"/>
+                <textElement verticalAlignment="Middle"><font size="16" isBold="true"/></textElement>
+                <text><![CDATA[Movimientos y saldo de inventario]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="108" y="28" width="440" height="14" forecolor="#DCEBFF"/>
+                <textElement><font size="8"/></textElement>
+                <textFieldExpression><![CDATA[$P{SUCURSAL} + " · " + $P{RANGO}]]></textFieldExpression>
+            </textField>
+            <staticText>
+                <reportElement x="568" y="7" width="216" height="16" forecolor="#FFFFFF"/>
+                <textElement textAlignment="Right"><font size="9" isBold="true"/></textElement>
+                <text><![CDATA[Inventario]]></text>
+            </staticText>
+            <textField pattern="dd/MM/yyyy HH:mm">
+                <reportElement x="568" y="25" width="216" height="13" forecolor="#DCEBFF"/>
+                <textElement textAlignment="Right"><font size="7"/></textElement>
+                <textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+            </textField>
+            <staticText>
+                <reportElement x="0" y="54" width="802" height="14" forecolor="#66758A"/>
+                <textElement><font size="8" isItalic="true"/></textElement>
+                <text><![CDATA[Resume entradas, salidas y saldo por producto durante el período seleccionado.]]></text>
+            </staticText>
+        </band>
+    </title>
+
+    <columnHeader>
+        <band height="28">
+            <staticText><reportElement style="Header" x="0" y="0" width="100" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Código]]></text></staticText>
+            <staticText><reportElement style="Header" x="100" y="0" width="240" height="28"/><text><![CDATA[Producto]]></text></staticText>
+            <staticText><reportElement style="Header" x="340" y="0" width="120" height="28"/><text><![CDATA[Categoría]]></text></staticText>
+            <staticText><reportElement style="Header" x="460" y="0" width="80" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Inicial]]></text></staticText>
+            <staticText><reportElement style="Header" x="540" y="0" width="80" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Entradas]]></text></staticText>
+            <staticText><reportElement style="Header" x="620" y="0" width="80" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Salidas]]></text></staticText>
+            <staticText><reportElement style="Header" x="700" y="0" width="92" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Saldo final]]></text></staticText>
+        </band>
+    </columnHeader>
+
+    <detail>
+        <band height="24">
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="0" y="0" width="100" height="24"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA[$F{codigo}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="100" y="0" width="240" height="24"/><textFieldExpression><![CDATA[$F{producto}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="340" y="0" width="120" height="24"/><textFieldExpression><![CDATA[$F{categoria}]]></textFieldExpression></textField>
+            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="460" y="0" width="80" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{stock_inicial}]]></textFieldExpression></textField>
+            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="540" y="0" width="80" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{entradas}]]></textFieldExpression></textField>
+            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="620" y="0" width="80" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{salidas}]]></textFieldExpression></textField>
+            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="700" y="0" width="92" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{saldo_final}]]></textFieldExpression></textField>
+        </band>
+    </detail>
+
+    <pageFooter>
+        <band height="18">
+            <textField>
+                <reportElement x="642" y="2" width="115" height="14" forecolor="#7B8798"/>
+                <textElement textAlignment="Right"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+            <textField evaluationTime="Report">
+                <reportElement x="757" y="2" width="35" height="14" forecolor="#7B8798"/>
+                <textElement textAlignment="Left"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA[" de " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+        </band>
+    </pageFooter>
+
+    <summary>
+        <band height="52">
+            <line><reportElement x="0" y="8" width="792" height="1" forecolor="#B9C9DC"/></line>
+            <staticText>
+                <reportElement x="0" y="16" width="380" height="24" forecolor="#52647C" backcolor="#F4F8FC" mode="Opaque">
+                    <printWhenExpression><![CDATA[$V{REPORT_COUNT}.intValue() == 0]]></printWhenExpression>
+                </reportElement>
+                <box><pen lineWidth="0.5" lineColor="#D6E2F0"/></box>
+                <textElement verticalAlignment="Middle"><font size="9" isItalic="true"/></textElement>
+                <text><![CDATA[No se encontraron productos para la sucursal seleccionada.]]></text>
+            </staticText>
+            <staticText><reportElement x="390" y="16" width="90" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Productos:]]></text></staticText>
+            <textField><reportElement x="485" y="16" width="40" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{CANTIDAD_PRODUCTOS} == null ? 0 : $V{CANTIDAD_PRODUCTOS}]]></textFieldExpression></textField>
+            <staticText><reportElement x="525" y="16" width="70" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Entradas:]]></text></staticText>
+            <textField pattern="#,##0"><reportElement x="600" y="16" width="55" height="20" forecolor="#1769D2"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_ENTRADAS} == null ? 0L : $V{TOTAL_ENTRADAS}]]></textFieldExpression></textField>
+            <staticText><reportElement x="655" y="16" width="65" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Salidas:]]></text></staticText>
+            <textField pattern="#,##0"><reportElement x="725" y="16" width="67" height="20" forecolor="#1769D2"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_SALIDAS} == null ? 0L : $V{TOTAL_SALIDAS}]]></textFieldExpression></textField>
+        </band>
+    </summary>
+</jasperReport>

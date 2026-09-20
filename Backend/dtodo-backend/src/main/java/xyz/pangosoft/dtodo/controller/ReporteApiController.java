@@ -67,15 +67,18 @@ public class ReporteApiController {
             @RequestParam(required = false) Integer idSucursal,
             @RequestParam String fechaInicio,
             @RequestParam String fechaFin,
+            @RequestParam(defaultValue = "PDF") String formato,
             @AuthenticationPrincipal Jwt jwt,
             Authentication authentication) {
         Integer sucursalEfectiva = resolverSucursal(idSucursal, jwt, authentication);
         log.info("Generando movimientos de inventario. sucursal={}, periodo={}..{}",
                 sucursalEfectiva, fechaInicio, fechaFin);
         byte[] reporte = reporteService.generarMovimientosInventario(
-                sucursalEfectiva, fechaInicio, fechaFin);
-        return archivo(reporte, MediaType.APPLICATION_PDF,
-                nombrePeriodo("movimientos_inventario", fechaInicio, fechaFin, "pdf"), true);
+                sucursalEfectiva, fechaInicio, fechaFin, formato);
+        boolean esPdf = "PDF".equalsIgnoreCase(formato);
+        String extension = esPdf ? "pdf" : "xlsx";
+        return archivo(reporte, esPdf ? MediaType.APPLICATION_PDF : XLSX_MEDIA_TYPE,
+                nombrePeriodo("movimientos_inventario", fechaInicio, fechaFin, extension), esPdf);
     }
 
     @Secured({"ROLE_ADMIN", "ROLE_INVENTARIO"})

@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
 import xyz.pangosoft.dtodo.service.IComprasPeriodoReporteService;
 import xyz.pangosoft.dtodo.service.IFacturaService;
-import xyz.pangosoft.dtodo.service.IMovimientoProductoService;
+import xyz.pangosoft.dtodo.service.IInventarioMovimientosReporteService;
 import xyz.pangosoft.dtodo.service.IProductoService;
 import xyz.pangosoft.dtodo.service.IProformaService;
 import xyz.pangosoft.dtodo.service.IResumenNotasCreditoReporteService;
@@ -21,7 +21,7 @@ import xyz.pangosoft.dtodo.service.IResumenNotasCreditoReporteService;
 class ReporteServiceImplTest {
 
     private IFacturaService facturaService;
-    private IMovimientoProductoService movimientoService;
+    private IInventarioMovimientosReporteService inventarioMovimientosReporteService;
     private IProductoService productoService;
     private IProformaService proformaService;
     private IResumenNotasCreditoReporteService resumenNotasCreditoReporteService;
@@ -31,13 +31,13 @@ class ReporteServiceImplTest {
     @BeforeEach
     void setUp() {
         facturaService = mock(IFacturaService.class);
-        movimientoService = mock(IMovimientoProductoService.class);
+        inventarioMovimientosReporteService = mock(IInventarioMovimientosReporteService.class);
         productoService = mock(IProductoService.class);
         proformaService = mock(IProformaService.class);
         resumenNotasCreditoReporteService = mock(IResumenNotasCreditoReporteService.class);
         comprasPeriodoReporteService = mock(IComprasPeriodoReporteService.class);
         service = new ReporteServiceImpl(
-                facturaService, movimientoService, productoService, proformaService,
+                facturaService, inventarioMovimientosReporteService, productoService, proformaService,
                 resumenNotasCreditoReporteService, comprasPeriodoReporteService);
     }
 
@@ -59,7 +59,7 @@ class ReporteServiceImplTest {
         assertThrows(BadRequestException.class, () -> service.generarPolizaGeneral(
                 1, "2026-09-20", "2026-09-19"));
 
-        verifyNoInteractions(facturaService, movimientoService, productoService, proformaService,
+        verifyNoInteractions(facturaService, inventarioMovimientosReporteService, productoService, proformaService,
                 resumenNotasCreditoReporteService, comprasPeriodoReporteService);
     }
 
@@ -78,6 +78,21 @@ class ReporteServiceImplTest {
 
         assertArrayEquals(esperado, resultado);
         verify(productoService).productosExcel(3);
+    }
+
+    @Test
+    void movimientosInventarioDelegaFormatoYFechasValidadas() {
+        byte[] esperado = new byte[] { 6, 7 };
+        when(inventarioMovimientosReporteService.generar(
+                3, java.time.LocalDate.of(2026, 9, 1), java.time.LocalDate.of(2026, 9, 19), "XLSX"))
+                .thenReturn(esperado);
+
+        byte[] resultado = service.generarMovimientosInventario(
+                3, "2026-09-01", "2026-09-19", "xlsx");
+
+        assertArrayEquals(esperado, resultado);
+        verify(inventarioMovimientosReporteService).generar(
+                3, java.time.LocalDate.of(2026, 9, 1), java.time.LocalDate.of(2026, 9, 19), "XLSX");
     }
 
     @Test

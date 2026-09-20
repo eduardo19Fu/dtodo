@@ -51,7 +51,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
       'Venta neta, costo y margen por producto.', 'fa-percentage', ['PDF', 'XLSX'],
       ['FECHAS', 'SUCURSAL', 'CATEGORIA'], ['ROLE_ADMIN'], false),
     this.reporte('MOVIMIENTOS_INVENTARIO', 'INVENTARIO', 'Movimientos y saldo',
-      'Entradas, salidas y saldo de inventario durante un período.', 'fa-exchange-alt', ['PDF'],
+      'Entradas, salidas y saldo de inventario durante un período.', 'fa-exchange-alt', ['PDF', 'XLSX'],
       ['FECHAS', 'SUCURSAL'], ['ROLE_ADMIN', 'ROLE_INVENTARIO'], true),
     this.reporte('EXISTENCIAS', 'INVENTARIO', 'Existencias actuales',
       'Productos, precios y stock actual de una sucursal.', 'fa-clipboard-list', ['XLSX'],

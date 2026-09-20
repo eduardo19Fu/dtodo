@@ -2,21 +2,18 @@ package xyz.pangosoft.dtodo.service.impl;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
-import java.util.Date;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
-import xyz.pangosoft.dtodo.error.exceptions.ReportGenerationException;
 import xyz.pangosoft.dtodo.dto.UsuarioDto;
 import xyz.pangosoft.dtodo.model.enums.EstadoCompraEnum;
 import xyz.pangosoft.dtodo.model.enums.EstadoNotaCreditoEnum;
 import xyz.pangosoft.dtodo.service.IComprasPeriodoReporteService;
 import xyz.pangosoft.dtodo.service.IFacturaService;
-import xyz.pangosoft.dtodo.service.IMovimientoProductoService;
+import xyz.pangosoft.dtodo.service.IInventarioMovimientosReporteService;
 import xyz.pangosoft.dtodo.service.IProductoService;
 import xyz.pangosoft.dtodo.service.IProformaService;
 import xyz.pangosoft.dtodo.service.IReporteService;
@@ -24,11 +21,10 @@ import xyz.pangosoft.dtodo.service.IResumenNotasCreditoReporteService;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class ReporteServiceImpl implements IReporteService {
 
     private final IFacturaService facturaService;
-    private final IMovimientoProductoService movimientoProductoService;
+    private final IInventarioMovimientosReporteService inventarioMovimientosReporteService;
     private final IProductoService productoService;
     private final IProformaService proformaService;
     private final IResumenNotasCreditoReporteService resumenNotasCreditoReporteService;
@@ -54,18 +50,16 @@ public class ReporteServiceImpl implements IReporteService {
     }
 
     @Override
-    public byte[] generarMovimientosInventario(Integer idSucursal, String fechaInicio, String fechaFin) {
+    public byte[] generarMovimientosInventario(
+            Integer idSucursal,
+            String fechaInicio,
+            String fechaFin,
+            String formato) {
         validarId(idSucursal, "La sucursal seleccionada no es válida.");
         LocalDate[] rango = validarRango(fechaInicio, fechaFin);
-        try {
-            Date inicio = java.sql.Date.valueOf(rango[0]);
-            Date fin = java.sql.Date.valueOf(rango[1]);
-            return movimientoProductoService.inventory(inicio, fin, idSucursal);
-        } catch (Exception exception) {
-            log.error("No fue posible generar el reporte de movimientos de inventario", exception);
-            throw new ReportGenerationException(
-                    "No fue posible generar el reporte de movimientos de inventario.", exception);
-        }
+        String formatoValido = validarFormato(formato);
+        return inventarioMovimientosReporteService.generar(
+                idSucursal, rango[0], rango[1], formatoValido);
     }
 
     @Override

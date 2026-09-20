@@ -159,6 +159,21 @@ verificado.
   problemas de legibilidad.
 - Estado: implementación terminada y aprobada visualmente por el usuario.
 
+### 2026-09-20 — Movimientos y saldo de inventario
+
+- Se inició la modernización del reporte de movimientos y saldo con una plantilla compartida para PDF/XLSX.
+- El reporte resume por producto el stock inicial, entradas, salidas y saldo final del período y sucursal.
+- Se corrigió la clasificación de movimientos según los enums vigentes, incluyendo compras, anulaciones y entregas
+  de notas de crédito.
+- Se agregó un servicio Jasper dedicado y formato seleccionable al endpoint existente del módulo de reportes.
+- La plantilla utiliza el patrón visual aprobado, fuente DejaVu Sans, estado sin datos y paginación `Página X de Y`.
+- La tarjeta de Angular ahora permite seleccionar PDF o XLSX.
+- Verificación: build Angular correcto, 92 pruebas frontend correctas, 11 pruebas backend focalizadas correctas y
+  suite backend completa con 107 pruebas correctas bajo JDK 17.
+- Se generó y revisó visualmente `output/pdf/movimientos-inventario-muestra.pdf`; no presenta recortes,
+  solapamientos ni problemas de legibilidad.
+- Estado: implementación terminada y aprobada visualmente por el usuario.
+
 ## Verificación acumulada
 
 - `pnpm run build`: **correcto**.
@@ -175,7 +190,7 @@ verificado.
 
 ## Pendiente inmediato
 
-1. Agregar XLSX al reporte de movimientos de inventario.
+1. Continuar con el siguiente reporte nuevo del catálogo.
 2. Habilitar cada opción en el catálogo solamente después de verificar su endpoint.
 3. Iniciar la centralización/caché de compilación Jasper para evitar compilar `.jrxml` por solicitud.
 

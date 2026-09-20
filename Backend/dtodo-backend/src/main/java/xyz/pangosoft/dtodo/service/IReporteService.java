@@ -10,7 +10,11 @@ public interface IReporteService {
 
     byte[] generarPolizaGeneral(Integer idSucursal, String fechaInicio, String fechaFin);
 
-    byte[] generarMovimientosInventario(Integer idSucursal, String fechaInicio, String fechaFin);
+    byte[] generarMovimientosInventario(
+            Integer idSucursal,
+            String fechaInicio,
+            String fechaFin,
+            String formato);
 
     byte[] generarExistencias(Integer idSucursal);
 

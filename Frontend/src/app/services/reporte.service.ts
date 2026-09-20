@@ -38,7 +38,7 @@ export class ReporteService {
       case 'POLIZA_GENERAL':
         return { ruta: 'ventas/poliza-general', incluirUsuario: false };
       case 'MOVIMIENTOS_INVENTARIO':
-        return { ruta: 'inventario/movimientos', incluirUsuario: false };
+        return { ruta: 'inventario/movimientos', incluirUsuario: false, incluirOpciones: true };
       case 'EXISTENCIAS':
         return { ruta: 'inventario/existencias', incluirUsuario: false };
       case 'PROFORMAS_EMITIDAS':
