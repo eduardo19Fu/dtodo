@@ -1,0 +1,160 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Entorno a desplegar
+        type: choice
+        required: true
+        options:
+          - test
+          - prod
+
+env:
+  BACKEND_JAR: detodobackend-0.0.1-SNAPSHOT.jar
+
+jobs:
+  deploy-test:
+    if: inputs.environment == 'test'
+    runs-on: ubuntu-latest
+    environment: test
+    timeout-minutes: 15
+    concurrency:
+      group: deploy-test
+      cancel-in-progress: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: Backend/dtodo-backend/pom.xml
+
+      - name: Build backend (perfil test)
+        working-directory: Backend/dtodo-backend
+        run: |
+          chmod +x mvnw
+          ./mvnw -B clean package -Ptest -DskipTests
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+
+      - name: Install dependencias frontend
+        working-directory: Frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Build frontend (configuracion test)
+        working-directory: Frontend
+        env:
+          NODE_OPTIONS: --openssl-legacy-provider
+        run: npx ng build --configuration test
+
+      - name: Configurar acceso SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
+
+      - name: Subir jar del backend
+        run: |
+          scp -o StrictHostKeyChecking=no \
+            Backend/dtodo-backend/target/${{ env.BACKEND_JAR }} \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/apps/dtodo/api/backend/dev/${{ env.BACKEND_JAR }}.new
+
+      - name: Reemplazar jar y reiniciar servicio (test)
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} '
+            set -e
+            mv /var/apps/dtodo/api/backend/dev/${{ env.BACKEND_JAR }}.new /var/apps/dtodo/api/backend/dev/${{ env.BACKEND_JAR }}
+            sudo systemctl restart dtodo-dev-api.service
+          '
+
+      - name: Publicar estaticos del frontend (test)
+        run: |
+          rsync -avz --delete --exclude='.htaccess' \
+            -e "ssh -o StrictHostKeyChecking=no" \
+            Frontend/dist/frontend/ \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/home/dtodojalapa/domains/dev.dtodojalapa.xyz/public_html/
+
+  deploy-prod:
+    if: inputs.environment == 'prod'
+    runs-on: ubuntu-latest
+    environment: prod
+    timeout-minutes: 15
+    concurrency:
+      group: deploy-prod
+      cancel-in-progress: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: Backend/dtodo-backend/pom.xml
+
+      - name: Build backend (perfil prod)
+        working-directory: Backend/dtodo-backend
+        run: |
+          chmod +x mvnw
+          ./mvnw -B clean package -Pprod -DskipTests
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+
+      - name: Install dependencias frontend
+        working-directory: Frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Build frontend (configuracion production)
+        working-directory: Frontend
+        env:
+          NODE_OPTIONS: --openssl-legacy-provider
+        run: npx ng build --configuration production
+
+      - name: Configurar acceso SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
+
+      - name: Subir jar del backend
+        run: |
+          scp -o StrictHostKeyChecking=no \
+            Backend/dtodo-backend/target/${{ env.BACKEND_JAR }} \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/apps/dtodo/api/backend/${{ env.BACKEND_JAR }}.new
+
+      - name: Reemplazar jar y reiniciar servicio (prod)
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} '
+            set -e
+            mv /var/apps/dtodo/api/backend/${{ env.BACKEND_JAR }}.new /var/apps/dtodo/api/backend/${{ env.BACKEND_JAR }}
+            sudo systemctl restart dtodo-api.service
+          '
+
+      - name: Publicar estaticos del frontend (prod)
+        run: |
+          rsync -avz --delete --exclude='.htaccess' \
+            -e "ssh -o StrictHostKeyChecking=no" \
+            Frontend/dist/frontend/ \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/home/dtodojalapa/public_html/
