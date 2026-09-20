@@ -5,10 +5,12 @@ import Swal from 'sweetalert2';
 import { UsuarioDto } from '../../dtos/usuario-dto';
 import { ReporteFiltroDto } from '../../dtos/reporte-filtro-dto';
 import { CategoriaReporte, ReporteDefinicion } from '../../models/reporte-definicion';
+import { Proveedor } from '../../models/proveedor';
 import { Sucursal } from '../../models/sucursal';
 import { Usuario } from '../../models/usuario';
 import { AuthService } from '../../services/auth.service';
 import { ReporteService } from '../../services/reporte.service';
+import { ProveedorService } from '../../services/proveedor.service';
 import { SucursalService } from '../../services/sucursal.service';
 import { UsuarioService } from '../../services/usuarios/usuario.service';
 
@@ -77,7 +79,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
       ['FECHAS', 'SUCURSAL', 'CLIENTE'], ['ROLE_ADMIN', 'ROLE_INVENTARIO'], false),
     this.reporte('COMPRAS_PERIODO', 'COMPRAS', 'Compras por período',
       'Compras registradas por sucursal, proveedor y estado.', 'fa-shopping-cart', ['PDF', 'XLSX'],
-      ['FECHAS', 'SUCURSAL', 'PROVEEDOR', 'ESTADO'], ['ROLE_ADMIN'], false),
+      ['FECHAS', 'SUCURSAL', 'PROVEEDOR', 'ESTADO'], ['ROLE_ADMIN'], true),
     this.reporte('COMPRAS_PROVEEDOR', 'COMPRAS', 'Compras por proveedor o producto',
       'Detalle de abastecimiento agrupado por proveedor y producto.', 'fa-dolly-flatbed', ['XLSX'],
       ['FECHAS', 'SUCURSAL', 'PROVEEDOR'], ['ROLE_ADMIN'], false)
@@ -86,10 +88,12 @@ export class ReportesComponent implements OnInit, OnDestroy {
   reporteSeleccionado: ReporteDefinicion;
   sucursales: Sucursal[] = [];
   usuarios: Array<Usuario | UsuarioDto> = [];
+  proveedores: Proveedor[] = [];
   fechaInicio: string;
   fechaFin: string;
   idSucursal: number;
   idUsuario: number;
+  idProveedor: number;
   estado: string;
   formatoSeleccionado: 'PDF' | 'XLSX' = 'PDF';
   generando = false;
@@ -99,6 +103,11 @@ export class ReportesComponent implements OnInit, OnDestroy {
     { codigo: 'ENTREGADO', nombre: 'Entregado' },
     { codigo: 'PAGADO', nombre: 'Pagado' },
     { codigo: 'ANULADO', nombre: 'Anulado' }
+  ];
+  readonly estadosCompra = [
+    { codigo: '', nombre: 'Todos los estados' },
+    { codigo: 'ACTIVA', nombre: 'Activas' },
+    { codigo: 'ANULADA', nombre: 'Anuladas' }
   ];
   guiaLado: 'top' | 'right' | 'bottom' | 'left' = 'top';
   estilosGuia: { [propiedad: string]: string } = { '--guide-offset': '50%' };
@@ -111,7 +120,8 @@ export class ReportesComponent implements OnInit, OnDestroy {
     public auth: AuthService,
     private reporteService: ReporteService,
     private sucursalService: SucursalService,
-    private usuarioService: UsuarioService
+    private usuarioService: UsuarioService,
+    private proveedorService: ProveedorService
   ) {
     this.seleccionarMesActual();
     window.addEventListener('scroll', this.escucharScroll, true);
@@ -143,10 +153,14 @@ export class ReportesComponent implements OnInit, OnDestroy {
     this.cardOrigen = evento ? evento.currentTarget as HTMLElement : null;
     this.reporteSeleccionado = reporte;
     this.idUsuario = null;
+    this.idProveedor = null;
     this.estado = '';
     this.formatoSeleccionado = reporte.formatos[0];
     if (reporte.filtros.includes('USUARIO')) {
       this.cargarUsuarios(reporte.codigo);
+    }
+    if (reporte.filtros.includes('PROVEEDOR')) {
+      this.cargarProveedores();
     }
     this.programarGuia();
   }
@@ -166,6 +180,11 @@ export class ReportesComponent implements OnInit, OnDestroy {
 
   requiereFiltro(filtro: string): boolean {
     return !!this.reporteSeleccionado && this.reporteSeleccionado.filtros.indexOf(filtro as any) >= 0;
+  }
+
+  get estadosDisponibles(): Array<{ codigo: string; nombre: string }> {
+    return this.reporteSeleccionado && this.reporteSeleccionado.codigo === 'COMPRAS_PERIODO'
+      ? this.estadosCompra : this.estadosNotaCredito;
   }
 
   puedeGenerar(): boolean {
@@ -190,6 +209,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
       fechaFin: this.fechaFin,
       idSucursal: this.idSucursal,
       idUsuario: this.idUsuario,
+      idProveedor: this.idProveedor,
       estado: this.estado,
       formato: this.formatoSeleccionado
     };
@@ -235,6 +255,11 @@ export class ReportesComponent implements OnInit, OnDestroy {
       return;
     }
     this.usuarioService.getCajeros(this.idSucursal).subscribe(usuarios => this.usuarios = usuarios);
+  }
+
+  private cargarProveedores(): void {
+    this.proveedores = [];
+    this.proveedorService.getProveedores().subscribe(proveedores => this.proveedores = proveedores);
   }
 
   private entregarArchivo(response: HttpResponse<Blob>): void {

@@ -23,5 +23,13 @@ public interface IReporteService {
             String estado,
             String formato);
 
+    byte[] generarComprasPeriodo(
+            Integer idSucursal,
+            String fechaInicio,
+            String fechaFin,
+            Integer idProveedor,
+            String estado,
+            String formato);
+
     List<UsuarioDto> listarUsuariosProformas();
 }

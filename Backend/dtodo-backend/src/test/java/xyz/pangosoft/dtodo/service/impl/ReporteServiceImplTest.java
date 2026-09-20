@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
+import xyz.pangosoft.dtodo.service.IComprasPeriodoReporteService;
 import xyz.pangosoft.dtodo.service.IFacturaService;
 import xyz.pangosoft.dtodo.service.IMovimientoProductoService;
 import xyz.pangosoft.dtodo.service.IProductoService;
@@ -24,6 +25,7 @@ class ReporteServiceImplTest {
     private IProductoService productoService;
     private IProformaService proformaService;
     private IResumenNotasCreditoReporteService resumenNotasCreditoReporteService;
+    private IComprasPeriodoReporteService comprasPeriodoReporteService;
     private ReporteServiceImpl service;
 
     @BeforeEach
@@ -33,9 +35,10 @@ class ReporteServiceImplTest {
         productoService = mock(IProductoService.class);
         proformaService = mock(IProformaService.class);
         resumenNotasCreditoReporteService = mock(IResumenNotasCreditoReporteService.class);
+        comprasPeriodoReporteService = mock(IComprasPeriodoReporteService.class);
         service = new ReporteServiceImpl(
                 facturaService, movimientoService, productoService, proformaService,
-                resumenNotasCreditoReporteService);
+                resumenNotasCreditoReporteService, comprasPeriodoReporteService);
     }
 
     @Test
@@ -57,7 +60,7 @@ class ReporteServiceImplTest {
                 1, "2026-09-20", "2026-09-19"));
 
         verifyNoInteractions(facturaService, movimientoService, productoService, proformaService,
-                resumenNotasCreditoReporteService);
+                resumenNotasCreditoReporteService, comprasPeriodoReporteService);
     }
 
     @Test
@@ -100,5 +103,30 @@ class ReporteServiceImplTest {
                 1, "2026-09-01", "2026-09-19", "DESCONOCIDO", "PDF"));
 
         verifyNoInteractions(resumenNotasCreditoReporteService);
+    }
+
+    @Test
+    void comprasPeriodoDelegaFiltrosValidados() {
+        byte[] esperado = new byte[] { 10, 11 };
+        when(comprasPeriodoReporteService.generar(
+                2, java.time.LocalDate.of(2026, 9, 1), java.time.LocalDate.of(2026, 9, 19), 4,
+                xyz.pangosoft.dtodo.model.enums.EstadoCompraEnum.ACTIVA, "PDF"))
+                .thenReturn(esperado);
+
+        byte[] resultado = service.generarComprasPeriodo(
+                2, "2026-09-01", "2026-09-19", 4, "activa", "pdf");
+
+        assertArrayEquals(esperado, resultado);
+        verify(comprasPeriodoReporteService).generar(
+                2, java.time.LocalDate.of(2026, 9, 1), java.time.LocalDate.of(2026, 9, 19), 4,
+                xyz.pangosoft.dtodo.model.enums.EstadoCompraEnum.ACTIVA, "PDF");
+    }
+
+    @Test
+    void comprasPeriodoRechazaProveedorInvalido() {
+        assertThrows(BadRequestException.class, () -> service.generarComprasPeriodo(
+                1, "2026-09-01", "2026-09-19", 0, null, "PDF"));
+
+        verifyNoInteractions(comprasPeriodoReporteService);
     }
 }

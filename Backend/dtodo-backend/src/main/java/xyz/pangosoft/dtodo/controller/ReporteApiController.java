@@ -132,6 +132,25 @@ public class ReporteApiController {
                 nombrePeriodo("resumen_notas_credito", fechaInicio, fechaFin, extension), esPdf);
     }
 
+    @Secured("ROLE_ADMIN")
+    @GetMapping("/compras")
+    public ResponseEntity<byte[]> comprasPeriodo(
+            @RequestParam Integer idSucursal,
+            @RequestParam String fechaInicio,
+            @RequestParam String fechaFin,
+            @RequestParam(required = false) Integer idProveedor,
+            @RequestParam(required = false) String estado,
+            @RequestParam(defaultValue = "PDF") String formato) {
+        log.info("Generando compras por período. sucursal={}, proveedor={}, estado={}, formato={}, periodo={}..{}",
+                idSucursal, idProveedor, estado, formato, fechaInicio, fechaFin);
+        byte[] reporte = reporteService.generarComprasPeriodo(
+                idSucursal, fechaInicio, fechaFin, idProveedor, estado, formato);
+        boolean esPdf = "PDF".equalsIgnoreCase(formato);
+        String extension = esPdf ? "pdf" : "xlsx";
+        return archivo(reporte, esPdf ? MediaType.APPLICATION_PDF : XLSX_MEDIA_TYPE,
+                nombrePeriodo("compras_periodo", fechaInicio, fechaFin, extension), esPdf);
+    }
+
     private Integer resolverSucursal(Integer solicitada, Jwt jwt, Authentication authentication) {
         Integer asignada = obtenerSucursalJwt(jwt);
         boolean esAdmin = authentication != null && authentication.getAuthorities().stream()

@@ -12,7 +12,9 @@ import lombok.extern.slf4j.Slf4j;
 import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
 import xyz.pangosoft.dtodo.error.exceptions.ReportGenerationException;
 import xyz.pangosoft.dtodo.dto.UsuarioDto;
+import xyz.pangosoft.dtodo.model.enums.EstadoCompraEnum;
 import xyz.pangosoft.dtodo.model.enums.EstadoNotaCreditoEnum;
+import xyz.pangosoft.dtodo.service.IComprasPeriodoReporteService;
 import xyz.pangosoft.dtodo.service.IFacturaService;
 import xyz.pangosoft.dtodo.service.IMovimientoProductoService;
 import xyz.pangosoft.dtodo.service.IProductoService;
@@ -30,6 +32,7 @@ public class ReporteServiceImpl implements IReporteService {
     private final IProductoService productoService;
     private final IProformaService proformaService;
     private final IResumenNotasCreditoReporteService resumenNotasCreditoReporteService;
+    private final IComprasPeriodoReporteService comprasPeriodoReporteService;
 
     @Override
     public byte[] generarPolizaIndividual(
@@ -106,6 +109,25 @@ public class ReporteServiceImpl implements IReporteService {
                 idSucursal, rango[0], rango[1], estadoValido, formatoValido);
     }
 
+    @Override
+    public byte[] generarComprasPeriodo(
+            Integer idSucursal,
+            String fechaInicio,
+            String fechaFin,
+            Integer idProveedor,
+            String estado,
+            String formato) {
+        validarId(idSucursal, "La sucursal seleccionada no es válida.");
+        if (idProveedor != null) {
+            validarId(idProveedor, "El proveedor seleccionado no es válido.");
+        }
+        LocalDate[] rango = validarRango(fechaInicio, fechaFin);
+        EstadoCompraEnum estadoValido = validarEstadoCompra(estado);
+        String formatoValido = validarFormato(formato);
+        return comprasPeriodoReporteService.generar(
+                idSucursal, rango[0], rango[1], idProveedor, estadoValido, formatoValido);
+    }
+
     private EstadoNotaCreditoEnum validarEstadoNotaCredito(String estado) {
         if (estado == null || estado.isBlank()) {
             return null;
@@ -114,6 +136,17 @@ public class ReporteServiceImpl implements IReporteService {
             return EstadoNotaCreditoEnum.valueOf(estado.toUpperCase());
         } catch (IllegalArgumentException exception) {
             throw new BadRequestException("El estado de nota de crédito no es válido.", exception);
+        }
+    }
+
+    private EstadoCompraEnum validarEstadoCompra(String estado) {
+        if (estado == null || estado.isBlank()) {
+            return null;
+        }
+        try {
+            return EstadoCompraEnum.valueOf(estado.toUpperCase());
+        } catch (IllegalArgumentException exception) {
+            throw new BadRequestException("El estado de compra no es válido.", exception);
         }
     }
 

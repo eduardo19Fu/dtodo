@@ -145,6 +145,20 @@ verificado.
   métricas y glifos al compilar en AlmaLinux sin depender de fuentes de Microsoft instaladas en el sistema.
 - Estado: implementación terminada y aprobada visualmente por el usuario.
 
+### 2026-09-20 — Compras por período
+
+- Se inició el reporte PDF/XLSX de compras filtrado por sucursal, período, proveedor opcional y estado opcional.
+- Se agregó un servicio Jasper dedicado, el endpoint administrativo `GET /api/reportes/compras` y la plantilla
+  `compras_periodo.jrxml`.
+- La plantilla reutiliza el patrón visual aprobado: logo sobre fondo blanco, encabezado azul compacto, tabla,
+  resumen, estado sin datos, fuente DejaVu Sans y paginación `Página X de Y` incluida en la página final.
+- Se habilitó la tarjeta en Angular y se incorporaron los selectores de proveedor, estado y formato.
+- Verificación: build Angular correcto, 92 pruebas frontend correctas, 10 pruebas backend focalizadas correctas y
+  suite backend completa con 104 pruebas correctas bajo JDK 17.
+- Se generó y revisó visualmente `output/pdf/compras-periodo-muestra.pdf`; no presenta recortes, solapamientos ni
+  problemas de legibilidad.
+- Estado: implementación terminada y aprobada visualmente por el usuario.
+
 ## Verificación acumulada
 
 - `pnpm run build`: **correcto**.
@@ -161,10 +175,9 @@ verificado.
 
 ## Pendiente inmediato
 
-1. Implementar compras por período en PDF/XLSX.
-2. Agregar XLSX al reporte de movimientos de inventario.
-3. Habilitar cada opción en el catálogo solamente después de verificar su endpoint.
-4. Iniciar la centralización/caché de compilación Jasper para evitar compilar `.jrxml` por solicitud.
+1. Agregar XLSX al reporte de movimientos de inventario.
+2. Habilitar cada opción en el catálogo solamente después de verificar su endpoint.
+3. Iniciar la centralización/caché de compilación Jasper para evitar compilar `.jrxml` por solicitud.
 
 ## Riesgos o decisiones pendientes
 

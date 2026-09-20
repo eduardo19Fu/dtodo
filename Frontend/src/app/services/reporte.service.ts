@@ -45,6 +45,8 @@ export class ReporteService {
         return { ruta: 'proformas', incluirUsuario: true };
       case 'RESUMEN_NOTAS':
         return { ruta: 'notas-credito/resumen', incluirUsuario: false, incluirOpciones: true };
+      case 'COMPRAS_PERIODO':
+        return { ruta: 'compras', incluirUsuario: false, incluirOpciones: true };
       default:
         throw new Error(`El reporte ${codigo} todavía no tiene un endpoint habilitado.`);
     }
@@ -70,6 +72,9 @@ export class ReporteService {
     }
     if (incluirOpciones && filtros.estado) {
       params = params.set('estado', filtros.estado);
+    }
+    if (incluirOpciones && filtros.idProveedor) {
+      params = params.set('idProveedor', filtros.idProveedor.toString());
     }
     if (incluirOpciones && filtros.formato) {
       params = params.set('formato', filtros.formato);
