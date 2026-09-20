@@ -37,6 +37,8 @@ export class ReporteService {
         return { ruta: 'ventas/poliza-individual', incluirUsuario: true };
       case 'POLIZA_GENERAL':
         return { ruta: 'ventas/poliza-general', incluirUsuario: false };
+      case 'VENTAS_PRODUCTO':
+        return { ruta: 'ventas/productos', incluirUsuario: false, incluirOpciones: true };
       case 'MOVIMIENTOS_INVENTARIO':
         return { ruta: 'inventario/movimientos', incluirUsuario: false, incluirOpciones: true };
       case 'EXISTENCIAS':
@@ -75,6 +77,9 @@ export class ReporteService {
     }
     if (incluirOpciones && filtros.idProveedor) {
       params = params.set('idProveedor', filtros.idProveedor.toString());
+    }
+    if (incluirOpciones && filtros.idCategoria) {
+      params = params.set('idCategoria', filtros.idCategoria.toString());
     }
     if (incluirOpciones && filtros.formato) {
       params = params.set('formato', filtros.formato);

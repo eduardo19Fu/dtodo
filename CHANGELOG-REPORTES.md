@@ -159,6 +159,19 @@ verificado.
   problemas de legibilidad.
 - Estado: implementación terminada y aprobada visualmente por el usuario.
 
+### 2026-09-20 — Ventas por producto o categoría
+
+- Se inició el reporte PDF/XLSX de ventas agrupadas por producto, con filtro opcional de categoría.
+- El reporte presenta unidades, venta bruta, descuentos y venta neta, excluyendo facturas anuladas.
+- Se agregó un servicio Jasper dedicado y el endpoint administrativo `GET /api/reportes/ventas/productos`.
+- Se habilitó la tarjeta de Angular y se añadió el selector de categorías.
+- La plantilla usa el patrón visual aprobado, fuente DejaVu Sans, estado sin datos y paginación `Página X de Y`.
+- Verificación: build Angular correcto, 92 pruebas frontend correctas, 13 pruebas backend focalizadas correctas y
+  suite backend completa con 111 pruebas correctas bajo JDK 17.
+- Se generó y revisó visualmente `output/pdf/ventas-producto-muestra.pdf`; no presenta recortes, solapamientos ni
+  problemas de legibilidad.
+- Estado: implementación terminada, pendiente de aprobación visual del usuario antes del commit.
+
 ### 2026-09-20 — Movimientos y saldo de inventario
 
 - Se inició la modernización del reporte de movimientos y saldo con una plantilla compartida para PDF/XLSX.
@@ -190,7 +203,7 @@ verificado.
 
 ## Pendiente inmediato
 
-1. Continuar con el siguiente reporte nuevo del catálogo.
+1. Verificar y obtener aprobación visual de ventas por producto o categoría.
 2. Habilitar cada opción en el catálogo solamente después de verificar su endpoint.
 3. Iniciar la centralización/caché de compilación Jasper para evitar compilar `.jrxml` por solicitud.
 

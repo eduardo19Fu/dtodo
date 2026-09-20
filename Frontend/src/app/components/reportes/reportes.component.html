@@ -102,6 +102,20 @@
             tema="ventas"></app-date-range-picker>
         </div>
 
+        <div class="config-field" *ngIf="requiereFiltro('CATEGORIA')">
+          <label for="reporte-categoria">Categoría</label>
+          <div class="config-control">
+            <i class="fas fa-tags" aria-hidden="true"></i>
+            <select id="reporte-categoria" name="reporte-categoria" class="form-control"
+              [(ngModel)]="idCategoria">
+              <option [ngValue]="null">Todas las categorías</option>
+              <option *ngFor="let categoria of categoriasProducto" [ngValue]="categoria.idTipoProducto">
+                {{categoria.tipoProducto}}
+              </option>
+            </select>
+          </div>
+        </div>
+
         <div class="config-field" *ngIf="requiereFiltro('PROVEEDOR')">
           <label for="reporte-proveedor">Proveedor</label>
           <div class="config-control">

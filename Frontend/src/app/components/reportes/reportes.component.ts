@@ -7,11 +7,13 @@ import { ReporteFiltroDto } from '../../dtos/reporte-filtro-dto';
 import { CategoriaReporte, ReporteDefinicion } from '../../models/reporte-definicion';
 import { Proveedor } from '../../models/proveedor';
 import { Sucursal } from '../../models/sucursal';
+import { TipoProducto } from '../../models/tipo-producto';
 import { Usuario } from '../../models/usuario';
 import { AuthService } from '../../services/auth.service';
 import { ReporteService } from '../../services/reporte.service';
 import { ProveedorService } from '../../services/proveedor.service';
 import { SucursalService } from '../../services/sucursal.service';
+import { TipoProductoService } from '../../services/tipo-producto.service';
 import { UsuarioService } from '../../services/usuarios/usuario.service';
 
 interface CategoriaDefinicion {
@@ -43,7 +45,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
       ['FECHAS', 'SUCURSAL'], ['ROLE_ADMIN'], true),
     this.reporte('VENTAS_PRODUCTO', 'VENTAS', 'Ventas por producto o categoría',
       'Unidades e importes vendidos, agrupados por producto y categoría.', 'fa-tags', ['PDF', 'XLSX'],
-      ['FECHAS', 'SUCURSAL', 'CATEGORIA'], ['ROLE_ADMIN'], false),
+      ['FECHAS', 'SUCURSAL', 'CATEGORIA'], ['ROLE_ADMIN'], true),
     this.reporte('VENTAS_CLIENTE', 'VENTAS', 'Ventas por cliente',
       'Detalle comercial acumulado por cliente.', 'fa-user-friends', ['XLSX'],
       ['FECHAS', 'SUCURSAL', 'CLIENTE'], ['ROLE_ADMIN'], false),
@@ -89,11 +91,13 @@ export class ReportesComponent implements OnInit, OnDestroy {
   sucursales: Sucursal[] = [];
   usuarios: Array<Usuario | UsuarioDto> = [];
   proveedores: Proveedor[] = [];
+  categoriasProducto: TipoProducto[] = [];
   fechaInicio: string;
   fechaFin: string;
   idSucursal: number;
   idUsuario: number;
   idProveedor: number;
+  idCategoria: number;
   estado: string;
   formatoSeleccionado: 'PDF' | 'XLSX' = 'PDF';
   generando = false;
@@ -121,7 +125,8 @@ export class ReportesComponent implements OnInit, OnDestroy {
     private reporteService: ReporteService,
     private sucursalService: SucursalService,
     private usuarioService: UsuarioService,
-    private proveedorService: ProveedorService
+    private proveedorService: ProveedorService,
+    private tipoProductoService: TipoProductoService
   ) {
     this.seleccionarMesActual();
     window.addEventListener('scroll', this.escucharScroll, true);
@@ -154,6 +159,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
     this.reporteSeleccionado = reporte;
     this.idUsuario = null;
     this.idProveedor = null;
+    this.idCategoria = null;
     this.estado = '';
     this.formatoSeleccionado = reporte.formatos[0];
     if (reporte.filtros.includes('USUARIO')) {
@@ -161,6 +167,9 @@ export class ReportesComponent implements OnInit, OnDestroy {
     }
     if (reporte.filtros.includes('PROVEEDOR')) {
       this.cargarProveedores();
+    }
+    if (reporte.filtros.includes('CATEGORIA')) {
+      this.cargarCategoriasProducto();
     }
     this.programarGuia();
   }
@@ -210,6 +219,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
       idSucursal: this.idSucursal,
       idUsuario: this.idUsuario,
       idProveedor: this.idProveedor,
+      idCategoria: this.idCategoria,
       estado: this.estado,
       formato: this.formatoSeleccionado
     };
@@ -260,6 +270,11 @@ export class ReportesComponent implements OnInit, OnDestroy {
   private cargarProveedores(): void {
     this.proveedores = [];
     this.proveedorService.getProveedores().subscribe(proveedores => this.proveedores = proveedores);
+  }
+
+  private cargarCategoriasProducto(): void {
+    this.categoriasProducto = [];
+    this.tipoProductoService.getTiposProducto().subscribe(categorias => this.categoriasProducto = categorias);
   }
 
   private entregarArchivo(response: HttpResponse<Blob>): void {

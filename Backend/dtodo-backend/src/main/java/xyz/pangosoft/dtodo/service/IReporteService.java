@@ -10,6 +10,13 @@ public interface IReporteService {
 
     byte[] generarPolizaGeneral(Integer idSucursal, String fechaInicio, String fechaFin);
 
+    byte[] generarVentasProducto(
+            Integer idSucursal,
+            String fechaInicio,
+            String fechaFin,
+            Integer idCategoria,
+            String formato);
+
     byte[] generarMovimientosInventario(
             Integer idSucursal,
             String fechaInicio,

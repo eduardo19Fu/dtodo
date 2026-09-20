@@ -17,6 +17,7 @@ import xyz.pangosoft.dtodo.service.IInventarioMovimientosReporteService;
 import xyz.pangosoft.dtodo.service.IProductoService;
 import xyz.pangosoft.dtodo.service.IProformaService;
 import xyz.pangosoft.dtodo.service.IResumenNotasCreditoReporteService;
+import xyz.pangosoft.dtodo.service.IVentasProductoReporteService;
 
 class ReporteServiceImplTest {
 
@@ -26,6 +27,7 @@ class ReporteServiceImplTest {
     private IProformaService proformaService;
     private IResumenNotasCreditoReporteService resumenNotasCreditoReporteService;
     private IComprasPeriodoReporteService comprasPeriodoReporteService;
+    private IVentasProductoReporteService ventasProductoReporteService;
     private ReporteServiceImpl service;
 
     @BeforeEach
@@ -36,9 +38,10 @@ class ReporteServiceImplTest {
         proformaService = mock(IProformaService.class);
         resumenNotasCreditoReporteService = mock(IResumenNotasCreditoReporteService.class);
         comprasPeriodoReporteService = mock(IComprasPeriodoReporteService.class);
+        ventasProductoReporteService = mock(IVentasProductoReporteService.class);
         service = new ReporteServiceImpl(
                 facturaService, inventarioMovimientosReporteService, productoService, proformaService,
-                resumenNotasCreditoReporteService, comprasPeriodoReporteService);
+                resumenNotasCreditoReporteService, comprasPeriodoReporteService, ventasProductoReporteService);
     }
 
     @Test
@@ -60,7 +63,7 @@ class ReporteServiceImplTest {
                 1, "2026-09-20", "2026-09-19"));
 
         verifyNoInteractions(facturaService, inventarioMovimientosReporteService, productoService, proformaService,
-                resumenNotasCreditoReporteService, comprasPeriodoReporteService);
+                resumenNotasCreditoReporteService, comprasPeriodoReporteService, ventasProductoReporteService);
     }
 
     @Test
@@ -93,6 +96,29 @@ class ReporteServiceImplTest {
         assertArrayEquals(esperado, resultado);
         verify(inventarioMovimientosReporteService).generar(
                 3, java.time.LocalDate.of(2026, 9, 1), java.time.LocalDate.of(2026, 9, 19), "XLSX");
+    }
+
+    @Test
+    void ventasProductoDelegaCategoriaYFormatoValidados() {
+        byte[] esperado = new byte[] { 12, 13 };
+        when(ventasProductoReporteService.generar(
+                2, java.time.LocalDate.of(2026, 9, 1), java.time.LocalDate.of(2026, 9, 19), 3, "XLSX"))
+                .thenReturn(esperado);
+
+        byte[] resultado = service.generarVentasProducto(
+                2, "2026-09-01", "2026-09-19", 3, "xlsx");
+
+        assertArrayEquals(esperado, resultado);
+        verify(ventasProductoReporteService).generar(
+                2, java.time.LocalDate.of(2026, 9, 1), java.time.LocalDate.of(2026, 9, 19), 3, "XLSX");
+    }
+
+    @Test
+    void ventasProductoRechazaCategoriaInvalida() {
+        assertThrows(BadRequestException.class, () -> service.generarVentasProducto(
+                1, "2026-09-01", "2026-09-19", 0, "PDF"));
+
+        verifyNoInteractions(ventasProductoReporteService);
     }
 
     @Test

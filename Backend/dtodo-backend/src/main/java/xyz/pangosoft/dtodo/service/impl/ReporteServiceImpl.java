@@ -18,6 +18,7 @@ import xyz.pangosoft.dtodo.service.IProductoService;
 import xyz.pangosoft.dtodo.service.IProformaService;
 import xyz.pangosoft.dtodo.service.IReporteService;
 import xyz.pangosoft.dtodo.service.IResumenNotasCreditoReporteService;
+import xyz.pangosoft.dtodo.service.IVentasProductoReporteService;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +30,7 @@ public class ReporteServiceImpl implements IReporteService {
     private final IProformaService proformaService;
     private final IResumenNotasCreditoReporteService resumenNotasCreditoReporteService;
     private final IComprasPeriodoReporteService comprasPeriodoReporteService;
+    private final IVentasProductoReporteService ventasProductoReporteService;
 
     @Override
     public byte[] generarPolizaIndividual(
@@ -47,6 +49,23 @@ public class ReporteServiceImpl implements IReporteService {
         validarId(idSucursal, "La sucursal seleccionada no es válida.");
         validarRango(fechaInicio, fechaFin);
         return facturaService.reportGeneralPolicy(idSucursal, fechaInicio, fechaFin);
+    }
+
+    @Override
+    public byte[] generarVentasProducto(
+            Integer idSucursal,
+            String fechaInicio,
+            String fechaFin,
+            Integer idCategoria,
+            String formato) {
+        validarId(idSucursal, "La sucursal seleccionada no es válida.");
+        if (idCategoria != null) {
+            validarId(idCategoria, "La categoría seleccionada no es válida.");
+        }
+        LocalDate[] rango = validarRango(fechaInicio, fechaFin);
+        String formatoValido = validarFormato(formato);
+        return ventasProductoReporteService.generar(
+                idSucursal, rango[0], rango[1], idCategoria, formatoValido);
     }
 
     @Override

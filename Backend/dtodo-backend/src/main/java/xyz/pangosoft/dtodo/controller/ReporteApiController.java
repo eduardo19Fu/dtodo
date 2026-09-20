@@ -61,6 +61,24 @@ public class ReporteApiController {
                 nombrePeriodo("poliza_general", fechaInicio, fechaFin, "pdf"), true);
     }
 
+    @Secured("ROLE_ADMIN")
+    @GetMapping("/ventas/productos")
+    public ResponseEntity<byte[]> ventasProducto(
+            @RequestParam Integer idSucursal,
+            @RequestParam String fechaInicio,
+            @RequestParam String fechaFin,
+            @RequestParam(required = false) Integer idCategoria,
+            @RequestParam(defaultValue = "PDF") String formato) {
+        log.info("Generando ventas por producto. sucursal={}, categoría={}, formato={}, periodo={}..{}",
+                idSucursal, idCategoria, formato, fechaInicio, fechaFin);
+        byte[] reporte = reporteService.generarVentasProducto(
+                idSucursal, fechaInicio, fechaFin, idCategoria, formato);
+        boolean esPdf = "PDF".equalsIgnoreCase(formato);
+        String extension = esPdf ? "pdf" : "xlsx";
+        return archivo(reporte, esPdf ? MediaType.APPLICATION_PDF : XLSX_MEDIA_TYPE,
+                nombrePeriodo("ventas_producto", fechaInicio, fechaFin, extension), esPdf);
+    }
+
     @Secured({"ROLE_ADMIN", "ROLE_INVENTARIO"})
     @GetMapping("/inventario/movimientos")
     public ResponseEntity<byte[]> movimientosInventario(

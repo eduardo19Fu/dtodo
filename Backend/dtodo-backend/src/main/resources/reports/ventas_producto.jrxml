@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="ventas_producto" pageWidth="842" pageHeight="595" orientation="Landscape"
+              whenNoDataType="AllSectionsNoDetail" columnWidth="802" leftMargin="20" rightMargin="20"
+              topMargin="18" bottomMargin="18" isSummaryWithPageHeaderAndFooter="true"
+              uuid="26c301a4-c7de-4f54-a962-714ae09d34bb">
+    <property name="net.sf.jasperreports.export.xlsx.detect.cell.type" value="true"/>
+    <property name="net.sf.jasperreports.export.xlsx.remove.empty.space.between.rows" value="true"/>
+    <property name="net.sf.jasperreports.export.xlsx.white.page.background" value="false"/>
+
+    <style name="Base" isDefault="true" fontName="DejaVu Sans" fontSize="8" forecolor="#23344D"/>
+    <style name="Header" style="Base" mode="Opaque" backcolor="#1769D2" forecolor="#FFFFFF"
+           fontSize="8" isBold="true" vTextAlign="Middle"/>
+    <style name="Cell" style="Base" mode="Opaque" backcolor="#FFFFFF" vTextAlign="Middle">
+        <box><pen lineWidth="0.35" lineColor="#D9E3EF"/></box>
+    </style>
+
+    <parameter name="ID_SUCURSAL" class="java.lang.Integer"/>
+    <parameter name="FECHA_INICIO" class="java.sql.Timestamp"/>
+    <parameter name="FECHA_FIN_EXCLUSIVA" class="java.sql.Timestamp"/>
+    <parameter name="RANGO" class="java.lang.String"/>
+    <parameter name="SUCURSAL" class="java.lang.String"/>
+    <parameter name="ID_CATEGORIA" class="java.lang.Integer" isForPrompting="false"/>
+    <parameter name="CATEGORIA" class="java.lang.String"/>
+
+    <queryString language="SQL"><![CDATA[
+        SELECT p.cod_producto AS codigo,
+               p.nombre AS producto,
+               tp.tipo_producto AS categoria,
+               SUM(fd.cantidad) AS unidades,
+               SUM(COALESCE(fd.sub_total, 0)) AS venta_bruta,
+               SUM(COALESCE(fd.sub_total, 0) - COALESCE(fd.sub_total_descuento, fd.sub_total, 0)) AS descuento,
+               SUM(COALESCE(fd.sub_total_descuento, fd.sub_total, 0)) AS venta_neta
+          FROM facturas_detalle fd
+          INNER JOIN facturas f ON f.id_factura = fd.id_factura
+          INNER JOIN productos p ON p.id_producto = fd.id_producto
+          INNER JOIN tipos_producto tp ON tp.id_tipo_producto = p.id_tipo_producto
+         WHERE f.id_estado != 4
+           AND f.id_sucursal = $P{ID_SUCURSAL}
+           AND f.fecha >= $P{FECHA_INICIO}
+           AND f.fecha < $P{FECHA_FIN_EXCLUSIVA}
+           AND ($P{ID_CATEGORIA} IS NULL OR p.id_tipo_producto = $P{ID_CATEGORIA})
+         GROUP BY p.id_producto, p.cod_producto, p.nombre, tp.tipo_producto
+         ORDER BY venta_neta DESC, p.nombre
+    ]]></queryString>
+
+    <field name="codigo" class="java.lang.String"/>
+    <field name="producto" class="java.lang.String"/>
+    <field name="categoria" class="java.lang.String"/>
+    <field name="unidades" class="java.math.BigDecimal"/>
+    <field name="venta_bruta" class="java.math.BigDecimal"/>
+    <field name="descuento" class="java.math.BigDecimal"/>
+    <field name="venta_neta" class="java.math.BigDecimal"/>
+
+    <variable name="CANTIDAD_PRODUCTOS" class="java.lang.Integer" calculation="Count">
+        <variableExpression><![CDATA[$F{codigo}]]></variableExpression>
+    </variable>
+    <variable name="TOTAL_UNIDADES" class="java.math.BigDecimal" calculation="Sum">
+        <variableExpression><![CDATA[$F{unidades}]]></variableExpression>
+        <initialValueExpression><![CDATA[java.math.BigDecimal.ZERO]]></initialValueExpression>
+    </variable>
+    <variable name="TOTAL_VENTA_NETA" class="java.math.BigDecimal" calculation="Sum">
+        <variableExpression><![CDATA[$F{venta_neta}]]></variableExpression>
+        <initialValueExpression><![CDATA[java.math.BigDecimal.ZERO]]></initialValueExpression>
+    </variable>
+
+    <title>
+        <band height="72">
+            <rectangle radius="8">
+                <reportElement x="90" y="0" width="712" height="48" forecolor="#1769D2" backcolor="#1769D2"/>
+            </rectangle>
+            <image scaleImage="RetainShape" hAlign="Center">
+                <reportElement x="0" y="0" width="72" height="48"/>
+                <imageExpression><![CDATA[this.getClass().getResourceAsStream("/static/images/reports-image/logo-dtodo.jpg")]]></imageExpression>
+            </image>
+            <staticText>
+                <reportElement x="108" y="5" width="440" height="22" forecolor="#FFFFFF"/>
+                <textElement verticalAlignment="Middle"><font size="16" isBold="true"/></textElement>
+                <text><![CDATA[Ventas por producto o categoría]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="108" y="28" width="440" height="14" forecolor="#DCEBFF"/>
+                <textElement><font size="8"/></textElement>
+                <textFieldExpression><![CDATA[$P{SUCURSAL} + " · " + $P{RANGO}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="568" y="7" width="216" height="16" forecolor="#FFFFFF"/>
+                <textElement textAlignment="Right"><font size="9" isBold="true"/></textElement>
+                <textFieldExpression><![CDATA[$P{CATEGORIA}]]></textFieldExpression>
+            </textField>
+            <textField pattern="dd/MM/yyyy HH:mm">
+                <reportElement x="568" y="25" width="216" height="13" forecolor="#DCEBFF"/>
+                <textElement textAlignment="Right"><font size="7"/></textElement>
+                <textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+            </textField>
+            <staticText>
+                <reportElement x="0" y="54" width="802" height="14" forecolor="#66758A"/>
+                <textElement><font size="8" isItalic="true"/></textElement>
+                <text><![CDATA[Resume unidades e importes vendidos por producto. Los importes se expresan en quetzales.]]></text>
+            </staticText>
+        </band>
+    </title>
+
+    <columnHeader>
+        <band height="28">
+            <staticText><reportElement style="Header" x="0" y="0" width="90" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Código]]></text></staticText>
+            <staticText><reportElement style="Header" x="90" y="0" width="200" height="28"/><text><![CDATA[Producto]]></text></staticText>
+            <staticText><reportElement style="Header" x="290" y="0" width="130" height="28"/><text><![CDATA[Categoría]]></text></staticText>
+            <staticText><reportElement style="Header" x="420" y="0" width="75" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Unidades]]></text></staticText>
+            <staticText><reportElement style="Header" x="495" y="0" width="100" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Venta bruta]]></text></staticText>
+            <staticText><reportElement style="Header" x="595" y="0" width="95" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Descuento]]></text></staticText>
+            <staticText><reportElement style="Header" x="690" y="0" width="102" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Venta neta]]></text></staticText>
+        </band>
+    </columnHeader>
+
+    <detail>
+        <band height="24">
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="0" y="0" width="90" height="24"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA[$F{codigo}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="90" y="0" width="200" height="24"/><textFieldExpression><![CDATA[$F{producto}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="290" y="0" width="130" height="24"/><textFieldExpression><![CDATA[$F{categoria}]]></textFieldExpression></textField>
+            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="420" y="0" width="75" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{unidades}]]></textFieldExpression></textField>
+            <textField pattern="Q #,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="495" y="0" width="100" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{venta_bruta}]]></textFieldExpression></textField>
+            <textField pattern="Q #,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="595" y="0" width="95" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{descuento}]]></textFieldExpression></textField>
+            <textField pattern="Q #,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="690" y="0" width="102" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{venta_neta}]]></textFieldExpression></textField>
+        </band>
+    </detail>
+
+    <pageFooter>
+        <band height="18">
+            <textField>
+                <reportElement x="642" y="2" width="115" height="14" forecolor="#7B8798"/>
+                <textElement textAlignment="Right"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+            <textField evaluationTime="Report">
+                <reportElement x="757" y="2" width="35" height="14" forecolor="#7B8798"/>
+                <textElement textAlignment="Left"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA[" de " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+        </band>
+    </pageFooter>
+
+    <summary>
+        <band height="52">
+            <line><reportElement x="0" y="8" width="792" height="1" forecolor="#B9C9DC"/></line>
+            <staticText>
+                <reportElement x="0" y="16" width="360" height="24" forecolor="#52647C" backcolor="#F4F8FC" mode="Opaque">
+                    <printWhenExpression><![CDATA[$V{REPORT_COUNT}.intValue() == 0]]></printWhenExpression>
+                </reportElement>
+                <box><pen lineWidth="0.5" lineColor="#D6E2F0"/></box>
+                <textElement verticalAlignment="Middle"><font size="9" isItalic="true"/></textElement>
+                <text><![CDATA[No se encontraron ventas para los filtros seleccionados.]]></text>
+            </staticText>
+            <staticText><reportElement x="375" y="16" width="85" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Productos:]]></text></staticText>
+            <textField><reportElement x="465" y="16" width="35" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{CANTIDAD_PRODUCTOS} == null ? 0 : $V{CANTIDAD_PRODUCTOS}]]></textFieldExpression></textField>
+            <staticText><reportElement x="500" y="16" width="75" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Unidades:]]></text></staticText>
+            <textField pattern="#,##0"><reportElement x="580" y="16" width="55" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_UNIDADES} == null ? java.math.BigDecimal.ZERO : $V{TOTAL_UNIDADES}]]></textFieldExpression></textField>
+            <staticText><reportElement x="635" y="16" width="65" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Venta neta:]]></text></staticText>
+            <textField pattern="Q #,##0.00"><reportElement x="702" y="16" width="90" height="20" forecolor="#1769D2"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_VENTA_NETA} == null ? java.math.BigDecimal.ZERO : $V{TOTAL_VENTA_NETA}]]></textFieldExpression></textField>
+        </band>
+    </summary>
+</jasperReport>
