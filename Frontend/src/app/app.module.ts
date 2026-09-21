@@ -61,6 +61,7 @@ import { ModalCrearProductoComponent } from './components/compras/create-compra/
 import { TooltipDirective } from './directives/tooltip.directive';
 import { DateRangePickerComponent } from './components/shared/date-range-picker/date-range-picker.component';
 import { ReportesComponent } from './components/reportes/reportes.component';
+import { ReporteSelectorComponent } from './components/reportes/reporte-selector/reporte-selector.component';
 
 @NgModule({
   declarations: [
@@ -117,7 +118,8 @@ import { ReportesComponent } from './components/reportes/reportes.component';
     ModalCrearProductoComponent,
     TooltipDirective,
     DateRangePickerComponent,
-    ReportesComponent
+    ReportesComponent,
+    ReporteSelectorComponent
   ],
   imports: [
     BrowserModule,

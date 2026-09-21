@@ -70,75 +70,47 @@
 
     <form (ngSubmit)="generar()">
       <div class="config-body">
-        <div class="config-field" *ngIf="requiereFiltro('SUCURSAL')">
-          <label for="reporte-sucursal">Sucursal <span>*</span></label>
-          <div class="config-control">
-            <i class="fas fa-store" aria-hidden="true"></i>
-            <select id="reporte-sucursal" name="reporte-sucursal" class="form-control"
-              [(ngModel)]="idSucursal" (ngModelChange)="onSucursalChange()" required
-              [disabled]="!auth.hasRole('ROLE_ADMIN')">
-              <option [ngValue]="null" disabled>Selecciona una sucursal</option>
-              <option *ngFor="let sucursal of sucursales" [ngValue]="sucursal.idSucursal">{{sucursal.nombre}}</option>
-            </select>
-          </div>
-        </div>
+        <app-reporte-selector *ngIf="requiereFiltro('SUCURSAL')" etiqueta="Sucursal" icono="fa-store"
+          [opciones]="opcionesSucursal" [valor]="idSucursal" [permitirVacio]="false" [requerido]="true"
+          [deshabilitado]="!auth.hasRole('ROLE_ADMIN')" textoVacio="Selecciona una sucursal"
+          placeholderBusqueda="Buscar sucursal" (valorChange)="seleccionarSucursal($event)"
+          (despliegueChange)="alCambiarDespliegueSelector()">
+        </app-reporte-selector>
 
-        <div class="config-field" *ngIf="requiereFiltro('USUARIO')">
-          <label for="reporte-usuario">Usuario <span>*</span></label>
-          <div class="config-control">
-            <i class="fas fa-user" aria-hidden="true"></i>
-            <select id="reporte-usuario" name="reporte-usuario" class="form-control"
-              [(ngModel)]="idUsuario" required>
-              <option [ngValue]="null" disabled>Selecciona un usuario</option>
-              <option *ngFor="let usuario of usuarios" [ngValue]="usuario.idUsuario">
-                {{usuario.usuario}} — {{usuario.primerNombre}} {{usuario.apellido}}
-              </option>
-            </select>
-          </div>
-        </div>
+        <app-reporte-selector *ngIf="requiereFiltro('USUARIO')" etiqueta="Usuario" icono="fa-user"
+          [opciones]="opcionesUsuario" [(valor)]="idUsuario" [permitirVacio]="false" [requerido]="true"
+          textoVacio="Selecciona un usuario" placeholderBusqueda="Buscar usuario"
+          (despliegueChange)="alCambiarDespliegueSelector()">
+        </app-reporte-selector>
 
         <div class="config-dates" *ngIf="requiereFiltro('FECHAS')">
           <app-date-range-picker [(fechaInicio)]="fechaInicio" [(fechaFin)]="fechaFin"
             tema="ventas"></app-date-range-picker>
         </div>
 
-        <div class="config-field" *ngIf="requiereFiltro('CATEGORIA')">
-          <label for="reporte-categoria">Categoría</label>
-          <div class="config-control">
-            <i class="fas fa-tags" aria-hidden="true"></i>
-            <select id="reporte-categoria" name="reporte-categoria" class="form-control"
-              [(ngModel)]="idCategoria">
-              <option [ngValue]="null">Todas las categorías</option>
-              <option *ngFor="let categoria of categoriasProducto" [ngValue]="categoria.idTipoProducto">
-                {{categoria.tipoProducto}}
-              </option>
-            </select>
-          </div>
-        </div>
+        <app-reporte-selector *ngIf="requiereFiltro('CATEGORIA')" etiqueta="Categoría" icono="fa-tags"
+          [opciones]="opcionesCategoria" [(valor)]="idCategoria" textoVacio="Todas las categorías"
+          detalleVacio="Sin filtro de categoría" placeholderBusqueda="Buscar categoría"
+          (despliegueChange)="alCambiarDespliegueSelector()">
+        </app-reporte-selector>
 
-        <div class="config-field" *ngIf="requiereFiltro('PROVEEDOR')">
-          <label for="reporte-proveedor">Proveedor</label>
-          <div class="config-control">
-            <i class="fas fa-truck" aria-hidden="true"></i>
-            <select id="reporte-proveedor" name="reporte-proveedor" class="form-control"
-              [(ngModel)]="idProveedor">
-              <option [ngValue]="null">Todos los proveedores</option>
-              <option *ngFor="let proveedor of proveedores" [ngValue]="proveedor.idProveedor">
-                {{proveedor.nombre}}
-              </option>
-            </select>
-          </div>
-        </div>
+        <app-reporte-selector *ngIf="requiereFiltro('CLIENTE')" etiqueta="Cliente" icono="fa-user-friends"
+          [opciones]="opcionesCliente" [(valor)]="idCliente" textoVacio="Todos los clientes"
+          detalleVacio="Sin filtro de cliente" placeholderBusqueda="Buscar por nombre, NIT o teléfono"
+          (despliegueChange)="alCambiarDespliegueSelector()">
+        </app-reporte-selector>
 
-        <div class="config-field" *ngIf="requiereFiltro('ESTADO')">
-          <label for="reporte-estado">Estado</label>
-          <div class="config-control">
-            <i class="fas fa-tasks" aria-hidden="true"></i>
-            <select id="reporte-estado" name="reporte-estado" class="form-control" [(ngModel)]="estado">
-              <option *ngFor="let opcion of estadosDisponibles" [ngValue]="opcion.codigo">{{opcion.nombre}}</option>
-            </select>
-          </div>
-        </div>
+        <app-reporte-selector *ngIf="requiereFiltro('PROVEEDOR')" etiqueta="Proveedor" icono="fa-truck"
+          [opciones]="opcionesProveedor" [(valor)]="idProveedor" textoVacio="Todos los proveedores"
+          detalleVacio="Sin filtro de proveedor" placeholderBusqueda="Buscar proveedor"
+          (despliegueChange)="alCambiarDespliegueSelector()">
+        </app-reporte-selector>
+
+        <app-reporte-selector *ngIf="requiereFiltro('ESTADO')" etiqueta="Estado" icono="fa-tasks"
+          [opciones]="opcionesEstado" [(valor)]="estado" [valorVacio]="''" textoVacio="Todos los estados"
+          detalleVacio="Sin filtro de estado" placeholderBusqueda="Buscar estado"
+          (despliegueChange)="alCambiarDespliegueSelector()">
+        </app-reporte-selector>
 
         <fieldset class="config-format" *ngIf="reporteSeleccionado.formatos.length > 1">
           <legend>Formato de salida</legend>

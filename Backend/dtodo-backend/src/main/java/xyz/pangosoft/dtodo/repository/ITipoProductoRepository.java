@@ -10,8 +10,13 @@ import org.springframework.data.repository.query.Param;
 
 import xyz.pangosoft.dtodo.model.TipoProducto;
 import xyz.pangosoft.dtodo.dto.TipoProductoDto;
+import xyz.pangosoft.dtodo.dto.ReporteSelectorDto;
 
 public interface ITipoProductoRepository extends JpaRepository<TipoProducto, Integer> {
+
+	@Query("select new xyz.pangosoft.dtodo.dto.ReporteSelectorDto(" +
+			"t.idTipoProducto, t.tipoProducto, '') from TipoProducto t order by t.tipoProducto")
+	List<ReporteSelectorDto> findOpcionesReporte();
 	
 	// Consulta para encontrar un listado de tipos de producto que coincida con el dato ingresado por el usuario
 	@Query("Select t from TipoProducto t where t.tipoProducto = :tipo")

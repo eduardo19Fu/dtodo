@@ -5,6 +5,7 @@ export interface ReporteFiltroDto {
   idUsuario?: number;
   idProveedor?: number;
   idCategoria?: number;
+  idCliente?: number;
   estado?: string;
   formato?: 'PDF' | 'XLSX';
 }

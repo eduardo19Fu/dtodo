@@ -1,0 +1,38 @@
+<div class="report-select">
+  <label [id]="id + '-label'">{{etiqueta}} <span *ngIf="requerido">*</span></label>
+  <button type="button" class="report-select-trigger" [disabled]="deshabilitado"
+    aria-haspopup="listbox" [attr.aria-expanded]="abierto"
+    [attr.aria-labelledby]="id + '-label ' + id + '-value'" (click)="alternar()">
+    <i class="fas" [ngClass]="icono" aria-hidden="true"></i>
+    <span [id]="id + '-value'">{{textoSeleccionado}}</span>
+    <i class="fas fa-chevron-down report-select-chevron" [class.is-open]="abierto" aria-hidden="true"></i>
+  </button>
+
+  <div class="report-select-menu" *ngIf="abierto">
+    <div class="report-select-search" *ngIf="buscable">
+      <i class="fas fa-search" aria-hidden="true"></i>
+      <input type="search" class="form-control" [(ngModel)]="busqueda" [ngModelOptions]="{standalone: true}"
+        autocomplete="off"
+        [placeholder]="placeholderBusqueda" [attr.aria-label]="placeholderBusqueda">
+    </div>
+    <div class="report-select-options" role="listbox" [attr.aria-labelledby]="id + '-label'">
+      <button type="button" role="option" *ngIf="permitirVacio" [attr.aria-selected]="esValorVacio()"
+        [class.selected]="esValorVacio()" (click)="seleccionarVacio()">
+        <strong>{{textoVacio}}</strong>
+        <small *ngIf="detalleVacio">{{detalleVacio}}</small>
+      </button>
+      <button type="button" role="option" *ngFor="let opcion of opcionesVisibles"
+        [attr.aria-selected]="estaSeleccionada(opcion)" [class.selected]="estaSeleccionada(opcion)"
+        (click)="seleccionar(opcion)">
+        <strong>{{opcion.etiqueta}}</strong>
+        <small *ngIf="opcion.detalle">{{opcion.detalle}}</small>
+      </button>
+      <p class="report-select-empty" *ngIf="opcionesCoincidentes.length === 0">
+        No se encontraron resultados.
+      </p>
+    </div>
+    <small class="report-select-limit" *ngIf="opcionesCoincidentes.length > 50">
+      Mostrando los primeros 50 resultados. Escribe para precisar la búsqueda.
+    </small>
+  </div>
+</div>

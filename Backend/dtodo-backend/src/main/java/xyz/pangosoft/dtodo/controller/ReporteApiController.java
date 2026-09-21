@@ -19,8 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
-import xyz.pangosoft.dtodo.dto.UsuarioDto;
+import xyz.pangosoft.dtodo.dto.ReporteSelectorDto;
 import xyz.pangosoft.dtodo.service.IReporteService;
+import xyz.pangosoft.dtodo.service.IReporteSelectorService;
 
 @RestController
 @RequestMapping("/api/reportes")
@@ -32,6 +33,44 @@ public class ReporteApiController {
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 
     private final IReporteService reporteService;
+    private final IReporteSelectorService reporteSelectorService;
+
+    @Secured({"ROLE_ADMIN", "ROLE_INVENTARIO"})
+    @GetMapping("/filtros/sucursales")
+    public ResponseEntity<List<ReporteSelectorDto>> sucursalesSelector() {
+        return ResponseEntity.ok(reporteSelectorService.listarSucursales());
+    }
+
+    @Secured("ROLE_ADMIN")
+    @GetMapping("/filtros/usuarios/cajeros")
+    public ResponseEntity<List<ReporteSelectorDto>> cajerosSelector(
+            @RequestParam(required = false) Integer idSucursal) {
+        return ResponseEntity.ok(reporteSelectorService.listarCajeros(idSucursal));
+    }
+
+    @Secured("ROLE_ADMIN")
+    @GetMapping("/filtros/usuarios/proformas")
+    public ResponseEntity<List<ReporteSelectorDto>> usuariosProformasSelector() {
+        return ResponseEntity.ok(reporteSelectorService.listarUsuariosProformas());
+    }
+
+    @Secured({"ROLE_ADMIN", "ROLE_INVENTARIO"})
+    @GetMapping("/filtros/categorias")
+    public ResponseEntity<List<ReporteSelectorDto>> categoriasSelector() {
+        return ResponseEntity.ok(reporteSelectorService.listarCategorias());
+    }
+
+    @Secured({"ROLE_ADMIN", "ROLE_INVENTARIO"})
+    @GetMapping("/filtros/clientes")
+    public ResponseEntity<List<ReporteSelectorDto>> clientesSelector() {
+        return ResponseEntity.ok(reporteSelectorService.listarClientes());
+    }
+
+    @Secured("ROLE_ADMIN")
+    @GetMapping("/filtros/proveedores")
+    public ResponseEntity<List<ReporteSelectorDto>> proveedoresSelector() {
+        return ResponseEntity.ok(reporteSelectorService.listarProveedores());
+    }
 
     @Secured("ROLE_ADMIN")
     @GetMapping("/ventas/poliza-individual")
@@ -79,6 +118,24 @@ public class ReporteApiController {
                 nombrePeriodo("ventas_producto", fechaInicio, fechaFin, extension), esPdf);
     }
 
+    @Secured("ROLE_ADMIN")
+    @GetMapping("/ventas/clientes")
+    public ResponseEntity<byte[]> ventasCliente(
+            @RequestParam Integer idSucursal,
+            @RequestParam String fechaInicio,
+            @RequestParam String fechaFin,
+            @RequestParam(required = false) Integer idCliente,
+            @RequestParam(defaultValue = "PDF") String formato) {
+        log.info("Generando ventas por cliente. sucursal={}, cliente={}, formato={}, periodo={}..{}",
+                idSucursal, idCliente, formato, fechaInicio, fechaFin);
+        byte[] reporte = reporteService.generarVentasCliente(
+                idSucursal, fechaInicio, fechaFin, idCliente, formato);
+        boolean esPdf = "PDF".equalsIgnoreCase(formato);
+        String extension = esPdf ? "pdf" : "xlsx";
+        return archivo(reporte, esPdf ? MediaType.APPLICATION_PDF : XLSX_MEDIA_TYPE,
+                nombrePeriodo("ventas_cliente", fechaInicio, fechaFin, extension), esPdf);
+    }
+
     @Secured({"ROLE_ADMIN", "ROLE_INVENTARIO"})
     @GetMapping("/inventario/movimientos")
     public ResponseEntity<byte[]> movimientosInventario(
@@ -110,12 +167,6 @@ public class ReporteApiController {
         byte[] reporte = reporteService.generarExistencias(sucursalEfectiva);
         return archivo(reporte, XLSX_MEDIA_TYPE,
                 "existencias_sucursal_" + sucursalEfectiva + ".xlsx", false);
-    }
-
-    @Secured("ROLE_ADMIN")
-    @GetMapping("/proformas/usuarios")
-    public ResponseEntity<List<UsuarioDto>> usuariosProformas() {
-        return ResponseEntity.ok(reporteService.listarUsuariosProformas());
     }
 
     @Secured("ROLE_ADMIN")

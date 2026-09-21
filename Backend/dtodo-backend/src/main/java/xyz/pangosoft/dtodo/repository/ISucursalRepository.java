@@ -1,5 +1,7 @@
 package xyz.pangosoft.dtodo.repository;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -7,9 +9,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import xyz.pangosoft.dtodo.dto.SucursalDto;
+import xyz.pangosoft.dtodo.dto.ReporteSelectorDto;
 import xyz.pangosoft.dtodo.model.Sucursal;
 
 public interface ISucursalRepository extends JpaRepository<Sucursal, Integer> {
+
+    @Query("select new xyz.pangosoft.dtodo.dto.ReporteSelectorDto(" +
+            "s.idSucursal, s.nombre, s.direccion) from Sucursal s order by s.nombre")
+    List<ReporteSelectorDto> findOpcionesReporte();
 
 	@Query(value = "SELECT new xyz.pangosoft.dtodo.dto.SucursalDto(" +
 			"s.idSucursal, s.nombre, s.direccion, s.telefono, s.encargado, " +

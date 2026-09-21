@@ -1,9 +1,5 @@
 package xyz.pangosoft.dtodo.service;
 
-import java.util.List;
-
-import xyz.pangosoft.dtodo.dto.UsuarioDto;
-
 public interface IReporteService {
 
     byte[] generarPolizaIndividual(Integer idSucursal, Integer idUsuario, String fechaInicio, String fechaFin);
@@ -15,6 +11,13 @@ public interface IReporteService {
             String fechaInicio,
             String fechaFin,
             Integer idCategoria,
+            String formato);
+
+    byte[] generarVentasCliente(
+            Integer idSucursal,
+            String fechaInicio,
+            String fechaFin,
+            Integer idCliente,
             String formato);
 
     byte[] generarMovimientosInventario(
@@ -41,6 +44,4 @@ public interface IReporteService {
             Integer idProveedor,
             String estado,
             String formato);
-
-    List<UsuarioDto> listarUsuariosProformas();
 }

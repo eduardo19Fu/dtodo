@@ -2,13 +2,11 @@ package xyz.pangosoft.dtodo.service.impl;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
-import java.util.List;
 
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
-import xyz.pangosoft.dtodo.dto.UsuarioDto;
 import xyz.pangosoft.dtodo.model.enums.EstadoCompraEnum;
 import xyz.pangosoft.dtodo.model.enums.EstadoNotaCreditoEnum;
 import xyz.pangosoft.dtodo.service.IComprasPeriodoReporteService;
@@ -18,6 +16,7 @@ import xyz.pangosoft.dtodo.service.IProductoService;
 import xyz.pangosoft.dtodo.service.IProformaService;
 import xyz.pangosoft.dtodo.service.IReporteService;
 import xyz.pangosoft.dtodo.service.IResumenNotasCreditoReporteService;
+import xyz.pangosoft.dtodo.service.IVentasClienteReporteService;
 import xyz.pangosoft.dtodo.service.IVentasProductoReporteService;
 
 @Service
@@ -31,6 +30,7 @@ public class ReporteServiceImpl implements IReporteService {
     private final IResumenNotasCreditoReporteService resumenNotasCreditoReporteService;
     private final IComprasPeriodoReporteService comprasPeriodoReporteService;
     private final IVentasProductoReporteService ventasProductoReporteService;
+    private final IVentasClienteReporteService ventasClienteReporteService;
 
     @Override
     public byte[] generarPolizaIndividual(
@@ -69,6 +69,23 @@ public class ReporteServiceImpl implements IReporteService {
     }
 
     @Override
+    public byte[] generarVentasCliente(
+            Integer idSucursal,
+            String fechaInicio,
+            String fechaFin,
+            Integer idCliente,
+            String formato) {
+        validarId(idSucursal, "La sucursal seleccionada no es válida.");
+        if (idCliente != null) {
+            validarId(idCliente, "El cliente seleccionado no es válido.");
+        }
+        LocalDate[] rango = validarRango(fechaInicio, fechaFin);
+        String formatoValido = validarFormato(formato);
+        return ventasClienteReporteService.generar(
+                idSucursal, rango[0], rango[1], idCliente, formatoValido);
+    }
+
+    @Override
     public byte[] generarMovimientosInventario(
             Integer idSucursal,
             String fechaInicio,
@@ -100,11 +117,6 @@ public class ReporteServiceImpl implements IReporteService {
             validarRango(fechaInicio, fechaFin);
         }
         return proformaService.proformasExcel(fechaInicio, fechaFin, todas, idUsuario);
-    }
-
-    @Override
-    public List<UsuarioDto> listarUsuariosProformas() {
-        return proformaService.findUsuariosExportacion();
     }
 
     @Override

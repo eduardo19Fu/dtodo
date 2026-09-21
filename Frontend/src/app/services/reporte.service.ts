@@ -3,7 +3,7 @@ import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { ReporteFiltroDto } from '../dtos/reporte-filtro-dto';
-import { UsuarioDto } from '../dtos/usuario-dto';
+import { ReporteSelectorOpcionDto } from '../dtos/reporte-selector-opcion-dto';
 import { global } from './global';
 
 @Injectable({ providedIn: 'root' })
@@ -21,8 +21,29 @@ export class ReporteService {
     });
   }
 
-  listarUsuariosProformas(): Observable<UsuarioDto[]> {
-    return this.http.get<UsuarioDto[]>(`${this.url}/proformas/usuarios`);
+  listarSucursalesSelector(): Observable<ReporteSelectorOpcionDto[]> {
+    return this.http.get<ReporteSelectorOpcionDto[]>(`${this.url}/filtros/sucursales`);
+  }
+
+  listarCajerosSelector(idSucursal?: number): Observable<ReporteSelectorOpcionDto[]> {
+    const params = idSucursal ? new HttpParams().set('idSucursal', idSucursal.toString()) : undefined;
+    return this.http.get<ReporteSelectorOpcionDto[]>(`${this.url}/filtros/usuarios/cajeros`, { params });
+  }
+
+  listarUsuariosProformasSelector(): Observable<ReporteSelectorOpcionDto[]> {
+    return this.http.get<ReporteSelectorOpcionDto[]>(`${this.url}/filtros/usuarios/proformas`);
+  }
+
+  listarCategoriasSelector(): Observable<ReporteSelectorOpcionDto[]> {
+    return this.http.get<ReporteSelectorOpcionDto[]>(`${this.url}/filtros/categorias`);
+  }
+
+  listarClientesSelector(): Observable<ReporteSelectorOpcionDto[]> {
+    return this.http.get<ReporteSelectorOpcionDto[]>(`${this.url}/filtros/clientes`);
+  }
+
+  listarProveedoresSelector(): Observable<ReporteSelectorOpcionDto[]> {
+    return this.http.get<ReporteSelectorOpcionDto[]>(`${this.url}/filtros/proveedores`);
   }
 
   obtenerNombreArchivo(response: HttpResponse<Blob>, respaldo: string): string {
@@ -39,6 +60,8 @@ export class ReporteService {
         return { ruta: 'ventas/poliza-general', incluirUsuario: false };
       case 'VENTAS_PRODUCTO':
         return { ruta: 'ventas/productos', incluirUsuario: false, incluirOpciones: true };
+      case 'VENTAS_CLIENTE':
+        return { ruta: 'ventas/clientes', incluirUsuario: false, incluirOpciones: true };
       case 'MOVIMIENTOS_INVENTARIO':
         return { ruta: 'inventario/movimientos', incluirUsuario: false, incluirOpciones: true };
       case 'EXISTENCIAS':
@@ -80,6 +103,9 @@ export class ReporteService {
     }
     if (incluirOpciones && filtros.idCategoria) {
       params = params.set('idCategoria', filtros.idCategoria.toString());
+    }
+    if (incluirOpciones && filtros.idCliente) {
+      params = params.set('idCliente', filtros.idCliente.toString());
     }
     if (incluirOpciones && filtros.formato) {
       params = params.set('formato', filtros.formato);

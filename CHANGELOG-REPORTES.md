@@ -172,6 +172,24 @@ verificado.
   problemas de legibilidad.
 - Estado: implementación terminada, pendiente de aprobación visual del usuario antes del commit.
 
+### 2026-09-20 — Ventas por cliente
+
+- Se inició el reporte PDF/XLSX de ventas acumuladas por cliente, con filtro opcional de cliente.
+- El reporte presenta NIT, teléfono, facturas, unidades, venta bruta, descuentos, venta neta y última compra.
+- Se agregó un servicio Jasper dedicado y el endpoint administrativo `GET /api/reportes/ventas/clientes`.
+- Se habilitó la tarjeta en Angular y se añadió el selector de clientes.
+- La plantilla conserva el patrón visual aprobado, paginación `Página X de Y` en PDF y tipos numéricos y fecha real
+  para facilitar análisis en Excel.
+- Verificación: build Angular correcto, 94 pruebas frontend correctas, 18 pruebas backend focalizadas correctas y
+  suite backend completa con 118 pruebas correctas bajo JDK 17.
+- Se generaron y revisaron visualmente `output/pdf/ventas-cliente-muestra.pdf` y
+  `output/xlsx/ventas-cliente-muestra.xlsx`; no presentan recortes, solapamientos ni problemas de legibilidad.
+- Se creó un selector reutilizable y se aplicó a sucursales, usuarios, categorías, clientes, proveedores y estados.
+  Todos mantienen altura limitada, búsqueda sin distinguir acentos, cierre por Escape/clic externo y adaptación móvil.
+- Los selectores remotos ahora consumen DTO ligeros generados directamente por consultas de proyección, sin cargar
+  entidades completas ni sus relaciones. Las opciones quedan en caché durante la sesión de la pantalla.
+- Estado: implementación terminada, pendiente de aprobación visual del usuario antes del commit.
+
 ### 2026-09-20 — Movimientos y saldo de inventario
 
 - Se inició la modernización del reporte de movimientos y saldo con una plantilla compartida para PDF/XLSX.

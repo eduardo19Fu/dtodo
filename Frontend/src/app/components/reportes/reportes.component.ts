@@ -2,19 +2,11 @@ import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import Swal from 'sweetalert2';
 
-import { UsuarioDto } from '../../dtos/usuario-dto';
 import { ReporteFiltroDto } from '../../dtos/reporte-filtro-dto';
+import { ReporteSelectorOpcionDto } from '../../dtos/reporte-selector-opcion-dto';
 import { CategoriaReporte, ReporteDefinicion } from '../../models/reporte-definicion';
-import { Proveedor } from '../../models/proveedor';
-import { Sucursal } from '../../models/sucursal';
-import { TipoProducto } from '../../models/tipo-producto';
-import { Usuario } from '../../models/usuario';
 import { AuthService } from '../../services/auth.service';
 import { ReporteService } from '../../services/reporte.service';
-import { ProveedorService } from '../../services/proveedor.service';
-import { SucursalService } from '../../services/sucursal.service';
-import { TipoProductoService } from '../../services/tipo-producto.service';
-import { UsuarioService } from '../../services/usuarios/usuario.service';
 
 interface CategoriaDefinicion {
   codigo: CategoriaReporte;
@@ -47,8 +39,8 @@ export class ReportesComponent implements OnInit, OnDestroy {
       'Unidades e importes vendidos, agrupados por producto y categoría.', 'fa-tags', ['PDF', 'XLSX'],
       ['FECHAS', 'SUCURSAL', 'CATEGORIA'], ['ROLE_ADMIN'], true),
     this.reporte('VENTAS_CLIENTE', 'VENTAS', 'Ventas por cliente',
-      'Detalle comercial acumulado por cliente.', 'fa-user-friends', ['XLSX'],
-      ['FECHAS', 'SUCURSAL', 'CLIENTE'], ['ROLE_ADMIN'], false),
+      'Detalle comercial acumulado por cliente.', 'fa-user-friends', ['PDF', 'XLSX'],
+      ['FECHAS', 'SUCURSAL', 'CLIENTE'], ['ROLE_ADMIN'], true),
     this.reporte('RENTABILIDAD_PRODUCTO', 'VENTAS', 'Rentabilidad por producto',
       'Venta neta, costo y margen por producto.', 'fa-percentage', ['PDF', 'XLSX'],
       ['FECHAS', 'SUCURSAL', 'CATEGORIA'], ['ROLE_ADMIN'], false),
@@ -88,16 +80,18 @@ export class ReportesComponent implements OnInit, OnDestroy {
   ];
 
   reporteSeleccionado: ReporteDefinicion;
-  sucursales: Sucursal[] = [];
-  usuarios: Array<Usuario | UsuarioDto> = [];
-  proveedores: Proveedor[] = [];
-  categoriasProducto: TipoProducto[] = [];
+  sucursales: ReporteSelectorOpcionDto[] = [];
+  usuarios: ReporteSelectorOpcionDto[] = [];
+  proveedores: ReporteSelectorOpcionDto[] = [];
+  categoriasProducto: ReporteSelectorOpcionDto[] = [];
+  clientes: ReporteSelectorOpcionDto[] = [];
   fechaInicio: string;
   fechaFin: string;
   idSucursal: number;
   idUsuario: number;
   idProveedor: number;
   idCategoria: number;
+  idCliente: number;
   estado: string;
   formatoSeleccionado: 'PDF' | 'XLSX' = 'PDF';
   generando = false;
@@ -119,14 +113,17 @@ export class ReportesComponent implements OnInit, OnDestroy {
   private cardOrigen: HTMLElement;
   private guiaPendiente = false;
   private readonly escucharScroll = () => this.programarGuia();
+  private sucursalesCargadas = false;
+  private proveedoresCargados = false;
+  private categoriasCargadas = false;
+  private clientesCargados = false;
+  private readonly usuariosCache = new Map<string, ReporteSelectorOpcionDto[]>();
+  private readonly usuariosCargando = new Set<string>();
+  private claveUsuariosActual: string;
 
   constructor(
     public auth: AuthService,
-    private reporteService: ReporteService,
-    private sucursalService: SucursalService,
-    private usuarioService: UsuarioService,
-    private proveedorService: ProveedorService,
-    private tipoProductoService: TipoProductoService
+    private reporteService: ReporteService
   ) {
     this.seleccionarMesActual();
     window.addEventListener('scroll', this.escucharScroll, true);
@@ -160,6 +157,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
     this.idUsuario = null;
     this.idProveedor = null;
     this.idCategoria = null;
+    this.idCliente = null;
     this.estado = '';
     this.formatoSeleccionado = reporte.formatos[0];
     if (reporte.filtros.includes('USUARIO')) {
@@ -171,12 +169,50 @@ export class ReportesComponent implements OnInit, OnDestroy {
     if (reporte.filtros.includes('CATEGORIA')) {
       this.cargarCategoriasProducto();
     }
+    if (reporte.filtros.includes('CLIENTE')) {
+      this.cargarClientes();
+    }
     this.programarGuia();
   }
 
   cerrarConfiguracion(): void {
     this.reporteSeleccionado = null;
     this.cardOrigen = null;
+  }
+
+  get opcionesSucursal(): ReporteSelectorOpcionDto[] {
+    return this.sucursales;
+  }
+
+  get opcionesUsuario(): ReporteSelectorOpcionDto[] {
+    return this.usuarios;
+  }
+
+  get opcionesCategoria(): ReporteSelectorOpcionDto[] {
+    return this.categoriasProducto;
+  }
+
+  get opcionesCliente(): ReporteSelectorOpcionDto[] {
+    return this.clientes;
+  }
+
+  get opcionesProveedor(): ReporteSelectorOpcionDto[] {
+    return this.proveedores;
+  }
+
+  get opcionesEstado(): ReporteSelectorOpcionDto[] {
+    return this.estadosDisponibles
+      .filter(opcion => !!opcion.codigo)
+      .map(opcion => ({ valor: opcion.codigo, etiqueta: opcion.nombre }));
+  }
+
+  seleccionarSucursal(valor: number): void {
+    this.idSucursal = valor;
+    this.onSucursalChange();
+  }
+
+  alCambiarDespliegueSelector(): void {
+    this.programarGuia();
   }
 
   get categoriaSeleccionada(): string {
@@ -220,6 +256,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
       idUsuario: this.idUsuario,
       idProveedor: this.idProveedor,
       idCategoria: this.idCategoria,
+      idCliente: this.idCliente,
       estado: this.estado,
       formato: this.formatoSeleccionado
     };
@@ -250,31 +287,86 @@ export class ReportesComponent implements OnInit, OnDestroy {
 
   private cargarSucursales(): void {
     if (this.auth.hasRole('ROLE_ADMIN')) {
-      this.sucursalService.getSucursales().subscribe(sucursales => this.sucursales = sucursales);
+      if (this.sucursalesCargadas) {
+        return;
+      }
+      this.sucursalesCargadas = true;
+      this.reporteService.listarSucursalesSelector().subscribe(
+        opciones => this.sucursales = opciones,
+        () => this.sucursalesCargadas = false
+      );
       return;
     }
     if (this.auth.usuario && this.auth.usuario.sucursal) {
-      this.sucursales = [this.auth.usuario.sucursal];
+      const sucursal = this.auth.usuario.sucursal;
+      this.sucursales = [{
+        valor: sucursal.idSucursal,
+        etiqueta: sucursal.nombre,
+        detalle: sucursal.direccion
+      }];
+      this.sucursalesCargadas = true;
     }
   }
 
   private cargarUsuarios(codigo: string): void {
-    this.usuarios = [];
-    if (codigo === 'PROFORMAS_EMITIDAS') {
-      this.reporteService.listarUsuariosProformas().subscribe(usuarios => this.usuarios = usuarios);
+    const esProformas = codigo === 'PROFORMAS_EMITIDAS';
+    const clave = esProformas ? 'proformas' : `cajeros-${this.idSucursal || 'todas'}`;
+    this.claveUsuariosActual = clave;
+    if (this.usuariosCache.has(clave)) {
+      this.usuarios = this.usuariosCache.get(clave);
       return;
     }
-    this.usuarioService.getCajeros(this.idSucursal).subscribe(usuarios => this.usuarios = usuarios);
+    this.usuarios = [];
+    if (this.usuariosCargando.has(clave)) {
+      return;
+    }
+    this.usuariosCargando.add(clave);
+    const consulta = esProformas
+      ? this.reporteService.listarUsuariosProformasSelector()
+      : this.reporteService.listarCajerosSelector(this.idSucursal);
+    consulta.subscribe(
+      opciones => {
+        this.usuariosCache.set(clave, opciones);
+        if (this.claveUsuariosActual === clave) {
+          this.usuarios = opciones;
+        }
+        this.usuariosCargando.delete(clave);
+      },
+      () => this.usuariosCargando.delete(clave)
+    );
   }
 
   private cargarProveedores(): void {
-    this.proveedores = [];
-    this.proveedorService.getProveedores().subscribe(proveedores => this.proveedores = proveedores);
+    if (this.proveedoresCargados) {
+      return;
+    }
+    this.proveedoresCargados = true;
+    this.reporteService.listarProveedoresSelector().subscribe(
+      opciones => this.proveedores = opciones,
+      () => this.proveedoresCargados = false
+    );
   }
 
   private cargarCategoriasProducto(): void {
-    this.categoriasProducto = [];
-    this.tipoProductoService.getTiposProducto().subscribe(categorias => this.categoriasProducto = categorias);
+    if (this.categoriasCargadas) {
+      return;
+    }
+    this.categoriasCargadas = true;
+    this.reporteService.listarCategoriasSelector().subscribe(
+      opciones => this.categoriasProducto = opciones,
+      () => this.categoriasCargadas = false
+    );
+  }
+
+  private cargarClientes(): void {
+    if (this.clientesCargados) {
+      return;
+    }
+    this.clientesCargados = true;
+    this.reporteService.listarClientesSelector().subscribe(
+      opciones => this.clientes = opciones,
+      () => this.clientesCargados = false
+    );
   }
 
   private entregarArchivo(response: HttpResponse<Blob>): void {
