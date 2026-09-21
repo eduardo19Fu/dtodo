@@ -82,7 +82,7 @@ jobs:
 
       - name: Publicar estaticos del frontend (test)
         run: |
-          rsync -avz --delete --exclude='.htaccess' \
+          rsync -avz --no-owner --no-group --delete --exclude='.htaccess' \
             -e "ssh -o StrictHostKeyChecking=no" \
             Frontend/dist/frontend/ \
             ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/home/dtodojalapa/domains/dev.dtodojalapa.xyz/public_html/
@@ -154,7 +154,7 @@ jobs:
 
       - name: Publicar estaticos del frontend (prod)
         run: |
-          rsync -avz --delete --exclude='.htaccess' \
+          rsync -avz --no-owner --no-group --delete --exclude='.htaccess' \
             -e "ssh -o StrictHostKeyChecking=no" \
             Frontend/dist/frontend/ \
             ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/home/dtodojalapa/public_html/
