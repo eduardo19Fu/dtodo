@@ -14,6 +14,7 @@ import xyz.pangosoft.dtodo.service.IFacturaService;
 import xyz.pangosoft.dtodo.service.IInventarioMovimientosReporteService;
 import xyz.pangosoft.dtodo.service.IProductoService;
 import xyz.pangosoft.dtodo.service.IProformaService;
+import xyz.pangosoft.dtodo.service.IRentabilidadProductoReporteService;
 import xyz.pangosoft.dtodo.service.IReporteService;
 import xyz.pangosoft.dtodo.service.IResumenNotasCreditoReporteService;
 import xyz.pangosoft.dtodo.service.IVentasClienteReporteService;
@@ -31,6 +32,7 @@ public class ReporteServiceImpl implements IReporteService {
     private final IComprasPeriodoReporteService comprasPeriodoReporteService;
     private final IVentasProductoReporteService ventasProductoReporteService;
     private final IVentasClienteReporteService ventasClienteReporteService;
+    private final IRentabilidadProductoReporteService rentabilidadProductoReporteService;
 
     @Override
     public byte[] generarPolizaIndividual(
@@ -83,6 +85,23 @@ public class ReporteServiceImpl implements IReporteService {
         String formatoValido = validarFormato(formato);
         return ventasClienteReporteService.generar(
                 idSucursal, rango[0], rango[1], idCliente, formatoValido);
+    }
+
+    @Override
+    public byte[] generarRentabilidadProducto(
+            Integer idSucursal,
+            String fechaInicio,
+            String fechaFin,
+            Integer idCategoria,
+            String formato) {
+        validarId(idSucursal, "La sucursal seleccionada no es válida.");
+        if (idCategoria != null) {
+            validarId(idCategoria, "La categoría seleccionada no es válida.");
+        }
+        LocalDate[] rango = validarRango(fechaInicio, fechaFin);
+        String formatoValido = validarFormato(formato);
+        return rentabilidadProductoReporteService.generar(
+                idSucursal, rango[0], rango[1], idCategoria, formatoValido);
     }
 
     @Override

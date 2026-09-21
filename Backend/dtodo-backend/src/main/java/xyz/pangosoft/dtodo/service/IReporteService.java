@@ -20,6 +20,13 @@ public interface IReporteService {
             Integer idCliente,
             String formato);
 
+    byte[] generarRentabilidadProducto(
+            Integer idSucursal,
+            String fechaInicio,
+            String fechaFin,
+            Integer idCategoria,
+            String formato);
+
     byte[] generarMovimientosInventario(
             Integer idSucursal,
             String fechaInicio,

@@ -136,6 +136,24 @@ public class ReporteApiController {
                 nombrePeriodo("ventas_cliente", fechaInicio, fechaFin, extension), esPdf);
     }
 
+    @Secured("ROLE_ADMIN")
+    @GetMapping("/ventas/rentabilidad-productos")
+    public ResponseEntity<byte[]> rentabilidadProducto(
+            @RequestParam Integer idSucursal,
+            @RequestParam String fechaInicio,
+            @RequestParam String fechaFin,
+            @RequestParam(required = false) Integer idCategoria,
+            @RequestParam(defaultValue = "PDF") String formato) {
+        log.info("Generando rentabilidad por producto. sucursal={}, categoría={}, formato={}, periodo={}..{}",
+                idSucursal, idCategoria, formato, fechaInicio, fechaFin);
+        byte[] reporte = reporteService.generarRentabilidadProducto(
+                idSucursal, fechaInicio, fechaFin, idCategoria, formato);
+        boolean esPdf = "PDF".equalsIgnoreCase(formato);
+        String extension = esPdf ? "pdf" : "xlsx";
+        return archivo(reporte, esPdf ? MediaType.APPLICATION_PDF : XLSX_MEDIA_TYPE,
+                nombrePeriodo("rentabilidad_producto", fechaInicio, fechaFin, extension), esPdf);
+    }
+
     @Secured({"ROLE_ADMIN", "ROLE_INVENTARIO"})
     @GetMapping("/inventario/movimientos")
     public ResponseEntity<byte[]> movimientosInventario(

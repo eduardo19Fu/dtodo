@@ -16,6 +16,7 @@ import xyz.pangosoft.dtodo.service.IFacturaService;
 import xyz.pangosoft.dtodo.service.IInventarioMovimientosReporteService;
 import xyz.pangosoft.dtodo.service.IProductoService;
 import xyz.pangosoft.dtodo.service.IProformaService;
+import xyz.pangosoft.dtodo.service.IRentabilidadProductoReporteService;
 import xyz.pangosoft.dtodo.service.IResumenNotasCreditoReporteService;
 import xyz.pangosoft.dtodo.service.IVentasClienteReporteService;
 import xyz.pangosoft.dtodo.service.IVentasProductoReporteService;
@@ -30,6 +31,7 @@ class ReporteServiceImplTest {
     private IComprasPeriodoReporteService comprasPeriodoReporteService;
     private IVentasProductoReporteService ventasProductoReporteService;
     private IVentasClienteReporteService ventasClienteReporteService;
+    private IRentabilidadProductoReporteService rentabilidadProductoReporteService;
     private ReporteServiceImpl service;
 
     @BeforeEach
@@ -42,10 +44,11 @@ class ReporteServiceImplTest {
         comprasPeriodoReporteService = mock(IComprasPeriodoReporteService.class);
         ventasProductoReporteService = mock(IVentasProductoReporteService.class);
         ventasClienteReporteService = mock(IVentasClienteReporteService.class);
+        rentabilidadProductoReporteService = mock(IRentabilidadProductoReporteService.class);
         service = new ReporteServiceImpl(
                 facturaService, inventarioMovimientosReporteService, productoService, proformaService,
                 resumenNotasCreditoReporteService, comprasPeriodoReporteService, ventasProductoReporteService,
-                ventasClienteReporteService);
+                ventasClienteReporteService, rentabilidadProductoReporteService);
     }
 
     @Test
@@ -68,7 +71,7 @@ class ReporteServiceImplTest {
 
         verifyNoInteractions(facturaService, inventarioMovimientosReporteService, productoService, proformaService,
                 resumenNotasCreditoReporteService, comprasPeriodoReporteService, ventasProductoReporteService,
-                ventasClienteReporteService);
+                ventasClienteReporteService, rentabilidadProductoReporteService);
     }
 
     @Test
@@ -155,6 +158,29 @@ class ReporteServiceImplTest {
                 1, "2026-09-01", "2026-09-19", null, "CSV"));
 
         verifyNoInteractions(ventasClienteReporteService);
+    }
+
+    @Test
+    void rentabilidadProductoDelegaCategoriaYFormatoValidados() {
+        byte[] esperado = new byte[] { 16, 17 };
+        when(rentabilidadProductoReporteService.generar(
+                2, java.time.LocalDate.of(2026, 9, 1), java.time.LocalDate.of(2026, 9, 19), 3, "PDF"))
+                .thenReturn(esperado);
+
+        byte[] resultado = service.generarRentabilidadProducto(
+                2, "2026-09-01", "2026-09-19", 3, "pdf");
+
+        assertArrayEquals(esperado, resultado);
+        verify(rentabilidadProductoReporteService).generar(
+                2, java.time.LocalDate.of(2026, 9, 1), java.time.LocalDate.of(2026, 9, 19), 3, "PDF");
+    }
+
+    @Test
+    void rentabilidadProductoRechazaCategoriaInvalida() {
+        assertThrows(BadRequestException.class, () -> service.generarRentabilidadProducto(
+                1, "2026-09-01", "2026-09-19", 0, "PDF"));
+
+        verifyNoInteractions(rentabilidadProductoReporteService);
     }
 
     @Test

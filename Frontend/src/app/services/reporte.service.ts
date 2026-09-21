@@ -62,6 +62,8 @@ export class ReporteService {
         return { ruta: 'ventas/productos', incluirUsuario: false, incluirOpciones: true };
       case 'VENTAS_CLIENTE':
         return { ruta: 'ventas/clientes', incluirUsuario: false, incluirOpciones: true };
+      case 'RENTABILIDAD_PRODUCTO':
+        return { ruta: 'ventas/rentabilidad-productos', incluirUsuario: false, incluirOpciones: true };
       case 'MOVIMIENTOS_INVENTARIO':
         return { ruta: 'inventario/movimientos', incluirUsuario: false, incluirOpciones: true };
       case 'EXISTENCIAS':

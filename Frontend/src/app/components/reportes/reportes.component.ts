@@ -43,7 +43,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
       ['FECHAS', 'SUCURSAL', 'CLIENTE'], ['ROLE_ADMIN'], true),
     this.reporte('RENTABILIDAD_PRODUCTO', 'VENTAS', 'Rentabilidad por producto',
       'Venta neta, costo y margen por producto.', 'fa-percentage', ['PDF', 'XLSX'],
-      ['FECHAS', 'SUCURSAL', 'CATEGORIA'], ['ROLE_ADMIN'], false),
+      ['FECHAS', 'SUCURSAL', 'CATEGORIA'], ['ROLE_ADMIN'], true),
     this.reporte('MOVIMIENTOS_INVENTARIO', 'INVENTARIO', 'Movimientos y saldo',
       'Entradas, salidas y saldo de inventario durante un período.', 'fa-exchange-alt', ['PDF', 'XLSX'],
       ['FECHAS', 'SUCURSAL'], ['ROLE_ADMIN', 'ROLE_INVENTARIO'], true),

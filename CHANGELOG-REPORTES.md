@@ -190,6 +190,20 @@ verificado.
   entidades completas ni sus relaciones. Las opciones quedan en caché durante la sesión de la pantalla.
 - Estado: implementación terminada, pendiente de aprobación visual del usuario antes del commit.
 
+### 2026-09-20 — Rentabilidad por producto
+
+- Se implementó el reporte PDF/XLSX de rentabilidad por producto, con filtros de período, sucursal y categoría.
+- El reporte presenta unidades, venta neta, costo estimado, margen y porcentaje de margen por producto.
+- El costo se calcula con el precio de compra actual porque el detalle de factura no conserva el costo histórico.
+- Se agregó el servicio Jasper dedicado y el endpoint administrativo
+  `GET /api/reportes/ventas/rentabilidad-productos`.
+- La plantilla conserva el patrón visual aprobado, fuente DejaVu Sans, estado sin datos y paginación `Página X de Y`.
+- Verificación: build Angular correcto, 94 pruebas frontend correctas, 19 pruebas backend focalizadas correctas y
+  suite backend completa con 123 pruebas correctas bajo JDK 17.
+- Se generaron y revisaron visualmente `output/pdf/rentabilidad-producto-muestra.pdf` y
+  `output/xlsx/rentabilidad-producto-muestra.xlsx`; no presentan recortes, solapamientos ni problemas de legibilidad.
+- Estado: implementación terminada, pendiente de aprobación visual del usuario antes del commit.
+
 ### 2026-09-20 — Movimientos y saldo de inventario
 
 - Se inició la modernización del reporte de movimientos y saldo con una plantilla compartida para PDF/XLSX.
