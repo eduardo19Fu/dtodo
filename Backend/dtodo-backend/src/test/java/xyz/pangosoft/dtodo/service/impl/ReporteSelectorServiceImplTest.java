@@ -14,6 +14,7 @@ import xyz.pangosoft.dtodo.dto.ReporteSelectorDto;
 import xyz.pangosoft.dtodo.repository.IClienteRepository;
 import xyz.pangosoft.dtodo.repository.IProformaRepository;
 import xyz.pangosoft.dtodo.repository.IProveedorRepository;
+import xyz.pangosoft.dtodo.repository.IProductoRepository;
 import xyz.pangosoft.dtodo.repository.ISucursalRepository;
 import xyz.pangosoft.dtodo.repository.ITipoProductoRepository;
 import xyz.pangosoft.dtodo.repository.IUsuarioRepository;
@@ -26,6 +27,7 @@ class ReporteSelectorServiceImplTest {
     private ITipoProductoRepository tipoProductoRepository;
     private IClienteRepository clienteRepository;
     private IProveedorRepository proveedorRepository;
+    private IProductoRepository productoRepository;
     private ReporteSelectorServiceImpl service;
 
     @BeforeEach
@@ -36,13 +38,15 @@ class ReporteSelectorServiceImplTest {
         tipoProductoRepository = mock(ITipoProductoRepository.class);
         clienteRepository = mock(IClienteRepository.class);
         proveedorRepository = mock(IProveedorRepository.class);
+        productoRepository = mock(IProductoRepository.class);
         service = new ReporteSelectorServiceImpl(
                 sucursalRepository,
                 usuarioRepository,
                 proformaRepository,
                 tipoProductoRepository,
                 clienteRepository,
-                proveedorRepository);
+                proveedorRepository,
+                productoRepository);
     }
 
     @Test
@@ -54,6 +58,7 @@ class ReporteSelectorServiceImplTest {
         when(tipoProductoRepository.findOpcionesReporte()).thenReturn(opciones);
         when(clienteRepository.findOpcionesReporte()).thenReturn(opciones);
         when(proveedorRepository.findOpcionesReporte()).thenReturn(opciones);
+        when(productoRepository.findOpcionesReporte(2)).thenReturn(opciones);
 
         assertSame(opciones, service.listarSucursales());
         assertSame(opciones, service.listarCajeros(2));
@@ -61,6 +66,7 @@ class ReporteSelectorServiceImplTest {
         assertSame(opciones, service.listarCategorias());
         assertSame(opciones, service.listarClientes());
         assertSame(opciones, service.listarProveedores());
+        assertSame(opciones, service.listarProductos(2));
 
         verify(sucursalRepository).findOpcionesReporte();
         verify(usuarioRepository).findOpcionesCajeroReporte(2);
@@ -68,5 +74,6 @@ class ReporteSelectorServiceImplTest {
         verify(tipoProductoRepository).findOpcionesReporte();
         verify(clienteRepository).findOpcionesReporte();
         verify(proveedorRepository).findOpcionesReporte();
+        verify(productoRepository).findOpcionesReporte(2);
     }
 }

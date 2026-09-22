@@ -13,6 +13,7 @@ import xyz.pangosoft.dtodo.service.IBajoStockReporteService;
 import xyz.pangosoft.dtodo.service.IComprasPeriodoReporteService;
 import xyz.pangosoft.dtodo.service.IFacturaService;
 import xyz.pangosoft.dtodo.service.IInventarioMovimientosReporteService;
+import xyz.pangosoft.dtodo.service.IKardexProductoReporteService;
 import xyz.pangosoft.dtodo.service.IProductoService;
 import xyz.pangosoft.dtodo.service.IProformaService;
 import xyz.pangosoft.dtodo.service.IRentabilidadProductoReporteService;
@@ -35,6 +36,7 @@ public class ReporteServiceImpl implements IReporteService {
     private final IVentasClienteReporteService ventasClienteReporteService;
     private final IRentabilidadProductoReporteService rentabilidadProductoReporteService;
     private final IBajoStockReporteService bajoStockReporteService;
+    private final IKardexProductoReporteService kardexProductoReporteService;
 
     @Override
     public byte[] generarPolizaIndividual(
@@ -133,6 +135,21 @@ public class ReporteServiceImpl implements IReporteService {
         }
         String formatoValido = validarFormato(formato);
         return bajoStockReporteService.generar(idSucursal, idCategoria, formatoValido);
+    }
+
+    @Override
+    public byte[] generarKardexProducto(
+            Integer idSucursal,
+            Integer idProducto,
+            String fechaInicio,
+            String fechaFin,
+            String formato) {
+        validarId(idSucursal, "La sucursal seleccionada no es válida.");
+        validarId(idProducto, "El producto seleccionado no es válido.");
+        LocalDate[] rango = validarRango(fechaInicio, fechaFin);
+        String formatoValido = validarFormato(formato);
+        return kardexProductoReporteService.generar(
+                idSucursal, idProducto, rango[0], rango[1], formatoValido);
     }
 
     @Override

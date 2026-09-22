@@ -46,6 +46,11 @@ export class ReporteService {
     return this.http.get<ReporteSelectorOpcionDto[]>(`${this.url}/filtros/proveedores`);
   }
 
+  listarProductosSelector(idSucursal: number): Observable<ReporteSelectorOpcionDto[]> {
+    const params = new HttpParams().set('idSucursal', idSucursal.toString());
+    return this.http.get<ReporteSelectorOpcionDto[]>(`${this.url}/filtros/productos`, { params });
+  }
+
   obtenerNombreArchivo(response: HttpResponse<Blob>, respaldo: string): string {
     const disposition = response.headers.get('Content-Disposition') || '';
     const coincidencia = /filename\*?=(?:UTF-8''|["']?)([^;"']+)/i.exec(disposition);
@@ -70,6 +75,8 @@ export class ReporteService {
         return { ruta: 'inventario/existencias', incluirUsuario: false };
       case 'BAJO_STOCK':
         return { ruta: 'inventario/bajo-stock', incluirUsuario: false, incluirOpciones: true };
+      case 'KARDEX':
+        return { ruta: 'inventario/kardex', incluirUsuario: false, incluirOpciones: true };
       case 'PROFORMAS_EMITIDAS':
         return { ruta: 'proformas', incluirUsuario: true };
       case 'RESUMEN_NOTAS':
@@ -110,6 +117,9 @@ export class ReporteService {
     }
     if (incluirOpciones && filtros.idCliente) {
       params = params.set('idCliente', filtros.idCliente.toString());
+    }
+    if (incluirOpciones && filtros.idProducto) {
+      params = params.set('idProducto', filtros.idProducto.toString());
     }
     if (incluirOpciones && filtros.formato) {
       params = params.set('formato', filtros.formato);

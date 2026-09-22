@@ -15,6 +15,7 @@ import xyz.pangosoft.dtodo.service.IBajoStockReporteService;
 import xyz.pangosoft.dtodo.service.IComprasPeriodoReporteService;
 import xyz.pangosoft.dtodo.service.IFacturaService;
 import xyz.pangosoft.dtodo.service.IInventarioMovimientosReporteService;
+import xyz.pangosoft.dtodo.service.IKardexProductoReporteService;
 import xyz.pangosoft.dtodo.service.IProductoService;
 import xyz.pangosoft.dtodo.service.IProformaService;
 import xyz.pangosoft.dtodo.service.IRentabilidadProductoReporteService;
@@ -34,6 +35,7 @@ class ReporteServiceImplTest {
     private IVentasClienteReporteService ventasClienteReporteService;
     private IRentabilidadProductoReporteService rentabilidadProductoReporteService;
     private IBajoStockReporteService bajoStockReporteService;
+    private IKardexProductoReporteService kardexProductoReporteService;
     private ReporteServiceImpl service;
 
     @BeforeEach
@@ -48,10 +50,12 @@ class ReporteServiceImplTest {
         ventasClienteReporteService = mock(IVentasClienteReporteService.class);
         rentabilidadProductoReporteService = mock(IRentabilidadProductoReporteService.class);
         bajoStockReporteService = mock(IBajoStockReporteService.class);
+        kardexProductoReporteService = mock(IKardexProductoReporteService.class);
         service = new ReporteServiceImpl(
                 facturaService, inventarioMovimientosReporteService, productoService, proformaService,
                 resumenNotasCreditoReporteService, comprasPeriodoReporteService, ventasProductoReporteService,
-                ventasClienteReporteService, rentabilidadProductoReporteService, bajoStockReporteService);
+                ventasClienteReporteService, rentabilidadProductoReporteService, bajoStockReporteService,
+                kardexProductoReporteService);
     }
 
     @Test
@@ -74,7 +78,8 @@ class ReporteServiceImplTest {
 
         verifyNoInteractions(facturaService, inventarioMovimientosReporteService, productoService, proformaService,
                 resumenNotasCreditoReporteService, comprasPeriodoReporteService, ventasProductoReporteService,
-                ventasClienteReporteService, rentabilidadProductoReporteService, bajoStockReporteService);
+                ventasClienteReporteService, rentabilidadProductoReporteService, bajoStockReporteService,
+                kardexProductoReporteService);
     }
 
     @Test
@@ -202,6 +207,29 @@ class ReporteServiceImplTest {
         assertThrows(BadRequestException.class, () -> service.generarBajoStock(1, 0, "PDF"));
 
         verifyNoInteractions(bajoStockReporteService);
+    }
+
+    @Test
+    void kardexProductoDelegaFiltrosValidados() {
+        byte[] esperado = new byte[] { 20, 21 };
+        when(kardexProductoReporteService.generar(
+                2, 15, java.time.LocalDate.of(2026, 9, 1), java.time.LocalDate.of(2026, 9, 19), "XLSX"))
+                .thenReturn(esperado);
+
+        byte[] resultado = service.generarKardexProducto(
+                2, 15, "2026-09-01", "2026-09-19", "xlsx");
+
+        assertArrayEquals(esperado, resultado);
+        verify(kardexProductoReporteService).generar(
+                2, 15, java.time.LocalDate.of(2026, 9, 1), java.time.LocalDate.of(2026, 9, 19), "XLSX");
+    }
+
+    @Test
+    void kardexProductoRechazaProductoInvalido() {
+        assertThrows(BadRequestException.class, () -> service.generarKardexProducto(
+                1, 0, "2026-09-01", "2026-09-19", "PDF"));
+
+        verifyNoInteractions(kardexProductoReporteService);
     }
 
     @Test

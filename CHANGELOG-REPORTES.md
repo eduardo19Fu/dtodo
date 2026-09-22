@@ -12,7 +12,7 @@ verificado.
 - Hito completado: **R1 — Base técnica y centralización de reportes existentes**.
 - Hito siguiente: **R2 — Cobertura operativa nueva**.
 - Alcance aprobado: 16 reportes distribuidos entre ventas, inventario, proformas, notas de crédito y compras.
-- Última actualización: 2026-09-20.
+- Última actualización: 2026-09-22.
 
 ## Cambios realizados
 
@@ -170,7 +170,7 @@ verificado.
   suite backend completa con 111 pruebas correctas bajo JDK 17.
 - Se generó y revisó visualmente `output/pdf/ventas-producto-muestra.pdf`; no presenta recortes, solapamientos ni
   problemas de legibilidad.
-- Estado: implementación terminada, pendiente de aprobación visual del usuario antes del commit.
+- Estado: implementación terminada y aprobada visualmente por el usuario.
 
 ### 2026-09-20 — Ventas por cliente
 
@@ -217,6 +217,25 @@ verificado.
 - Se generaron y revisaron visualmente `output/pdf/bajo-stock-muestra.pdf` y
   `output/xlsx/bajo-stock-muestra.xlsx`; no presentan recortes, solapamientos ni problemas de legibilidad.
 - Estado: implementación terminada, pendiente de aprobación visual del usuario antes del commit.
+
+### 2026-09-22 — Kardex de producto
+
+- Se implementó el reporte PDF/XLSX del historial cronológico de movimientos para un producto y sucursal.
+- El reporte incluye stock inicial, entradas, salidas y saldo después de cada movimiento, con totales del período.
+- Se agregó un selector de productos ligero, consultado mediante DTO de proyección y limitado al inventario activo de
+  la sucursal seleccionada.
+- Los selectores reutilizables ahora flotan sobre el pie del configurador, se abren arriba o abajo según el espacio
+  visible y recalculan su posición durante scroll y resize.
+- Se agregó la acción **Limpiar** para restaurar el período, filtros opcionales, selección requerida y formato sin
+  cambiar la sucursal activa.
+- Se agregó el servicio Jasper dedicado y el endpoint protegido `GET /api/reportes/inventario/kardex` para
+  `ROLE_ADMIN` y `ROLE_INVENTARIO`.
+- La plantilla conserva el patrón visual aprobado, fuente DejaVu Sans, estado sin datos y paginación `Página X de Y`.
+- Verificación: build Angular correcto, 95 pruebas frontend correctas, 24 pruebas backend focalizadas correctas y
+  suite backend completa con 133 pruebas correctas bajo JDK 17.
+- Se generaron y revisaron visualmente `output/pdf/kardex-producto-muestra.pdf` y
+  `output/xlsx/kardex-producto-muestra.xlsx`; no presentan recortes, solapamientos ni errores de fórmula.
+- Estado: implementación terminada y aprobada visualmente por el usuario.
 
 ### 2026-09-20 — Movimientos y saldo de inventario
 

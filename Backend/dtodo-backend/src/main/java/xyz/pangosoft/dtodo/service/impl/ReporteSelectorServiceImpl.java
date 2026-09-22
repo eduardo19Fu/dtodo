@@ -10,6 +10,7 @@ import xyz.pangosoft.dtodo.dto.ReporteSelectorDto;
 import xyz.pangosoft.dtodo.repository.IClienteRepository;
 import xyz.pangosoft.dtodo.repository.IProformaRepository;
 import xyz.pangosoft.dtodo.repository.IProveedorRepository;
+import xyz.pangosoft.dtodo.repository.IProductoRepository;
 import xyz.pangosoft.dtodo.repository.ISucursalRepository;
 import xyz.pangosoft.dtodo.repository.ITipoProductoRepository;
 import xyz.pangosoft.dtodo.repository.IUsuarioRepository;
@@ -26,6 +27,7 @@ public class ReporteSelectorServiceImpl implements IReporteSelectorService {
     private final ITipoProductoRepository tipoProductoRepository;
     private final IClienteRepository clienteRepository;
     private final IProveedorRepository proveedorRepository;
+    private final IProductoRepository productoRepository;
 
     @Override
     public List<ReporteSelectorDto> listarSucursales() {
@@ -55,5 +57,10 @@ public class ReporteSelectorServiceImpl implements IReporteSelectorService {
     @Override
     public List<ReporteSelectorDto> listarProveedores() {
         return proveedorRepository.findOpcionesReporte();
+    }
+
+    @Override
+    public List<ReporteSelectorDto> listarProductos(Integer idSucursal) {
+        return productoRepository.findOpcionesReporte(idSucursal);
     }
 }

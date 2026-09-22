@@ -37,6 +37,13 @@ public interface IReporteService {
 
     byte[] generarBajoStock(Integer idSucursal, Integer idCategoria, String formato);
 
+    byte[] generarKardexProducto(
+            Integer idSucursal,
+            Integer idProducto,
+            String fechaInicio,
+            String fechaFin,
+            String formato);
+
     byte[] generarProformas(Integer idUsuario, String fechaInicio, String fechaFin, boolean todas);
 
     byte[] generarResumenNotasCredito(

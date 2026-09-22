@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, HostListener, Input, Output } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Input, OnDestroy, Output } from '@angular/core';
 
 import { ReporteSelectorOpcionDto } from '../../../dtos/reporte-selector-opcion-dto';
 
@@ -7,7 +7,7 @@ import { ReporteSelectorOpcionDto } from '../../../dtos/reporte-selector-opcion-
   templateUrl: './reporte-selector.component.html',
   styleUrls: ['./reporte-selector.component.css']
 })
-export class ReporteSelectorComponent {
+export class ReporteSelectorComponent implements OnDestroy {
   private static siguienteId = 0;
 
   @Input() etiqueta: string;
@@ -28,8 +28,16 @@ export class ReporteSelectorComponent {
   readonly id = `reporte-selector-${ReporteSelectorComponent.siguienteId++}`;
   abierto = false;
   busqueda = '';
+  estilosMenu: { [propiedad: string]: string } = {};
+
+  private posicionPendiente = false;
+  private readonly escucharReposicion = () => this.programarPosicionMenu();
 
   constructor(private elementRef: ElementRef) {}
+
+  ngOnDestroy(): void {
+    this.desactivarReposicion();
+  }
 
   get textoSeleccionado(): string {
     if (this.esValorVacio()) {
@@ -57,13 +65,17 @@ export class ReporteSelectorComponent {
     this.abierto = !this.abierto;
     this.busqueda = '';
     this.despliegueChange.emit(this.abierto);
-    if (this.abierto && this.buscable) {
+    if (this.abierto) {
+      this.activarReposicion();
       window.setTimeout(() => {
+        this.posicionarMenu();
         const buscador = this.elementRef.nativeElement.querySelector('.report-select-search input');
-        if (buscador) {
+        if (buscador && this.buscable) {
           buscador.focus();
         }
       });
+    } else {
+      this.desactivarReposicion();
     }
   }
 
@@ -95,12 +107,19 @@ export class ReporteSelectorComponent {
     }
   }
 
+  @HostListener('window:resize')
+  alCambiarVentana(): void {
+    this.programarPosicionMenu();
+  }
+
   private cerrar(): void {
     if (!this.abierto) {
       return;
     }
     this.abierto = false;
     this.busqueda = '';
+    this.estilosMenu = {};
+    this.desactivarReposicion();
     this.despliegueChange.emit(false);
   }
 
@@ -110,5 +129,56 @@ export class ReporteSelectorComponent {
 
   private normalizar(valor: string): string {
     return (valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  }
+
+  private activarReposicion(): void {
+    window.addEventListener('scroll', this.escucharReposicion, true);
+  }
+
+  private desactivarReposicion(): void {
+    window.removeEventListener('scroll', this.escucharReposicion, true);
+  }
+
+  private programarPosicionMenu(): void {
+    if (!this.abierto || this.posicionPendiente) {
+      return;
+    }
+    this.posicionPendiente = true;
+    window.requestAnimationFrame(() => {
+      this.posicionPendiente = false;
+      this.posicionarMenu();
+    });
+  }
+
+  private posicionarMenu(): void {
+    if (!this.abierto) {
+      return;
+    }
+    const trigger = this.elementRef.nativeElement.querySelector('.report-select-trigger') as HTMLElement;
+    const menu = this.elementRef.nativeElement.querySelector('.report-select-menu') as HTMLElement;
+    if (!trigger || !menu) {
+      return;
+    }
+    const margen = 10;
+    const separacion = 7;
+    const triggerRect = trigger.getBoundingClientRect();
+    const ancho = Math.min(triggerRect.width, window.innerWidth - margen * 2);
+    const izquierda = Math.max(margen, Math.min(triggerRect.left, window.innerWidth - ancho - margen));
+    const espacioAbajo = window.innerHeight - triggerRect.bottom - margen - separacion;
+    const espacioArriba = triggerRect.top - margen - separacion;
+    const altoDeseado = Math.min(menu.scrollHeight || 300, 300);
+    const abrirArriba = espacioAbajo < Math.min(altoDeseado, 220) && espacioArriba > espacioAbajo;
+    const espacioDisponible = Math.max(120, abrirArriba ? espacioArriba : espacioAbajo);
+    const altoMaximo = Math.min(300, espacioDisponible);
+    const altoMenu = Math.min(menu.scrollHeight || altoDeseado, altoMaximo);
+    const arriba = abrirArriba
+      ? Math.max(margen, triggerRect.top - separacion - altoMenu)
+      : Math.min(window.innerHeight - margen - altoMenu, triggerRect.bottom + separacion);
+    this.estilosMenu = {
+      top: `${arriba}px`,
+      left: `${izquierda}px`,
+      width: `${ancho}px`,
+      maxHeight: `${altoMaximo}px`
+    };
   }
 }

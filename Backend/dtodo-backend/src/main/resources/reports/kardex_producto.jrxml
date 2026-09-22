@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="kardex_producto" pageWidth="842" pageHeight="595" orientation="Landscape"
+              whenNoDataType="AllSectionsNoDetail" columnWidth="802" leftMargin="20" rightMargin="20"
+              topMargin="18" bottomMargin="18" isSummaryWithPageHeaderAndFooter="true"
+              uuid="eafbb70c-1581-48c6-974c-c89f2a2c543a">
+    <property name="net.sf.jasperreports.export.xlsx.detect.cell.type" value="true"/>
+    <property name="net.sf.jasperreports.export.xlsx.remove.empty.space.between.rows" value="true"/>
+    <property name="net.sf.jasperreports.export.xlsx.white.page.background" value="false"/>
+
+    <style name="Base" isDefault="true" fontName="DejaVu Sans" fontSize="8" forecolor="#23344D"/>
+    <style name="Header" style="Base" mode="Opaque" backcolor="#1769D2" forecolor="#FFFFFF"
+           fontSize="8" isBold="true" vTextAlign="Middle"/>
+    <style name="Cell" style="Base" mode="Opaque" backcolor="#FFFFFF" vTextAlign="Middle">
+        <box><pen lineWidth="0.35" lineColor="#D9E3EF"/></box>
+    </style>
+
+    <parameter name="ID_SUCURSAL" class="java.lang.Integer"/>
+    <parameter name="ID_PRODUCTO" class="java.lang.Integer"/>
+    <parameter name="FECHA_INICIO" class="java.sql.Timestamp"/>
+    <parameter name="FECHA_FIN_EXCLUSIVA" class="java.sql.Timestamp"/>
+    <parameter name="RANGO" class="java.lang.String"/>
+    <parameter name="SUCURSAL" class="java.lang.String"/>
+    <parameter name="PRODUCTO" class="java.lang.String"/>
+    <parameter name="FORMATO" class="java.lang.String"/>
+
+    <queryString language="SQL"><![CDATA[
+        SELECT mp.id_movimiento AS numero,
+               mp.fecha_movimiento AS fecha,
+               CASE mp.tipo_movimiento
+                   WHEN 'VENTA' THEN 'Venta'
+                   WHEN 'ENTRADA' THEN 'Entrada manual'
+                   WHEN 'SALIDA' THEN 'Salida manual'
+                   WHEN 'COMPRA' THEN 'Compra'
+                   WHEN 'ANULACION_FACTURA' THEN 'Anulación de factura'
+                   WHEN 'ELIMINAR_COMPRA' THEN 'Anulación de compra'
+                   WHEN 'ANULACION_NOTA' THEN 'Anulación de nota de crédito'
+                   WHEN 'ENTREGA_PRODUCTO_NOTA' THEN 'Entrega de nota de crédito'
+                   ELSE REPLACE(mp.tipo_movimiento, '_', ' ')
+               END AS movimiento,
+               COALESCE(u.usuario, '') AS usuario,
+               mp.stock_inicial,
+               CAST(CASE
+                   WHEN mp.tipo_movimiento IN ('COMPRA', 'ENTRADA', 'ANULACION_FACTURA', 'ANULACION_NOTA')
+                   THEN mp.cantidad ELSE 0 END AS SIGNED) AS entrada,
+               CAST(CASE
+                   WHEN mp.tipo_movimiento IN ('VENTA', 'SALIDA', 'ELIMINAR_COMPRA', 'ENTREGA_PRODUCTO_NOTA')
+                   THEN mp.cantidad ELSE 0 END AS SIGNED) AS salida,
+               CAST(mp.stock_inicial
+                   + CASE
+                       WHEN mp.tipo_movimiento IN ('COMPRA', 'ENTRADA', 'ANULACION_FACTURA', 'ANULACION_NOTA')
+                       THEN mp.cantidad ELSE 0 END
+                   - CASE
+                       WHEN mp.tipo_movimiento IN ('VENTA', 'SALIDA', 'ELIMINAR_COMPRA', 'ENTREGA_PRODUCTO_NOTA')
+                       THEN mp.cantidad ELSE 0 END AS SIGNED) AS saldo
+          FROM movimientos_producto mp
+          LEFT JOIN usuarios u ON u.id_usuario = mp.id_usuario
+         WHERE mp.id_sucursal = $P{ID_SUCURSAL}
+           AND mp.id_producto = $P{ID_PRODUCTO}
+           AND mp.fecha_movimiento >= $P{FECHA_INICIO}
+           AND mp.fecha_movimiento < $P{FECHA_FIN_EXCLUSIVA}
+         ORDER BY mp.fecha_movimiento ASC, mp.id_movimiento ASC
+    ]]></queryString>
+
+    <field name="numero" class="java.lang.Long"/>
+    <field name="fecha" class="java.sql.Timestamp"/>
+    <field name="movimiento" class="java.lang.String"/>
+    <field name="usuario" class="java.lang.String"/>
+    <field name="stock_inicial" class="java.lang.Integer"/>
+    <field name="entrada" class="java.lang.Integer"/>
+    <field name="salida" class="java.lang.Integer"/>
+    <field name="saldo" class="java.lang.Integer"/>
+
+    <variable name="SALDO_INICIAL" class="java.lang.Integer" calculation="First">
+        <variableExpression><![CDATA[$F{stock_inicial}]]></variableExpression>
+    </variable>
+    <variable name="TOTAL_ENTRADAS" class="java.lang.Integer" calculation="Sum">
+        <variableExpression><![CDATA[$F{entrada}]]></variableExpression>
+        <initialValueExpression><![CDATA[Integer.valueOf(0)]]></initialValueExpression>
+    </variable>
+    <variable name="TOTAL_SALIDAS" class="java.lang.Integer" calculation="Sum">
+        <variableExpression><![CDATA[$F{salida}]]></variableExpression>
+        <initialValueExpression><![CDATA[Integer.valueOf(0)]]></initialValueExpression>
+    </variable>
+    <variable name="SALDO_FINAL" class="java.lang.Integer" calculation="Nothing">
+        <variableExpression><![CDATA[$F{saldo}]]></variableExpression>
+    </variable>
+
+    <title>
+        <band height="72">
+            <rectangle radius="8">
+                <reportElement x="90" y="0" width="712" height="48" forecolor="#1769D2" backcolor="#1769D2"/>
+            </rectangle>
+            <image scaleImage="RetainShape" hAlign="Center">
+                <reportElement x="0" y="0" width="72" height="48"/>
+                <imageExpression><![CDATA[this.getClass().getResourceAsStream("/static/images/reports-image/logo-dtodo.jpg")]]></imageExpression>
+            </image>
+            <staticText>
+                <reportElement x="90" y="0" width="430" height="24" forecolor="#FFFFFF"
+                               backcolor="#1769D2" mode="Opaque"/>
+                <textElement verticalAlignment="Middle"><font size="16" isBold="true"/><paragraph leftIndent="18"/></textElement>
+                <text><![CDATA[Kardex de producto]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="90" y="24" width="430" height="24" forecolor="#DCEBFF"
+                               backcolor="#1769D2" mode="Opaque"/>
+                <textElement verticalAlignment="Middle"><font size="8"/><paragraph leftIndent="18"/></textElement>
+                <textFieldExpression><![CDATA[$P{SUCURSAL} + " · " + $P{RANGO}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="520" y="0" width="282" height="24" forecolor="#FFFFFF"
+                               backcolor="#1769D2" mode="Opaque"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/><paragraph rightIndent="18"/></textElement>
+                <textFieldExpression><![CDATA[$P{PRODUCTO}]]></textFieldExpression>
+            </textField>
+            <textField pattern="dd/MM/yyyy HH:mm">
+                <reportElement x="520" y="24" width="282" height="24" forecolor="#DCEBFF"
+                               backcolor="#1769D2" mode="Opaque"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="7"/><paragraph rightIndent="18"/></textElement>
+                <textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+            </textField>
+            <staticText>
+                <reportElement x="0" y="54" width="802" height="14" forecolor="#66758A"/>
+                <textElement><font size="8" isItalic="true"/></textElement>
+                <text><![CDATA[Historial cronológico de movimientos y saldo del producto durante el período seleccionado.]]></text>
+            </staticText>
+        </band>
+    </title>
+
+    <columnHeader>
+        <band height="28">
+            <staticText><reportElement style="Header" x="0" y="0" width="120" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Fecha]]></text></staticText>
+            <staticText><reportElement style="Header" x="120" y="0" width="65" height="28"/><textElement textAlignment="Center"/><text><![CDATA[No.]]></text></staticText>
+            <staticText><reportElement style="Header" x="185" y="0" width="190" height="28"/><text><![CDATA[Movimiento]]></text></staticText>
+            <staticText><reportElement style="Header" x="375" y="0" width="150" height="28"/><text><![CDATA[Usuario]]></text></staticText>
+            <staticText><reportElement style="Header" x="525" y="0" width="72" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Inicial]]></text></staticText>
+            <staticText><reportElement style="Header" x="597" y="0" width="68" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Entrada]]></text></staticText>
+            <staticText><reportElement style="Header" x="665" y="0" width="68" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Salida]]></text></staticText>
+            <staticText><reportElement style="Header" x="733" y="0" width="69" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Saldo]]></text></staticText>
+        </band>
+    </columnHeader>
+
+    <detail>
+        <band height="24">
+            <textField pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true"><reportElement style="Cell" x="0" y="0" width="120" height="24"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA[$F{fecha}]]></textFieldExpression></textField>
+            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="120" y="0" width="65" height="24"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{numero}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="185" y="0" width="190" height="24"/><textElement><paragraph leftIndent="4"/></textElement><textFieldExpression><![CDATA[$F{movimiento}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="375" y="0" width="150" height="24"/><textElement><paragraph leftIndent="4"/></textElement><textFieldExpression><![CDATA[$F{usuario}]]></textFieldExpression></textField>
+            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="525" y="0" width="72" height="24"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{stock_inicial}]]></textFieldExpression></textField>
+            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="597" y="0" width="68" height="24"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{entrada}]]></textFieldExpression></textField>
+            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="665" y="0" width="68" height="24"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{salida}]]></textFieldExpression></textField>
+            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="733" y="0" width="69" height="24"/><textElement textAlignment="Right"><font isBold="true"/><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{saldo}]]></textFieldExpression></textField>
+        </band>
+    </detail>
+
+    <pageFooter>
+        <band height="18">
+            <textField>
+                <reportElement x="642" y="2" width="115" height="14" forecolor="#7B8798">
+                    <printWhenExpression><![CDATA["PDF".equals($P{FORMATO})]]></printWhenExpression>
+                </reportElement>
+                <textElement textAlignment="Right"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+            <textField evaluationTime="Report">
+                <reportElement x="757" y="2" width="35" height="14" forecolor="#7B8798">
+                    <printWhenExpression><![CDATA["PDF".equals($P{FORMATO})]]></printWhenExpression>
+                </reportElement>
+                <textElement textAlignment="Left"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA[" de " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+        </band>
+    </pageFooter>
+
+    <summary>
+        <band height="52">
+            <line><reportElement x="0" y="8" width="802" height="1" forecolor="#B9C9DC"/></line>
+            <staticText>
+                <reportElement x="0" y="16" width="330" height="24" forecolor="#52647C" backcolor="#F4F8FC" mode="Opaque">
+                    <printWhenExpression><![CDATA[$V{REPORT_COUNT}.intValue() == 0]]></printWhenExpression>
+                </reportElement>
+                <box><pen lineWidth="0.5" lineColor="#D6E2F0"/></box>
+                <textElement verticalAlignment="Middle"><font size="9" isItalic="true"/></textElement>
+                <text><![CDATA[No se encontraron movimientos para el período seleccionado.]]></text>
+            </staticText>
+            <staticText><reportElement x="340" y="16" width="55" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Inicial:]]></text></staticText>
+            <textField pattern="#,##0"><reportElement x="395" y="16" width="55" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{SALDO_INICIAL} == null ? 0 : $V{SALDO_INICIAL}]]></textFieldExpression></textField>
+            <staticText><reportElement x="455" y="16" width="60" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Entradas:]]></text></staticText>
+            <textField pattern="#,##0"><reportElement x="515" y="16" width="55" height="20" forecolor="#1769D2"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_ENTRADAS} == null ? 0 : $V{TOTAL_ENTRADAS}]]></textFieldExpression></textField>
+            <staticText><reportElement x="575" y="16" width="55" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Salidas:]]></text></staticText>
+            <textField pattern="#,##0"><reportElement x="630" y="16" width="55" height="20" forecolor="#1769D2"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_SALIDAS} == null ? 0 : $V{TOTAL_SALIDAS}]]></textFieldExpression></textField>
+            <staticText><reportElement x="690" y="16" width="55" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Final:]]></text></staticText>
+            <textField pattern="#,##0"><reportElement x="745" y="16" width="57" height="20" forecolor="#1769D2"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{SALDO_FINAL} == null ? 0 : $V{SALDO_FINAL}]]></textFieldExpression></textField>
+        </band>
+    </summary>
+</jasperReport>

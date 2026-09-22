@@ -55,7 +55,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
       ['SUCURSAL', 'CATEGORIA'], ['ROLE_ADMIN', 'ROLE_INVENTARIO'], true),
     this.reporte('KARDEX', 'INVENTARIO', 'Kardex de producto',
       'Historial cronológico de entradas, salidas y saldo de un producto.', 'fa-stream', ['PDF', 'XLSX'],
-      ['FECHAS', 'SUCURSAL', 'PRODUCTO'], ['ROLE_ADMIN', 'ROLE_INVENTARIO'], false),
+      ['FECHAS', 'SUCURSAL', 'PRODUCTO'], ['ROLE_ADMIN', 'ROLE_INVENTARIO'], true),
     this.reporte('VALORIZACION', 'INVENTARIO', 'Valorización de inventario',
       'Valor del inventario a una fecha de corte.', 'fa-coins', ['PDF', 'XLSX'],
       ['FECHA_CORTE', 'SUCURSAL'], ['ROLE_ADMIN'], false),
@@ -85,6 +85,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
   proveedores: ReporteSelectorOpcionDto[] = [];
   categoriasProducto: ReporteSelectorOpcionDto[] = [];
   clientes: ReporteSelectorOpcionDto[] = [];
+  productos: ReporteSelectorOpcionDto[] = [];
   fechaInicio: string;
   fechaFin: string;
   idSucursal: number;
@@ -92,6 +93,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
   idProveedor: number;
   idCategoria: number;
   idCliente: number;
+  idProducto: number;
   estado: string;
   formatoSeleccionado: 'PDF' | 'XLSX' = 'PDF';
   generando = false;
@@ -117,6 +119,8 @@ export class ReportesComponent implements OnInit, OnDestroy {
   private proveedoresCargados = false;
   private categoriasCargadas = false;
   private clientesCargados = false;
+  private readonly productosCache = new Map<number, ReporteSelectorOpcionDto[]>();
+  private productosCargando = new Set<number>();
   private readonly usuariosCache = new Map<string, ReporteSelectorOpcionDto[]>();
   private readonly usuariosCargando = new Set<string>();
   private claveUsuariosActual: string;
@@ -158,6 +162,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
     this.idProveedor = null;
     this.idCategoria = null;
     this.idCliente = null;
+    this.idProducto = null;
     this.estado = '';
     this.formatoSeleccionado = reporte.formatos[0];
     if (reporte.filtros.includes('USUARIO')) {
@@ -172,12 +177,29 @@ export class ReportesComponent implements OnInit, OnDestroy {
     if (reporte.filtros.includes('CLIENTE')) {
       this.cargarClientes();
     }
+    if (reporte.filtros.includes('PRODUCTO')) {
+      this.cargarProductos();
+    }
     this.programarGuia();
   }
 
   cerrarConfiguracion(): void {
     this.reporteSeleccionado = null;
     this.cardOrigen = null;
+  }
+
+  limpiarFiltros(): void {
+    if (!this.reporteSeleccionado || this.generando) {
+      return;
+    }
+    this.seleccionarMesActual();
+    this.idUsuario = null;
+    this.idProveedor = null;
+    this.idCategoria = null;
+    this.idCliente = null;
+    this.idProducto = null;
+    this.estado = '';
+    this.formatoSeleccionado = this.reporteSeleccionado.formatos[0];
   }
 
   get opcionesSucursal(): ReporteSelectorOpcionDto[] {
@@ -198,6 +220,10 @@ export class ReportesComponent implements OnInit, OnDestroy {
 
   get opcionesProveedor(): ReporteSelectorOpcionDto[] {
     return this.proveedores;
+  }
+
+  get opcionesProducto(): ReporteSelectorOpcionDto[] {
+    return this.productos;
   }
 
   get opcionesEstado(): ReporteSelectorOpcionDto[] {
@@ -242,6 +268,9 @@ export class ReportesComponent implements OnInit, OnDestroy {
     if (this.requiereFiltro('USUARIO') && !this.idUsuario) {
       return false;
     }
+    if (this.requiereFiltro('PRODUCTO') && !this.idProducto) {
+      return false;
+    }
     return !this.requiereFiltro('FECHAS') || (!!this.fechaInicio && !!this.fechaFin && this.fechaFin >= this.fechaInicio);
   }
 
@@ -257,6 +286,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
       idProveedor: this.idProveedor,
       idCategoria: this.idCategoria,
       idCliente: this.idCliente,
+      idProducto: this.idProducto,
       estado: this.estado,
       formato: this.formatoSeleccionado
     };
@@ -278,6 +308,10 @@ export class ReportesComponent implements OnInit, OnDestroy {
     if (this.reporteSeleccionado && this.reporteSeleccionado.codigo === 'POLIZA_INDIVIDUAL') {
       this.idUsuario = null;
       this.cargarUsuarios(this.reporteSeleccionado.codigo);
+    }
+    if (this.reporteSeleccionado && this.reporteSeleccionado.codigo === 'KARDEX') {
+      this.idProducto = null;
+      this.cargarProductos();
     }
   }
 
@@ -366,6 +400,33 @@ export class ReportesComponent implements OnInit, OnDestroy {
     this.reporteService.listarClientesSelector().subscribe(
       opciones => this.clientes = opciones,
       () => this.clientesCargados = false
+    );
+  }
+
+  private cargarProductos(): void {
+    if (!this.idSucursal) {
+      this.productos = [];
+      return;
+    }
+    const idSucursal = this.idSucursal;
+    if (this.productosCache.has(idSucursal)) {
+      this.productos = this.productosCache.get(idSucursal);
+      return;
+    }
+    this.productos = [];
+    if (this.productosCargando.has(idSucursal)) {
+      return;
+    }
+    this.productosCargando.add(idSucursal);
+    this.reporteService.listarProductosSelector(idSucursal).subscribe(
+      opciones => {
+        this.productosCache.set(idSucursal, opciones);
+        if (this.idSucursal === idSucursal) {
+          this.productos = opciones;
+        }
+        this.productosCargando.delete(idSucursal);
+      },
+      () => this.productosCargando.delete(idSucursal)
     );
   }
 

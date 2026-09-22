@@ -72,6 +72,16 @@ public class ReporteApiController {
         return ResponseEntity.ok(reporteSelectorService.listarProveedores());
     }
 
+    @Secured({"ROLE_ADMIN", "ROLE_INVENTARIO"})
+    @GetMapping("/filtros/productos")
+    public ResponseEntity<List<ReporteSelectorDto>> productosSelector(
+            @RequestParam(required = false) Integer idSucursal,
+            @AuthenticationPrincipal Jwt jwt,
+            Authentication authentication) {
+        Integer sucursalEfectiva = resolverSucursal(idSucursal, jwt, authentication);
+        return ResponseEntity.ok(reporteSelectorService.listarProductos(sucursalEfectiva));
+    }
+
     @Secured("ROLE_ADMIN")
     @GetMapping("/ventas/poliza-individual")
     public ResponseEntity<byte[]> polizaIndividual(
@@ -203,6 +213,27 @@ public class ReporteApiController {
         String extension = esPdf ? "pdf" : "xlsx";
         return archivo(reporte, esPdf ? MediaType.APPLICATION_PDF : XLSX_MEDIA_TYPE,
                 "productos_bajo_stock_sucursal_" + sucursalEfectiva + "." + extension, esPdf);
+    }
+
+    @Secured({"ROLE_ADMIN", "ROLE_INVENTARIO"})
+    @GetMapping("/inventario/kardex")
+    public ResponseEntity<byte[]> kardexProducto(
+            @RequestParam(required = false) Integer idSucursal,
+            @RequestParam Integer idProducto,
+            @RequestParam String fechaInicio,
+            @RequestParam String fechaFin,
+            @RequestParam(defaultValue = "PDF") String formato,
+            @AuthenticationPrincipal Jwt jwt,
+            Authentication authentication) {
+        Integer sucursalEfectiva = resolverSucursal(idSucursal, jwt, authentication);
+        log.info("Generando kardex. sucursal={}, producto={}, formato={}, periodo={}..{}",
+                sucursalEfectiva, idProducto, formato, fechaInicio, fechaFin);
+        byte[] reporte = reporteService.generarKardexProducto(
+                sucursalEfectiva, idProducto, fechaInicio, fechaFin, formato);
+        boolean esPdf = "PDF".equalsIgnoreCase(formato);
+        String extension = esPdf ? "pdf" : "xlsx";
+        return archivo(reporte, esPdf ? MediaType.APPLICATION_PDF : XLSX_MEDIA_TYPE,
+                nombrePeriodo("kardex_producto_" + idProducto, fechaInicio, fechaFin, extension), esPdf);
     }
 
     @Secured("ROLE_ADMIN")

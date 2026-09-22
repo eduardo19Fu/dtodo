@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import xyz.pangosoft.dtodo.dto.ProductoDto;
+import xyz.pangosoft.dtodo.dto.ReporteSelectorDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,6 +17,13 @@ import xyz.pangosoft.dtodo.model.Estado;
 import xyz.pangosoft.dtodo.model.Producto;
 
 public interface IProductoRepository extends JpaRepository<Producto, Integer>, JpaSpecificationExecutor<Producto> {
+
+	@Query("select new xyz.pangosoft.dtodo.dto.ReporteSelectorDto(" +
+			"p.idProducto, p.nombre, concat(concat(p.codProducto, ' · '), t.tipoProducto)) " +
+			"from InventarioSucursal inv join inv.producto p join p.tipoProducto t join p.estado e " +
+			"where inv.sucursal.idSucursal = :idSucursal and upper(e.estado) = 'ACTIVO' " +
+			"order by p.nombre")
+	List<ReporteSelectorDto> findOpcionesReporte(@Param("idSucursal") Integer idSucursal);
 	
 	// Buscar listado de productos por estado
 	List<Producto> findByEstado(Estado estado);

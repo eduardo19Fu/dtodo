@@ -100,6 +100,12 @@
           (despliegueChange)="alCambiarDespliegueSelector()">
         </app-reporte-selector>
 
+        <app-reporte-selector *ngIf="requiereFiltro('PRODUCTO')" etiqueta="Producto" icono="fa-box"
+          [opciones]="opcionesProducto" [(valor)]="idProducto" [permitirVacio]="false" [requerido]="true"
+          textoVacio="Selecciona un producto" placeholderBusqueda="Buscar por nombre, código o categoría"
+          (despliegueChange)="alCambiarDespliegueSelector()">
+        </app-reporte-selector>
+
         <app-reporte-selector *ngIf="requiereFiltro('PROVEEDOR')" etiqueta="Proveedor" icono="fa-truck"
           [opciones]="opcionesProveedor" [(valor)]="idProveedor" textoVacio="Todos los proveedores"
           detalleVacio="Sin filtro de proveedor" placeholderBusqueda="Buscar proveedor"
@@ -132,6 +138,9 @@
       <footer class="config-footer">
         <span><i class="fas fa-shield-alt" aria-hidden="true"></i> Los permisos también se validan en el servidor.</span>
         <div class="config-actions">
+          <button type="button" class="config-clear" (click)="limpiarFiltros()" [disabled]="generando">
+            <i class="fas fa-eraser" aria-hidden="true"></i> Limpiar
+          </button>
           <button type="button" class="config-cancel" (click)="cerrarConfiguracion()" [disabled]="generando">
             Cancelar
           </button>

@@ -122,7 +122,10 @@
 .config-footer { background: #f8fafc; border-top: 1px solid #e7edf4; justify-content: space-between; padding: 16px 22px; }
 .config-footer > span { color: #718097; font-size: 11px; }
 .config-actions { gap: 9px; }
-.config-cancel, .config-submit { border: 0; border-radius: 9px; font-weight: 700; min-height: 40px; padding: 9px 16px; }
+.config-clear, .config-cancel, .config-submit { border: 0; border-radius: 9px; font-weight: 700; min-height: 40px; padding: 9px 16px; }
+.config-clear { background: transparent; border: 1px solid #d7e1ed; color: #5d6d82; }
+.config-clear:hover { background: #eef3f8; color: #33465f; }
+.config-clear i { margin-right: 4px; }
 .config-cancel { background: #e9eef4; color: #4e5e73; }
 .config-submit { background: #1769d2; color: #fff; min-width: 142px; }
 .config-submit:disabled { cursor: not-allowed; opacity: .55; }
@@ -148,7 +151,7 @@
   .config-title h2 { font-size: 19px; }
   .config-title p { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
   .config-footer { align-items: stretch; flex-direction: column; gap: 12px; }
-  .config-actions { justify-content: flex-end; }
+  .config-actions { flex-wrap: wrap; justify-content: flex-end; }
 }
 
 @media (prefers-reduced-motion: reduce) { .report-card { transition: none; } }

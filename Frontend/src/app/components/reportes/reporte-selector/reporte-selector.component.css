@@ -29,13 +29,16 @@
   border: 1px solid #cad8e8;
   border-radius: 10px;
   box-shadow: 0 10px 24px rgba(35, 63, 99, .14);
-  margin-top: 7px;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
+  position: fixed;
+  z-index: 1100;
 }
-.report-select-search { padding: 10px; position: relative; }
+.report-select-search { flex: 0 0 auto; padding: 10px; position: relative; }
 .report-select-search i { color: #7a8ca4; left: 24px; position: absolute; top: 24px; }
 .report-select-search .form-control { height: 40px; padding-left: 38px; }
-.report-select-options { max-height: 220px; overflow-y: auto; overscroll-behavior: contain; padding: 0 6px 6px; }
+.report-select-options { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 6px 6px; }
 .report-select-options button {
   background: transparent;
   border: 0;
@@ -55,7 +58,7 @@
 .report-select-limit { background: #f7f9fc; border-top: 1px solid #e5ebf2; color: #718097; display: block; padding: 7px 12px; }
 
 @media (max-width: 767.98px) {
-  .report-select-options { max-height: min(220px, 34vh); }
+  .report-select-menu { max-height: min(300px, calc(100vh - 20px)); }
 }
 
 @media (prefers-reduced-motion: reduce) {
