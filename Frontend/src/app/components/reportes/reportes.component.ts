@@ -58,7 +58,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
       ['FECHAS', 'SUCURSAL', 'PRODUCTO'], ['ROLE_ADMIN', 'ROLE_INVENTARIO'], true),
     this.reporte('VALORIZACION', 'INVENTARIO', 'Valorización de inventario',
       'Valor del inventario a una fecha de corte.', 'fa-coins', ['PDF', 'XLSX'],
-      ['FECHA_CORTE', 'SUCURSAL'], ['ROLE_ADMIN'], false),
+      ['FECHA_CORTE', 'SUCURSAL'], ['ROLE_ADMIN'], true),
     this.reporte('PROFORMAS_EMITIDAS', 'PROFORMAS', 'Proformas emitidas',
       'Listado de proformas por período y usuario.', 'fa-file-excel', ['XLSX'],
       ['FECHAS', 'USUARIO'], ['ROLE_ADMIN'], true),
@@ -88,6 +88,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
   productos: ReporteSelectorOpcionDto[] = [];
   fechaInicio: string;
   fechaFin: string;
+  fechaCorte: string;
   idSucursal: number;
   idUsuario: number;
   idProveedor: number;
@@ -271,6 +272,9 @@ export class ReportesComponent implements OnInit, OnDestroy {
     if (this.requiereFiltro('PRODUCTO') && !this.idProducto) {
       return false;
     }
+    if (this.requiereFiltro('FECHA_CORTE') && !this.fechaCorte) {
+      return false;
+    }
     return !this.requiereFiltro('FECHAS') || (!!this.fechaInicio && !!this.fechaFin && this.fechaFin >= this.fechaInicio);
   }
 
@@ -281,6 +285,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
     const filtros: ReporteFiltroDto = {
       fechaInicio: this.fechaInicio,
       fechaFin: this.fechaFin,
+      fechaCorte: this.fechaCorte,
       idSucursal: this.idSucursal,
       idUsuario: this.idUsuario,
       idProveedor: this.idProveedor,
@@ -320,6 +325,15 @@ export class ReportesComponent implements OnInit, OnDestroy {
   }
 
   private cargarSucursales(): void {
+    const sucursalSesion = this.auth.usuario && this.auth.usuario.sucursal
+      ? this.auth.usuario.sucursal : null;
+    if (sucursalSesion && sucursalSesion.nombre) {
+      this.sucursales = [{
+        valor: sucursalSesion.idSucursal,
+        etiqueta: sucursalSesion.nombre,
+        detalle: sucursalSesion.direccion
+      }];
+    }
     if (this.auth.hasRole('ROLE_ADMIN')) {
       if (this.sucursalesCargadas) {
         return;
@@ -331,8 +345,8 @@ export class ReportesComponent implements OnInit, OnDestroy {
       );
       return;
     }
-    if (this.auth.usuario && this.auth.usuario.sucursal) {
-      const sucursal = this.auth.usuario.sucursal;
+    if (sucursalSesion) {
+      const sucursal = sucursalSesion;
       this.sucursales = [{
         valor: sucursal.idSucursal,
         etiqueta: sucursal.nombre,
@@ -453,6 +467,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
     const hoy = new Date();
     this.fechaInicio = this.fechaIso(new Date(hoy.getFullYear(), hoy.getMonth(), 1));
     this.fechaFin = this.fechaIso(hoy);
+    this.fechaCorte = this.fechaFin;
   }
 
   private fechaIso(fecha: Date): string {

@@ -88,6 +88,11 @@
             tema="ventas"></app-date-range-picker>
         </div>
 
+        <div class="config-dates" *ngIf="requiereFiltro('FECHA_CORTE')">
+          <app-date-range-picker modo="fecha" [(fecha)]="fechaCorte" etiquetaFecha="Fecha de corte"
+            tema="productos"></app-date-range-picker>
+        </div>
+
         <app-reporte-selector *ngIf="requiereFiltro('CATEGORIA')" etiqueta="Categoría" icono="fa-tags"
           [opciones]="opcionesCategoria" [(valor)]="idCategoria" textoVacio="Todas las categorías"
           detalleVacio="Sin filtro de categoría" placeholderBusqueda="Buscar categoría"

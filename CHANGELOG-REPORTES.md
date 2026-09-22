@@ -237,6 +237,25 @@ verificado.
   `output/xlsx/kardex-producto-muestra.xlsx`; no presentan recortes, solapamientos ni errores de fórmula.
 - Estado: implementación terminada y aprobada visualmente por el usuario.
 
+### 2026-09-22 — Valorización de inventario
+
+- Se implementó el reporte PDF/XLSX de valorización del inventario por sucursal y fecha de corte.
+- El stock histórico se reconstruye restando del inventario actual los movimientos posteriores al corte; los importes
+  se calculan con los precios de compra y venta actuales porque el sistema no conserva precios históricos por fecha.
+- El reporte presenta stock, costo unitario, valor al costo, precio de venta y valor potencial de venta por producto.
+- Se agregó un modo de fecha única al calendario compartido para seleccionar la fecha de corte con el mismo patrón
+  adaptable usado por los rangos.
+- Se agregó el servicio Jasper dedicado y el endpoint administrativo
+  `GET /api/reportes/inventario/valorizacion`.
+- La plantilla conserva el patrón visual aprobado, fuente DejaVu Sans, estado sin datos y paginación `Página X de Y`.
+- Verificación: build Angular correcto, 98 pruebas frontend correctas, 25 pruebas backend focalizadas correctas y
+  suite backend completa con 138 pruebas correctas bajo JDK 17.
+- Se generaron y revisaron visualmente `output/pdf/valorizacion-inventario-muestra.pdf` y
+  `output/xlsx/valorizacion-inventario-muestra.xlsx`; no presentan recortes, solapamientos ni errores de fórmula.
+- El selector de sucursal conserva inmediatamente el nombre de la sucursal de la sesión mientras carga el catálogo y
+  evita mostrar el identificador interno como texto provisional.
+- Estado: implementación terminada y aprobada visualmente por el usuario.
+
 ### 2026-09-20 — Movimientos y saldo de inventario
 
 - Se inició la modernización del reporte de movimientos y saldo con una plantilla compartida para PDF/XLSX.

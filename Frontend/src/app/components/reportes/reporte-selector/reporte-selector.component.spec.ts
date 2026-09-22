@@ -27,4 +27,14 @@ describe('ReporteSelectorComponent', () => {
     expect(valor).toBe(7);
     expect(component.abierto).toBeFalse();
   });
+
+  it('no muestra el identificador mientras carga la etiqueta seleccionada', () => {
+    const component = new ReporteSelectorComponent(new ElementRef(document.createElement('div')));
+    component.valor = 7;
+
+    expect(component.textoSeleccionado).toBe('Cargando selección...');
+
+    component.opciones = [{ valor: 7, etiqueta: 'Sucursal Central' }];
+    expect(component.textoSeleccionado).toBe('Sucursal Central');
+  });
 });

@@ -77,6 +77,8 @@ export class ReporteService {
         return { ruta: 'inventario/bajo-stock', incluirUsuario: false, incluirOpciones: true };
       case 'KARDEX':
         return { ruta: 'inventario/kardex', incluirUsuario: false, incluirOpciones: true };
+      case 'VALORIZACION':
+        return { ruta: 'inventario/valorizacion', incluirUsuario: false, incluirOpciones: true };
       case 'PROFORMAS_EMITIDAS':
         return { ruta: 'proformas', incluirUsuario: true };
       case 'RESUMEN_NOTAS':
@@ -99,6 +101,9 @@ export class ReporteService {
     }
     if (filtros.fechaFin) {
       params = params.set('fechaFin', filtros.fechaFin);
+    }
+    if (filtros.fechaCorte) {
+      params = params.set('fechaCorte', filtros.fechaCorte);
     }
     if (filtros.idSucursal) {
       params = params.set('idSucursal', filtros.idSucursal.toString());

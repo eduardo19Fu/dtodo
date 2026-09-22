@@ -44,6 +44,8 @@ public interface IReporteService {
             String fechaFin,
             String formato);
 
+    byte[] generarValorizacionInventario(Integer idSucursal, String fechaCorte, String formato);
+
     byte[] generarProformas(Integer idUsuario, String fechaInicio, String fechaFin, boolean todas);
 
     byte[] generarResumenNotasCredito(

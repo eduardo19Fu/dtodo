@@ -21,6 +21,7 @@ import xyz.pangosoft.dtodo.service.IReporteService;
 import xyz.pangosoft.dtodo.service.IResumenNotasCreditoReporteService;
 import xyz.pangosoft.dtodo.service.IVentasClienteReporteService;
 import xyz.pangosoft.dtodo.service.IVentasProductoReporteService;
+import xyz.pangosoft.dtodo.service.IValorizacionInventarioReporteService;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +38,7 @@ public class ReporteServiceImpl implements IReporteService {
     private final IRentabilidadProductoReporteService rentabilidadProductoReporteService;
     private final IBajoStockReporteService bajoStockReporteService;
     private final IKardexProductoReporteService kardexProductoReporteService;
+    private final IValorizacionInventarioReporteService valorizacionInventarioReporteService;
 
     @Override
     public byte[] generarPolizaIndividual(
@@ -153,6 +155,14 @@ public class ReporteServiceImpl implements IReporteService {
     }
 
     @Override
+    public byte[] generarValorizacionInventario(Integer idSucursal, String fechaCorte, String formato) {
+        validarId(idSucursal, "La sucursal seleccionada no es válida.");
+        LocalDate corte = validarFechaCorte(fechaCorte);
+        String formatoValido = validarFormato(formato);
+        return valorizacionInventarioReporteService.generar(idSucursal, corte, formatoValido);
+    }
+
+    @Override
     public byte[] generarProformas(
             Integer idUsuario,
             String fechaInicio,
@@ -245,6 +255,21 @@ public class ReporteServiceImpl implements IReporteService {
             return new LocalDate[] { inicio, fin };
         } catch (DateTimeParseException exception) {
             throw new BadRequestException("Las fechas deben utilizar el formato yyyy-MM-dd.", exception);
+        }
+    }
+
+    private LocalDate validarFechaCorte(String fechaCorte) {
+        if (fechaCorte == null || fechaCorte.isBlank()) {
+            throw new BadRequestException("Debes indicar la fecha de corte.", null);
+        }
+        try {
+            LocalDate corte = LocalDate.parse(fechaCorte);
+            if (corte.isAfter(LocalDate.now())) {
+                throw new BadRequestException("La fecha de corte no puede ser futura.", null);
+            }
+            return corte;
+        } catch (DateTimeParseException exception) {
+            throw new BadRequestException("La fecha de corte debe utilizar el formato yyyy-MM-dd.", exception);
         }
     }
 

@@ -20,9 +20,13 @@ export class DateRangePickerComponent implements OnDestroy {
 
   @Input() fechaInicio: string;
   @Input() fechaFin: string;
+  @Input() fecha: string;
+  @Input() modo: 'rango' | 'fecha' = 'rango';
+  @Input() etiquetaFecha = 'Fecha de corte';
   @Input() tema: 'productos' | 'ventas' | 'proformas' | 'notas' | 'compras' | 'usuarios' = 'productos';
   @Output() fechaInicioChange = new EventEmitter<string>();
   @Output() fechaFinChange = new EventEmitter<string>();
+  @Output() fechaChange = new EventEmitter<string>();
 
   readonly idComponente = `date-range-picker-${DateRangePickerComponent.siguienteId++}`;
   readonly diasSemana: string[] = ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá'];
@@ -51,13 +55,17 @@ export class DateRangePickerComponent implements OnDestroy {
   }
 
   abrirCalendario(selector: 'inicio' | 'fin'): void {
+    if (this.modo === 'fecha') {
+      selector = 'inicio';
+    }
     if (this.calendarioAbierto && this.selectorFechaActivo === selector) {
       this.cerrarCalendario();
       return;
     }
 
     this.selectorFechaActivo = selector;
-    const fechaSeleccionada = selector === 'inicio' ? this.fechaInicio : this.fechaFin;
+    const fechaSeleccionada = this.modo === 'fecha'
+      ? this.fecha : (selector === 'inicio' ? this.fechaInicio : this.fechaFin);
     this.mesVisible = fechaSeleccionada ? this.fechaDesdeIso(fechaSeleccionada) : new Date();
     this.calendarioAbierto = true;
     this.construirCalendario();
@@ -100,7 +108,9 @@ export class DateRangePickerComponent implements OnDestroy {
   }
 
   seleccionarFecha(dia: DiaCalendario): void {
-    if (this.selectorFechaActivo === 'inicio') {
+    if (this.modo === 'fecha') {
+      this.actualizarFecha(dia.iso);
+    } else if (this.selectorFechaActivo === 'inicio') {
       this.actualizarFechaInicio(dia.iso);
       if (this.fechaFin && this.fechaFin < this.fechaInicio) {
         this.actualizarFechaFin(null);
@@ -116,6 +126,13 @@ export class DateRangePickerComponent implements OnDestroy {
 
   seleccionarRangoRapido(cantidadDias: number): void {
     const fin = new Date();
+    if (this.modo === 'fecha') {
+      this.actualizarFecha(this.fechaAIso(fin));
+      this.mesVisible = new Date(fin.getFullYear(), fin.getMonth(), 1);
+      this.construirCalendario();
+      this.cerrarCalendario();
+      return;
+    }
     const inicio = new Date(fin.getFullYear(), fin.getMonth(), fin.getDate() - cantidadDias + 1);
     this.actualizarFechaInicio(this.fechaAIso(inicio));
     this.actualizarFechaFin(this.fechaAIso(fin));
@@ -125,6 +142,13 @@ export class DateRangePickerComponent implements OnDestroy {
 
   seleccionarMesActual(): void {
     const hoy = new Date();
+    if (this.modo === 'fecha') {
+      this.actualizarFecha(this.fechaAIso(hoy));
+      this.mesVisible = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+      this.construirCalendario();
+      this.cerrarCalendario();
+      return;
+    }
     this.actualizarFechaInicio(this.fechaAIso(new Date(hoy.getFullYear(), hoy.getMonth(), 1)));
     this.actualizarFechaFin(this.fechaAIso(hoy));
     this.mesVisible = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
@@ -132,6 +156,11 @@ export class DateRangePickerComponent implements OnDestroy {
   }
 
   limpiarSeleccion(): void {
+    if (this.modo === 'fecha') {
+      this.actualizarFecha(null);
+      this.mostrarMesActual();
+      return;
+    }
     this.actualizarFechaInicio(null);
     this.actualizarFechaFin(null);
     this.mostrarMesActual();
@@ -154,6 +183,9 @@ export class DateRangePickerComponent implements OnDestroy {
   }
 
   get resumenRango(): string {
+    if (this.modo === 'fecha') {
+      return this.fecha ? this.formatearFechaVisible(this.fecha) : 'Sin fecha seleccionada';
+    }
     if (!this.fechaInicio && !this.fechaFin) {
       return 'Sin fechas seleccionadas';
     }
@@ -196,6 +228,11 @@ export class DateRangePickerComponent implements OnDestroy {
       });
     }
     this.diasCalendario = dias;
+  }
+
+  private actualizarFecha(fecha: string): void {
+    this.fecha = fecha;
+    this.fechaChange.emit(fecha);
   }
 
   private programarPosicionCalendario(): void {

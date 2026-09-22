@@ -237,6 +237,21 @@ public class ReporteApiController {
     }
 
     @Secured("ROLE_ADMIN")
+    @GetMapping("/inventario/valorizacion")
+    public ResponseEntity<byte[]> valorizacionInventario(
+            @RequestParam Integer idSucursal,
+            @RequestParam String fechaCorte,
+            @RequestParam(defaultValue = "PDF") String formato) {
+        log.info("Generando valorización de inventario. sucursal={}, corte={}, formato={}",
+                idSucursal, fechaCorte, formato);
+        byte[] reporte = reporteService.generarValorizacionInventario(idSucursal, fechaCorte, formato);
+        boolean esPdf = "PDF".equalsIgnoreCase(formato);
+        String extension = esPdf ? "pdf" : "xlsx";
+        return archivo(reporte, esPdf ? MediaType.APPLICATION_PDF : XLSX_MEDIA_TYPE,
+                "valorizacion_inventario_" + fechaCorte + "." + extension, esPdf);
+    }
+
+    @Secured("ROLE_ADMIN")
     @GetMapping("/proformas")
     public ResponseEntity<byte[]> proformas(
             @RequestParam(required = false) Integer idUsuario,

@@ -37,4 +37,17 @@ describe('ReportesComponent', () => {
     expect(component.fechaInicio).toBeTruthy();
     expect(component.fechaFin >= component.fechaInicio).toBeTrue();
   });
+
+  it('requiere fecha de corte para valorización', () => {
+    const auth: any = { usuario: {}, hasRole: () => true };
+    const component = new ReportesComponent(auth, {} as any);
+    component.reporteSeleccionado = component.reportes.find(reporte => reporte.codigo === 'VALORIZACION');
+    component.idSucursal = 1;
+    component.fechaCorte = null;
+
+    expect(component.puedeGenerar()).toBeFalse();
+
+    component.fechaCorte = '2026-09-22';
+    expect(component.puedeGenerar()).toBeTrue();
+  });
 });

@@ -23,4 +23,14 @@ describe('DateRangePickerComponent', () => {
     expect(component.formatearFechaVisible('2026-09-18')).toBe('18/09/2026');
     expect(component.formatearFechaVisible(null)).toBe('Seleccionar fecha');
   });
+
+  it('emite una única fecha en modo fecha', () => {
+    component.modo = 'fecha';
+    spyOn(component.fechaChange, 'emit');
+
+    component.seleccionarFecha({ iso: '2026-09-22', fecha: new Date(2026, 8, 22) } as any);
+
+    expect(component.fecha).toBe('2026-09-22');
+    expect(component.fechaChange.emit).toHaveBeenCalledWith('2026-09-22');
+  });
 });

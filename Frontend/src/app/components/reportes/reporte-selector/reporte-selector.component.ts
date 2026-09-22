@@ -17,6 +17,7 @@ export class ReporteSelectorComponent implements OnDestroy {
   @Input() valorVacio: any = null;
   @Input() textoVacio = 'Todos';
   @Input() detalleVacio = 'Sin filtro';
+  @Input() textoSinCoincidencia = 'Cargando selección...';
   @Input() permitirVacio = true;
   @Input() requerido = false;
   @Input() deshabilitado = false;
@@ -44,7 +45,7 @@ export class ReporteSelectorComponent implements OnDestroy {
       return this.textoVacio;
     }
     const opcion = this.opciones.find(item => item.valor === this.valor);
-    return opcion ? opcion.etiqueta : String(this.valor || this.textoVacio);
+    return opcion ? opcion.etiqueta : this.textoSinCoincidencia;
   }
 
   get opcionesCoincidentes(): ReporteSelectorOpcionDto[] {
