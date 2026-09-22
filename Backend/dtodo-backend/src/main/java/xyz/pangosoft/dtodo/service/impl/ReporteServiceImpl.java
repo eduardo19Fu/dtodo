@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
 import xyz.pangosoft.dtodo.model.enums.EstadoCompraEnum;
 import xyz.pangosoft.dtodo.model.enums.EstadoNotaCreditoEnum;
+import xyz.pangosoft.dtodo.service.IBajoStockReporteService;
 import xyz.pangosoft.dtodo.service.IComprasPeriodoReporteService;
 import xyz.pangosoft.dtodo.service.IFacturaService;
 import xyz.pangosoft.dtodo.service.IInventarioMovimientosReporteService;
@@ -33,6 +34,7 @@ public class ReporteServiceImpl implements IReporteService {
     private final IVentasProductoReporteService ventasProductoReporteService;
     private final IVentasClienteReporteService ventasClienteReporteService;
     private final IRentabilidadProductoReporteService rentabilidadProductoReporteService;
+    private final IBajoStockReporteService bajoStockReporteService;
 
     @Override
     public byte[] generarPolizaIndividual(
@@ -121,6 +123,16 @@ public class ReporteServiceImpl implements IReporteService {
     public byte[] generarExistencias(Integer idSucursal) {
         validarId(idSucursal, "La sucursal seleccionada no es válida.");
         return productoService.productosExcel(idSucursal);
+    }
+
+    @Override
+    public byte[] generarBajoStock(Integer idSucursal, Integer idCategoria, String formato) {
+        validarId(idSucursal, "La sucursal seleccionada no es válida.");
+        if (idCategoria != null) {
+            validarId(idCategoria, "La categoría seleccionada no es válida.");
+        }
+        String formatoValido = validarFormato(formato);
+        return bajoStockReporteService.generar(idSucursal, idCategoria, formatoValido);
     }
 
     @Override

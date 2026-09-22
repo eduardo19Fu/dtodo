@@ -68,6 +68,8 @@ export class ReporteService {
         return { ruta: 'inventario/movimientos', incluirUsuario: false, incluirOpciones: true };
       case 'EXISTENCIAS':
         return { ruta: 'inventario/existencias', incluirUsuario: false };
+      case 'BAJO_STOCK':
+        return { ruta: 'inventario/bajo-stock', incluirUsuario: false, incluirOpciones: true };
       case 'PROFORMAS_EMITIDAS':
         return { ruta: 'proformas', incluirUsuario: true };
       case 'RESUMEN_NOTAS':

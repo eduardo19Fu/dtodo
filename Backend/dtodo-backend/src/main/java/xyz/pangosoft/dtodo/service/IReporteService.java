@@ -35,6 +35,8 @@ public interface IReporteService {
 
     byte[] generarExistencias(Integer idSucursal);
 
+    byte[] generarBajoStock(Integer idSucursal, Integer idCategoria, String formato);
+
     byte[] generarProformas(Integer idUsuario, String fechaInicio, String fechaFin, boolean todas);
 
     byte[] generarResumenNotasCredito(

@@ -204,6 +204,20 @@ verificado.
   `output/xlsx/rentabilidad-producto-muestra.xlsx`; no presentan recortes, solapamientos ni problemas de legibilidad.
 - Estado: implementación terminada, pendiente de aprobación visual del usuario antes del commit.
 
+### 2026-09-22 — Productos bajo stock mínimo
+
+- Se implementó el reporte PDF/XLSX de productos que requieren reabastecimiento, filtrado por sucursal y categoría.
+- El reporte incluye stock actual, stock mínimo, unidades faltantes, precio de compra e inversión estimada.
+- Solo se incluyen productos activos con un mínimo mayor que cero cuyo stock actual es menor o igual al mínimo.
+- Se agregó el servicio Jasper dedicado y el endpoint protegido
+  `GET /api/reportes/inventario/bajo-stock` para `ROLE_ADMIN` y `ROLE_INVENTARIO`.
+- La plantilla conserva el patrón visual aprobado, fuente DejaVu Sans, estado sin datos y paginación `Página X de Y`.
+- Verificación: build Angular correcto, 94 pruebas frontend correctas, 21 pruebas backend focalizadas correctas y
+  suite backend completa con 128 pruebas correctas bajo JDK 17.
+- Se generaron y revisaron visualmente `output/pdf/bajo-stock-muestra.pdf` y
+  `output/xlsx/bajo-stock-muestra.xlsx`; no presentan recortes, solapamientos ni problemas de legibilidad.
+- Estado: implementación terminada, pendiente de aprobación visual del usuario antes del commit.
+
 ### 2026-09-20 — Movimientos y saldo de inventario
 
 - Se inició la modernización del reporte de movimientos y saldo con una plantilla compartida para PDF/XLSX.

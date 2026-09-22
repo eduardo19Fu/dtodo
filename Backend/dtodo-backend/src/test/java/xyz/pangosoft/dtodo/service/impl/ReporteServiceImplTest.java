@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
+import xyz.pangosoft.dtodo.service.IBajoStockReporteService;
 import xyz.pangosoft.dtodo.service.IComprasPeriodoReporteService;
 import xyz.pangosoft.dtodo.service.IFacturaService;
 import xyz.pangosoft.dtodo.service.IInventarioMovimientosReporteService;
@@ -32,6 +33,7 @@ class ReporteServiceImplTest {
     private IVentasProductoReporteService ventasProductoReporteService;
     private IVentasClienteReporteService ventasClienteReporteService;
     private IRentabilidadProductoReporteService rentabilidadProductoReporteService;
+    private IBajoStockReporteService bajoStockReporteService;
     private ReporteServiceImpl service;
 
     @BeforeEach
@@ -45,10 +47,11 @@ class ReporteServiceImplTest {
         ventasProductoReporteService = mock(IVentasProductoReporteService.class);
         ventasClienteReporteService = mock(IVentasClienteReporteService.class);
         rentabilidadProductoReporteService = mock(IRentabilidadProductoReporteService.class);
+        bajoStockReporteService = mock(IBajoStockReporteService.class);
         service = new ReporteServiceImpl(
                 facturaService, inventarioMovimientosReporteService, productoService, proformaService,
                 resumenNotasCreditoReporteService, comprasPeriodoReporteService, ventasProductoReporteService,
-                ventasClienteReporteService, rentabilidadProductoReporteService);
+                ventasClienteReporteService, rentabilidadProductoReporteService, bajoStockReporteService);
     }
 
     @Test
@@ -71,7 +74,7 @@ class ReporteServiceImplTest {
 
         verifyNoInteractions(facturaService, inventarioMovimientosReporteService, productoService, proformaService,
                 resumenNotasCreditoReporteService, comprasPeriodoReporteService, ventasProductoReporteService,
-                ventasClienteReporteService, rentabilidadProductoReporteService);
+                ventasClienteReporteService, rentabilidadProductoReporteService, bajoStockReporteService);
     }
 
     @Test
@@ -181,6 +184,24 @@ class ReporteServiceImplTest {
                 1, "2026-09-01", "2026-09-19", 0, "PDF"));
 
         verifyNoInteractions(rentabilidadProductoReporteService);
+    }
+
+    @Test
+    void bajoStockDelegaCategoriaYFormatoValidados() {
+        byte[] esperado = new byte[] { 18, 19 };
+        when(bajoStockReporteService.generar(2, 3, "XLSX")).thenReturn(esperado);
+
+        byte[] resultado = service.generarBajoStock(2, 3, "xlsx");
+
+        assertArrayEquals(esperado, resultado);
+        verify(bajoStockReporteService).generar(2, 3, "XLSX");
+    }
+
+    @Test
+    void bajoStockRechazaCategoriaInvalida() {
+        assertThrows(BadRequestException.class, () -> service.generarBajoStock(1, 0, "PDF"));
+
+        verifyNoInteractions(bajoStockReporteService);
     }
 
     @Test

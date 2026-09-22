@@ -52,7 +52,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
       ['SUCURSAL'], ['ROLE_ADMIN', 'ROLE_INVENTARIO'], true),
     this.reporte('BAJO_STOCK', 'INVENTARIO', 'Productos bajo stock mínimo',
       'Productos que requieren reabastecimiento.', 'fa-exclamation-triangle', ['PDF', 'XLSX'],
-      ['SUCURSAL', 'CATEGORIA'], ['ROLE_ADMIN', 'ROLE_INVENTARIO'], false),
+      ['SUCURSAL', 'CATEGORIA'], ['ROLE_ADMIN', 'ROLE_INVENTARIO'], true),
     this.reporte('KARDEX', 'INVENTARIO', 'Kardex de producto',
       'Historial cronológico de entradas, salidas y saldo de un producto.', 'fa-stream', ['PDF', 'XLSX'],
       ['FECHAS', 'SUCURSAL', 'PRODUCTO'], ['ROLE_ADMIN', 'ROLE_INVENTARIO'], false),

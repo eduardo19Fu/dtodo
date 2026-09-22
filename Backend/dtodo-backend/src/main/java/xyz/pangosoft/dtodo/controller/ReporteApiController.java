@@ -187,6 +187,24 @@ public class ReporteApiController {
                 "existencias_sucursal_" + sucursalEfectiva + ".xlsx", false);
     }
 
+    @Secured({"ROLE_ADMIN", "ROLE_INVENTARIO"})
+    @GetMapping("/inventario/bajo-stock")
+    public ResponseEntity<byte[]> bajoStock(
+            @RequestParam(required = false) Integer idSucursal,
+            @RequestParam(required = false) Integer idCategoria,
+            @RequestParam(defaultValue = "PDF") String formato,
+            @AuthenticationPrincipal Jwt jwt,
+            Authentication authentication) {
+        Integer sucursalEfectiva = resolverSucursal(idSucursal, jwt, authentication);
+        log.info("Generando productos bajo stock mínimo. sucursal={}, categoría={}, formato={}",
+                sucursalEfectiva, idCategoria, formato);
+        byte[] reporte = reporteService.generarBajoStock(sucursalEfectiva, idCategoria, formato);
+        boolean esPdf = "PDF".equalsIgnoreCase(formato);
+        String extension = esPdf ? "pdf" : "xlsx";
+        return archivo(reporte, esPdf ? MediaType.APPLICATION_PDF : XLSX_MEDIA_TYPE,
+                "productos_bajo_stock_sucursal_" + sucursalEfectiva + "." + extension, esPdf);
+    }
+
     @Secured("ROLE_ADMIN")
     @GetMapping("/proformas")
     public ResponseEntity<byte[]> proformas(
