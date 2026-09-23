@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
 import xyz.pangosoft.dtodo.service.IBajoStockReporteService;
 import xyz.pangosoft.dtodo.service.IComprasPeriodoReporteService;
+import xyz.pangosoft.dtodo.service.IComprasProveedorProductoReporteService;
 import xyz.pangosoft.dtodo.service.IConversionProformasReporteService;
 import xyz.pangosoft.dtodo.service.IFacturaService;
 import xyz.pangosoft.dtodo.service.IInventarioMovimientosReporteService;
@@ -42,6 +43,7 @@ class ReporteServiceImplTest {
     private IValorizacionInventarioReporteService valorizacionInventarioReporteService;
     private IConversionProformasReporteService conversionProformasReporteService;
     private IPendientesDespachoReporteService pendientesDespachoReporteService;
+    private IComprasProveedorProductoReporteService comprasProveedorProductoReporteService;
     private ReporteServiceImpl service;
 
     @BeforeEach
@@ -60,12 +62,13 @@ class ReporteServiceImplTest {
         valorizacionInventarioReporteService = mock(IValorizacionInventarioReporteService.class);
         conversionProformasReporteService = mock(IConversionProformasReporteService.class);
         pendientesDespachoReporteService = mock(IPendientesDespachoReporteService.class);
+        comprasProveedorProductoReporteService = mock(IComprasProveedorProductoReporteService.class);
         service = new ReporteServiceImpl(
                 facturaService, inventarioMovimientosReporteService, productoService, proformaService,
                 resumenNotasCreditoReporteService, comprasPeriodoReporteService, ventasProductoReporteService,
                 ventasClienteReporteService, rentabilidadProductoReporteService, bajoStockReporteService,
                 kardexProductoReporteService, valorizacionInventarioReporteService, conversionProformasReporteService,
-                pendientesDespachoReporteService);
+                pendientesDespachoReporteService, comprasProveedorProductoReporteService);
     }
 
     @Test
@@ -358,5 +361,28 @@ class ReporteServiceImplTest {
                 1, "2026-09-01", "2026-09-19", 0, null, "PDF"));
 
         verifyNoInteractions(comprasPeriodoReporteService);
+    }
+
+    @Test
+    void comprasProveedorProductoDelegaFiltrosValidados() {
+        byte[] esperado = new byte[] { 28, 29 };
+        when(comprasProveedorProductoReporteService.generar(
+                2, java.time.LocalDate.of(2026, 9, 1), java.time.LocalDate.of(2026, 9, 30), 4))
+                .thenReturn(esperado);
+
+        byte[] resultado = service.generarComprasProveedorProducto(
+                2, "2026-09-01", "2026-09-30", 4);
+
+        assertArrayEquals(esperado, resultado);
+        verify(comprasProveedorProductoReporteService).generar(
+                2, java.time.LocalDate.of(2026, 9, 1), java.time.LocalDate.of(2026, 9, 30), 4);
+    }
+
+    @Test
+    void comprasProveedorProductoRechazaProveedorInvalido() {
+        assertThrows(BadRequestException.class, () -> service.generarComprasProveedorProducto(
+                1, "2026-09-01", "2026-09-30", 0));
+
+        verifyNoInteractions(comprasProveedorProductoReporteService);
     }
 }

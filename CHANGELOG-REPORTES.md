@@ -12,9 +12,19 @@ verificado.
 - Hito completado: **R1 — Base técnica y centralización de reportes existentes**.
 - Hito siguiente: **R2 — Cobertura operativa nueva**.
 - Alcance aprobado: 16 reportes distribuidos entre ventas, inventario, proformas, notas de crédito y compras.
-- Última actualización: 2026-09-22.
+- Última actualización: 2026-09-23.
 
 ## Cambios realizados
+
+### 2026-09-23 — Compras por proveedor o producto
+
+- Se habilitó el reporte XLSX para administración, con filtros de sucursal, período y proveedor opcional.
+- El detalle agrupa compras activas por proveedor y producto e incluye compras distintas, unidades,
+  costo medio ponderado e importe de productos sin costo de envío.
+- Se añadió un servicio Jasper dedicado, endpoint, plantilla con el diseño del módulo y estado sin datos.
+- Se verificaron el SQL con datos de prueba y el XLSX de muestra, con importes numéricos y columnas alineadas.
+- Verificación: 153 pruebas backend y 99 pruebas frontend correctas; build Angular correcto.
+- Estado: pendiente de aprobación visual del usuario antes del commit.
 
 ### 2026-09-19 — Inicio
 

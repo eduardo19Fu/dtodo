@@ -11,6 +11,7 @@ import xyz.pangosoft.dtodo.model.enums.EstadoCompraEnum;
 import xyz.pangosoft.dtodo.model.enums.EstadoNotaCreditoEnum;
 import xyz.pangosoft.dtodo.service.IBajoStockReporteService;
 import xyz.pangosoft.dtodo.service.IComprasPeriodoReporteService;
+import xyz.pangosoft.dtodo.service.IComprasProveedorProductoReporteService;
 import xyz.pangosoft.dtodo.service.IConversionProformasReporteService;
 import xyz.pangosoft.dtodo.service.IFacturaService;
 import xyz.pangosoft.dtodo.service.IInventarioMovimientosReporteService;
@@ -43,6 +44,7 @@ public class ReporteServiceImpl implements IReporteService {
     private final IValorizacionInventarioReporteService valorizacionInventarioReporteService;
     private final IConversionProformasReporteService conversionProformasReporteService;
     private final IPendientesDespachoReporteService pendientesDespachoReporteService;
+    private final IComprasProveedorProductoReporteService comprasProveedorProductoReporteService;
 
     @Override
     public byte[] generarPolizaIndividual(
@@ -245,6 +247,21 @@ public class ReporteServiceImpl implements IReporteService {
         String formatoValido = validarFormato(formato);
         return comprasPeriodoReporteService.generar(
                 idSucursal, rango[0], rango[1], idProveedor, estadoValido, formatoValido);
+    }
+
+    @Override
+    public byte[] generarComprasProveedorProducto(
+            Integer idSucursal,
+            String fechaInicio,
+            String fechaFin,
+            Integer idProveedor) {
+        validarId(idSucursal, "La sucursal seleccionada no es válida.");
+        if (idProveedor != null) {
+            validarId(idProveedor, "El proveedor seleccionado no es válido.");
+        }
+        LocalDate[] rango = validarRango(fechaInicio, fechaFin);
+        return comprasProveedorProductoReporteService.generar(
+                idSucursal, rango[0], rango[1], idProveedor);
     }
 
     private EstadoNotaCreditoEnum validarEstadoNotaCredito(String estado) {

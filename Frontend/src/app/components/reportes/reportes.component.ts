@@ -76,7 +76,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
       ['FECHAS', 'SUCURSAL', 'PROVEEDOR', 'ESTADO'], ['ROLE_ADMIN'], true),
     this.reporte('COMPRAS_PROVEEDOR', 'COMPRAS', 'Compras por proveedor o producto',
       'Detalle de abastecimiento agrupado por proveedor y producto.', 'fa-dolly-flatbed', ['XLSX'],
-      ['FECHAS', 'SUCURSAL', 'PROVEEDOR'], ['ROLE_ADMIN'], false)
+      ['FECHAS', 'SUCURSAL', 'PROVEEDOR'], ['ROLE_ADMIN'], true)
   ];
 
   reporteSeleccionado: ReporteDefinicion;

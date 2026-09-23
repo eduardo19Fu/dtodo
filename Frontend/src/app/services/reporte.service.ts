@@ -90,6 +90,8 @@ export class ReporteService {
         return { ruta: 'notas-credito/pendientes-despacho', incluirUsuario: false, incluirOpciones: true };
       case 'COMPRAS_PERIODO':
         return { ruta: 'compras', incluirUsuario: false, incluirOpciones: true };
+      case 'COMPRAS_PROVEEDOR':
+        return { ruta: 'compras/proveedores-productos', incluirUsuario: false, incluirOpciones: true };
       default:
         throw new Error(`El reporte ${codigo} todavía no tiene un endpoint habilitado.`);
     }

@@ -76,4 +76,10 @@ public interface IReporteService {
             Integer idProveedor,
             String estado,
             String formato);
+
+    byte[] generarComprasProveedorProducto(
+            Integer idSucursal,
+            String fechaInicio,
+            String fechaFin,
+            Integer idProveedor);
 }

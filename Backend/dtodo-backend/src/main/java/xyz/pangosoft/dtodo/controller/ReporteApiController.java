@@ -342,6 +342,21 @@ public class ReporteApiController {
                 nombrePeriodo("compras_periodo", fechaInicio, fechaFin, extension), esPdf);
     }
 
+    @Secured("ROLE_ADMIN")
+    @GetMapping("/compras/proveedores-productos")
+    public ResponseEntity<byte[]> comprasProveedorProducto(
+            @RequestParam Integer idSucursal,
+            @RequestParam String fechaInicio,
+            @RequestParam String fechaFin,
+            @RequestParam(required = false) Integer idProveedor) {
+        log.info("Generando compras por proveedor o producto. sucursal={}, proveedor={}, periodo={}..{}",
+                idSucursal, idProveedor, fechaInicio, fechaFin);
+        byte[] reporte = reporteService.generarComprasProveedorProducto(
+                idSucursal, fechaInicio, fechaFin, idProveedor);
+        return archivo(reporte, XLSX_MEDIA_TYPE,
+                nombrePeriodo("compras_proveedor_producto", fechaInicio, fechaFin, "xlsx"), false);
+    }
+
     private Integer resolverSucursal(Integer solicitada, Jwt jwt, Authentication authentication) {
         Integer asignada = obtenerSucursalJwt(jwt);
         boolean esAdmin = authentication != null && authentication.getAuthorities().stream()
