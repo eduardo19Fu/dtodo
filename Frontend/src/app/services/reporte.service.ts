@@ -30,8 +30,9 @@ export class ReporteService {
     return this.http.get<ReporteSelectorOpcionDto[]>(`${this.url}/filtros/usuarios/cajeros`, { params });
   }
 
-  listarUsuariosProformasSelector(): Observable<ReporteSelectorOpcionDto[]> {
-    return this.http.get<ReporteSelectorOpcionDto[]>(`${this.url}/filtros/usuarios/proformas`);
+  listarUsuariosProformasSelector(idSucursal?: number): Observable<ReporteSelectorOpcionDto[]> {
+    const params = idSucursal ? new HttpParams().set('idSucursal', idSucursal.toString()) : undefined;
+    return this.http.get<ReporteSelectorOpcionDto[]>(`${this.url}/filtros/usuarios/proformas`, { params });
   }
 
   listarCategoriasSelector(): Observable<ReporteSelectorOpcionDto[]> {
@@ -81,6 +82,8 @@ export class ReporteService {
         return { ruta: 'inventario/valorizacion', incluirUsuario: false, incluirOpciones: true };
       case 'PROFORMAS_EMITIDAS':
         return { ruta: 'proformas', incluirUsuario: true };
+      case 'CONVERSION_PROFORMAS':
+        return { ruta: 'proformas/conversion', incluirUsuario: true, incluirOpciones: true };
       case 'RESUMEN_NOTAS':
         return { ruta: 'notas-credito/resumen', incluirUsuario: false, incluirOpciones: true };
       case 'COMPRAS_PERIODO':

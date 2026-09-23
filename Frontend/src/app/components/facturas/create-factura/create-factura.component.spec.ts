@@ -1,6 +1,8 @@
 import { fakeAsync, tick } from '@angular/core/testing';
+import { of } from 'rxjs';
 
 import { DetalleFactura } from '../../../models/detalle-factura';
+import { Cliente } from '../../../models/cliente';
 import { DetalleProforma } from '../../../models/detalle-proforma';
 import { Producto } from '../../../models/producto';
 import { Proforma } from '../../../models/proforma';
@@ -41,6 +43,19 @@ describe('CreateFacturaComponent - edición de detalle', () => {
 
     expect(component.modalClienteVisible).toBeFalse();
     expect(component.modalProductoVisible).toBeFalse();
+  });
+
+  it('registra la proforma de origen al preparar una factura', () => {
+    const proforma = new Proforma();
+    proforma.idProforma = 42;
+    proforma.cliente = new Cliente();
+    proforma.itemsProforma = [];
+    const proformaService: any = { getProforma: () => of(proforma) };
+    component = new CreateFacturaComponent(null, proformaService, null, null, null, null, null, null, null);
+
+    component.buscarProformaPorId(42);
+
+    expect(component.factura.idProformaOrigen).toBe(42);
   });
 
   it('muestra el total completo como pendiente antes de ingresar el efectivo', () => {

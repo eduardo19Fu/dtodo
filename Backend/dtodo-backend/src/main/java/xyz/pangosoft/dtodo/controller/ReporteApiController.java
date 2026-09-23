@@ -50,8 +50,9 @@ public class ReporteApiController {
 
     @Secured("ROLE_ADMIN")
     @GetMapping("/filtros/usuarios/proformas")
-    public ResponseEntity<List<ReporteSelectorDto>> usuariosProformasSelector() {
-        return ResponseEntity.ok(reporteSelectorService.listarUsuariosProformas());
+    public ResponseEntity<List<ReporteSelectorDto>> usuariosProformasSelector(
+            @RequestParam(required = false) Integer idSucursal) {
+        return ResponseEntity.ok(reporteSelectorService.listarUsuariosProformas(idSucursal));
     }
 
     @Secured({"ROLE_ADMIN", "ROLE_INVENTARIO"})
@@ -266,6 +267,24 @@ public class ReporteApiController {
                 ? "proformas_historial.xlsx"
                 : nombrePeriodo("proformas", fechaInicio, fechaFin, "xlsx");
         return archivo(reporte, XLSX_MEDIA_TYPE, nombre, false);
+    }
+
+    @Secured("ROLE_ADMIN")
+    @GetMapping("/proformas/conversion")
+    public ResponseEntity<byte[]> conversionProformas(
+            @RequestParam Integer idSucursal,
+            @RequestParam Integer idUsuario,
+            @RequestParam String fechaInicio,
+            @RequestParam String fechaFin,
+            @RequestParam(defaultValue = "PDF") String formato) {
+        log.info("Generando conversión de proformas. sucursal={}, usuario={}, formato={}, periodo={}..{}",
+                idSucursal, idUsuario, formato, fechaInicio, fechaFin);
+        byte[] reporte = reporteService.generarConversionProformas(
+                idSucursal, idUsuario, fechaInicio, fechaFin, formato);
+        boolean esPdf = "PDF".equalsIgnoreCase(formato);
+        String extension = esPdf ? "pdf" : "xlsx";
+        return archivo(reporte, esPdf ? MediaType.APPLICATION_PDF : XLSX_MEDIA_TYPE,
+                nombrePeriodo("conversion_proformas", fechaInicio, fechaFin, extension), esPdf);
     }
 
     @Secured("ROLE_ADMIN")

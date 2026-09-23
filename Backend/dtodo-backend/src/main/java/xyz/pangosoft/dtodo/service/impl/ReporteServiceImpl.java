@@ -11,6 +11,7 @@ import xyz.pangosoft.dtodo.model.enums.EstadoCompraEnum;
 import xyz.pangosoft.dtodo.model.enums.EstadoNotaCreditoEnum;
 import xyz.pangosoft.dtodo.service.IBajoStockReporteService;
 import xyz.pangosoft.dtodo.service.IComprasPeriodoReporteService;
+import xyz.pangosoft.dtodo.service.IConversionProformasReporteService;
 import xyz.pangosoft.dtodo.service.IFacturaService;
 import xyz.pangosoft.dtodo.service.IInventarioMovimientosReporteService;
 import xyz.pangosoft.dtodo.service.IKardexProductoReporteService;
@@ -39,6 +40,7 @@ public class ReporteServiceImpl implements IReporteService {
     private final IBajoStockReporteService bajoStockReporteService;
     private final IKardexProductoReporteService kardexProductoReporteService;
     private final IValorizacionInventarioReporteService valorizacionInventarioReporteService;
+    private final IConversionProformasReporteService conversionProformasReporteService;
 
     @Override
     public byte[] generarPolizaIndividual(
@@ -175,6 +177,21 @@ public class ReporteServiceImpl implements IReporteService {
             validarRango(fechaInicio, fechaFin);
         }
         return proformaService.proformasExcel(fechaInicio, fechaFin, todas, idUsuario);
+    }
+
+    @Override
+    public byte[] generarConversionProformas(
+            Integer idSucursal,
+            Integer idUsuario,
+            String fechaInicio,
+            String fechaFin,
+            String formato) {
+        validarId(idSucursal, "La sucursal seleccionada no es válida.");
+        validarId(idUsuario, "El usuario seleccionado no es válido.");
+        LocalDate[] rango = validarRango(fechaInicio, fechaFin);
+        String formatoValido = validarFormato(formato);
+        return conversionProformasReporteService.generar(
+                idSucursal, rango[0], rango[1], idUsuario, formatoValido);
     }
 
     @Override

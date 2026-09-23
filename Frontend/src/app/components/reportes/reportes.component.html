@@ -147,12 +147,14 @@
             <i class="fas fa-eraser" aria-hidden="true"></i> Limpiar
           </button>
           <button type="button" class="config-cancel" (click)="cerrarConfiguracion()" [disabled]="generando">
-            Cancelar
+            <i class="fas fa-times" aria-hidden="true"></i> Cancelar
           </button>
           <button type="submit" class="config-submit" [disabled]="!puedeGenerar()">
             <span *ngIf="generando" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
             <i *ngIf="!generando" class="fas"
               [ngClass]="formatoSeleccionado === 'PDF' ? 'fa-file-pdf' : 'fa-file-excel'"
+              [class.config-submit-icon-pdf]="formatoSeleccionado === 'PDF'"
+              [class.config-submit-icon-xlsx]="formatoSeleccionado === 'XLSX'"
               aria-hidden="true"></i>
             {{generando ? 'Generando...' : 'Generar ' + formatoSeleccionado}}
           </button>

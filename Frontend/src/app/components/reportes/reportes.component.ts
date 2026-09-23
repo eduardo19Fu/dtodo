@@ -64,7 +64,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
       ['FECHAS', 'USUARIO'], ['ROLE_ADMIN'], true),
     this.reporte('CONVERSION_PROFORMAS', 'PROFORMAS', 'Conversión a ventas',
       'Proporción y valor de proformas convertidas en ventas.', 'fa-random', ['PDF', 'XLSX'],
-      ['FECHAS', 'SUCURSAL', 'USUARIO'], ['ROLE_ADMIN'], false),
+      ['FECHAS', 'SUCURSAL', 'USUARIO'], ['ROLE_ADMIN'], true),
     this.reporte('RESUMEN_NOTAS', 'NOTAS_CREDITO', 'Resumen de notas de crédito',
       'Notas emitidas, importes y estados durante el período.', 'fa-file-invoice', ['PDF', 'XLSX'],
       ['FECHAS', 'SUCURSAL', 'ESTADO'], ['ROLE_ADMIN'], true),
@@ -318,6 +318,10 @@ export class ReportesComponent implements OnInit, OnDestroy {
       this.idProducto = null;
       this.cargarProductos();
     }
+    if (this.reporteSeleccionado && this.reporteSeleccionado.codigo === 'CONVERSION_PROFORMAS') {
+      this.idUsuario = null;
+      this.cargarUsuarios(this.reporteSeleccionado.codigo);
+    }
   }
 
   private puedeVer(reporte: ReporteDefinicion): boolean {
@@ -357,8 +361,10 @@ export class ReportesComponent implements OnInit, OnDestroy {
   }
 
   private cargarUsuarios(codigo: string): void {
-    const esProformas = codigo === 'PROFORMAS_EMITIDAS';
-    const clave = esProformas ? 'proformas' : `cajeros-${this.idSucursal || 'todas'}`;
+    const esProformas = codigo === 'PROFORMAS_EMITIDAS' || codigo === 'CONVERSION_PROFORMAS';
+    const clave = codigo === 'CONVERSION_PROFORMAS'
+      ? `proformas-${this.idSucursal || 'todas'}`
+      : esProformas ? 'proformas' : `cajeros-${this.idSucursal || 'todas'}`;
     this.claveUsuariosActual = clave;
     if (this.usuariosCache.has(clave)) {
       this.usuarios = this.usuariosCache.get(clave);
@@ -370,7 +376,8 @@ export class ReportesComponent implements OnInit, OnDestroy {
     }
     this.usuariosCargando.add(clave);
     const consulta = esProformas
-      ? this.reporteService.listarUsuariosProformasSelector()
+      ? this.reporteService.listarUsuariosProformasSelector(
+          codigo === 'CONVERSION_PROFORMAS' ? this.idSucursal : null)
       : this.reporteService.listarCajerosSelector(this.idSucursal);
     consulta.subscribe(
       opciones => {

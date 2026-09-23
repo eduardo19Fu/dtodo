@@ -48,6 +48,13 @@ public interface IReporteService {
 
     byte[] generarProformas(Integer idUsuario, String fechaInicio, String fechaFin, boolean todas);
 
+    byte[] generarConversionProformas(
+            Integer idSucursal,
+            Integer idUsuario,
+            String fechaInicio,
+            String fechaFin,
+            String formato);
+
     byte[] generarResumenNotasCredito(
             Integer idSucursal,
             String fechaInicio,

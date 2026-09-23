@@ -54,7 +54,7 @@ class ReporteSelectorServiceImplTest {
         List<ReporteSelectorDto> opciones = List.of(new ReporteSelectorDto(1, "Opción", "Detalle"));
         when(sucursalRepository.findOpcionesReporte()).thenReturn(opciones);
         when(usuarioRepository.findOpcionesCajeroReporte(2)).thenReturn(opciones);
-        when(proformaRepository.findOpcionesUsuarioReporte()).thenReturn(opciones);
+        when(proformaRepository.findOpcionesUsuarioReporte(2)).thenReturn(opciones);
         when(tipoProductoRepository.findOpcionesReporte()).thenReturn(opciones);
         when(clienteRepository.findOpcionesReporte()).thenReturn(opciones);
         when(proveedorRepository.findOpcionesReporte()).thenReturn(opciones);
@@ -62,7 +62,7 @@ class ReporteSelectorServiceImplTest {
 
         assertSame(opciones, service.listarSucursales());
         assertSame(opciones, service.listarCajeros(2));
-        assertSame(opciones, service.listarUsuariosProformas());
+        assertSame(opciones, service.listarUsuariosProformas(2));
         assertSame(opciones, service.listarCategorias());
         assertSame(opciones, service.listarClientes());
         assertSame(opciones, service.listarProveedores());
@@ -70,7 +70,7 @@ class ReporteSelectorServiceImplTest {
 
         verify(sucursalRepository).findOpcionesReporte();
         verify(usuarioRepository).findOpcionesCajeroReporte(2);
-        verify(proformaRepository).findOpcionesUsuarioReporte();
+        verify(proformaRepository).findOpcionesUsuarioReporte(2);
         verify(tipoProductoRepository).findOpcionesReporte();
         verify(clienteRepository).findOpcionesReporte();
         verify(proveedorRepository).findOpcionesReporte();

@@ -122,12 +122,42 @@
 .config-footer { background: #f8fafc; border-top: 1px solid #e7edf4; justify-content: space-between; padding: 16px 22px; }
 .config-footer > span { color: #718097; font-size: 11px; }
 .config-actions { gap: 9px; }
-.config-clear, .config-cancel, .config-submit { border: 0; border-radius: 9px; font-weight: 700; min-height: 40px; padding: 9px 16px; }
-.config-clear { background: transparent; border: 1px solid #d7e1ed; color: #5d6d82; }
-.config-clear:hover { background: #eef3f8; color: #33465f; }
-.config-clear i { margin-right: 4px; }
-.config-cancel { background: #e9eef4; color: #4e5e73; }
-.config-submit { background: #1769d2; color: #fff; min-width: 142px; }
+.config-clear, .config-cancel, .config-submit {
+  align-items: center;
+  border: 0;
+  border-radius: 9px;
+  display: inline-flex;
+  font-weight: 700;
+  justify-content: center;
+  min-height: 40px;
+  padding: 9px 16px;
+  white-space: nowrap;
+}
+.config-clear {
+  background: transparent;
+  border: 1px solid #d7e1ed;
+  color: #5d6d82;
+  gap: 7px;
+}
+.config-clear:hover { background: #eef3f8; border-color: #bdcada; color: #33465f; }
+.config-clear:focus-visible { box-shadow: 0 0 0 3px rgba(23, 105, 210, .16); outline: none; }
+.config-clear:disabled { cursor: not-allowed; opacity: .55; }
+.config-cancel { background: #e9eef4; color: #4e5e73; gap: 7px; }
+.config-cancel:hover { background: #dfe6ee; color: #33465f; }
+.config-cancel:focus-visible { box-shadow: 0 0 0 3px rgba(78, 94, 115, .14); outline: none; }
+.config-submit { background: #1769d2; color: #fff; gap: 7px; min-width: 142px; }
+.config-submit > i {
+  align-items: center;
+  background: #fff;
+  border-radius: 4px;
+  display: inline-flex;
+  font-size: 13px;
+  height: 22px;
+  justify-content: center;
+  width: 22px;
+}
+.config-submit-icon-pdf { color: #c9363e; }
+.config-submit-icon-xlsx { color: #23824b; }
 .config-submit:disabled { cursor: not-allowed; opacity: .55; }
 
 @media (max-width: 1199.98px) { .report-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -152,6 +182,7 @@
   .config-title p { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
   .config-footer { align-items: stretch; flex-direction: column; gap: 12px; }
   .config-actions { flex-wrap: wrap; justify-content: flex-end; }
+  .config-clear { margin-right: auto; }
 }
 
 @media (prefers-reduced-motion: reduce) { .report-card { transition: none; } }

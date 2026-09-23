@@ -256,6 +256,21 @@ verificado.
   evita mostrar el identificador interno como texto provisional.
 - Estado: implementación terminada y aprobada visualmente por el usuario.
 
+### 2026-09-23 — Conversión de proformas
+
+- Se inició el reporte PDF/XLSX de proformas convertidas en ventas por sucursal, usuario y período.
+- Se agregó un vínculo persistente y único desde la factura hacia su proforma de origen, evitando inferencias por
+  cliente, monto o fecha; la migración requerida está en `src/main/resources/sql/alter_facturas_proforma_origen.sql`.
+- El reporte presenta proformas emitidas, convertidas, tasa de conversión, valor proformado y valor convertido.
+- El selector de usuarios se limita a quienes tienen proformas en la sucursal elegida.
+- Verificación: build Angular correcto, 99 pruebas frontend correctas y suite backend completa con 143 pruebas
+  correctas bajo JDK 17.
+- Se generaron y revisaron visualmente `output/pdf/conversion-proformas-muestra.pdf` y
+  `output/xlsx/conversion-proformas-muestra.xlsx`; no presentan recortes, solapamientos ni errores de fórmula.
+- Se refinó el pie del configurador: acciones con altura y alineación uniformes, icono para cancelar, separación
+  consistente e iconos de formato diferenciados en rojo para PDF y verde para XLSX.
+- Estado: implementación terminada y aprobada visualmente por el usuario.
+
 ### 2026-09-20 — Movimientos y saldo de inventario
 
 - Se inició la modernización del reporte de movimientos y saldo con una plantilla compartida para PDF/XLSX.

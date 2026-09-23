@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -49,6 +50,9 @@ public class Factura implements Serializable {
 	private String serieSat;
 	private String mensajeSat;
 	private String fechaCertificacionSat;
+
+	@Column(name = "id_proforma_origen")
+	private Long idProformaOrigen;
 
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date fecha;

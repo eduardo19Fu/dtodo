@@ -40,8 +40,8 @@ public class ReporteSelectorServiceImpl implements IReporteSelectorService {
     }
 
     @Override
-    public List<ReporteSelectorDto> listarUsuariosProformas() {
-        return proformaRepository.findOpcionesUsuarioReporte();
+    public List<ReporteSelectorDto> listarUsuariosProformas(Integer idSucursal) {
+        return proformaRepository.findOpcionesUsuarioReporte(idSucursal);
     }
 
     @Override

@@ -10,7 +10,7 @@ public interface IReporteSelectorService {
 
     List<ReporteSelectorDto> listarCajeros(Integer idSucursal);
 
-    List<ReporteSelectorDto> listarUsuariosProformas();
+    List<ReporteSelectorDto> listarUsuariosProformas(Integer idSucursal);
 
     List<ReporteSelectorDto> listarCategorias();
 

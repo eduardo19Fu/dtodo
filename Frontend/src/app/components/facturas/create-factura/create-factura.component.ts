@@ -478,6 +478,7 @@ export class CreateFacturaComponent implements OnInit {
     this.proformaService.getProforma(id).subscribe(
       proforma => {
         this.proforma = proforma;
+        this.factura.idProformaOrigen = proforma.idProforma;
         this.cliente = proforma.cliente;
         this.nitBusqueda = this.cliente.nit || '';
         this.cargarStockActualDeProforma();
