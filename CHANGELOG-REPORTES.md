@@ -16,6 +16,16 @@ verificado.
 
 ## Cambios realizados
 
+### 2026-09-23 — Buscador del catálogo
+
+- Se añadió un campo de búsqueda en vivo sobre las tarjetas, apto para escritorio y móvil.
+- La búsqueda combina palabras en cualquier orden e ignora mayúsculas y acentos; consulta título,
+  descripción, categoría y formato, sin mostrar reportes fuera de los permisos del usuario.
+- Se añadió acción para limpiar y un estado visible cuando no hay coincidencias.
+- Se retiró el aviso de reportes en preparación, ya obsoleto al estar habilitado todo el catálogo.
+- Verificación: build Angular y 102 pruebas frontend correctas.
+- Estado: pendiente de aprobación visual del usuario.
+
 ### 2026-09-23 — Compras por proveedor o producto
 
 - Se habilitó el reporte XLSX para administración, con filtros de sucursal, período y proveedor opcional.
@@ -24,7 +34,7 @@ verificado.
 - Se añadió un servicio Jasper dedicado, endpoint, plantilla con el diseño del módulo y estado sin datos.
 - Se verificaron el SQL con datos de prueba y el XLSX de muestra, con importes numéricos y columnas alineadas.
 - Verificación: 153 pruebas backend y 99 pruebas frontend correctas; build Angular correcto.
-- Estado: pendiente de aprobación visual del usuario antes del commit.
+- Estado: aprobado por el usuario y registrado en el commit `f0aeee4`.
 
 ### 2026-09-19 — Inicio
 

@@ -8,9 +8,25 @@
     <span class="reports-heading-icon" aria-hidden="true"><i class="fas fa-chart-bar"></i></span>
   </header>
 
-  <div class="reports-notice">
-    <i class="fas fa-info-circle" aria-hidden="true"></i>
-    <span>Los reportes marcados como <strong>En preparación</strong> forman parte del alcance aprobado y se habilitarán progresivamente.</span>
+  <div class="reports-search">
+    <label for="reports-search-input">Buscar reportes</label>
+    <div class="reports-search-control">
+      <i class="fas fa-search" aria-hidden="true"></i>
+      <input id="reports-search-input" #buscarReportes type="search" autocomplete="off"
+        placeholder="Nombre, descripción o categoría" [value]="busquedaReportes"
+        (input)="actualizarBusqueda(buscarReportes.value)">
+      <button type="button" *ngIf="busquedaReportes" (click)="limpiarBusqueda()"
+        aria-label="Limpiar búsqueda de reportes" title="Limpiar búsqueda">
+        <i class="fas fa-times" aria-hidden="true"></i>
+      </button>
+    </div>
+    <small>Escribe varias palabras en cualquier orden.</small>
+  </div>
+
+  <div class="reports-empty" *ngIf="busquedaReportes.trim() && !hayReportesEncontrados" role="status">
+    <i class="fas fa-search" aria-hidden="true"></i>
+    <p>No encontramos reportes para “{{busquedaReportes}}”.</p>
+    <button type="button" (click)="limpiarBusqueda()">Mostrar todos</button>
   </div>
 
   <ng-container *ngFor="let categoria of categorias">

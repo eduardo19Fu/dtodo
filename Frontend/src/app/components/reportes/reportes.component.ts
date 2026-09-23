@@ -79,6 +79,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
       ['FECHAS', 'SUCURSAL', 'PROVEEDOR'], ['ROLE_ADMIN'], true)
   ];
 
+  busquedaReportes = '';
   reporteSeleccionado: ReporteDefinicion;
   sucursales: ReporteSelectorOpcionDto[] = [];
   usuarios: ReporteSelectorOpcionDto[] = [];
@@ -150,7 +151,23 @@ export class ReportesComponent implements OnInit, OnDestroy {
   }
 
   reportesPorCategoria(categoria: CategoriaReporte): ReporteDefinicion[] {
-    return this.reportes.filter(reporte => reporte.categoria === categoria && this.puedeVer(reporte));
+    return this.reportes.filter(reporte => reporte.categoria === categoria
+      && this.puedeVer(reporte) && this.coincideBusqueda(reporte));
+  }
+
+  get hayReportesEncontrados(): boolean {
+    return this.reportes.some(reporte => this.puedeVer(reporte) && this.coincideBusqueda(reporte));
+  }
+
+  actualizarBusqueda(valor: string): void {
+    this.busquedaReportes = valor;
+    if (this.reporteSeleccionado && !this.coincideBusqueda(this.reporteSeleccionado)) {
+      this.cerrarConfiguracion();
+    }
+  }
+
+  limpiarBusqueda(): void {
+    this.actualizarBusqueda('');
   }
 
   seleccionarReporte(reporte: ReporteDefinicion, evento?: MouseEvent): void {
@@ -326,6 +343,22 @@ export class ReportesComponent implements OnInit, OnDestroy {
 
   private puedeVer(reporte: ReporteDefinicion): boolean {
     return reporte.roles.some(role => this.auth.hasRole(role));
+  }
+
+  private coincideBusqueda(reporte: ReporteDefinicion): boolean {
+    const terminos = this.normalizarBusqueda(this.busquedaReportes).split(/\s+/).filter(termino => !!termino);
+    if (!terminos.length) {
+      return true;
+    }
+    const categoria = this.categorias.find(item => item.codigo === reporte.categoria);
+    const contenido = this.normalizarBusqueda([
+      reporte.titulo, reporte.descripcion, categoria ? categoria.titulo : '', ...reporte.formatos
+    ].join(' '));
+    return terminos.every(termino => contenido.includes(termino));
+  }
+
+  private normalizarBusqueda(valor: string): string {
+    return (valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
   }
 
   private cargarSucursales(): void {
