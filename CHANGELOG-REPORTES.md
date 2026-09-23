@@ -271,6 +271,20 @@ verificado.
   consistente e iconos de formato diferenciados en rojo para PDF y verde para XLSX.
 - Estado: implementación terminada y aprobada visualmente por el usuario.
 
+### 2026-09-23 — Pendientes de despacho
+
+- Se inició el reporte PDF/XLSX de productos aún pendientes de entregar en notas de crédito.
+- El detalle presenta nota, fechas de emisión y entrega estimada, cliente, producto, unidades solicitadas,
+  despachadas y pendientes.
+- El cálculo consolida líneas repetidas por nota y producto, resta todos los despachos registrados y excluye las
+  líneas completamente entregadas.
+- Se habilitaron filtros por sucursal, período y cliente, con acceso para administración e inventario.
+- Verificación: build Angular correcto, 99 pruebas frontend correctas y suite backend completa con 148 pruebas
+  correctas bajo JDK 17.
+- Se generaron y revisaron visualmente `output/pdf/pendientes-despacho-muestra.pdf` y
+  `output/xlsx/pendientes-despacho-muestra.xlsx`; no presentan recortes, solapamientos ni errores de fórmula.
+- Estado: implementación terminada y aprobada visualmente por el usuario.
+
 ### 2026-09-20 — Movimientos y saldo de inventario
 
 - Se inició la modernización del reporte de movimientos y saldo con una plantilla compartida para PDF/XLSX.

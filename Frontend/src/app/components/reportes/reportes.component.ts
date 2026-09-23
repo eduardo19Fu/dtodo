@@ -70,7 +70,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
       ['FECHAS', 'SUCURSAL', 'ESTADO'], ['ROLE_ADMIN'], true),
     this.reporte('PENDIENTES_DESPACHO', 'NOTAS_CREDITO', 'Pendientes de despacho',
       'Productos de notas de crédito aún pendientes de entregar.', 'fa-truck-loading', ['PDF', 'XLSX'],
-      ['FECHAS', 'SUCURSAL', 'CLIENTE'], ['ROLE_ADMIN', 'ROLE_INVENTARIO'], false),
+      ['FECHAS', 'SUCURSAL', 'CLIENTE'], ['ROLE_ADMIN', 'ROLE_INVENTARIO'], true),
     this.reporte('COMPRAS_PERIODO', 'COMPRAS', 'Compras por período',
       'Compras registradas por sucursal, proveedor y estado.', 'fa-shopping-cart', ['PDF', 'XLSX'],
       ['FECHAS', 'SUCURSAL', 'PROVEEDOR', 'ESTADO'], ['ROLE_ADMIN'], true),

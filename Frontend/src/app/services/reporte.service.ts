@@ -86,6 +86,8 @@ export class ReporteService {
         return { ruta: 'proformas/conversion', incluirUsuario: true, incluirOpciones: true };
       case 'RESUMEN_NOTAS':
         return { ruta: 'notas-credito/resumen', incluirUsuario: false, incluirOpciones: true };
+      case 'PENDIENTES_DESPACHO':
+        return { ruta: 'notas-credito/pendientes-despacho', incluirUsuario: false, incluirOpciones: true };
       case 'COMPRAS_PERIODO':
         return { ruta: 'compras', incluirUsuario: false, incluirOpciones: true };
       default:

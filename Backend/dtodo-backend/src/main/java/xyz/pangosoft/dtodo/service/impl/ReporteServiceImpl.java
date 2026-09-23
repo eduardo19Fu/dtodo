@@ -15,6 +15,7 @@ import xyz.pangosoft.dtodo.service.IConversionProformasReporteService;
 import xyz.pangosoft.dtodo.service.IFacturaService;
 import xyz.pangosoft.dtodo.service.IInventarioMovimientosReporteService;
 import xyz.pangosoft.dtodo.service.IKardexProductoReporteService;
+import xyz.pangosoft.dtodo.service.IPendientesDespachoReporteService;
 import xyz.pangosoft.dtodo.service.IProductoService;
 import xyz.pangosoft.dtodo.service.IProformaService;
 import xyz.pangosoft.dtodo.service.IRentabilidadProductoReporteService;
@@ -41,6 +42,7 @@ public class ReporteServiceImpl implements IReporteService {
     private final IKardexProductoReporteService kardexProductoReporteService;
     private final IValorizacionInventarioReporteService valorizacionInventarioReporteService;
     private final IConversionProformasReporteService conversionProformasReporteService;
+    private final IPendientesDespachoReporteService pendientesDespachoReporteService;
 
     @Override
     public byte[] generarPolizaIndividual(
@@ -207,6 +209,23 @@ public class ReporteServiceImpl implements IReporteService {
         String formatoValido = validarFormato(formato);
         return resumenNotasCreditoReporteService.generar(
                 idSucursal, rango[0], rango[1], estadoValido, formatoValido);
+    }
+
+    @Override
+    public byte[] generarPendientesDespacho(
+            Integer idSucursal,
+            String fechaInicio,
+            String fechaFin,
+            Integer idCliente,
+            String formato) {
+        validarId(idSucursal, "La sucursal seleccionada no es válida.");
+        if (idCliente != null) {
+            validarId(idCliente, "El cliente seleccionado no es válido.");
+        }
+        LocalDate[] rango = validarRango(fechaInicio, fechaFin);
+        String formatoValido = validarFormato(formato);
+        return pendientesDespachoReporteService.generar(
+                idSucursal, rango[0], rango[1], idCliente, formatoValido);
     }
 
     @Override

@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="pendientes_despacho" pageWidth="842" pageHeight="595" orientation="Landscape"
+              whenNoDataType="AllSectionsNoDetail" columnWidth="802" leftMargin="20" rightMargin="20"
+              topMargin="18" bottomMargin="18" isSummaryWithPageHeaderAndFooter="true">
+    <property name="net.sf.jasperreports.export.xlsx.detect.cell.type" value="true"/>
+    <property name="net.sf.jasperreports.export.xlsx.remove.empty.space.between.rows" value="true"/>
+    <property name="net.sf.jasperreports.export.xlsx.white.page.background" value="false"/>
+
+    <style name="Base" isDefault="true" fontName="DejaVu Sans" fontSize="8" forecolor="#23344D"/>
+    <style name="Header" style="Base" mode="Opaque" backcolor="#1769D2" forecolor="#FFFFFF"
+           fontSize="8" isBold="true" vTextAlign="Middle"/>
+    <style name="Cell" style="Base" mode="Opaque" backcolor="#FFFFFF" vTextAlign="Middle">
+        <box><pen lineWidth="0.35" lineColor="#D9E3EF"/></box>
+    </style>
+
+    <parameter name="ID_SUCURSAL" class="java.lang.Integer"/>
+    <parameter name="ID_CLIENTE" class="java.lang.Integer" isForPrompting="false"/>
+    <parameter name="FECHA_INICIO" class="java.sql.Timestamp"/>
+    <parameter name="FECHA_FIN_EXCLUSIVA" class="java.sql.Timestamp"/>
+    <parameter name="RANGO" class="java.lang.String"/>
+    <parameter name="SUCURSAL" class="java.lang.String"/>
+    <parameter name="FILTRO_CLIENTE" class="java.lang.String"/>
+
+    <queryString language="SQL"><![CDATA[
+        SELECT nc.id_nota_credito,
+               LPAD(nc.id_nota_credito, 7, '0') AS numero,
+               nc.fecha_creacion,
+               nc.fecha_entrega_estimada,
+               c.nombre AS cliente,
+               c.nit,
+               p.cod_producto AS codigo,
+               p.nombre AS producto,
+               ncd.cantidad AS solicitado,
+               COALESCE(d.despachado, 0) AS despachado,
+               ncd.cantidad - COALESCE(d.despachado, 0) AS pendiente
+          FROM notas_credito nc
+          INNER JOIN (
+                SELECT id_nota_credito, id_producto, SUM(cantidad) AS cantidad
+                  FROM notas_credito_detalle
+                 GROUP BY id_nota_credito, id_producto
+          ) ncd ON ncd.id_nota_credito = nc.id_nota_credito
+          INNER JOIN clientes c ON c.id_cliente = nc.id_cliente
+          INNER JOIN productos p ON p.id_producto = ncd.id_producto
+          LEFT JOIN (
+                SELECT id_nota_credito, id_producto, SUM(cantidad) AS despachado
+                  FROM despachos_nota
+                 GROUP BY id_nota_credito, id_producto
+          ) d ON d.id_nota_credito = nc.id_nota_credito AND d.id_producto = ncd.id_producto
+         WHERE nc.id_sucursal = $P{ID_SUCURSAL}
+           AND nc.estado = 'ENTREGA_PENDIENTE'
+           AND nc.fecha_creacion >= $P{FECHA_INICIO}
+           AND nc.fecha_creacion < $P{FECHA_FIN_EXCLUSIVA}
+           AND ($P{ID_CLIENTE} IS NULL OR nc.id_cliente = $P{ID_CLIENTE})
+           AND ncd.cantidad - COALESCE(d.despachado, 0) > 0
+         ORDER BY COALESCE(nc.fecha_entrega_estimada, DATE(nc.fecha_creacion)),
+                  nc.id_nota_credito, p.nombre
+    ]]></queryString>
+
+    <field name="id_nota_credito" class="java.lang.Long"/>
+    <field name="numero" class="java.lang.String"/>
+    <field name="fecha_creacion" class="java.sql.Timestamp"/>
+    <field name="fecha_entrega_estimada" class="java.sql.Date"/>
+    <field name="cliente" class="java.lang.String"/>
+    <field name="nit" class="java.lang.String"/>
+    <field name="codigo" class="java.lang.String"/>
+    <field name="producto" class="java.lang.String"/>
+    <field name="solicitado" class="java.lang.Integer"/>
+    <field name="despachado" class="java.math.BigDecimal"/>
+    <field name="pendiente" class="java.math.BigDecimal"/>
+
+    <variable name="CANTIDAD_NOTAS" class="java.lang.Long" calculation="DistinctCount">
+        <variableExpression><![CDATA[$F{id_nota_credito}]]></variableExpression>
+    </variable>
+    <variable name="CANTIDAD_ITEMS" class="java.lang.Integer" calculation="Count">
+        <variableExpression><![CDATA[$F{codigo}]]></variableExpression>
+    </variable>
+    <variable name="UNIDADES_PENDIENTES" class="java.math.BigDecimal" calculation="Sum">
+        <variableExpression><![CDATA[$F{pendiente}]]></variableExpression>
+        <initialValueExpression><![CDATA[java.math.BigDecimal.ZERO]]></initialValueExpression>
+    </variable>
+
+    <title>
+        <band height="72">
+            <rectangle radius="8">
+                <reportElement x="90" y="0" width="712" height="48" forecolor="#1769D2" backcolor="#1769D2"/>
+            </rectangle>
+            <image scaleImage="RetainShape" hAlign="Center">
+                <reportElement x="0" y="0" width="72" height="48"/>
+                <imageExpression><![CDATA[this.getClass().getResourceAsStream("/static/images/reports-image/logo-dtodo.jpg")]]></imageExpression>
+            </image>
+            <staticText>
+                <reportElement x="108" y="5" width="440" height="22" forecolor="#FFFFFF" backcolor="#1769D2" mode="Opaque"/>
+                <textElement verticalAlignment="Middle"><font size="16" isBold="true"/></textElement>
+                <text><![CDATA[Pendientes de despacho]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="108" y="28" width="440" height="14" forecolor="#DCEBFF" backcolor="#1769D2" mode="Opaque"/>
+                <textElement><font size="8"/></textElement>
+                <textFieldExpression><![CDATA[$P{SUCURSAL} + " · " + $P{RANGO}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="568" y="7" width="216" height="16" forecolor="#FFFFFF" backcolor="#1769D2" mode="Opaque"/>
+                <textElement textAlignment="Right"><font size="9" isBold="true"/></textElement>
+                <textFieldExpression><![CDATA[$P{FILTRO_CLIENTE}]]></textFieldExpression>
+            </textField>
+            <textField pattern="dd/MM/yyyy HH:mm">
+                <reportElement x="568" y="25" width="216" height="13" forecolor="#DCEBFF" backcolor="#1769D2" mode="Opaque"/>
+                <textElement textAlignment="Right"><font size="7"/></textElement>
+                <textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+            </textField>
+            <staticText>
+                <reportElement x="0" y="54" width="802" height="14" forecolor="#66758A"/>
+                <textElement><font size="8" isItalic="true"/></textElement>
+                <text><![CDATA[Incluye únicamente productos con unidades pendientes en notas de crédito con entrega pendiente.]]></text>
+            </staticText>
+        </band>
+    </title>
+
+    <columnHeader>
+        <band height="28">
+            <staticText><reportElement style="Header" x="0" y="0" width="55" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Nota]]></text></staticText>
+            <staticText><reportElement style="Header" x="55" y="0" width="70" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Emisión]]></text></staticText>
+            <staticText><reportElement style="Header" x="125" y="0" width="70" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Entrega]]></text></staticText>
+            <staticText><reportElement style="Header" x="195" y="0" width="147" height="28"/><text><![CDATA[Cliente]]></text></staticText>
+            <staticText><reportElement style="Header" x="342" y="0" width="80" height="28"/><text><![CDATA[Código]]></text></staticText>
+            <staticText><reportElement style="Header" x="422" y="0" width="190" height="28"/><text><![CDATA[Producto]]></text></staticText>
+            <staticText><reportElement style="Header" x="612" y="0" width="60" height="28"/><textElement textAlignment="Center"><font size="7"/></textElement><text><![CDATA[Solicitado]]></text></staticText>
+            <staticText><reportElement style="Header" x="672" y="0" width="60" height="28"/><textElement textAlignment="Center"><font size="7"/></textElement><text><![CDATA[Despachado]]></text></staticText>
+            <staticText><reportElement style="Header" x="732" y="0" width="70" height="28"/><textElement textAlignment="Center"><font size="7"/></textElement><text><![CDATA[Pendiente]]></text></staticText>
+        </band>
+    </columnHeader>
+
+    <detail>
+        <band height="24">
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="0" y="0" width="55" height="24"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA[$F{numero}]]></textFieldExpression></textField>
+            <textField pattern="dd/MM/yyyy" isBlankWhenNull="true"><reportElement style="Cell" x="55" y="0" width="70" height="24"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA[$F{fecha_creacion}]]></textFieldExpression></textField>
+            <textField pattern="dd/MM/yyyy" isBlankWhenNull="true"><reportElement style="Cell" x="125" y="0" width="70" height="24"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA[$F{fecha_entrega_estimada}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="195" y="0" width="147" height="24"/><textFieldExpression><![CDATA[$F{cliente}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="342" y="0" width="80" height="24"/><textFieldExpression><![CDATA[$F{codigo}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="422" y="0" width="190" height="24"/><textFieldExpression><![CDATA[$F{producto}]]></textFieldExpression></textField>
+            <textField pattern="#,##0"><reportElement style="Cell" x="612" y="0" width="60" height="24"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA[$F{solicitado}]]></textFieldExpression></textField>
+            <textField pattern="#,##0"><reportElement style="Cell" x="672" y="0" width="60" height="24"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA[$F{despachado}]]></textFieldExpression></textField>
+            <textField pattern="#,##0"><reportElement style="Cell" x="732" y="0" width="70" height="24" forecolor="#B64045"/><textElement textAlignment="Center"><font isBold="true"/></textElement><textFieldExpression><![CDATA[$F{pendiente}]]></textFieldExpression></textField>
+        </band>
+    </detail>
+
+    <pageFooter>
+        <band height="18">
+            <textField>
+                <reportElement x="642" y="2" width="115" height="14" forecolor="#7B8798"/>
+                <textElement textAlignment="Right"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+            <textField evaluationTime="Report">
+                <reportElement x="757" y="2" width="45" height="14" forecolor="#7B8798"/>
+                <textElement textAlignment="Left"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA[" de " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+        </band>
+    </pageFooter>
+
+    <summary>
+        <band height="52">
+            <line><reportElement x="0" y="8" width="802" height="1" forecolor="#B9C9DC"/></line>
+            <staticText>
+                <reportElement x="0" y="16" width="390" height="24" forecolor="#52647C" backcolor="#F4F8FC" mode="Opaque">
+                    <printWhenExpression><![CDATA[$V{REPORT_COUNT}.intValue() == 0]]></printWhenExpression>
+                </reportElement>
+                <box><pen lineWidth="0.5" lineColor="#D6E2F0"/></box>
+                <textElement verticalAlignment="Middle"><font size="9" isItalic="true"/></textElement>
+                <text><![CDATA[No se encontraron productos pendientes para los filtros seleccionados.]]></text>
+            </staticText>
+            <staticText><reportElement x="402" y="16" width="55" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Notas:]]></text></staticText>
+            <textField><reportElement x="462" y="16" width="35" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{CANTIDAD_NOTAS} == null ? 0 : $V{CANTIDAD_NOTAS}]]></textFieldExpression></textField>
+            <staticText><reportElement x="502" y="16" width="55" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Ítems:]]></text></staticText>
+            <textField><reportElement x="562" y="16" width="35" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{CANTIDAD_ITEMS} == null ? 0 : $V{CANTIDAD_ITEMS}]]></textFieldExpression></textField>
+            <staticText><reportElement x="602" y="16" width="110" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Unidades pendientes:]]></text></staticText>
+            <textField pattern="#,##0"><reportElement x="717" y="16" width="85" height="20" forecolor="#1769D2"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="10" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{UNIDADES_PENDIENTES} == null ? java.math.BigDecimal.ZERO : $V{UNIDADES_PENDIENTES}]]></textFieldExpression></textField>
+        </band>
+    </summary>
+</jasperReport>

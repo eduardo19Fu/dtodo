@@ -62,6 +62,13 @@ public interface IReporteService {
             String estado,
             String formato);
 
+    byte[] generarPendientesDespacho(
+            Integer idSucursal,
+            String fechaInicio,
+            String fechaFin,
+            Integer idCliente,
+            String formato);
+
     byte[] generarComprasPeriodo(
             Integer idSucursal,
             String fechaInicio,

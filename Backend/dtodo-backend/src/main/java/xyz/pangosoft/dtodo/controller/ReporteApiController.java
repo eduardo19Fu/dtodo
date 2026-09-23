@@ -305,6 +305,24 @@ public class ReporteApiController {
                 nombrePeriodo("resumen_notas_credito", fechaInicio, fechaFin, extension), esPdf);
     }
 
+    @Secured({"ROLE_ADMIN", "ROLE_INVENTARIO"})
+    @GetMapping("/notas-credito/pendientes-despacho")
+    public ResponseEntity<byte[]> pendientesDespacho(
+            @RequestParam Integer idSucursal,
+            @RequestParam String fechaInicio,
+            @RequestParam String fechaFin,
+            @RequestParam(required = false) Integer idCliente,
+            @RequestParam(defaultValue = "PDF") String formato) {
+        log.info("Generando pendientes de despacho. sucursal={}, cliente={}, formato={}, periodo={}..{}",
+                idSucursal, idCliente, formato, fechaInicio, fechaFin);
+        byte[] reporte = reporteService.generarPendientesDespacho(
+                idSucursal, fechaInicio, fechaFin, idCliente, formato);
+        boolean esPdf = "PDF".equalsIgnoreCase(formato);
+        String extension = esPdf ? "pdf" : "xlsx";
+        return archivo(reporte, esPdf ? MediaType.APPLICATION_PDF : XLSX_MEDIA_TYPE,
+                nombrePeriodo("pendientes_despacho", fechaInicio, fechaFin, extension), esPdf);
+    }
+
     @Secured("ROLE_ADMIN")
     @GetMapping("/compras")
     public ResponseEntity<byte[]> comprasPeriodo(
