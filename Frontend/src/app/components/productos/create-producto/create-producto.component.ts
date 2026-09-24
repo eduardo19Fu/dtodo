@@ -52,13 +52,13 @@ export class CreateProductoComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // tslint:disable-next-line: deprecation
+    // eslint-disable-next-line import/no-deprecated
     this.activatedRoute.params.subscribe(params => {
-      // tslint:disable-next-line: no-string-literal
+      // eslint-disable-next-line @typescript-eslint/dot-notation
       const id = params['id'];
 
       if (id) {
-        // tslint:disable-next-line: deprecation
+        // eslint-disable-next-line import/no-deprecated
         this.serviceProducto.getProducto(id).subscribe(
           producto => this.producto = producto
         );
@@ -90,13 +90,13 @@ export class CreateProductoComponent implements OnInit {
   }
 
   cargarProducto(): void {
-    // tslint:disable-next-line: deprecation
+    // eslint-disable-next-line import/no-deprecated
     this.activatedRoute.params.subscribe(params => {
-      // tslint:disable-next-line: no-string-literal
+      // eslint-disable-next-line @typescript-eslint/dot-notation
       const id = params['id'];
 
       if (id) {
-        // tslint:disable-next-line: deprecation
+        // eslint-disable-next-line import/no-deprecated
         this.serviceProducto.getProducto(id).subscribe(
           producto => this.producto = producto
         );
@@ -105,12 +105,12 @@ export class CreateProductoComponent implements OnInit {
   }
 
   cargarMarcas(): void {
-    // tslint:disable-next-line: deprecation
+    // eslint-disable-next-line import/no-deprecated
     this.serviceMarca.getMarcas().subscribe(marcas => this.marcas = marcas);
   }
 
   cargarTipos(): void {
-    // tslint:disable-next-line: deprecation
+    // eslint-disable-next-line import/no-deprecated
     this.serviceTipo.getTiposProducto().subscribe(tipos => this.tipos = tipos);
   }
 

@@ -52,7 +52,7 @@ export class CreateUsuarioComponent implements OnInit {
 
   cargarUsuario(): void {
     this.activatedRoute.params.subscribe(params => {
-      // tslint:disable-next-line: no-string-literal
+      // eslint-disable-next-line @typescript-eslint/dot-notation
       const id = params['id'];
       if (id) {
         this.usuarioService.getUsuario(id).subscribe(usuario => {

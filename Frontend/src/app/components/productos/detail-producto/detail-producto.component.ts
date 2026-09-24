@@ -59,13 +59,13 @@ export class DetailProductoComponent implements OnDestroy {
     if (!this.imagenSeleccionada) {
       swal.fire('Error: debe seleccionar una foto.', 'Debe seleccionar una foto', 'error');
     } else {
-      // tslint:disable-next-line: deprecation
+      // eslint-disable-next-line import/no-deprecated
       this.serviceProducto.uploadImage(this.imagenSeleccionada, this.producto.idProducto).subscribe(
         event => {
           if (event.type === HttpEventType.UploadProgress) {
             this.progreso = Math.round((event.loaded / event.total) * 100);
           } else if (event.type === HttpEventType.Response){
-            // tslint:disable-next-line: prefer-const
+            // eslint-disable-next-line prefer-const
             let response: any = event.body;
 
             this.producto = response.producto as Producto;
