@@ -469,7 +469,7 @@ export class CreateFacturaComponent implements OnInit {
         this.buscarProformaPorId(id);
       }
     }, error => {
-      swal.fire(`Error al cargar proforma`, `${error.error.message}`, 'error');
+      swal.fire('Error al cargar proforma', `${error.error.message}`, 'error');
     });
   }
 

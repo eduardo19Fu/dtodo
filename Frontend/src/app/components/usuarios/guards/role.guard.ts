@@ -25,7 +25,7 @@ export class RoleGuard implements CanActivate {
     }
 
     // LUGAR DONDE SE RECIBEN LOS ROLES DEL DATA DESDE LA URL PARA SER COMPROBADOS
-    // tslint:disable-next-line: no-string-literal
+    // eslint-disable-next-line @typescript-eslint/dot-notation
     const roles = route.data['role'] as string[];
     let hasRole = false;
 

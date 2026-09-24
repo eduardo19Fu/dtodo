@@ -33,7 +33,7 @@ export class CreateClienteComponent implements OnInit {
   cargarCliente(): void {
 
     this.activatedRoute.params.subscribe(params => {
-      // tslint:disable-next-line: no-string-literal
+      // eslint-disable-next-line @typescript-eslint/dot-notation
       const id = params['id'];
       if (id) {
         this.serviceCliente.getCliente(id).subscribe(
@@ -55,7 +55,7 @@ export class CreateClienteComponent implements OnInit {
   }
 
   update(): void{
-    // tslint:disable-next-line: deprecation
+    // eslint-disable-next-line import/no-deprecated
     this.serviceCliente.update(this.cliente).subscribe(
       response => {
         this.router.navigate(['/clientes/index']);

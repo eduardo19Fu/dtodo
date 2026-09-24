@@ -1,6 +1,6 @@
-import { UsuarioAuxiliar } from "./auxiliar/usuario-auxiliar";
-import { Cliente } from "./cliente";
-import { NotaCreditoDetalle } from "./nota-credito-detalle";
+import { UsuarioAuxiliar } from './auxiliar/usuario-auxiliar';
+import { Cliente } from './cliente';
+import { NotaCreditoDetalle } from './nota-credito-detalle';
 
 export type TipoDocumentoOrigen = 'FACTURA' | 'PROFORMA';
 

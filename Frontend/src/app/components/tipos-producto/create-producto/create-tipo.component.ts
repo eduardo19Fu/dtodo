@@ -34,10 +34,10 @@ export class CreateTipoComponent implements OnInit {
 
   cargarTipoProducto(): void{
     this.activatedRoute.params.subscribe(params => {
-      // tslint:disable-next-line: no-string-literal
+      // eslint-disable-next-line @typescript-eslint/dot-notation
       const id = params['id'];
       if (id){
-        // tslint:disable-next-line: deprecation
+        // eslint-disable-next-line import/no-deprecated
         this.tipoService.getTipoProducto(id).subscribe(
           tipoProducto => this.tipoProducto = tipoProducto
         );
@@ -61,7 +61,7 @@ export class CreateTipoComponent implements OnInit {
   }
 
   update(): void{
-    // tslint:disable-next-line: deprecation
+    // eslint-disable-next-line import/no-deprecated
     this.tipoService.update(this.tipoProducto).subscribe(
       response => {
         this.router.navigate(['/productos/categorias/index']);

@@ -56,7 +56,7 @@ export class AuthService {
     const urlEndpoint = this.url + '/oauth/token';
     // const credenciales = btoa('angularapp' + ':' + '12345');
     const credenciales = btoa('angularapp' + ':' + 'pangosoftpuntodeventastore2021');
-    // tslint:disable-next-line: object-literal-key-quotes
+    // eslint-disable-next-line quote-props
     const httpHeaders = new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded', 'Authorization': 'Basic ' + credenciales });
 
     const params = new URLSearchParams();
