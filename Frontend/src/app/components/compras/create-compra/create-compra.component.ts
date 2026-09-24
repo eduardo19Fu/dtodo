@@ -39,7 +39,7 @@ export class CreateCompraComponent implements OnInit {
 
   productoActual: Producto = null;
   codigoBusqueda = '';
-  cantidadActual = 1;
+  cantidadActual: number = null;
   precioUnitarioActual: number = null;
 
   modalProductoVisible = false;
@@ -101,9 +101,14 @@ export class CreateCompraComponent implements OnInit {
     );
   }
 
+  buscarProductoConEnter(evento: KeyboardEvent): void {
+    evento.preventDefault();
+    this.buscarProductoPorCodigo();
+  }
+
   private seleccionarProducto(producto: Producto): void {
     this.productoActual = producto;
-    this.cantidadActual = 1;
+    this.cantidadActual = null;
     this.precioUnitarioActual = producto.precioCompra || null;
   }
 
@@ -160,8 +165,13 @@ export class CreateCompraComponent implements OnInit {
 
     this.productoActual = null;
     this.codigoBusqueda = '';
-    this.cantidadActual = 1;
+    this.cantidadActual = null;
     this.precioUnitarioActual = null;
+  }
+
+  agregarLineaConEnter(evento: KeyboardEvent): void {
+    evento.preventDefault();
+    this.agregarLinea();
   }
 
   eliminarLinea(detalle: DetalleCompra): void {

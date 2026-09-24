@@ -31,6 +31,12 @@ Registro, listado, visualización y anulación de compras a proveedores. Cada co
 - Vista de detalle de compra (modal de solo lectura, mismo componente/estilo que el detalle de Sucursales) y confirmación explícita antes de anular, con aviso de que el stock se revertirá.
 - Pruebas unitarias nuevas para `CreateCompraComponent` (cálculo de totales, validaciones de `agregarLinea`), `ModalCrearProductoComponent`, `ComprasComponent`, `ProveedoresComponent` y el modelo `DetalleCompra`.
 
+### Corregido — Enter y cantidad inicial en registro de compras
+
+- Enter en código busca el producto; Enter en cantidad o precio agrega la línea sin activar «Guardar compra».
+- La cantidad ya no se precarga con 1 al seleccionar o agregar un producto; el campo vacío muestra el placeholder 0.
+- Verificación: build Angular y 105 pruebas frontend correctas.
+
 ### Corregido — Registro de compra no coincidía visualmente con Facturas/Proformas
 
 El formulario de "Registrar compra" se rediseñó para reutilizar el mismo lenguaje visual que `create-factura`/`create-proforma`, en lugar de una tabla de Bootstrap genérica:
