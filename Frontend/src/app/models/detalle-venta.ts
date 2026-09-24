@@ -14,7 +14,6 @@ export class DetalleVenta {
         return this.idDetalle;
     }
 
-    // tslint:disable-next-line: typedef
     public setIdDetalle(idDetalle: number){
         this.idDetalle = idDetalle;
     }
@@ -23,7 +22,6 @@ export class DetalleVenta {
         return this.subTotal;
     }
 
-    // tslint:disable-next-line: typedef
     public setSubTotal(subTotal: number){
         this.subTotal = subTotal;
     }
@@ -32,7 +30,6 @@ export class DetalleVenta {
         return this.producto;
     }
 
-    // tslint:disable-next-line: typedef
     public setProducto(producto: Producto){
         this.producto = producto;
     }
@@ -41,7 +38,6 @@ export class DetalleVenta {
         return this.venta;
     }
 
-    // tslint:disable-next-line: typedef
     public setVenta(venta: Venta){
         this.venta = venta;
     }

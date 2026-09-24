@@ -42,7 +42,7 @@ export class CreateCorrelativoComponent implements OnInit {
   cargarCorrelativo(): void{
     this.activatedRoute.params.subscribe(
       params => {
-        // tslint:disable-next-line: no-string-literal
+        // eslint-disable-next-line @typescript-eslint/dot-notation
         const id = params['id'];
         if (id){
           this.correlativoService.getCorrelativo(id).subscribe(

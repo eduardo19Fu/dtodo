@@ -60,7 +60,7 @@ export class CreateMovimientoComponent implements OnInit {
     this.movimientoProducto.producto = this.producto;
     this.movimientoProducto.usuario = this.usuario;
     if (this.movimientoProducto.producto) {
-      // tslint:disable-next-line: max-line-length
+      // eslint-disable-next-line max-len
       if (this.movimientoProducto.producto.stock >= this.movimientoProducto.cantidad || this.movimientoProducto.tipoMovimiento === 'ENTRADA') {
 
         this.movimientoProductoService.create(this.movimientoProducto).subscribe(
