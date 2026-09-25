@@ -7,9 +7,17 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import xyz.pangosoft.dtodo.dto.ProveedorDto;
+import xyz.pangosoft.dtodo.dto.ReporteSelectorDto;
 import xyz.pangosoft.dtodo.model.Proveedor;
 
+import java.util.List;
+
 public interface IProveedorRepository extends JpaRepository<Proveedor, Integer> {
+
+	@Query("select new xyz.pangosoft.dtodo.dto.ReporteSelectorDto(" +
+			"p.idProveedor, p.nombre, coalesce(p.contacto, p.telefonoEntidad, '')) " +
+			"from Proveedor p order by p.nombre")
+	List<ReporteSelectorDto> findOpcionesReporte();
 
 	@Query(value = "SELECT new xyz.pangosoft.dtodo.dto.ProveedorDto(" +
 			"p.idProveedor, p.nombre, p.contacto, p.telefonoEntidad, p.telefonoContacto, " +

@@ -118,6 +118,13 @@
         <span class="menu-label">Sucursales</span>
       </a>
 
+      <a *ngIf="coincide('reportes', 'informes', 'análisis', 'analisis') && (authService.hasRole('ROLE_ADMIN') || authService.hasRole('ROLE_INVENTARIO'))"
+        [routerLink]="['/reportes']" class="menu-link" [class.active]="router.url.startsWith('/reportes')"
+        (click)="notificarNavegacion()" title="Reportes">
+        <span class="menu-icon"><i class="fas fa-chart-bar" aria-hidden="true"></i></span>
+        <span class="menu-label">Reportes</span>
+      </a>
+
       <a *ngIf="coincide('usuarios') && authService.hasRole('ROLE_ADMIN')" [routerLink]="['/usuarios/index']"
         class="menu-link" [class.active]="router.url.startsWith('/usuarios')" (click)="notificarNavegacion()" title="Usuarios">
         <span class="menu-icon"><i class="fas fa-users" aria-hidden="true"></i></span>
