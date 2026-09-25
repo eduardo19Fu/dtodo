@@ -44,12 +44,12 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '16.20.2'
 
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 11.21.0
+          version: 8.15.9
 
       - name: Install dependencias frontend
         working-directory: Frontend
@@ -57,9 +57,7 @@ jobs:
 
       - name: Build frontend (configuracion test)
         working-directory: Frontend
-        env:
-          NODE_OPTIONS: --openssl-legacy-provider
-        run: npx ng build --configuration test
+        run: pnpm run build:test
 
       - name: Configurar acceso SSH
         uses: webfactory/ssh-agent@v0.9.0
@@ -116,12 +114,12 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '16.20.2'
 
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 11.21.0
+          version: 8.15.9
 
       - name: Install dependencias frontend
         working-directory: Frontend
@@ -129,9 +127,7 @@ jobs:
 
       - name: Build frontend (configuracion production)
         working-directory: Frontend
-        env:
-          NODE_OPTIONS: --openssl-legacy-provider
-        run: npx ng build --configuration production
+        run: pnpm run build:prod
 
       - name: Configurar acceso SSH
         uses: webfactory/ssh-agent@v0.9.0
