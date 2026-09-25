@@ -33,6 +33,7 @@ import { ProveedoresComponent } from './components/proveedores/proveedores.compo
 import { CreateProveedorComponent } from './components/proveedores/create-proveedor/create-proveedor.component';
 import { ComprasComponent } from './components/compras/compras.component';
 import { CreateCompraComponent } from './components/compras/create-compra/create-compra.component';
+import { ReportesComponent } from './components/reportes/reportes.component';
 
 const appRoutes: Routes = [
     { path: '', component: LoginComponent },
@@ -130,6 +131,14 @@ const appRoutes: Routes = [
     /****** MENUS DE COMPRAS ******/
     { path: 'compras/index', component: ComprasComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN'] } },
     { path: 'compras/create', component: CreateCompraComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN'] } },
+
+    /****** MÓDULO DE REPORTES ******/
+    {
+        path: 'reportes',
+        component: ReportesComponent,
+        canActivate: [AuthGuard, RoleGuard],
+        data: { role: ['ROLE_ADMIN', 'ROLE_INVENTARIO'] }
+    },
 
     { path: '**', component: ErrorComponent }
 ];

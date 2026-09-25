@@ -9,10 +9,19 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import xyz.pangosoft.dtodo.dto.UsuarioDto;
+import xyz.pangosoft.dtodo.dto.ReporteSelectorDto;
 import xyz.pangosoft.dtodo.model.Role;
 import xyz.pangosoft.dtodo.model.Usuario;
 
 public interface IUsuarioRepository extends JpaRepository<Usuario, Integer> {
+
+	@Query("select distinct new xyz.pangosoft.dtodo.dto.ReporteSelectorDto(" +
+			"u.idUsuario, trim(concat(concat(coalesce(u.primerNombre, ''), ' '), " +
+			"concat(coalesce(u.segundoNombre, ''), concat(' ', coalesce(u.apellido, ''))))), " +
+			"concat('Usuario: ', u.usuario)) from Usuario u join u.roles r " +
+			"where r.role = 'ROLE_COBRADOR' and u.enabled = true " +
+			"and (:idSucursal is null or u.sucursal.idSucursal = :idSucursal) order by u.usuario")
+	List<ReporteSelectorDto> findOpcionesCajeroReporte(@Param("idSucursal") Integer idSucursal);
 	
 	public Usuario findByUsuario(String usuario);
 	

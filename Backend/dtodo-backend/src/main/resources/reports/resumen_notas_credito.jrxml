@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="resumen_notas_credito" pageWidth="842" pageHeight="595" orientation="Landscape"
+              whenNoDataType="AllSectionsNoDetail" columnWidth="802" leftMargin="20" rightMargin="20"
+              topMargin="18" bottomMargin="18" isSummaryWithPageHeaderAndFooter="true"
+              uuid="4349bd5c-548b-44a8-926a-b53460223492">
+    <property name="net.sf.jasperreports.export.xlsx.detect.cell.type" value="true"/>
+    <property name="net.sf.jasperreports.export.xlsx.remove.empty.space.between.rows" value="true"/>
+    <property name="net.sf.jasperreports.export.xlsx.white.page.background" value="false"/>
+
+    <style name="Base" isDefault="true" fontName="DejaVu Sans" fontSize="8" forecolor="#23344D"/>
+    <style name="Header" style="Base" mode="Opaque" backcolor="#1769D2" forecolor="#FFFFFF"
+           fontSize="8" isBold="true" vTextAlign="Middle"/>
+    <style name="Cell" style="Base" mode="Opaque" backcolor="#FFFFFF" vTextAlign="Middle">
+        <box><pen lineWidth="0.35" lineColor="#D9E3EF"/></box>
+    </style>
+
+    <parameter name="ID_SUCURSAL" class="java.lang.Integer"/>
+    <parameter name="FECHA_INICIO" class="java.sql.Timestamp"/>
+    <parameter name="FECHA_FIN_EXCLUSIVA" class="java.sql.Timestamp"/>
+    <parameter name="RANGO" class="java.lang.String"/>
+    <parameter name="SUCURSAL" class="java.lang.String"/>
+    <parameter name="ESTADO" class="java.lang.String" isForPrompting="false"/>
+    <parameter name="FILTRO_ESTADO" class="java.lang.String"/>
+
+    <queryString language="SQL"><![CDATA[
+        SELECT LPAD(nc.id_nota_credito, 7, '0') AS numero,
+               nc.fecha_creacion,
+               c.nombre AS cliente,
+               c.nit AS nit,
+               CASE
+                   WHEN nc.tipo_documento_origen = 'PROFORMA'
+                       THEN CONCAT('Proforma ', COALESCE(nc.no_proforma, ''))
+                   ELSE TRIM(CONCAT(COALESCE(nc.serie_factura_sat, ''), ' ',
+                                    COALESCE(nc.correlativo_factura_sat, '')))
+               END AS documento_origen,
+               TRIM(CONCAT(COALESCE(u.primer_nombre, ''), ' ', COALESCE(u.apellido, ''))) AS vendedor,
+               nc.estado,
+               nc.total
+          FROM notas_credito nc
+          INNER JOIN clientes c ON c.id_cliente = nc.id_cliente
+          INNER JOIN usuarios u ON u.id_usuario = nc.id_usuario
+         WHERE nc.id_sucursal = $P{ID_SUCURSAL}
+           AND nc.fecha_creacion >= $P{FECHA_INICIO}
+           AND nc.fecha_creacion < $P{FECHA_FIN_EXCLUSIVA}
+           AND ($P{ESTADO} IS NULL OR nc.estado = $P{ESTADO})
+         ORDER BY nc.fecha_creacion DESC, nc.id_nota_credito DESC
+    ]]></queryString>
+
+    <field name="numero" class="java.lang.String"/>
+    <field name="fecha_creacion" class="java.sql.Timestamp"/>
+    <field name="cliente" class="java.lang.String"/>
+    <field name="nit" class="java.lang.String"/>
+    <field name="documento_origen" class="java.lang.String"/>
+    <field name="vendedor" class="java.lang.String"/>
+    <field name="estado" class="java.lang.String"/>
+    <field name="total" class="java.math.BigDecimal"/>
+
+    <variable name="CANTIDAD_NOTAS" class="java.lang.Integer" calculation="Count">
+        <variableExpression><![CDATA[$F{numero}]]></variableExpression>
+    </variable>
+    <variable name="TOTAL_NOTAS" class="java.math.BigDecimal" calculation="Sum">
+        <variableExpression><![CDATA[$F{total}]]></variableExpression>
+        <initialValueExpression><![CDATA[java.math.BigDecimal.ZERO]]></initialValueExpression>
+    </variable>
+
+    <title>
+        <band height="72">
+            <rectangle radius="8">
+                <reportElement x="90" y="0" width="712" height="48" forecolor="#1769D2" backcolor="#1769D2"/>
+            </rectangle>
+            <image scaleImage="RetainShape" hAlign="Center">
+                <reportElement x="0" y="0" width="72" height="48"/>
+                <imageExpression><![CDATA[this.getClass().getResourceAsStream("/static/images/reports-image/logo-dtodo.jpg")]]></imageExpression>
+            </image>
+            <staticText>
+                <reportElement x="108" y="5" width="440" height="22" forecolor="#FFFFFF"/>
+                <textElement verticalAlignment="Middle"><font size="16" isBold="true"/></textElement>
+                <text><![CDATA[Resumen de notas de crédito]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="108" y="28" width="440" height="14" forecolor="#DCEBFF"/>
+                <textElement><font size="8"/></textElement>
+                <textFieldExpression><![CDATA[$P{SUCURSAL} + " · " + $P{RANGO}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="568" y="7" width="216" height="16" forecolor="#FFFFFF"/>
+                <textElement textAlignment="Right"><font size="9" isBold="true"/></textElement>
+                <textFieldExpression><![CDATA[$P{FILTRO_ESTADO}]]></textFieldExpression>
+            </textField>
+            <textField pattern="dd/MM/yyyy HH:mm">
+                <reportElement x="568" y="25" width="216" height="13" forecolor="#DCEBFF"/>
+                <textElement textAlignment="Right"><font size="7"/></textElement>
+                <textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+            </textField>
+            <staticText>
+                <reportElement x="0" y="54" width="802" height="14" forecolor="#66758A"/>
+                <textElement><font size="8" isItalic="true"/></textElement>
+                <text><![CDATA[Incluye las notas emitidas en el período y estado seleccionados. Los importes se expresan en quetzales.]]></text>
+            </staticText>
+        </band>
+    </title>
+
+    <columnHeader>
+        <band height="28">
+            <staticText><reportElement style="Header" x="0" y="0" width="55" height="28"/><textElement textAlignment="Center"/><text><![CDATA[No.]]></text></staticText>
+            <staticText><reportElement style="Header" x="55" y="0" width="90" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Fecha]]></text></staticText>
+            <staticText><reportElement style="Header" x="145" y="0" width="160" height="28"/><text><![CDATA[Cliente]]></text></staticText>
+            <staticText><reportElement style="Header" x="305" y="0" width="75" height="28"/><textElement textAlignment="Center"/><text><![CDATA[NIT]]></text></staticText>
+            <staticText><reportElement style="Header" x="380" y="0" width="130" height="28"/><text><![CDATA[Documento origen]]></text></staticText>
+            <staticText><reportElement style="Header" x="510" y="0" width="110" height="28"/><text><![CDATA[Vendedor]]></text></staticText>
+            <staticText><reportElement style="Header" x="620" y="0" width="95" height="28"/><text><![CDATA[Estado]]></text></staticText>
+            <staticText><reportElement style="Header" x="715" y="0" width="77" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Total]]></text></staticText>
+        </band>
+    </columnHeader>
+
+    <detail>
+        <band height="24">
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="0" y="0" width="55" height="24"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA[$F{numero}]]></textFieldExpression></textField>
+            <textField pattern="dd/MM/yyyy" isBlankWhenNull="true"><reportElement style="Cell" x="55" y="0" width="90" height="24"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA[$F{fecha_creacion}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="145" y="0" width="160" height="24"/><textFieldExpression><![CDATA[$F{cliente}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="305" y="0" width="75" height="24"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA[$F{nit}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="380" y="0" width="130" height="24"/><textFieldExpression><![CDATA[$F{documento_origen}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="510" y="0" width="110" height="24"/><textFieldExpression><![CDATA[$F{vendedor}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="620" y="0" width="95" height="24"/><textFieldExpression><![CDATA[$F{estado}.replace('_', ' ')]]></textFieldExpression></textField>
+            <textField pattern="Q #,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="715" y="0" width="77" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{total}]]></textFieldExpression></textField>
+        </band>
+    </detail>
+
+    <pageFooter>
+        <band height="18">
+            <textField>
+                <reportElement x="642" y="2" width="115" height="14" forecolor="#7B8798"/>
+                <textElement textAlignment="Right"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+            <textField evaluationTime="Report">
+                <reportElement x="757" y="2" width="35" height="14" forecolor="#7B8798"/>
+                <textElement textAlignment="Left"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA[" de " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+        </band>
+    </pageFooter>
+
+    <summary>
+        <band height="52">
+            <line><reportElement x="0" y="8" width="792" height="1" forecolor="#B9C9DC"/></line>
+            <staticText>
+                <reportElement x="0" y="16" width="430" height="24" forecolor="#52647C" backcolor="#F4F8FC" mode="Opaque">
+                    <printWhenExpression><![CDATA[$V{REPORT_COUNT}.intValue() == 0]]></printWhenExpression>
+                </reportElement>
+                <box><pen lineWidth="0.5" lineColor="#D6E2F0"/></box>
+                <textElement verticalAlignment="Middle"><font size="9" isItalic="true"/></textElement>
+                <text><![CDATA[No se encontraron notas de crédito para los filtros seleccionados.]]></text>
+            </staticText>
+            <staticText><reportElement x="470" y="16" width="105" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><text><![CDATA[Notas emitidas:]]></text></staticText>
+            <textField><reportElement x="580" y="16" width="45" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="10" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{CANTIDAD_NOTAS} == null ? 0 : $V{CANTIDAD_NOTAS}]]></textFieldExpression></textField>
+            <staticText><reportElement x="620" y="16" width="80" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><text><![CDATA[Importe:]]></text></staticText>
+            <textField pattern="Q #,##0.00"><reportElement x="702" y="16" width="90" height="20" forecolor="#1769D2"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="10" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_NOTAS} == null ? java.math.BigDecimal.ZERO : $V{TOTAL_NOTAS}]]></textFieldExpression></textField>
+        </band>
+    </summary>
+</jasperReport>

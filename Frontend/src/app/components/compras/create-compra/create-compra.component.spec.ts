@@ -48,6 +48,15 @@ describe('CreateCompraComponent - agregarLinea', () => {
     component = new CreateCompraComponent(null, null, null, null, null, null, null);
   });
 
+  it('inicia sin cantidad y muestra el placeholder hasta que se ingrese un valor', () => {
+    expect(component.cantidadActual).toBeNull();
+
+    component.cantidadActual = 4;
+    component.productoNuevoCreado(new Producto());
+
+    expect(component.cantidadActual).toBeNull();
+  });
+
   it('no agrega una linea si no hay producto seleccionado', () => {
     component.productoActual = null;
     component.cantidadActual = 1;
@@ -91,7 +100,32 @@ describe('CreateCompraComponent - agregarLinea', () => {
     expect(component.compra.items[0].producto).toBe(producto);
     expect(component.compra.items[0].subTotal).toBe(60);
     expect(component.productoActual).toBeNull();
-    expect(component.cantidadActual).toBe(1);
+    expect(component.cantidadActual).toBeNull();
+  });
+
+  it('Enter en cantidad agrega la linea sin invocar guardar compra', () => {
+    component.productoActual = new Producto();
+    component.cantidadActual = 2;
+    component.precioUnitarioActual = 15;
+    const crear = spyOn(component, 'crear');
+    const evento = new KeyboardEvent('keydown', { key: 'Enter', cancelable: true });
+
+    component.agregarLineaConEnter(evento);
+
+    expect(evento.defaultPrevented).toBeTrue();
+    expect(component.compra.items.length).toBe(1);
+    expect(component.compra.items[0].subTotal).toBe(30);
+    expect(crear).not.toHaveBeenCalled();
+  });
+
+  it('Enter en codigo evita el envio del formulario y busca el producto', () => {
+    const buscar = spyOn(component, 'buscarProductoPorCodigo');
+    const evento = new KeyboardEvent('keydown', { key: 'Enter', cancelable: true });
+
+    component.buscarProductoConEnter(evento);
+
+    expect(evento.defaultPrevented).toBeTrue();
+    expect(buscar).toHaveBeenCalled();
   });
 
   it('elimina la linea unicamente al confirmar', fakeAsync(() => {

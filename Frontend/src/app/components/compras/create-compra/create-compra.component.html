@@ -11,7 +11,7 @@
     <div class="heading-icon" aria-hidden="true"><i class="fas fa-shopping-basket"></i></div>
   </header>
 
-  <form #compraForm="ngForm" class="product-card">
+  <form #compraForm="ngForm" class="product-card" (submit)="$event.preventDefault()">
     <div class="card-hero">
       <div class="hero-icon" aria-hidden="true"><i class="fas fa-dolly-flatbed"></i></div>
       <div>
@@ -38,7 +38,7 @@
         <strong>{{ totalCompra | currency: "Q" : "symbol" }}</strong>
       </div>
 
-      <button type="submit" class="primary-action" (click)="crear()"
+      <button type="button" class="primary-action" (click)="crear()"
         [disabled]="!compraForm.form.valid || compra.items.length === 0 || guardando">
         <i class="fas" [ngClass]="guardando ? 'fa-spinner fa-spin' : 'fa-save'" aria-hidden="true"></i>
         {{ guardando ? 'Guardando...' : 'Guardar compra' }}
@@ -138,7 +138,7 @@
               <div class="control-with-icon">
                 <i class="fas fa-barcode" aria-hidden="true"></i>
                 <input type="text" class="form-control" name="codigo" id="codigo"
-                  [(ngModel)]="codigoBusqueda" (keyup.enter)="buscarProductoPorCodigo()"
+                  [(ngModel)]="codigoBusqueda" (keydown.enter)="buscarProductoConEnter($event)"
                   placeholder="Escanea o escribe el c&oacute;digo">
               </div>
               <button type="button" class="inline-search-button" (click)="abrirModalProducto()"
@@ -170,7 +170,7 @@
                 <div class="control-with-icon">
                   <i class="fas fa-sort-numeric-up" aria-hidden="true"></i>
                   <input type="number" id="cantidadActual" name="cantidadActual" class="form-control"
-                    [(ngModel)]="cantidadActual" min="1" placeholder="0" (keyup.enter)="agregarLinea()">
+                    [(ngModel)]="cantidadActual" min="1" placeholder="0" (keydown.enter)="agregarLineaConEnter($event)">
                 </div>
               </div>
               <div class="line-entry-field">
@@ -178,7 +178,7 @@
                 <div class="control-with-prefix">
                   <span>Q</span>
                   <input type="number" id="precioUnitarioActual" name="precioUnitarioActual" class="form-control"
-                    [(ngModel)]="precioUnitarioActual" min="0.01" placeholder="0.00" (keyup.enter)="agregarLinea()">
+                    [(ngModel)]="precioUnitarioActual" min="0.01" placeholder="0.00" (keydown.enter)="agregarLineaConEnter($event)">
                 </div>
               </div>
               <button type="button" class="add-line-button" (click)="agregarLinea()" aria-label="Agregar producto"

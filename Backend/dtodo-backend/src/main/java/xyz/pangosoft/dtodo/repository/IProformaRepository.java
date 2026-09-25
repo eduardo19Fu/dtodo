@@ -5,6 +5,7 @@ import xyz.pangosoft.dtodo.dto.ProformaDto;
 import xyz.pangosoft.dtodo.dto.DetalleDocumentoDto;
 import xyz.pangosoft.dtodo.dto.DocumentoOrigenNotaDto;
 import xyz.pangosoft.dtodo.dto.UsuarioDto;
+import xyz.pangosoft.dtodo.dto.ReporteSelectorDto;
 import xyz.pangosoft.dtodo.model.Proforma;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +18,13 @@ import java.util.List;
 import java.util.Optional;
 
 public interface IProformaRepository extends JpaRepository<Proforma, Long> {
+
+    @Query("select distinct new xyz.pangosoft.dtodo.dto.ReporteSelectorDto(" +
+            "u.idUsuario, trim(concat(concat(coalesce(u.primerNombre, ''), ' '), " +
+            "concat(coalesce(u.segundoNombre, ''), concat(' ', coalesce(u.apellido, ''))))), " +
+            "concat('Usuario: ', u.usuario)) from Proforma p join p.usuario u " +
+            "where (:idSucursal is null or p.sucursal.idSucursal = :idSucursal) order by u.usuario")
+    List<ReporteSelectorDto> findOpcionesUsuarioReporte(@Param("idSucursal") Integer idSucursal);
 
     @Query("select count(p) from Proforma p where (:idUsuario is null or p.usuario.idUsuario = :idUsuario)")
     Long countByUsuario(@Param("idUsuario") Integer idUsuario);

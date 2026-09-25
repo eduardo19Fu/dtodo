@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="compras_proveedor_producto" pageWidth="842" pageHeight="595" orientation="Landscape"
+              whenNoDataType="AllSectionsNoDetail" columnWidth="802" leftMargin="20" rightMargin="20"
+              topMargin="18" bottomMargin="18">
+    <property name="net.sf.jasperreports.export.xlsx.detect.cell.type" value="true"/>
+    <property name="net.sf.jasperreports.export.xlsx.remove.empty.space.between.rows" value="true"/>
+    <property name="net.sf.jasperreports.export.xlsx.white.page.background" value="false"/>
+
+    <style name="Base" isDefault="true" fontName="DejaVu Sans" fontSize="8" forecolor="#23344D"/>
+    <style name="Header" style="Base" mode="Opaque" backcolor="#1769D2" forecolor="#FFFFFF"
+           fontSize="8" isBold="true" vTextAlign="Middle"/>
+    <style name="Cell" style="Base" mode="Opaque" backcolor="#FFFFFF" vTextAlign="Middle">
+        <box><pen lineWidth="0.35" lineColor="#D9E3EF"/></box>
+    </style>
+
+    <parameter name="ID_SUCURSAL" class="java.lang.Integer"/>
+    <parameter name="ID_PROVEEDOR" class="java.lang.Integer" isForPrompting="false"/>
+    <parameter name="FECHA_INICIO" class="java.sql.Date"/>
+    <parameter name="FECHA_FIN_EXCLUSIVA" class="java.sql.Date"/>
+    <parameter name="RANGO" class="java.lang.String"/>
+    <parameter name="SUCURSAL" class="java.lang.String"/>
+    <parameter name="FILTRO_PROVEEDOR" class="java.lang.String"/>
+
+    <queryString language="SQL"><![CDATA[
+        SELECT prov.id_proveedor,
+               prov.nombre AS proveedor,
+               prod.cod_producto AS codigo,
+               prod.nombre AS producto,
+               COUNT(DISTINCT c.id_compra) AS compras,
+               CAST(SUM(cd.cantidad) AS DECIMAL(18, 0)) AS unidades,
+               CASE WHEN SUM(cd.cantidad) = 0 THEN NULL
+                    ELSE ROUND(SUM(cd.sub_total) / SUM(cd.cantidad), 2)
+               END AS costo_promedio,
+               SUM(cd.sub_total) AS importe
+          FROM compras c
+          INNER JOIN compras_detalle cd ON cd.id_compra = c.id_compra
+          INNER JOIN proveedores prov ON prov.id_proveedor = c.id_proveedor
+          INNER JOIN productos prod ON prod.id_producto = cd.id_producto
+         WHERE c.id_sucursal = $P{ID_SUCURSAL}
+           AND c.fecha_compra >= $P{FECHA_INICIO}
+           AND c.fecha_compra < $P{FECHA_FIN_EXCLUSIVA}
+           AND c.estado = 'ACTIVA'
+           AND ($P{ID_PROVEEDOR} IS NULL OR c.id_proveedor = $P{ID_PROVEEDOR})
+         GROUP BY prov.id_proveedor, prov.nombre, prod.id_producto, prod.cod_producto, prod.nombre
+         ORDER BY prov.nombre, prod.nombre, prod.cod_producto
+    ]]></queryString>
+
+    <field name="id_proveedor" class="java.lang.Integer"/>
+    <field name="proveedor" class="java.lang.String"/>
+    <field name="codigo" class="java.lang.String"/>
+    <field name="producto" class="java.lang.String"/>
+    <field name="compras" class="java.lang.Long"/>
+    <field name="unidades" class="java.math.BigDecimal"/>
+    <field name="costo_promedio" class="java.math.BigDecimal"/>
+    <field name="importe" class="java.math.BigDecimal"/>
+
+    <variable name="PROVEEDORES" class="java.lang.Long" calculation="DistinctCount">
+        <variableExpression><![CDATA[$F{id_proveedor}]]></variableExpression>
+    </variable>
+    <variable name="UNIDADES" class="java.math.BigDecimal" calculation="Sum">
+        <variableExpression><![CDATA[$F{unidades}]]></variableExpression>
+        <initialValueExpression><![CDATA[java.math.BigDecimal.ZERO]]></initialValueExpression>
+    </variable>
+    <variable name="IMPORTE" class="java.math.BigDecimal" calculation="Sum">
+        <variableExpression><![CDATA[$F{importe}]]></variableExpression>
+        <initialValueExpression><![CDATA[java.math.BigDecimal.ZERO]]></initialValueExpression>
+    </variable>
+
+    <title>
+        <band height="72">
+            <rectangle radius="8">
+                <reportElement x="155" y="0" width="647" height="48" forecolor="#1769D2" backcolor="#1769D2"/>
+            </rectangle>
+            <image scaleImage="RetainShape" hAlign="Center">
+                <reportElement x="0" y="0" width="155" height="48"/>
+                <imageExpression><![CDATA[this.getClass().getResourceAsStream("/static/images/reports-image/logo-dtodo.jpg")]]></imageExpression>
+            </image>
+            <staticText>
+                <reportElement x="155" y="0" width="540" height="24" forecolor="#FFFFFF" backcolor="#1769D2" mode="Opaque"/>
+                <box leftPadding="10"/>
+                <textElement verticalAlignment="Middle"><font size="16" isBold="true"/></textElement>
+                <text><![CDATA[Compras por proveedor y producto]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="155" y="24" width="540" height="24" forecolor="#DCEBFF" backcolor="#1769D2" mode="Opaque"/>
+                <box leftPadding="10"/>
+                <textElement verticalAlignment="Middle"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA[$P{SUCURSAL} + " · " + $P{RANGO}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="695" y="0" width="107" height="24" forecolor="#FFFFFF" backcolor="#1769D2" mode="Opaque"/>
+                <box rightPadding="6"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement>
+                <textFieldExpression><![CDATA[$P{FILTRO_PROVEEDOR}]]></textFieldExpression>
+            </textField>
+            <textField pattern="dd/MM/yyyy HH:mm">
+                <reportElement x="695" y="24" width="107" height="24" forecolor="#DCEBFF" backcolor="#1769D2" mode="Opaque"/>
+                <box rightPadding="6"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="7"/></textElement>
+                <textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+            </textField>
+            <staticText>
+                <reportElement x="0" y="54" width="802" height="14" forecolor="#66758A"/>
+                <textElement><font size="8" isItalic="true"/></textElement>
+                <text><![CDATA[Sólo compras activas. Importe de productos sin costo de envío; costo medio ponderado por unidades.]]></text>
+            </staticText>
+        </band>
+    </title>
+
+    <columnHeader>
+        <band height="28">
+            <staticText><reportElement style="Header" x="0" y="0" width="155" height="28"/><text><![CDATA[Proveedor]]></text></staticText>
+            <staticText><reportElement style="Header" x="155" y="0" width="85" height="28"/><text><![CDATA[Código]]></text></staticText>
+            <staticText><reportElement style="Header" x="240" y="0" width="225" height="28"/><text><![CDATA[Producto]]></text></staticText>
+            <staticText><reportElement style="Header" x="465" y="0" width="65" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Compras]]></text></staticText>
+            <staticText><reportElement style="Header" x="530" y="0" width="70" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Unidades]]></text></staticText>
+            <staticText><reportElement style="Header" x="600" y="0" width="95" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Costo medio]]></text></staticText>
+            <staticText><reportElement style="Header" x="695" y="0" width="107" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Importe]]></text></staticText>
+        </band>
+    </columnHeader>
+
+    <detail>
+        <band height="24">
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="0" y="0" width="155" height="24"/><textFieldExpression><![CDATA[$F{proveedor}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="155" y="0" width="85" height="24"/><textFieldExpression><![CDATA[$F{codigo}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="240" y="0" width="225" height="24"/><textFieldExpression><![CDATA[$F{producto}]]></textFieldExpression></textField>
+            <textField pattern="#,##0"><reportElement style="Cell" x="465" y="0" width="65" height="24"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA[$F{compras}]]></textFieldExpression></textField>
+            <textField pattern="#,##0"><reportElement style="Cell" x="530" y="0" width="70" height="24"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA[$F{unidades}]]></textFieldExpression></textField>
+            <textField pattern="Q #,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="600" y="0" width="95" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{costo_promedio}]]></textFieldExpression></textField>
+            <textField pattern="Q #,##0.00"><reportElement style="Cell" x="695" y="0" width="107" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{importe}]]></textFieldExpression></textField>
+        </band>
+    </detail>
+
+    <summary>
+        <band height="52">
+            <line><reportElement x="0" y="8" width="802" height="1" forecolor="#B9C9DC"/></line>
+            <staticText>
+                <reportElement x="0" y="16" width="465" height="24" forecolor="#52647C" backcolor="#F4F8FC" mode="Opaque">
+                    <printWhenExpression><![CDATA[$V{REPORT_COUNT}.intValue() == 0]]></printWhenExpression>
+                </reportElement>
+                <box><pen lineWidth="0.5" lineColor="#D6E2F0"/></box>
+                <textElement verticalAlignment="Middle"><font size="9" isItalic="true"/></textElement>
+                <text><![CDATA[No se encontraron compras activas para los filtros seleccionados.]]></text>
+            </staticText>
+            <staticText><reportElement x="0" y="16" width="155" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Proveedores:]]></text></staticText>
+            <textField><reportElement x="155" y="16" width="85" height="20" forecolor="#17233B"/><textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{PROVEEDORES} == null ? 0 : $V{PROVEEDORES}]]></textFieldExpression></textField>
+            <staticText><reportElement x="465" y="16" width="65" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Unidades:]]></text></staticText>
+            <textField pattern="#,##0"><reportElement x="530" y="16" width="70" height="20" forecolor="#17233B"/><textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{UNIDADES} == null ? java.math.BigDecimal.ZERO : $V{UNIDADES}]]></textFieldExpression></textField>
+            <staticText><reportElement x="600" y="16" width="95" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Importe:]]></text></staticText>
+            <textField pattern="Q #,##0.00"><reportElement x="695" y="16" width="107" height="20" forecolor="#1769D2"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="10" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{IMPORTE} == null ? java.math.BigDecimal.ZERO : $V{IMPORTE}]]></textFieldExpression></textField>
+        </band>
+    </summary>
+</jasperReport>

@@ -16,6 +16,7 @@ export class Factura {
     serieSat: string;
     mensajeSat: string;
     fechaCertificacionSat: string;
+    idProformaOrigen: number;
 
     estado: Estado;
     usuario: UsuarioAuxiliar;

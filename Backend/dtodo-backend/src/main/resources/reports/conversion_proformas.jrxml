@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="conversion_proformas" pageWidth="842" pageHeight="595" orientation="Landscape"
+              whenNoDataType="AllSectionsNoDetail" columnWidth="802" leftMargin="20" rightMargin="20"
+              topMargin="18" bottomMargin="18" isSummaryWithPageHeaderAndFooter="true">
+    <property name="net.sf.jasperreports.export.xlsx.detect.cell.type" value="true"/>
+    <property name="net.sf.jasperreports.export.xlsx.remove.empty.space.between.rows" value="true"/>
+    <property name="net.sf.jasperreports.export.xlsx.white.page.background" value="false"/>
+    <style name="Base" isDefault="true" fontName="DejaVu Sans" fontSize="8" forecolor="#23344D"/>
+    <style name="Header" style="Base" mode="Opaque" backcolor="#1769D2" forecolor="#FFFFFF" fontSize="8" isBold="true" vTextAlign="Middle"/>
+    <style name="Cell" style="Base" mode="Opaque" backcolor="#FFFFFF" vTextAlign="Middle"><box><pen lineWidth="0.35" lineColor="#D9E3EF"/></box></style>
+
+    <parameter name="ID_SUCURSAL" class="java.lang.Integer"/>
+    <parameter name="ID_USUARIO" class="java.lang.Integer"/>
+    <parameter name="FECHA_INICIO" class="java.sql.Timestamp"/>
+    <parameter name="FECHA_FIN_EXCLUSIVA" class="java.sql.Timestamp"/>
+    <parameter name="RANGO" class="java.lang.String"/>
+    <parameter name="SUCURSAL" class="java.lang.String"/>
+    <parameter name="USUARIO" class="java.lang.String"/>
+    <parameter name="FORMATO" class="java.lang.String"/>
+
+    <queryString language="SQL"><![CDATA[
+        SELECT TRIM(CONCAT(COALESCE(u.primer_nombre, ''), ' ', COALESCE(u.apellido, ''))) AS usuario,
+               COUNT(DISTINCT p.id_proforma) AS proformas_emitidas,
+               COUNT(DISTINCT CASE WHEN f.id_factura IS NOT NULL AND f.id_estado != 4 THEN p.id_proforma END) AS proformas_convertidas,
+               CASE WHEN COUNT(DISTINCT p.id_proforma) = 0 THEN 0
+                    ELSE COUNT(DISTINCT CASE WHEN f.id_factura IS NOT NULL AND f.id_estado != 4 THEN p.id_proforma END)
+                         / COUNT(DISTINCT p.id_proforma) END AS tasa_conversion,
+               COALESCE(SUM(p.total), 0) AS valor_proformado,
+               COALESCE(SUM(CASE WHEN f.id_factura IS NOT NULL AND f.id_estado != 4 THEN f.total ELSE 0 END), 0) AS valor_convertido
+          FROM proformas p
+          INNER JOIN usuarios u ON u.id_usuario = p.id_usuario
+          LEFT JOIN facturas f ON f.id_proforma_origen = p.id_proforma
+         WHERE p.id_estado != 4
+           AND p.id_sucursal = $P{ID_SUCURSAL}
+           AND p.id_usuario = $P{ID_USUARIO}
+           AND p.fecha_emision >= $P{FECHA_INICIO}
+           AND p.fecha_emision < $P{FECHA_FIN_EXCLUSIVA}
+         GROUP BY u.id_usuario, u.primer_nombre, u.apellido
+    ]]></queryString>
+    <field name="usuario" class="java.lang.String"/>
+    <field name="proformas_emitidas" class="java.lang.Long"/>
+    <field name="proformas_convertidas" class="java.lang.Long"/>
+    <field name="tasa_conversion" class="java.math.BigDecimal"/>
+    <field name="valor_proformado" class="java.math.BigDecimal"/>
+    <field name="valor_convertido" class="java.math.BigDecimal"/>
+
+    <title><band height="76">
+        <rectangle radius="8"><reportElement x="90" y="0" width="712" height="48" forecolor="#1769D2" backcolor="#1769D2"/></rectangle>
+        <image scaleImage="RetainShape" hAlign="Center"><reportElement x="0" y="0" width="72" height="48"/><imageExpression><![CDATA[this.getClass().getResourceAsStream("/static/images/reports-image/logo-dtodo.jpg")]]></imageExpression></image>
+        <staticText><reportElement x="90" y="0" width="478" height="24" forecolor="#FFFFFF" backcolor="#1769D2" mode="Opaque"/><textElement verticalAlignment="Middle"><font size="16" isBold="true"/><paragraph leftIndent="18"/></textElement><text><![CDATA[Conversión de proformas]]></text></staticText>
+        <textField><reportElement x="90" y="24" width="478" height="24" forecolor="#DCEBFF" backcolor="#1769D2" mode="Opaque"/><textElement verticalAlignment="Middle"><paragraph leftIndent="18"/></textElement><textFieldExpression><![CDATA[$P{SUCURSAL} + " · " + $P{RANGO}]]></textFieldExpression></textField>
+        <textField><reportElement x="568" y="0" width="234" height="24" forecolor="#FFFFFF" backcolor="#1769D2" mode="Opaque"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/><paragraph rightIndent="18"/></textElement><textFieldExpression><![CDATA[$P{USUARIO}]]></textFieldExpression></textField>
+        <textField pattern="dd/MM/yyyy HH:mm"><reportElement x="568" y="24" width="234" height="24" forecolor="#DCEBFF" backcolor="#1769D2" mode="Opaque"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="7"/><paragraph rightIndent="18"/></textElement><textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression></textField>
+        <staticText><reportElement x="0" y="56" width="802" height="16" forecolor="#66758A"/><textElement><font size="8" isItalic="true"/></textElement><text><![CDATA[Se consideran convertidas las proformas vinculadas a una factura vigente. El vínculo se registra desde esta versión.]]></text></staticText>
+    </band></title>
+    <columnHeader><band height="28">
+        <staticText><reportElement style="Header" x="0" y="0" width="220" height="28"/><text><![CDATA[Usuario]]></text></staticText>
+        <staticText><reportElement style="Header" x="220" y="0" width="105" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Emitidas]]></text></staticText>
+        <staticText><reportElement style="Header" x="325" y="0" width="105" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Convertidas]]></text></staticText>
+        <staticText><reportElement style="Header" x="430" y="0" width="105" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Conversión]]></text></staticText>
+        <staticText><reportElement style="Header" x="535" y="0" width="133" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Valor proformado]]></text></staticText>
+        <staticText><reportElement style="Header" x="668" y="0" width="134" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Valor convertido]]></text></staticText>
+    </band></columnHeader>
+    <detail><band height="26">
+        <textField isBlankWhenNull="true"><reportElement style="Cell" x="0" y="0" width="220" height="26"/><textFieldExpression><![CDATA[$F{usuario}]]></textFieldExpression></textField>
+        <textField pattern="#,##0"><reportElement style="Cell" x="220" y="0" width="105" height="26"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{proformas_emitidas}]]></textFieldExpression></textField>
+        <textField pattern="#,##0"><reportElement style="Cell" x="325" y="0" width="105" height="26"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{proformas_convertidas}]]></textFieldExpression></textField>
+        <textField pattern="#,##0.00%"><reportElement style="Cell" x="430" y="0" width="105" height="26"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{tasa_conversion}]]></textFieldExpression></textField>
+        <textField pattern="Q #,##0.00"><reportElement style="Cell" x="535" y="0" width="133" height="26"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{valor_proformado}]]></textFieldExpression></textField>
+        <textField pattern="Q #,##0.00"><reportElement style="Cell" x="668" y="0" width="134" height="26"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{valor_convertido}]]></textFieldExpression></textField>
+    </band></detail>
+    <pageFooter><band height="18">
+        <textField><reportElement x="642" y="2" width="115" height="14" forecolor="#7B8798"><printWhenExpression><![CDATA["PDF".equals($P{FORMATO})]]></printWhenExpression></reportElement><textElement textAlignment="Right"/><textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER}]]></textFieldExpression></textField>
+        <textField evaluationTime="Report"><reportElement x="757" y="2" width="35" height="14" forecolor="#7B8798"><printWhenExpression><![CDATA["PDF".equals($P{FORMATO})]]></printWhenExpression></reportElement><textFieldExpression><![CDATA[" de " + $V{PAGE_NUMBER}]]></textFieldExpression></textField>
+    </band></pageFooter>
+    <summary><band height="48">
+        <line><reportElement x="0" y="8" width="802" height="1" forecolor="#B9C9DC"/></line>
+        <staticText><reportElement x="0" y="16" width="390" height="24" forecolor="#52647C" backcolor="#F4F8FC" mode="Opaque"><printWhenExpression><![CDATA[$V{REPORT_COUNT}.intValue() == 0]]></printWhenExpression></reportElement><box><pen lineWidth="0.5" lineColor="#D6E2F0"/></box><textElement verticalAlignment="Middle"><font size="9" isItalic="true"/></textElement><text><![CDATA[No se encontraron proformas para los filtros seleccionados.]]></text></staticText>
+    </band></summary>
+</jasperReport>
