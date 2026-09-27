@@ -80,7 +80,9 @@ export class CreateMovimientoComponent implements OnInit {
   }
 
   buscarProducto(): void {
-    const codigo = ((document.getElementById('cod-producto') as HTMLInputElement)).value;
+    // Se lee del modelo y no del input: al elegir desde el modal, ngModel aún no ha
+    // escrito el código en el DOM cuando se llama a este método.
+    const codigo = this.producto.codProducto;
 
     if (codigo) {
       this.productoService.getProductoByCode(codigo).subscribe(
