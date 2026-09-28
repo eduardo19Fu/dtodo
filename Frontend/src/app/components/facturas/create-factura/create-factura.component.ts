@@ -456,7 +456,13 @@ export class CreateFacturaComponent implements OnInit {
         window.open(url, '_blank').focus();
       }, error => {
         this.isSaving = false;
-        swal.fire(`Error: ${error.error.status} al Crear Factura`, `${error.error.message}`, 'error');
+        // El backend revierte la venta completa (factura, existencias y correlativo) cuando falla;
+        // se recarga la pantalla para no seguir trabajando con correlativo y stock desactualizados.
+        swal.fire(
+          `Error: ${error.error?.status ?? error.status} al Crear Factura`,
+          `${error.error?.message ?? 'No se pudo completar la venta.'} La venta no fue registrada; la pantalla se recargará.`,
+          'error'
+        ).then(() => window.location.reload());
       }
     );
   }
