@@ -39,7 +39,7 @@ jobs:
         working-directory: Backend/dtodo-backend
         run: |
           chmod +x mvnw
-          ./mvnw -B clean package -Ptest -DskipTests
+          ./mvnw -B clean package -Ptest
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -70,13 +70,12 @@ jobs:
             Backend/dtodo-backend/target/${{ env.BACKEND_JAR }} \
             ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/apps/dtodo/api/backend/dev/${{ env.BACKEND_JAR }}.new
 
-      - name: Reemplazar jar y reiniciar servicio (test)
+      - name: Reemplazar jar, reiniciar y verificar (test; revierte si no levanta)
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} '
-            set -e
-            mv /var/apps/dtodo/api/backend/dev/${{ env.BACKEND_JAR }}.new /var/apps/dtodo/api/backend/dev/${{ env.BACKEND_JAR }}
-            sudo systemctl restart dtodo-dev-api.service
-          '
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} 'bash -s' -- \
+            /var/apps/dtodo/api/backend/dev ${{ env.BACKEND_JAR }} dtodo-dev-api.service \
+            ${{ vars.TEST_API_PORT || '8383' }} /var/apps/dtodo/api/backend/dev/logs/spring.log \
+            < .github/scripts/desplegar-backend.sh
 
       - name: Publicar estaticos del frontend (test)
         run: |
@@ -109,7 +108,7 @@ jobs:
         working-directory: Backend/dtodo-backend
         run: |
           chmod +x mvnw
-          ./mvnw -B clean package -Pprod -DskipTests
+          ./mvnw -B clean package -Pprod
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -140,13 +139,12 @@ jobs:
             Backend/dtodo-backend/target/${{ env.BACKEND_JAR }} \
             ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/apps/dtodo/api/backend/${{ env.BACKEND_JAR }}.new
 
-      - name: Reemplazar jar y reiniciar servicio (prod)
+      - name: Reemplazar jar, reiniciar y verificar (prod; revierte si no levanta)
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} '
-            set -e
-            mv /var/apps/dtodo/api/backend/${{ env.BACKEND_JAR }}.new /var/apps/dtodo/api/backend/${{ env.BACKEND_JAR }}
-            sudo systemctl restart dtodo-api.service
-          '
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} 'bash -s' -- \
+            /var/apps/dtodo/api/backend ${{ env.BACKEND_JAR }} dtodo-api.service \
+            ${{ vars.PROD_API_PORT || '8382' }} /var/apps/dtodo/api/backend/logs/spring.log \
+            < .github/scripts/desplegar-backend.sh
 
       - name: Publicar estaticos del frontend (prod)
         run: |
