@@ -120,6 +120,11 @@ order by pro.nombre_producto asc;]]>
 	<pageFooter>
 		<band height="52" splitType="Stretch">
 			<textField>
+				<reportElement x="0" y="35" width="250" height="16"/>
+				<textElement><font size="8"/></textElement>
+				<textFieldExpression><![CDATA["Generado: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date())]]></textFieldExpression>
+			</textField>
+			<textField>
 				<reportElement x="42" y="14" width="361" height="20"/>
 				<textElement verticalAlignment="Top">
 					<font fontName="Times New Roman" size="8"/>

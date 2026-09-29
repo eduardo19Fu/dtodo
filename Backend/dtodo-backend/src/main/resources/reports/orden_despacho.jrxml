@@ -163,6 +163,11 @@ order by
 	<pageFooter>
 		<band height="33" splitType="Stretch">
 			<textField>
+				<reportElement x="0" y="12" width="250" height="16"/>
+				<textElement><font size="8"/></textElement>
+				<textFieldExpression><![CDATA["Generado: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date())]]></textFieldExpression>
+			</textField>
+			<textField>
 				<reportElement x="396" y="10" width="101" height="20"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="14" isBold="true"/>
