@@ -322,6 +322,11 @@ ORDER BY p.nombre ASC]]>
 	</detail>
 	<pageFooter>
 		<band height="92" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="65" width="250" height="16"/>
+				<textElement><font size="8"/></textElement>
+				<textFieldExpression><![CDATA["Generado: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date())]]></textFieldExpression>
+			</textField>
 			<rectangle radius="10">
 				<reportElement x="0" y="1" width="572" height="32" uuid="407afc5a-aa88-42b6-8bcc-f91db41a9636"/>
 			</rectangle>

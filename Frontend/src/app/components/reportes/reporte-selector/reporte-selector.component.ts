@@ -49,10 +49,11 @@ export class ReporteSelectorComponent implements OnDestroy {
   }
 
   get opcionesCoincidentes(): ReporteSelectorOpcionDto[] {
-    const termino = this.normalizar(this.busqueda);
-    return this.opciones.filter(opcion => !termino || this.normalizar(
-      `${opcion.etiqueta || ''} ${opcion.detalle || ''}`
-    ).includes(termino));
+    const terminos = this.normalizar(this.busqueda).split(/\s+/).filter(termino => !!termino);
+    return this.opciones.filter(opcion => {
+      const contenido = this.normalizar(`${opcion.etiqueta || ''} ${opcion.detalle || ''}`);
+      return terminos.every(termino => contenido.includes(termino));
+    });
   }
 
   get opcionesVisibles(): ReporteSelectorOpcionDto[] {

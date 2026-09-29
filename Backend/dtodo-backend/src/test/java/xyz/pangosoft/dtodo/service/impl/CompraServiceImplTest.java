@@ -88,6 +88,8 @@ class CompraServiceImplTest {
                 .build();
 
         Compra compra = new Compra();
+        compra.setIdCompra(51L);
+        compra.setNoComprobante("FAC-51");
         compra.setUsuario(Usuario.builder().idUsuario(1).build());
         compra.setSucursal(Sucursal.builder().idSucursal(1).build());
         compra.setProveedor(Proveedor.builder().idProveedor(1).build());
@@ -101,6 +103,9 @@ class CompraServiceImplTest {
         assertEquals(new BigDecimal("55.00"), resultado.getTotal());
 
         verify(movimientoProductoService).save(argThatMovimiento(TipoMovimientoEnum.COMPRA, producto, sucursal, 5));
+        verify(movimientoProductoService).save(org.mockito.ArgumentMatchers.argThat(movimiento ->
+                "COMPRA".equals(movimiento.getTipoDocumentoOrigen())
+                        && Long.valueOf(51L).equals(movimiento.getIdDocumentoOrigen())));
         verify(productoService, never()).save(any(Producto.class));
     }
 
@@ -182,6 +187,9 @@ class CompraServiceImplTest {
 
         assertEquals(EstadoCompraEnum.ANULADA, resultado.getEstado());
         verify(movimientoProductoService).save(argThatMovimiento(TipoMovimientoEnum.ELIMINAR_COMPRA, producto, sucursal, 4));
+        verify(movimientoProductoService).save(org.mockito.ArgumentMatchers.argThat(movimiento ->
+                "COMPRA".equals(movimiento.getTipoDocumentoOrigen())
+                        && Long.valueOf(1L).equals(movimiento.getIdDocumentoOrigen())));
     }
 
     @Test

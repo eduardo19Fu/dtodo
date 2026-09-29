@@ -3,6 +3,7 @@ package xyz.pangosoft.dtodo.model;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -40,6 +41,10 @@ public class MovimientoProducto implements Serializable {
 	private Integer cantidad;
 	private Integer stockInicial;
 	private LocalDateTime fechaMovimiento;
+	@Column(name = "tipo_documento_origen", length = 30)
+	private String tipoDocumentoOrigen;
+	@Column(name = "id_documento_origen")
+	private Long idDocumentoOrigen;
 
 	@Enumerated(EnumType.STRING)
 	private TipoMovimientoEnum tipoMovimiento;

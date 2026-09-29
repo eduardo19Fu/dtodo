@@ -242,6 +242,11 @@ GROUP BY p.id_producto]]>
 	<pageFooter>
 		<band height="33" splitType="Stretch">
 			<textField>
+				<reportElement x="210" y="8" width="250" height="16"/>
+				<textElement><font size="8"/></textElement>
+				<textFieldExpression><![CDATA["Generado: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date())]]></textFieldExpression>
+			</textField>
+			<textField>
 				<reportElement x="0" y="0" width="100" height="30" uuid="04db6ebf-a62e-422f-a2cb-ed6cdb3ea8d3"/>
 				<textElement textAlignment="Right"/>
 				<textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER}]]></textFieldExpression>
@@ -255,6 +260,11 @@ GROUP BY p.id_producto]]>
 	</pageFooter>
 	<lastPageFooter>
 		<band height="119">
+			<textField>
+				<reportElement x="0" y="68" width="220" height="16"/>
+				<textElement><font size="8"/></textElement>
+				<textFieldExpression><![CDATA["Generado: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date())]]></textFieldExpression>
+			</textField>
 			<rectangle radius="19">
 				<reportElement x="244" y="1" width="319" height="82" uuid="cf8263f7-2359-4e4d-b6d1-3af9cce00d67"/>
 			</rectangle>

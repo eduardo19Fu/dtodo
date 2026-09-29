@@ -31,12 +31,17 @@
     <field name="marca" class="java.lang.String"/>
     <field name="tipo" class="java.lang.String"/>
     <title>
-        <band height="45">
+        <band height="55">
             <staticText>
                 <reportElement x="0" y="0" width="1040" height="35" forecolor="#FFFFFF" backcolor="#343A40" mode="Opaque"/>
                 <textElement textAlignment="Center" verticalAlignment="Middle"><font size="18" isBold="true"/></textElement>
                 <text><![CDATA[Listado de Productos]]></text>
             </staticText>
+            <textField>
+                <reportElement x="0" y="38" width="250" height="16"/>
+                <textElement><font size="8"/></textElement>
+                <textFieldExpression><![CDATA["Generado: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date())]]></textFieldExpression>
+            </textField>
         </band>
     </title>
     <columnHeader>

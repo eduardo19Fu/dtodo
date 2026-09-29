@@ -38,7 +38,7 @@
     <field name="total" class="java.math.BigDecimal"/>
     <field name="estado" class="java.lang.String"/>
     <title>
-        <band height="58">
+        <band height="74">
             <staticText>
                 <reportElement x="0" y="0" width="1040" height="34" forecolor="#FFFFFF" backcolor="#343A40" mode="Opaque"/>
                 <textElement textAlignment="Center" verticalAlignment="Middle"><font size="18" isBold="true"/></textElement>
@@ -48,6 +48,11 @@
                 <reportElement x="0" y="34" width="1040" height="20" forecolor="#495057"/>
                 <textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isItalic="true"/></textElement>
                 <textFieldExpression><![CDATA[$P{RANGO}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="0" y="56" width="250" height="16"/>
+                <textElement><font size="8"/></textElement>
+                <textFieldExpression><![CDATA["Generado: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date())]]></textFieldExpression>
             </textField>
         </band>
     </title>
