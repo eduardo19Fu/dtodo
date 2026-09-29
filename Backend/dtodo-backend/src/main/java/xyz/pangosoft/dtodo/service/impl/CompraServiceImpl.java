@@ -160,6 +160,8 @@ public class CompraServiceImpl implements ICompraService {
 		compraGuardada.getItems().forEach(item -> movimientoProductoService.save(
 				MovimientoProducto.builder()
 						.tipoMovimiento(TipoMovimientoEnum.COMPRA)
+						.tipoDocumentoOrigen("COMPRA")
+						.idDocumentoOrigen(compraGuardada.getIdCompra())
 						.usuario(usuario)
 						.producto(item.getProducto())
 						.sucursal(sucursal)
@@ -186,6 +188,8 @@ public class CompraServiceImpl implements ICompraService {
 		compraAnulada.getItems().forEach(item -> movimientoProductoService.save(
 				MovimientoProducto.builder()
 						.tipoMovimiento(TipoMovimientoEnum.ELIMINAR_COMPRA)
+						.tipoDocumentoOrigen("COMPRA")
+						.idDocumentoOrigen(compraAnulada.getIdCompra())
 						.usuario(usuarioAnula)
 						.producto(item.getProducto())
 						// Se revierte el stock a la sucursal donde ingresó la compra original, no a la del usuario que anula

@@ -546,7 +546,7 @@ public class FacturaServiceImpl implements IFacturaService {
 
 							// RECORRER ITEMS DE FACTURA ANULADA PARA DEVOLVER LAS EXISTENCIAS AL STOCK
 							// Se devuelve el stock a la sucursal donde se realizó la venta original, no a la del usuario que anula
-							actualizarExistenciasDeItems(voidFactura.getItemsFactura(), usuario, voidFactura.getSucursal(), TipoMovimientoEnum.ANULACION_FACTURA);
+							actualizarExistenciasDeItems(voidFactura, usuario, TipoMovimientoEnum.ANULACION_FACTURA);
 
 						} else {
 							log.error("No se pudo llevar acabo la anulación de la factura en la base de datos");
@@ -842,7 +842,7 @@ public class FacturaServiceImpl implements IFacturaService {
 		log.info("-----------> Actualizando correlativo");
 		cambiarCorrelativo(correlativo, estadoCorrFinalizado);
 
-		actualizarExistenciasDeItems(factura.getItemsFactura(), factura.getUsuario(), factura.getSucursal(), TipoMovimientoEnum.VENTA);
+		actualizarExistenciasDeItems(newFactura, newFactura.getUsuario(), TipoMovimientoEnum.VENTA);
 		repoFactura.flush();
 
 		log.info("******************** Factura Registrada en la Base de Datos (pendiente de certificar) ************************");
@@ -913,9 +913,12 @@ public class FacturaServiceImpl implements IFacturaService {
 	/**
 	 *
 	 * */
-	private void actualizarExistenciasDeItems(List<DetalleFactura> items, Usuario usuario, Sucursal sucursal, TipoMovimientoEnum tipoMovimiento) {
+	private void actualizarExistenciasDeItems(Factura factura, Usuario usuario, TipoMovimientoEnum tipoMovimiento) {
 		log.info("-----------> Actualizando las existencias de los items");
-        items.stream().map(item -> buildMovimiento(item.getProducto(), usuario, sucursal, tipoMovimiento, item.getCantidad())).forEach(movimientoProductoService::save);
+        factura.getItemsFactura().stream()
+                .map(item -> buildMovimiento(item.getProducto(), usuario, factura.getSucursal(), tipoMovimiento,
+                        item.getCantidad(), factura.getIdFactura()))
+                .forEach(movimientoProductoService::save);
 	}
 
 	/**
@@ -929,9 +932,12 @@ public class FacturaServiceImpl implements IFacturaService {
 	 * @return MovimientoProducto Objeto resultante del movimiento guardado en la Base de Datos
 	 *
 	 * */
-	private MovimientoProducto buildMovimiento(Producto producto, Usuario usuario, Sucursal sucursal, TipoMovimientoEnum tipoMovimiento, int cantidad) {
+	private MovimientoProducto buildMovimiento(Producto producto, Usuario usuario, Sucursal sucursal,
+			TipoMovimientoEnum tipoMovimiento, int cantidad, Long idFactura) {
 		return MovimientoProducto.builder()
 				.tipoMovimiento(tipoMovimiento)
+				.tipoDocumentoOrigen("FACTURA")
+				.idDocumentoOrigen(idFactura)
 				.usuario(usuario)
 				.producto(producto)
 				.sucursal(sucursal)
