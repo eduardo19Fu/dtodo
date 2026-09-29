@@ -16,6 +16,23 @@ describe('ReporteSelectorComponent', () => {
     expect(component.opcionesVisibles.map(opcion => opcion.valor)).toEqual([2]);
   });
 
+  it('encuentra productos con las palabras del nombre en cualquier orden', () => {
+    const component = new ReporteSelectorComponent(new ElementRef(document.createElement('div')));
+    component.opciones = [
+      { valor: 1, etiqueta: 'Tucán Goma Escolar', detalle: 'A123 · Útiles' },
+      { valor: 2, etiqueta: 'Tucán Lápiz', detalle: 'B456 · Útiles' }
+    ];
+
+    component.busqueda = '  GOMA   TUCAN ';
+    expect(component.opcionesVisibles.map(opcion => opcion.valor)).toEqual([1]);
+
+    component.busqueda = 'utiles a123';
+    expect(component.opcionesVisibles.map(opcion => opcion.valor)).toEqual([1]);
+
+    component.busqueda = 'goma lapiz';
+    expect(component.opcionesVisibles).toEqual([]);
+  });
+
   it('emite el valor seleccionado y cierra el listado', () => {
     const component = new ReporteSelectorComponent(new ElementRef(document.createElement('div')));
     let valor: any;
