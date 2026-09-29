@@ -36,12 +36,14 @@ import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -177,7 +179,13 @@ class FacturaServiceImplTest {
         when(certificadorService.getCertificador(1)).thenReturn(new Certificador());
         when(usuarioService.findById(7)).thenReturn(cajero());
         when(correlativoVenta.findByUsuario(7)).thenReturn(Correlativo.builder().correlativoActual(100L).correlativoFinal(500L).build());
-        when(repoVenta.saveAndFlush(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(repoVenta.saveAndFlush(any())).thenAnswer(inv -> {
+            Factura factura = inv.getArgument(0);
+            factura.setIdFactura(10L);
+            return factura;
+        });
+        when(repoVenta.findLineasGuardadas(10L))
+                .thenReturn(Collections.singletonList(new Object[] {1, 2, BigDecimal.ZERO}));
 
         RespuestaFirma firma = new RespuestaFirma();
         firma.setResultado(true);
@@ -221,7 +229,8 @@ class FacturaServiceImplTest {
     @Test
     void siLaBaseDeDatosRechazaLaFacturaNuncaSeEnviaAlCertificador() {
         FacturaServiceImpl service = servicioDeVenta();
-        when(repoVenta.saveAndFlush(any())).thenThrow(new InvalidDataAccessResourceUsageException("Unknown column 'id_proforma_origen'"));
+        doThrow(new InvalidDataAccessResourceUsageException("Unknown column 'id_proforma_origen'"))
+                .when(repoVenta).saveAndFlush(any());
 
         assertThrows(RuntimeException.class, () -> service.facturaFel(venta()));
 
@@ -254,6 +263,18 @@ class FacturaServiceImplTest {
         assertThrows(RuntimeException.class, () -> service.facturaFel(venta()));
 
         verify(repoVenta, times(1)).saveAndFlush(any());
+    }
+
+    @Test
+    void noCertificaSiLosProductosGuardadosNoCoincidenConLosRecibidos() {
+        FacturaServiceImpl service = servicioDeVenta();
+        when(repoVenta.findLineasGuardadas(10L))
+                .thenReturn(Collections.singletonList(new Object[] {99, 2, BigDecimal.ZERO}));
+
+        assertThrows(RuntimeException.class, () -> service.facturaFel(venta()));
+
+        verify(felVenta, never()).firmarDocumento(any(), any());
+        verify(felVenta, never()).certificar(any(), any(), any(), any());
     }
 
     @Test

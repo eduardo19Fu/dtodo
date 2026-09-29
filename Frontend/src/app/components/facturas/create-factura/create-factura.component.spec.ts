@@ -73,6 +73,28 @@ describe('CreateFacturaComponent - edición de detalle', () => {
     expect(component.cambio).toBe(0);
   });
 
+  it('muestra todos los renglones y no envía la venta si se elige revisar', async () => {
+    const segundo = new DetalleFactura();
+    segundo.producto = new Producto();
+    segundo.producto.idProducto = 2;
+    segundo.producto.codProducto = 'SIL-2';
+    segundo.producto.nombre = 'Silicón';
+    segundo.producto.precioVenta = 20;
+    segundo.cantidad = 1;
+    segundo.descuento = 0;
+    component.factura.itemsFactura.push(segundo);
+    component.calcularCambio();
+    component.efectivo = 300;
+    const alerta = spyOn(swal, 'fire').and.returnValue(Promise.resolve({ isConfirmed: false } as any));
+
+    await component.createFactura();
+
+    const opciones = alerta.calls.mostRecent().args[0] as any;
+    expect(opciones.html).toContain('2 renglones');
+    expect(opciones.html).toContain('Silicón');
+    expect(component.isSaving).toBeFalse();
+  });
+
   it('actualiza cantidad, total y cambio al confirmar', fakeAsync(() => {
     const origen = document.createElement('button');
     spyOn(origen, 'focus');

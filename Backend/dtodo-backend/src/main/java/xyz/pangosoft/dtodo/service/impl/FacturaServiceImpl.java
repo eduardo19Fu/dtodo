@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -405,6 +406,8 @@ public class FacturaServiceImpl implements IFacturaService {
 
 			if(factura.getIdFactura() == null) {
 				log.info("********** Registrando nueva venta **********");
+				List<String> lineasSolicitadas = resumirLineasSolicitadas(factura.getItemsFactura());
+				log.info("Detalle recibido para factura {}-{}: {}", factura.getSerie(), factura.getNoFactura(), lineasSolicitadas);
 				movimientoProductoService.validarStockDisponible(factura.getItemsFactura(), sucursal);
 
 				log.info("-----------> Iniciando Proceso de Certificación FEL");
@@ -429,6 +432,7 @@ public class FacturaServiceImpl implements IFacturaService {
 				// no hubiera ocurrido.
 				log.info("---------> Inserción de Factura en Base de Datos de Sistema");
 				newFactura = registrarFactura(factura, estado, totalImpuestos, tipoFactura, correlativo, estadoCorrFinalizado);
+				verificarLineasGuardadas(newFactura.getIdFactura(), lineasSolicitadas);
 
 				RespuestaFirma respuestaFirmaEmisor = procesoFirma(documentoFel, certificador);
 
@@ -463,6 +467,43 @@ public class FacturaServiceImpl implements IFacturaService {
 			log.error("Ha ocurrido un error inesperado: {}", e);
 			throw new RuntimeException("Ha ocurrido un error inesperado: ", e);
 		}
+	}
+
+	private List<String> resumirLineasSolicitadas(List<DetalleFactura> items) {
+		if (items == null || items.isEmpty()) {
+			throw new BadRequestException("La factura debe contener al menos un producto", null);
+		}
+		List<String> lineas = new ArrayList<>();
+		for (DetalleFactura item : items) {
+			if (item == null || item.getProducto() == null || item.getProducto().getIdProducto() == null
+					|| item.getCantidad() == null || item.getDescuento() == null) {
+				throw new BadRequestException("El detalle de la factura está incompleto", null);
+			}
+			lineas.add(claveLinea(item.getProducto().getIdProducto(), item.getCantidad(), item.getDescuento()));
+		}
+		Collections.sort(lineas);
+		return lineas;
+	}
+
+	private String claveLinea(Number idProducto, Number cantidad, BigDecimal descuento) {
+		return idProducto.intValue() + ":" + cantidad.intValue() + ":" + descuento.stripTrailingZeros().toPlainString();
+	}
+
+	private void verificarLineasGuardadas(Long idFactura, List<String> lineasSolicitadas) {
+		if (idFactura == null) {
+			throw new IllegalStateException("La factura no recibió un ID antes de certificar");
+		}
+		List<String> lineasGuardadas = new ArrayList<>();
+		for (Object[] fila : repoFactura.findLineasGuardadas(idFactura)) {
+			lineasGuardadas.add(claveLinea((Number) fila[0], (Number) fila[1], new BigDecimal(fila[2].toString())));
+		}
+		Collections.sort(lineasGuardadas);
+		if (!lineasSolicitadas.equals(lineasGuardadas)) {
+			log.error("Detalle distinto antes de certificar factura {}: recibido={}, guardado={}",
+					idFactura, lineasSolicitadas, lineasGuardadas);
+			throw new IllegalStateException("El detalle guardado no coincide con el recibido; se revierte la venta");
+		}
+		log.info("Detalle verificado antes de certificar factura {}: {}", idFactura, lineasGuardadas);
 	}
 
 	@Transactional(rollbackFor = {Exception.class, DataAccessException.class})
