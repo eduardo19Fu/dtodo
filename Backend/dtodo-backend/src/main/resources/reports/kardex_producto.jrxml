@@ -40,6 +40,14 @@
                    WHEN 'ENTREGA_PRODUCTO_NOTA' THEN 'Entrega de nota de crédito'
                    ELSE REPLACE(mp.tipo_movimiento, '_', ' ')
                END AS movimiento,
+               COALESCE(CASE mp.tipo_documento_origen
+                   WHEN 'FACTURA' THEN CONCAT('Factura ', COALESCE(NULLIF(f.serie, ''), 'S/S'), '-',
+                       COALESCE(f.no_factura, f.id_factura))
+                   WHEN 'COMPRA' THEN CONCAT('Compra ', COALESCE(c.no_comprobante, CONCAT('#', c.id_compra)))
+                   WHEN 'NOTA_CREDITO' THEN CONCAT('Nota de crédito #', nc.id_nota_credito)
+                   ELSE CASE WHEN mp.tipo_movimiento IN ('ENTRADA', 'SALIDA')
+                       THEN CONCAT('Ajuste manual #', mp.id_movimiento) END
+               END, 'No registrado') AS documento,
                COALESCE(u.usuario, '') AS usuario,
                mp.stock_inicial,
                CAST(CASE
@@ -57,6 +65,10 @@
                        THEN mp.cantidad ELSE 0 END AS SIGNED) AS saldo
           FROM movimientos_producto mp
           LEFT JOIN usuarios u ON u.id_usuario = mp.id_usuario
+          LEFT JOIN facturas f ON mp.tipo_documento_origen = 'FACTURA' AND f.id_factura = mp.id_documento_origen
+          LEFT JOIN compras c ON mp.tipo_documento_origen = 'COMPRA' AND c.id_compra = mp.id_documento_origen
+          LEFT JOIN notas_credito nc ON mp.tipo_documento_origen = 'NOTA_CREDITO'
+              AND nc.id_nota_credito = mp.id_documento_origen
          WHERE mp.id_sucursal = $P{ID_SUCURSAL}
            AND mp.id_producto = $P{ID_PRODUCTO}
            AND mp.fecha_movimiento >= $P{FECHA_INICIO}
@@ -67,6 +79,7 @@
     <field name="numero" class="java.lang.Long"/>
     <field name="fecha" class="java.sql.Timestamp"/>
     <field name="movimiento" class="java.lang.String"/>
+    <field name="documento" class="java.lang.String"/>
     <field name="usuario" class="java.lang.String"/>
     <field name="stock_inicial" class="java.lang.Integer"/>
     <field name="entrada" class="java.lang.Integer"/>
@@ -89,7 +102,7 @@
     </variable>
 
     <title>
-        <band height="72">
+        <band height="84">
             <rectangle radius="8">
                 <reportElement x="90" y="0" width="712" height="48" forecolor="#1769D2" backcolor="#1769D2"/>
             </rectangle>
@@ -126,13 +139,18 @@
                 <textElement><font size="8" isItalic="true"/></textElement>
                 <text><![CDATA[Historial cronológico de movimientos y saldo del producto durante el período seleccionado.]]></text>
             </staticText>
+            <staticText>
+                <reportElement x="0" y="68" width="802" height="12" forecolor="#66758A"/>
+                <textElement><font size="7" isItalic="true"/></textElement>
+                <text><![CDATA[No. mov. identifica el registro interno; Documento muestra el comprobante asociado cuando fue registrado.]]></text>
+            </staticText>
         </band>
     </title>
 
     <columnHeader>
         <band height="28">
-            <staticText><reportElement style="Header" x="0" y="0" width="120" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Fecha]]></text></staticText>
-            <staticText><reportElement style="Header" x="120" y="0" width="65" height="28"/><textElement textAlignment="Center"/><text><![CDATA[No.]]></text></staticText>
+            <staticText><reportElement style="Header" x="0" y="0" width="120" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Fecha/hora]]></text></staticText>
+            <staticText><reportElement style="Header" x="120" y="0" width="65" height="28"/><textElement textAlignment="Center"/><text><![CDATA[No. mov.]]></text></staticText>
             <staticText><reportElement style="Header" x="185" y="0" width="190" height="28"/><text><![CDATA[Movimiento]]></text></staticText>
             <staticText><reportElement style="Header" x="375" y="0" width="150" height="28"/><text><![CDATA[Usuario]]></text></staticText>
             <staticText><reportElement style="Header" x="525" y="0" width="72" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Inicial]]></text></staticText>
@@ -143,15 +161,16 @@
     </columnHeader>
 
     <detail>
-        <band height="24">
-            <textField pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true"><reportElement style="Cell" x="0" y="0" width="120" height="24"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA[$F{fecha}]]></textFieldExpression></textField>
-            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="120" y="0" width="65" height="24"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{numero}]]></textFieldExpression></textField>
-            <textField isBlankWhenNull="true"><reportElement style="Cell" x="185" y="0" width="190" height="24"/><textElement><paragraph leftIndent="4"/></textElement><textFieldExpression><![CDATA[$F{movimiento}]]></textFieldExpression></textField>
-            <textField isBlankWhenNull="true"><reportElement style="Cell" x="375" y="0" width="150" height="24"/><textElement><paragraph leftIndent="4"/></textElement><textFieldExpression><![CDATA[$F{usuario}]]></textFieldExpression></textField>
-            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="525" y="0" width="72" height="24"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{stock_inicial}]]></textFieldExpression></textField>
-            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="597" y="0" width="68" height="24"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{entrada}]]></textFieldExpression></textField>
-            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="665" y="0" width="68" height="24"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{salida}]]></textFieldExpression></textField>
-            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="733" y="0" width="69" height="24"/><textElement textAlignment="Right"><font isBold="true"/><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{saldo}]]></textFieldExpression></textField>
+        <band height="34">
+            <textField pattern="dd/MM/yyyy HH:mm:ss" isBlankWhenNull="true"><reportElement style="Cell" x="0" y="0" width="120" height="34"/><textElement textAlignment="Center"><font size="7"/></textElement><textFieldExpression><![CDATA[$F{fecha}]]></textFieldExpression></textField>
+            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="120" y="0" width="65" height="34"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{numero}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="185" y="0" width="190" height="17"/><textElement><paragraph leftIndent="4"/></textElement><textFieldExpression><![CDATA[$F{movimiento}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="375" y="0" width="150" height="17"/><textElement><paragraph leftIndent="4"/></textElement><textFieldExpression><![CDATA[$F{usuario}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="185" y="17" width="340" height="17"/><textElement><font size="7"/><paragraph leftIndent="4"/></textElement><textFieldExpression><![CDATA["Documento: " + $F{documento}]]></textFieldExpression></textField>
+            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="525" y="0" width="72" height="34"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{stock_inicial}]]></textFieldExpression></textField>
+            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="597" y="0" width="68" height="34"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{entrada}]]></textFieldExpression></textField>
+            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="665" y="0" width="68" height="34"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{salida}]]></textFieldExpression></textField>
+            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="733" y="0" width="69" height="34"/><textElement textAlignment="Right"><font isBold="true"/><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{saldo}]]></textFieldExpression></textField>
         </band>
     </detail>
 

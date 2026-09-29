@@ -307,7 +307,8 @@ public class NotaCreditoServiceImpl implements INotaCreditoService {
                     for(NotaCreditoDetalle item : notaCredito.getItems()) {
                         log.info("Registrando entrega de producto: {}", item.getProducto().getCodProducto());
                         movimientoProductoService.save(buildMovimiento(item.getProducto(), item.getCantidad(),
-                                TipoMovimientoEnum.ENTREGA_PRODUCTO_NOTA, notaCredito.getUsuario(), notaCredito.getSucursal()));
+                                TipoMovimientoEnum.ENTREGA_PRODUCTO_NOTA, notaCredito.getUsuario(),
+                                notaCredito.getSucursal(), notaCredito.getIdNotaCredito()));
                     }
 
                     log.info("------> Registrando actualización de estado de la nota de credito");
@@ -424,9 +425,12 @@ public class NotaCreditoServiceImpl implements INotaCreditoService {
         }
     }
 
-    private MovimientoProducto buildMovimiento(Producto producto, int cantidad, TipoMovimientoEnum tipoMovimiento, Usuario usuario, Sucursal sucursal) {
+    private MovimientoProducto buildMovimiento(Producto producto, int cantidad, TipoMovimientoEnum tipoMovimiento,
+            Usuario usuario, Sucursal sucursal, Long idNotaCredito) {
         return MovimientoProducto.builder()
                 .cantidad(cantidad)
+                .tipoDocumentoOrigen("NOTA_CREDITO")
+                .idDocumentoOrigen(idNotaCredito)
                 .producto(producto)
                 .usuario(usuario)
                 .sucursal(sucursal)

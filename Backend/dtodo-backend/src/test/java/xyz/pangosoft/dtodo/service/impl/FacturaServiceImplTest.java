@@ -41,6 +41,7 @@ import java.util.Collections;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.doThrow;
@@ -253,6 +254,9 @@ class FacturaServiceImplTest {
         orden.verify(repoVenta).saveAndFlush(any());
         assertEquals("UUID-123", resultado.getCertificacionSat());
         assertEquals("987", resultado.getCorrelativoSat());
+        verify(movimientosVenta).save(argThat(movimiento ->
+                "FACTURA".equals(movimiento.getTipoDocumentoOrigen())
+                        && Long.valueOf(10L).equals(movimiento.getIdDocumentoOrigen())));
     }
 
     @Test

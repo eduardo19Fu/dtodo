@@ -7,6 +7,7 @@ import xyz.pangosoft.dtodo.model.Cliente;
 import xyz.pangosoft.dtodo.model.NotaCredito;
 import xyz.pangosoft.dtodo.model.NotaCreditoDetalle;
 import xyz.pangosoft.dtodo.model.Producto;
+import xyz.pangosoft.dtodo.model.Sucursal;
 import xyz.pangosoft.dtodo.model.Usuario;
 import xyz.pangosoft.dtodo.model.enums.EstadoNotaCreditoEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoDocumentoOrigenEnum;
@@ -31,10 +32,34 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class NotaCreditoServiceImplTest {
+
+    @Test
+    void registraLaNotaComoDocumentoDeLaEntrega() {
+        INotaCreditoRepository repository = mock(INotaCreditoRepository.class);
+        IMovimientoProductoService movimientos = mock(IMovimientoProductoService.class);
+        NotaCreditoServiceImpl service = new NotaCreditoServiceImpl(
+                repository, movimientos, mock(IUsuarioService.class), mock(DataSource.class));
+        NotaCreditoDetalle item = new NotaCreditoDetalle();
+        item.setProducto(Producto.builder().idProducto(21).build());
+        item.setCantidad(2);
+        NotaCredito nota = new NotaCredito();
+        nota.setIdNotaCredito(12L);
+        nota.setUsuario(Usuario.builder().idUsuario(8).build());
+        nota.setSucursal(Sucursal.builder().idSucursal(1).build());
+        nota.setItems(Collections.singletonList(item));
+        when(repository.save(any(NotaCredito.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        service.save(nota, EstadoNotaCreditoEnum.ENTREGADO);
+
+        verify(movimientos).save(argThat(movimiento ->
+                "NOTA_CREDITO".equals(movimiento.getTipoDocumentoOrigen())
+                        && Long.valueOf(12L).equals(movimiento.getIdDocumentoOrigen())));
+    }
 
     @Test
     void totalNotasCreditoRespetaElUsuarioIndicado() {

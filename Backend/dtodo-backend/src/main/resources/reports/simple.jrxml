@@ -143,6 +143,11 @@ NIT: 4514625-5]]></text>
 	</title>
 	<pageHeader>
 		<band height="78" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="56" width="250" height="16"/>
+				<textElement><font size="8"/></textElement>
+				<textFieldExpression><![CDATA["Generado: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date())]]></textFieldExpression>
+			</textField>
 			<staticText>
 				<reportElement x="9" y="8" width="53" height="20"/>
 				<textElement verticalAlignment="Middle">

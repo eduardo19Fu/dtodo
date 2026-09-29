@@ -111,7 +111,12 @@ order by pro.nombre_producto asc;]]>
 		</band>
 	</detail>
 	<pageFooter>
-		<band height="24" splitType="Stretch">
+		<band height="40" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="24" width="250" height="16"/>
+				<textElement><font size="8"/></textElement>
+				<textFieldExpression><![CDATA["Generado: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date())]]></textFieldExpression>
+			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement x="81" y="0" width="307" height="20"/>
 				<textElement>
