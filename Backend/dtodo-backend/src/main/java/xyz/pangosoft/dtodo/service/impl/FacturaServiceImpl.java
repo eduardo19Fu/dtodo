@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -78,6 +79,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import xyz.pangosoft.dtodo.model.Factura;
 import xyz.pangosoft.dtodo.repository.IFacturaRepository;
@@ -94,6 +97,9 @@ import net.sf.jasperreports.engine.JasperReport;
 @RequiredArgsConstructor
 @Slf4j
 public class FacturaServiceImpl implements IFacturaService {
+
+	/** Valor provisional de las columnas SAT (NOT NULL) mientras la factura espera su certificación. */
+	private static final String SAT_PENDIENTE = "PENDIENTE";
 
 	private final IFacturaRepository repoFactura;
 	private final ITipoFacturaRepository tipoFacturaRepository;
@@ -400,6 +406,8 @@ public class FacturaServiceImpl implements IFacturaService {
 
 			if(factura.getIdFactura() == null) {
 				log.info("********** Registrando nueva venta **********");
+				List<String> lineasSolicitadas = resumirLineasSolicitadas(factura.getItemsFactura());
+				log.info("Detalle recibido para factura {}-{}: {}", factura.getSerie(), factura.getNoFactura(), lineasSolicitadas);
 				movimientoProductoService.validarStockDisponible(factura.getItemsFactura(), sucursal);
 
 				log.info("-----------> Iniciando Proceso de Certificación FEL");
@@ -419,26 +427,34 @@ public class FacturaServiceImpl implements IFacturaService {
 
 				documentoFel.setAdenda(configurarAdendas(factura.getUsuario(), factura.getNoFactura().toString()));
 
-				RespuestaFirma respuestaFirmaEmisor = procesoFirma(documentoFel, certificador);
-				RespuestaCertificacion respuestaServicioFel = new RespuestaCertificacion();
+				// La venta, el correlativo y las existencias se escriben ANTES de certificar. Si cualquier paso
+				// posterior falla, la excepción revierte la transacción completa y la BD queda como si la venta
+				// no hubiera ocurrido.
+				log.info("---------> Inserción de Factura en Base de Datos de Sistema");
+				newFactura = registrarFactura(factura, estado, totalImpuestos, tipoFactura, correlativo, estadoCorrFinalizado);
+				verificarLineasGuardadas(newFactura.getIdFactura(), lineasSolicitadas);
 
+				RespuestaFirma respuestaFirmaEmisor = procesoFirma(documentoFel, certificador);
 
 				log.info("--> Resultado: " + respuestaFirmaEmisor.isResultado());
 				log.info("--> Descripcion: " + respuestaFirmaEmisor.getDescripcion());
 
-				if(respuestaFirmaEmisor.isResultado()) {
-					respuestaServicioFel = enviarAlCertificador(certificador, factura, respuestaFirmaEmisor, emisor, "CERTIFICACION");
-
-					// INSERCIÓN DE FACTURA EN LA BASE DE DATOS DE LA EMPRESA
-					if(respuestaServicioFel != null && respuestaServicioFel.getCantidad_errores() <= 0) {
-						log.info("---------> Certificación FEL Exitosa");
-						log.info("---------> Inserción de Factura en Base de Datos de Sistema");
-						newFactura = crearFactura(respuestaServicioFel, factura, estado, totalImpuestos, tipoFactura);
-					} else {
-						log.error("No se ha podido llevar a cabo la certificación por parte del servicio FEL");
-						throw new RuntimeException("No se ha podido llevar a cabo la certificación por parte del servicio FEL");
-					}
+				if(!respuestaFirmaEmisor.isResultado()) {
+					log.error("No se ha podido firmar el documento FEL");
+					throw new RuntimeException("No se ha podido firmar el documento FEL");
 				}
+
+				RespuestaCertificacion respuestaServicioFel = enviarAlCertificador(certificador, factura, respuestaFirmaEmisor, emisor, "CERTIFICACION");
+
+				if(respuestaServicioFel == null || respuestaServicioFel.getCantidad_errores() > 0) {
+					log.error("No se ha podido llevar a cabo la certificación por parte del servicio FEL");
+					throw new RuntimeException("No se ha podido llevar a cabo la certificación por parte del servicio FEL");
+				}
+
+				log.info("---------> Certificación FEL Exitosa");
+				asignarDatosCertificacion(newFactura, respuestaServicioFel);
+				anularDteSiNoSeConfirma(newFactura, emisor, certificador);
+				newFactura = repoFactura.saveAndFlush(newFactura);
 			}
 
 			return newFactura;
@@ -451,6 +467,43 @@ public class FacturaServiceImpl implements IFacturaService {
 			log.error("Ha ocurrido un error inesperado: {}", e);
 			throw new RuntimeException("Ha ocurrido un error inesperado: ", e);
 		}
+	}
+
+	private List<String> resumirLineasSolicitadas(List<DetalleFactura> items) {
+		if (items == null || items.isEmpty()) {
+			throw new BadRequestException("La factura debe contener al menos un producto", null);
+		}
+		List<String> lineas = new ArrayList<>();
+		for (DetalleFactura item : items) {
+			if (item == null || item.getProducto() == null || item.getProducto().getIdProducto() == null
+					|| item.getCantidad() == null || item.getDescuento() == null) {
+				throw new BadRequestException("El detalle de la factura está incompleto", null);
+			}
+			lineas.add(claveLinea(item.getProducto().getIdProducto(), item.getCantidad(), item.getDescuento()));
+		}
+		Collections.sort(lineas);
+		return lineas;
+	}
+
+	private String claveLinea(Number idProducto, Number cantidad, BigDecimal descuento) {
+		return idProducto.intValue() + ":" + cantidad.intValue() + ":" + descuento.stripTrailingZeros().toPlainString();
+	}
+
+	private void verificarLineasGuardadas(Long idFactura, List<String> lineasSolicitadas) {
+		if (idFactura == null) {
+			throw new IllegalStateException("La factura no recibió un ID antes de certificar");
+		}
+		List<String> lineasGuardadas = new ArrayList<>();
+		for (Object[] fila : repoFactura.findLineasGuardadas(idFactura)) {
+			lineasGuardadas.add(claveLinea((Number) fila[0], (Number) fila[1], new BigDecimal(fila[2].toString())));
+		}
+		Collections.sort(lineasGuardadas);
+		if (!lineasSolicitadas.equals(lineasGuardadas)) {
+			log.error("Detalle distinto antes de certificar factura {}: recibido={}, guardado={}",
+					idFactura, lineasSolicitadas, lineasGuardadas);
+			throw new IllegalStateException("El detalle guardado no coincide con el recibido; se revierte la venta");
+		}
+		log.info("Detalle verificado antes de certificar factura {}: {}", idFactura, lineasGuardadas);
 	}
 
 	@Transactional(rollbackFor = {Exception.class, DataAccessException.class})
@@ -769,36 +822,81 @@ public class FacturaServiceImpl implements IFacturaService {
 	}
 
 	/**
-	 *
+	 * Registra la venta, avanza el correlativo y descuenta existencias, forzando un flush para que
+	 * cualquier error de base de datos (columna faltante, constraint, stock) aparezca antes de enviar
+	 * el documento al certificador. Las columnas SAT son NOT NULL, así que se guardan con un valor
+	 * provisional que nunca llega a confirmarse: o se reemplaza con la certificación o se revierte.
 	 * */
-	private Factura crearFactura(RespuestaCertificacion respuesta, Factura factura, Estado estado, double totalImpuestos, TipoFactura tipoFactura)
-		throws DataAccessException
+	private Factura registrarFactura(Factura factura, Estado estado, double totalImpuestos, TipoFactura tipoFactura,
+									 Correlativo correlativo, Estado estadoCorrFinalizado)
 	{
-
-		Correlativo correlativo = correlativoService.findByUsuario(factura.getUsuario().getIdUsuario());
-		Correlativo correlativoActualizado = null;
-		Factura newFactura = null;
-
 		factura.setEstado(estado);
+		factura.setIva(new BigDecimal(totalImpuestos));
+		factura.setTipoFactura(tipoFactura);
+		factura.setCorrelativoSat(SAT_PENDIENTE);
+		factura.setCertificacionSat(SAT_PENDIENTE);
+		factura.setSerieSat(SAT_PENDIENTE);
+		factura.setFechaCertificacionSat(SAT_PENDIENTE);
+		Factura newFactura = repoFactura.saveAndFlush(factura);
+
+		log.info("-----------> Actualizando correlativo");
+		cambiarCorrelativo(correlativo, estadoCorrFinalizado);
+
+		actualizarExistenciasDeItems(factura.getItemsFactura(), factura.getUsuario(), factura.getSucursal(), TipoMovimientoEnum.VENTA);
+		repoFactura.flush();
+
+		log.info("******************** Factura Registrada en la Base de Datos (pendiente de certificar) ************************");
+		return newFactura;
+	}
+
+	private void asignarDatosCertificacion(Factura factura, RespuestaCertificacion respuesta) {
 		factura.setCorrelativoSat(respuesta.getNumero());
 		factura.setCertificacionSat(respuesta.getUuid());
 		factura.setSerieSat(respuesta.getSerie());
 		factura.setMensajeSat(respuesta.getInfo());
 		factura.setFechaCertificacionSat(respuesta.getFecha());
-		factura.setIva(new BigDecimal(totalImpuestos));
-		factura.setTipoFactura(tipoFactura);
-		newFactura = repoFactura.save(factura);
+	}
 
-		if(newFactura.getIdFactura() != null) {
-			log.info("******************** Factura Guardada en la Base de Datos ************************");
-			log.info("-----------> Actualizando correlativo");
-			cambiarCorrelativo(correlativo, estadoService.findByEstado("FINALIZADO"));
-
-			actualizarExistenciasDeItems(factura.getItemsFactura(), factura.getUsuario(), factura.getSucursal(), TipoMovimientoEnum.VENTA);
-
+	/**
+	 * Una vez certificado el DTE, si la transacción local no llega a confirmarse (falla el UPDATE o el
+	 * commit), la venta se revierte en la BD pero el documento seguiría vigente en SAT. Para no dejarlo
+	 * huérfano se anula automáticamente después del rollback.
+	 * */
+	private void anularDteSiNoSeConfirma(Factura factura, Emisor emisor, Certificador certificador) {
+		if(!TransactionSynchronizationManager.isSynchronizationActive()) {
+			return;
 		}
+		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+			@Override
+			public void afterCompletion(int status) {
+				if(status != STATUS_COMMITTED) {
+					anularDteHuerfano(factura, emisor, certificador);
+				}
+			}
+		});
+	}
 
-		return newFactura;
+	/**
+	 * Anula en SAT un DTE cuya factura no quedó registrada. Si la anulación tampoco es posible, deja
+	 * un registro ERROR con los datos necesarios para hacerla manualmente.
+	 * */
+	void anularDteHuerfano(Factura factura, Emisor emisor, Certificador certificador) {
+		log.warn("La factura {}-{} no se registró en la BD. Anulando automáticamente el DTE {} en SAT",
+				factura.getSerie(), factura.getNoFactura(), factura.getCertificacionSat());
+		try {
+			RespuestaFirma respuestaFirma = procesoFirma(initAnulacionFel(emisor.getNit(), factura), certificador);
+			if(respuestaFirma.isResultado()
+					&& enviarAlCertificador(certificador, factura, respuestaFirma, emisor, "ANULACION") != null) {
+				log.warn("DTE {} anulado en SAT; la venta quedó revertida por completo", factura.getCertificacionSat());
+				return;
+			}
+		} catch (Exception e) {
+			log.error("Error anulando el DTE {}: {}", factura.getCertificacionSat(), e.getMessage(), e);
+		}
+		log.error("DTE CERTIFICADO EN SAT SIN FACTURA REGISTRADA Y SIN PODER ANULARSE. Requiere anulación manual. "
+				+ "uuid={}, serieSat={}, numeroSat={}, noFactura={}, serie={}, fechaCertificacion={}",
+				factura.getCertificacionSat(), factura.getSerieSat(), factura.getCorrelativoSat(),
+				factura.getNoFactura(), factura.getSerie(), factura.getFechaCertificacionSat());
 	}
 
 	/**

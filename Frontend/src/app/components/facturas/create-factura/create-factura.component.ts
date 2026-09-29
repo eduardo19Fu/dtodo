@@ -389,8 +389,52 @@ export class CreateFacturaComponent implements OnInit {
     setTimeout(() => elementoOrigen?.focus());
   }
 
-  createFactura(): void {
+  async createFactura(): Promise<void> {
     if (!this.pagoSuficiente() || this.isSaving) {
+      return;
+    }
+
+    const lineas = this.factura.itemsFactura.map(item => ({
+      idProducto: item.producto.idProducto,
+      codigo: item.producto.codProducto,
+      nombre: item.producto.nombre,
+      cantidad: item.cantidad,
+      importe: item.calcularImporteDescuento()
+    }));
+    const idCliente = this.cliente.idCliente;
+    const totalConfirmado = this.factura.total;
+    const detalle = lineas.map(item => `<tr>
+      <td>${this.escaparHtml(item.codigo || '')}</td>
+      <td>${this.escaparHtml(item.nombre || '')}</td>
+      <td class="text-right">${item.cantidad}</td>
+      <td class="text-right">Q${item.importe.toFixed(2)}</td>
+    </tr>`).join('');
+    const resumen = await swal.fire({
+      title: 'Verifique los productos antes de facturar',
+      html: `<p>Cliente: ${this.escaparHtml(this.cliente.nombre || '')} · NIT: ${this.escaparHtml(this.cliente.nit || '')}</p>
+        <div style="max-height: 320px; overflow-y: auto;">
+          <table class="table table-sm table-bordered text-left">
+            <thead><tr><th>Código</th><th>Producto</th><th>Cantidad</th><th>Importe</th></tr></thead>
+            <tbody>${detalle}</tbody>
+          </table>
+        </div>
+        <strong>${lineas.length} ${lineas.length === 1 ? 'renglón' : 'renglones'} · Total Q${this.factura.total.toFixed(2)}</strong>`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, facturar estos productos',
+      cancelButtonText: 'Revisar detalle',
+      width: 700
+    });
+    if (!resumen.isConfirmed) {
+      return;
+    }
+    if (this.isSaving || !this.pagoSuficiente() || !this.cantidadesValidas()
+        || idCliente !== this.cliente.idCliente || totalConfirmado !== this.factura.total
+        || lineas.length !== this.factura.itemsFactura.length
+        || lineas.some((linea, index) => linea.idProducto !== this.factura.itemsFactura[index].producto.idProducto
+          || linea.cantidad !== this.factura.itemsFactura[index].cantidad
+          || linea.importe !== this.factura.itemsFactura[index].calcularImporteDescuento())) {
+      swal.fire('El detalle cambió', 'Revise los productos y vuelva a confirmar la factura.', 'warning');
       return;
     }
 
@@ -456,7 +500,13 @@ export class CreateFacturaComponent implements OnInit {
         window.open(url, '_blank').focus();
       }, error => {
         this.isSaving = false;
-        swal.fire(`Error: ${error.error.status} al Crear Factura`, `${error.error.message}`, 'error');
+        // El backend revierte la venta completa (factura, existencias y correlativo) cuando falla;
+        // se recarga la pantalla para no seguir trabajando con correlativo y stock desactualizados.
+        swal.fire(
+          `Error: ${error.error?.status ?? error.status} al Crear Factura`,
+          `${error.error?.message ?? 'No se pudo completar la venta.'} La venta no fue registrada; la pantalla se recargará.`,
+          'error'
+        ).then(() => window.location.reload());
       }
     );
   }

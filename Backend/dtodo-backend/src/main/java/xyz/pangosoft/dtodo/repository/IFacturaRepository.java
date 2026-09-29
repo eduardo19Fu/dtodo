@@ -89,4 +89,8 @@ public interface IFacturaRepository extends JpaRepository<Factura, Long> {
             countQuery = "SELECT COUNT(*) FROM facturas_detalle WHERE id_factura = :idFactura",
             nativeQuery = true)
     Page<Object[]> findDetalleDto(@Param("idFactura") Long idFactura, Pageable pageable);
+
+    @Query(value = "SELECT id_producto, cantidad, descuento FROM facturas_detalle " +
+            "WHERE id_factura = :idFactura ORDER BY id_detalle", nativeQuery = true)
+    List<Object[]> findLineasGuardadas(@Param("idFactura") Long idFactura);
 }
