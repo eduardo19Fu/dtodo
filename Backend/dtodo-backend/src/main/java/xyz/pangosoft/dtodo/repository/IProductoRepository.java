@@ -1,5 +1,6 @@
 package xyz.pangosoft.dtodo.repository;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -53,6 +54,9 @@ public interface IProductoRepository extends JpaRepository<Producto, Integer>, J
 	// Todas las filas de Producto que comparten el mismo código, sin importar en qué sucursal
 	// se hayan registrado (ver IProductoService.actualizarYSincronizar).
 	List<Producto> findByCodProducto(String codProducto);
+
+	// Resuelve en una sola consulta los productos de una importación masiva (p. ej. inventario de bodega desde Excel)
+	List<Producto> findByCodProductoIn(Collection<String> codigos);
 
 	@Query(value = "select p from Producto p where p.fechaVencimiento <= :fecha")
 	List<Producto> findCaducados(@Param("fecha") Date fecha);
