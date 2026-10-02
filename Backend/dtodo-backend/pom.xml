@@ -19,6 +19,7 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <jasperreports.version>6.21.5</jasperreports.version>
+        <poi.version>5.4.1</poi.version>
     </properties>
     <repositories>
         <repository>
@@ -86,6 +87,12 @@
             <groupId>net.sf.jasperreports</groupId>
             <artifactId>jasperreports</artifactId>
             <version>${jasperreports.version}</version>
+        </dependency>
+        <!-- APACHE POI: lectura/escritura de Excel (importación de inventario de bodega) -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>${poi.version}</version>
         </dependency>
         <!-- SOAP WEB SERVICES DEPENDENCY -->
         <dependency>

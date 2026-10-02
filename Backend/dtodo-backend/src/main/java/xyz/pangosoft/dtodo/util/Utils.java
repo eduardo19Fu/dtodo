@@ -2,6 +2,9 @@ package xyz.pangosoft.dtodo.util;
 
 import lombok.NoArgsConstructor;
 
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.oauth2.jwt.Jwt;
+
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -73,5 +76,24 @@ public class Utils {
         Long numerico = (long) (Math.random()*1000000000+1);
         noProforma = numerico + "P";
         return noProforma;
+    }
+
+    /**
+     * Obtiene el id del usuario autenticado desde el claim {@code id_usuario} del token JWT, para que las
+     * operaciones que auditan al responsable no dependan de un identificador enviado por el cliente.
+     * @param jwt Token de la sesión actual
+     * @return El id del usuario autenticado
+     * @throws AccessDeniedException si el token no trae un id de usuario válido
+     * */
+    public static Integer obtenerIdUsuario(Jwt jwt) {
+        String claim = jwt == null ? null : jwt.getClaimAsString("id_usuario");
+        if (claim == null || claim.isBlank()) {
+            throw new AccessDeniedException("No se pudo identificar al usuario de la sesión.");
+        }
+        try {
+            return Integer.valueOf(claim);
+        } catch (java.lang.NumberFormatException exception) {
+            throw new AccessDeniedException("El usuario de la sesión no es válido.");
+        }
     }
 }
