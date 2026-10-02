@@ -1,0 +1,155 @@
+<app-detail-despacho-bodega *ngIf="despachoSeleccionado" [despacho]="despachoSeleccionado" [puedeAprobar]="puedeAprobar"
+  [procesando]="procesandoId !== null" (cerrar)="cerrarDetalle()" (imprimir)="imprimir($event)"
+  (aprobar)="aprobar($event.idDespacho, $event.sucursalDestino)" (cancelar)="cancelar($event)"></app-detail-despacho-bodega>
+
+<section class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-8">
+        <h1>{{title}}</h1>
+        <p class="sucursal-subtitle" *ngIf="auth.usuario?.sucursal">
+          <i class="fas fa-store"></i> {{ auth.usuario.sucursal.nombre }}
+        </p>
+        <br>
+        <div class="header-actions">
+          <a [routerLink]="['/despachos-bodega/create']" class="btn listing-page-action listing-primary-action">
+            <i class="fas fa-plus"></i> Nuevo despacho
+          </a>
+          <a [routerLink]="['/bodegas/index']" class="btn listing-page-action listing-secondary-action">
+            <i class="fas fa-warehouse"></i> Bodegas
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="card listing-card">
+  <div class="card-header listing-card-header">Listado de Despachos</div>
+  <div class="card-body table-responsive">
+    <div class="row mb-2 align-items-center table-controls">
+      <div class="col-sm-3">
+        <div class="d-inline-flex align-items-center">
+          <label class="mb-0 mr-2">Mostrar</label>
+          <select class="form-control form-control-sm page-size-select"
+                  [ngModel]="paginacion.pageSize" (ngModelChange)="cambiarPageSize($event)">
+            <option *ngFor="let opt of paginacion.pageSizeOptions" [ngValue]="opt">{{opt}}</option>
+          </select>
+          <label class="mb-0 ml-2">registros</label>
+        </div>
+      </div>
+      <div class="col-sm-3 text-center">
+        <span *ngIf="despachos.length > 0" class="info-paginacion">
+          Mostrando <strong>{{paginacion.desde()}}</strong>
+          al <strong>{{paginacion.hasta(despachos.length)}}</strong>
+          de <strong>{{paginacion.totalElementos}}</strong>
+        </span>
+      </div>
+      <div class="col-sm-6">
+        <div class="filters-inline">
+          <select class="form-control form-control-sm" [(ngModel)]="estadoFiltro" (ngModelChange)="aplicarFiltros()"
+            aria-label="Filtrar por estado">
+            <option value="">Todos los estados</option>
+            <option *ngFor="let estado of estados" [value]="estado.codigo">{{estado.etiqueta}}</option>
+          </select>
+          <select class="form-control form-control-sm" [(ngModel)]="idBodegaFiltro" (ngModelChange)="aplicarFiltros()"
+            aria-label="Filtrar por bodega">
+            <option [ngValue]="null">Todas las bodegas</option>
+            <option *ngFor="let bodega of bodegas" [ngValue]="bodega.idBodega">{{bodega.nombre}}</option>
+          </select>
+          <div class="listing-search-control search-control">
+            <input type="text" class="form-control form-control-sm" [value]="filtro"
+                   (input)="onBuscar($event.target.value)" placeholder="No., bodega, sucursal o recibe">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="cargando" class="text-center p-4">
+      <div class="spinner-border" role="status"><span class="sr-only">Cargando...</span></div>
+    </div>
+
+    <div *ngIf="!cargando && despachos.length === 0" class="listing-empty-state">
+      <span class="listing-empty-icon" aria-hidden="true"><i class="fas fa-truck-loading"></i></span>
+      <div class="listing-empty-state-body">
+        <h5>{{ hayFiltros ? 'No se encontraron despachos' : 'Aún no hay despachos registrados' }}</h5>
+        <p>{{ hayFiltros ? 'No hay resultados para los filtros indicados.' : 'Registra el primer despacho con el botón "Nuevo despacho".' }}</p>
+      </div>
+    </div>
+
+    <table class="table table-hover table-striped table-bordered table-sm mt-0 catalog-table dispatch-table mobile-data-table"
+           *ngIf="!cargando && despachos.length > 0">
+      <thead>
+        <tr>
+          <th class="col-id">No.</th>
+          <th class="col-fecha">Fecha</th>
+          <th class="col-bodega">Bodega</th>
+          <th class="col-sucursal">Sucursal destino</th>
+          <th class="col-recibe">Recibe</th>
+          <th class="col-lineas">Productos</th>
+          <th class="col-total">Total</th>
+          <th class="col-estado">Estado</th>
+          <th class="col-opciones">Opciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let despacho of despachos">
+          <td class="col-id" data-label="No."><span class="listing-id-pill">{{numeroDespacho(despacho.idDespacho)}}</span></td>
+          <td class="col-fecha" data-label="Fecha">
+            <span class="fecha-principal">{{despacho.fechaRegistro | date: 'dd/MM/yyyy'}}</span>
+            <small class="fecha-hora">{{despacho.fechaRegistro | date: 'HH:mm'}}</small>
+          </td>
+          <td class="col-bodega mobile-primary-cell" data-label="Bodega">
+            <span class="cell-ellipsis" [title]="despacho.bodega">{{despacho.bodega}}</span>
+            <span class="cell-secondary cell-ellipsis">Despach&oacute;: {{despacho.usuarioDespacha}}</span>
+          </td>
+          <td class="col-sucursal" data-label="Sucursal destino">
+            <span class="cell-ellipsis" [title]="despacho.sucursalDestino">{{despacho.sucursalDestino}}</span>
+          </td>
+          <td class="col-recibe" data-label="Recibe"><span class="cell-ellipsis" [title]="despacho.recibidoPor">{{despacho.recibidoPor}}</span></td>
+          <td class="col-lineas" data-label="Productos">{{despacho.totalLineas}}</td>
+          <td class="col-total" data-label="Total">{{despacho.total | currency: "Q" : "symbol"}}</td>
+          <td class="col-estado" data-label="Estado">
+            <span class="listing-status-pill" [ngClass]="claseEstado(despacho.estado)">{{etiquetaEstado(despacho.estado)}}</span>
+          </td>
+          <td class="col-opciones mobile-actions-cell" data-label="Opciones">
+            <div class="action-buttons">
+              <button class="btn btn-sm listing-table-action listing-action-view" type="button"
+                      appTooltip="Ver detalle del despacho" aria-label="Ver detalle del despacho"
+                      [disabled]="detalleCargandoId !== null" (click)="abrirDetalle(despacho)">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button class="btn btn-sm listing-table-action listing-action-edit" type="button"
+                      appTooltip="Imprimir comprobante" aria-label="Imprimir comprobante del despacho"
+                      (click)="imprimir(despacho.idDespacho)">
+                <i class="fas fa-print"></i>
+              </button>
+              <button class="btn btn-sm listing-table-action listing-action-approve" type="button"
+                      *ngIf="despacho.estado === 'PENDIENTE' && puedeAprobar"
+                      appTooltip="Aprobar despacho" aria-label="Aprobar despacho"
+                      [disabled]="procesandoId !== null" (click)="aprobar(despacho.idDespacho, despacho.sucursalDestino)">
+                <i class="fas fa-check"></i>
+              </button>
+              <button class="btn btn-sm listing-table-action listing-action-cancel" type="button"
+                      *ngIf="despacho.estado === 'PENDIENTE'"
+                      appTooltip="Cancelar despacho" aria-label="Cancelar despacho"
+                      [disabled]="procesandoId !== null" (click)="cancelar(despacho.idDespacho)">
+                <i class="fas fa-ban"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <nav class="listing-pagination" *ngIf="!cargando && despachos.length > 0" aria-label="Paginaci&oacute;n de despachos">
+      <ul class="pagination justify-content-center mt-3 mb-0">
+        <li class="page-item" [ngClass]="{'disabled': paginacion.isFirst}"><a class="page-link" href="javascript:void(0)" (click)="cargarDespachos(0)"><i class="fas fa-angle-double-left"></i></a></li>
+        <li class="page-item" [ngClass]="{'disabled': paginacion.isFirst}"><a class="page-link" href="javascript:void(0)" (click)="!paginacion.isFirst && cargarDespachos(paginacion.paginaActual - 1)"><i class="fas fa-angle-left"></i></a></li>
+        <li class="page-item" *ngFor="let pagina of paginacion.paginasVisibles" [ngClass]="{'active': pagina === paginacion.paginaActual}"><a class="page-link" href="javascript:void(0)" (click)="cargarDespachos(pagina)">{{pagina + 1}}</a></li>
+        <li class="page-item" [ngClass]="{'disabled': paginacion.isLast}"><a class="page-link" href="javascript:void(0)" (click)="!paginacion.isLast && cargarDespachos(paginacion.paginaActual + 1)"><i class="fas fa-angle-right"></i></a></li>
+        <li class="page-item" [ngClass]="{'disabled': paginacion.isLast}"><a class="page-link" href="javascript:void(0)" (click)="cargarDespachos(paginacion.totalPaginas - 1)"><i class="fas fa-angle-double-right"></i></a></li>
+      </ul>
+    </nav>
+  </div>
+</div>

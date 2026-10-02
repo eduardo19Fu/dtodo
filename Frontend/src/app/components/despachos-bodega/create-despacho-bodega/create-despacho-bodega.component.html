@@ -1,0 +1,287 @@
+<app-modal-buscar-producto-bodega *ngIf="modalProductoVisible" [idBodega]="despacho.idBodega"
+  [nombreBodega]="bodegaSeleccionada?.nombre" (producto)="elegirDelModal($event)" (cerrar)="cerrarModalProducto()"></app-modal-buscar-producto-bodega>
+
+<div class="product-form-page despacho-page">
+  <header class="page-heading">
+    <div>
+      <span class="page-eyebrow">Despachos de bodega</span>
+      <h1>{{ title }}</h1>
+      <p>Traslada existencias de una bodega a una sucursal. El stock sale de la bodega al registrar y entra a la sucursal cuando se aprueba.</p>
+    </div>
+    <div class="heading-icon" aria-hidden="true"><i class="fas fa-truck-loading"></i></div>
+  </header>
+
+  <form #despachoForm="ngForm" class="product-card" (submit)="$event.preventDefault()">
+    <div class="card-hero">
+      <div class="hero-icon" aria-hidden="true"><i class="fas fa-dolly"></i></div>
+      <div>
+        <h2>Nuevo despacho</h2>
+        <p>Los campos marcados con <span aria-hidden="true">*</span> son obligatorios.</p>
+      </div>
+      <span class="status-pill">
+        <i class="fas fa-circle" aria-hidden="true"></i>
+        Pendiente de aprobaci&oacute;n
+      </span>
+    </div>
+
+    <div class="form-actions despacho-actions sticky-summary">
+      <div class="save-note">
+        <i class="fas fa-boxes" aria-hidden="true"></i>
+        <span>
+          {{ lineas.length }} {{ lineas.length === 1 ? 'producto' : 'productos' }}
+          &middot; {{ totalUnidades | number }} {{ totalUnidades === 1 ? 'unidad' : 'unidades' }}
+        </span>
+      </div>
+
+      <div class="total-summary">
+        <span>Total al costo</span>
+        <strong>{{ totalDespacho | currency: "Q" : "symbol" }}</strong>
+      </div>
+
+      <button type="button" class="primary-action" (click)="crear()"
+        [disabled]="!despachoForm.form.valid || lineas.length === 0 || guardando">
+        <i class="fas" [ngClass]="guardando ? 'fa-spinner fa-spin' : 'fa-save'" aria-hidden="true"></i>
+        {{ guardando ? 'Guardando...' : 'Registrar despacho' }}
+      </button>
+    </div>
+
+    <div class="form-content">
+      <section class="form-section" aria-labelledby="datos-despacho-title">
+        <div class="section-heading">
+          <span class="section-number">01</span>
+          <div>
+            <h3 id="datos-despacho-title">Datos del despacho</h3>
+            <p>Bodega de origen, sucursal que recibe y persona que recibe la mercader&iacute;a.</p>
+          </div>
+        </div>
+
+        <div class="form-grid three-columns">
+          <div class="field-group">
+            <label for="bodega">Bodega de origen <span class="required-mark">*</span></label>
+            <div class="select-control">
+              <i class="fas fa-warehouse" aria-hidden="true"></i>
+              <select id="bodega" name="bodega" class="form-control" [ngModel]="despacho.idBodega"
+                (ngModelChange)="alCambiarBodega($event)" [disabled]="lineas.length > 0" required>
+                <option [ngValue]="null">Seleccionar bodega</option>
+                <option *ngFor="let bodega of bodegas" [ngValue]="bodega.idBodega">{{ bodega.nombre }}</option>
+              </select>
+            </div>
+            <small *ngIf="lineas.length > 0">Quita los productos del detalle para cambiar de bodega.</small>
+            <small *ngIf="lineas.length === 0 && bodegaSeleccionada">{{ bodegaSeleccionada.ubicacion }}</small>
+          </div>
+
+          <div class="field-group">
+            <label for="sucursalDestino">Sucursal destino <span class="required-mark">*</span></label>
+            <div class="select-control">
+              <i class="fas fa-store" aria-hidden="true"></i>
+              <select id="sucursalDestino" name="sucursalDestino" class="form-control"
+                [(ngModel)]="despacho.idSucursalDestino" required>
+                <option [ngValue]="null">Seleccionar sucursal</option>
+                <option *ngFor="let sucursal of sucursales" [ngValue]="sucursal.idSucursal">{{ sucursal.nombre }}</option>
+              </select>
+            </div>
+            <small *ngIf="bodegaSeleccionada?.sucursal && bodegaSeleccionada.sucursal.idSucursal === despacho.idSucursalDestino">
+              Sucursal asignada a la bodega.
+            </small>
+            <small *ngIf="bodegaSeleccionada && !bodegaSeleccionada.sucursal">La bodega no tiene sucursal asignada: elige el destino.</small>
+          </div>
+
+          <div class="field-group">
+            <label for="recibidoPor">Recibe <span class="required-mark">*</span></label>
+            <div class="control-with-icon">
+              <i class="fas fa-user-check" aria-hidden="true"></i>
+              <input type="text" id="recibidoPor" name="recibidoPor" class="form-control" maxlength="150"
+                [(ngModel)]="despacho.recibidoPor" required placeholder="Nombre de quien recibe la mercader&iacute;a" autocomplete="off">
+            </div>
+          </div>
+
+          <div class="field-group description-field">
+            <label for="observaciones">Observaciones</label>
+            <textarea id="observaciones" name="observaciones" class="form-control" rows="3" maxlength="500"
+              [(ngModel)]="despacho.observaciones" placeholder="Notas adicionales sobre este despacho (opcional)"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section last-section" aria-labelledby="detalle-despacho-title">
+        <div class="section-heading detail-heading">
+          <span class="section-number">02</span>
+          <div>
+            <h3 id="detalle-despacho-title">Detalle de productos</h3>
+            <p>Solo se pueden despachar productos que la bodega tiene en su inventario, hasta su existencia actual.</p>
+          </div>
+          <span class="items-count">
+            {{ lineas.length }}
+            {{ lineas.length === 1 ? 'producto' : 'productos' }}
+          </span>
+        </div>
+
+        <div class="form-grid add-product-grid despacho-add-grid">
+          <div class="field-group">
+            <label for="codigo">C&oacute;digo de producto</label>
+            <div class="inline-search-control despacho-search-control">
+              <div class="control-with-icon">
+                <i class="fas fa-barcode" aria-hidden="true"></i>
+                <input type="text" class="form-control" name="codigo" id="codigo"
+                  [(ngModel)]="codigoBusqueda" (keydown.enter)="buscarProductoConEnter($event)"
+                  [disabled]="!despacho.idBodega" placeholder="Escanea o escribe el c&oacute;digo">
+              </div>
+              <button type="button" class="inline-search-button" (click)="abrirModalProducto()"
+                aria-label="Ver productos de la bodega" title="Ver productos de la bodega">
+                <i class="fas fa-search" aria-hidden="true"></i>
+              </button>
+            </div>
+            <small>Presiona Enter para buscar por c&oacute;digo, o usa el buscador de la bodega.</small>
+          </div>
+
+          <div class="field-group">
+            <label for="producto-seleccionado">Producto seleccionado</label>
+            <div class="control-with-icon">
+              <i class="fas fa-box" aria-hidden="true"></i>
+              <input type="text" class="form-control" name="producto-seleccionado" id="producto-seleccionado"
+                [value]="itemActual ? itemActual.nombreProducto : ''" disabled
+                placeholder="A&uacute;n no has seleccionado un producto">
+            </div>
+            <small class="stock-hint" *ngIf="itemActual">
+              Disponible en bodega: <strong>{{ disponibleItemActual | number }}</strong> de {{ itemActual.stock | number }}
+              &middot; Costo {{ itemActual.precioCompra | currency: "Q" : "symbol" }}
+            </small>
+          </div>
+
+          <div class="field-group quantity-field">
+            <div class="quantity-add-control despacho-quantity-control">
+              <div class="line-entry-field">
+                <label for="cantidadActual">Cantidad</label>
+                <div class="control-with-icon">
+                  <i class="fas fa-sort-numeric-up" aria-hidden="true"></i>
+                  <input type="number" id="cantidadActual" name="cantidadActual" class="form-control"
+                    [(ngModel)]="cantidadActual" min="1" [max]="disponibleItemActual" placeholder="0"
+                    [disabled]="!itemActual" (keydown.enter)="agregarLineaConEnter($event)">
+                </div>
+              </div>
+              <button type="button" class="add-line-button" (click)="agregarLinea()" aria-label="Agregar producto"
+                title="Agregar producto" [disabled]="!itemActual">
+                <i class="fas fa-plus" aria-hidden="true"></i>
+                <span>Agregar</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="empty-detail" *ngIf="lineas.length === 0">
+          <span aria-hidden="true"><i class="fas fa-truck-loading"></i></span>
+          <h4>A&uacute;n no hay productos</h4>
+          <p>Elige la bodega y agrega los productos que vas a despachar.</p>
+        </div>
+
+        <div class="detail-table-wrapper" *ngIf="lineas.length > 0">
+          <table class="detail-table despacho-detail-table">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Existencia actual</th>
+                <th>Cantidad</th>
+                <th>Costo unitario</th>
+                <th>Subtotal</th>
+                <th><span class="sr-only">Acciones</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of lineas; let i = index">
+                <td data-label="Producto">
+                  <div class="table-product-name">
+                    <span aria-hidden="true"><i class="fas fa-box"></i></span>
+                    <div>
+                      <strong>{{ item.producto.nombre }}</strong>
+                      <small class="product-code">{{ item.producto.codProducto }}</small>
+                    </div>
+                  </div>
+                </td>
+                <td data-label="Existencia actual">
+                  <span class="stock-after">
+                    {{ item.existenciaBodega | number }}
+                    <small>quedan {{ item.existenciaBodega - item.cantidad | number }}</small>
+                  </span>
+                </td>
+                <td data-label="Cantidad">
+                  <div class="detail-value-with-action">
+                    <span class="detail-readonly-value">{{ item.cantidad | number }}</span>
+                    <button type="button" class="edit-detail-button"
+                      (click)="abrirEdicionDetalle(i, $event.currentTarget)"
+                      [attr.aria-label]="'Editar cantidad de ' + item.producto.nombre" title="Editar cantidad">
+                      <i class="fas fa-pencil-alt" aria-hidden="true"></i>
+                    </button>
+                  </div>
+                </td>
+                <td data-label="Costo unitario"><span class="detail-readonly-value">Q{{ item.precioUnitario | number: '1.2-2' }}</span></td>
+                <td data-label="Subtotal"><strong class="line-total">{{ item.calcularSubTotal() | currency: "Q" : "symbol" }}</strong></td>
+                <td data-label="Acciones" class="detail-action-cell">
+                  <button type="button" class="remove-line-button" (click)="eliminarLinea(item)"
+                    aria-label="Quitar producto" title="Quitar producto">
+                    <i class="fas fa-trash-alt" aria-hidden="true"></i>
+                    <span class="remove-line-label">Quitar producto</span>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </form>
+</div>
+
+<div *ngIf="edicionDetalleAbierta" class="detail-edit-backdrop" (click)="cancelarEdicionDetalle()"
+  (keydown.escape)="cancelarEdicionDetalle()">
+  <section class="detail-edit-dialog" role="dialog" aria-modal="true" aria-labelledby="despacho-detail-edit-title"
+    (click)="$event.stopPropagation()">
+    <header class="detail-edit-header">
+      <span class="detail-edit-icon" aria-hidden="true"><i class="fas fa-pencil-alt"></i></span>
+      <div>
+        <span class="detail-edit-eyebrow">Detalle del despacho</span>
+        <h3 id="despacho-detail-edit-title">Editar cantidad</h3>
+      </div>
+      <button type="button" class="detail-edit-close" (click)="cancelarEdicionDetalle()" aria-label="Cancelar edici&oacute;n">
+        <i class="fas fa-times" aria-hidden="true"></i>
+      </button>
+    </header>
+
+    <div class="detail-edit-body">
+      <p>El cambio se aplicar&aacute; &uacute;nicamente al confirmar.</p>
+      <div class="detail-edit-fields">
+        <div class="detail-edit-field">
+          <label for="despacho-valor-detalle-anterior">Cantidad anterior</label>
+          <div class="detail-edit-input-wrap despacho-edit-input-wrap readonly">
+            <input id="despacho-valor-detalle-anterior" type="number" class="form-control"
+              [value]="valorDetalleAnterior" readonly tabindex="-1">
+          </div>
+        </div>
+
+        <div class="detail-edit-field">
+          <label for="despacho-nuevo-valor-detalle">Cantidad nueva</label>
+          <div class="detail-edit-input-wrap despacho-edit-input-wrap">
+            <input id="despacho-nuevo-valor-detalle" name="despacho-nuevo-valor-detalle" type="number"
+              class="form-control" [(ngModel)]="valorDetalleNuevo" min="1" step="1" autocomplete="off"
+              (wheel)="evitarCambioConRueda($event)" (keyup.enter)="confirmarEdicionDetalle()">
+          </div>
+        </div>
+      </div>
+
+      <p *ngIf="errorEdicionDetalle" class="detail-edit-error" role="alert">
+        <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+        {{ errorEdicionDetalle }}
+      </p>
+    </div>
+
+    <footer class="detail-edit-actions">
+      <button type="button" class="detail-edit-cancel" (click)="cancelarEdicionDetalle()">
+        <i class="fas fa-times" aria-hidden="true"></i>
+        Cancelar
+      </button>
+      <button type="button" class="detail-edit-confirm" (click)="confirmarEdicionDetalle()">
+        <i class="fas fa-check" aria-hidden="true"></i>
+        Confirmar
+      </button>
+    </footer>
+  </section>
+</div>

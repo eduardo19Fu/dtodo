@@ -1,0 +1,172 @@
+<div class="sucursal-detail-overlay animacion fadeIn" (click)="cerrarDesdeBackdrop($event)">
+  <section class="sucursal-detail-dialog bodega-detail-dialog" tabindex="-1" role="dialog" aria-modal="true"
+    aria-labelledby="despacho-detail-title" (click)="$event.stopPropagation()">
+    <div class="sucursal-detail-content">
+      <header class="sucursal-detail-header">
+        <div class="header-copy">
+          <span class="header-icon" aria-hidden="true"><i class="fas fa-truck-loading"></i></span>
+          <div>
+            <span class="header-eyebrow">Despachos de bodega</span>
+            <h5 id="despacho-detail-title">{{title}} {{numero}}</h5>
+          </div>
+        </div>
+        <button (click)="cerrarModal()" type="button" class="close-button" aria-label="Cerrar detalle del despacho">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+      </header>
+
+      <div *ngIf="despacho" class="sucursal-detail-body">
+        <section class="summary-section">
+          <div class="section-heading">
+            <span class="section-icon"><i class="fas fa-info-circle" aria-hidden="true"></i></span>
+            <div>
+              <strong>Resumen del despacho</strong>
+              <small>Origen, destino, responsables y estado</small>
+            </div>
+          </div>
+
+          <div class="summary-grid">
+            <article class="summary-card total-card">
+              <span class="card-icon"><i class="fas fa-coins" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Total al costo</span>
+                <strong>{{despacho.total | currency: "Q" : "symbol"}}</strong>
+              </div>
+            </article>
+            <article class="summary-card">
+              <span class="card-icon"><i class="fas fa-tasks" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Estado</span>
+                <span class="status-pill" [ngClass]="claseEstado">
+                  <i class="fas" [ngClass]="iconoEstado" aria-hidden="true"></i>
+                  {{etiquetaEstado}}
+                </span>
+              </div>
+            </article>
+            <article class="summary-card">
+              <span class="card-icon"><i class="fas fa-cubes" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Unidades despachadas</span>
+                <strong>{{totalUnidades | number}} en {{despacho.items.length}} {{despacho.items.length === 1 ? 'producto' : 'productos'}}</strong>
+              </div>
+            </article>
+            <article class="summary-card">
+              <span class="card-icon"><i class="fas fa-warehouse" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Bodega de origen</span>
+                <strong>{{despacho.bodega?.nombre}}</strong>
+              </div>
+            </article>
+            <article class="summary-card">
+              <span class="card-icon"><i class="fas fa-store" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Sucursal destino</span>
+                <strong>{{despacho.sucursalDestino?.nombre}}</strong>
+              </div>
+            </article>
+            <article class="summary-card">
+              <span class="card-icon"><i class="fas fa-user-check" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Recibido por</span>
+                <strong>{{despacho.recibidoPor}}</strong>
+              </div>
+            </article>
+            <article class="summary-card">
+              <span class="card-icon"><i class="fas fa-user-tie" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Despachado por</span>
+                <strong>{{nombreCompleto(despacho.usuarioDespacha)}}</strong>
+              </div>
+            </article>
+            <article class="summary-card">
+              <span class="card-icon"><i class="far fa-clock" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Fecha de registro</span>
+                <strong>{{despacho.fechaRegistro | date: 'dd/MM/yyyy - HH:mm'}}</strong>
+              </div>
+            </article>
+            <article class="summary-card" *ngIf="despacho.usuarioResuelve">
+              <span class="card-icon"><i class="fas fa-user-shield" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">{{despacho.estado === 'REALIZADO' ? 'Aprobado por' : 'Cancelado por'}}</span>
+                <strong>{{nombreCompleto(despacho.usuarioResuelve)}}</strong>
+                <small class="resolved-at">{{despacho.fechaResolucion | date: 'dd/MM/yyyy - HH:mm'}}</small>
+              </div>
+            </article>
+            <article *ngIf="despacho.observaciones" class="summary-card wide-card">
+              <span class="card-icon"><i class="fas fa-comment-alt" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Observaciones</span>
+                <strong>{{despacho.observaciones}}</strong>
+              </div>
+            </article>
+            <article *ngIf="despacho.motivoCancelacion" class="summary-card wide-card cancel-reason-card">
+              <span class="card-icon"><i class="fas fa-ban" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Motivo de la cancelaci&oacute;n</span>
+                <strong>{{despacho.motivoCancelacion}}</strong>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="lines-section">
+          <div class="lines-toolbar">
+            <div class="section-heading">
+              <span class="section-icon"><i class="fas fa-list-ul" aria-hidden="true"></i></span>
+              <div>
+                <strong>Detalle de productos</strong>
+                <small>Con la existencia de la bodega al momento del despacho</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-shell">
+            <table class="document-lines-table mobile-data-table">
+              <thead>
+                <tr>
+                  <th>C&oacute;digo</th>
+                  <th>Producto</th>
+                  <th class="quantity-column">Existencia en bodega</th>
+                  <th class="quantity-column">Cantidad</th>
+                  <th class="money-column">Costo unitario</th>
+                  <th class="money-column">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of despacho.items">
+                  <td data-label="C&oacute;digo"><span class="line-badge">{{item.producto?.codProducto}}</span></td>
+                  <td class="mobile-primary-cell" data-label="Producto"><strong class="product-name">{{item.producto?.nombre}}</strong></td>
+                  <td class="quantity-cell" data-label="Existencia en bodega">{{item.existenciaBodega | number}}</td>
+                  <td class="quantity-cell" data-label="Cantidad"><strong>{{item.cantidad | number}}</strong></td>
+                  <td class="money-cell" data-label="Costo unitario">{{item.precioUnitario | currency: "Q" : "symbol"}}</td>
+                  <td class="money-cell final-amount" data-label="Subtotal">{{item.subTotal | currency: "Q" : "symbol"}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <footer class="sucursal-detail-footer">
+        <span><i class="fas fa-shield-alt" aria-hidden="true"></i>Documento de control interno de inventario</span>
+        <div class="footer-actions">
+          <button type="button" class="close-action" (click)="imprimir.emit(despacho.idDespacho)">
+            <i class="fas fa-print" aria-hidden="true"></i> Imprimir comprobante
+          </button>
+          <button type="button" class="close-action approve-action" *ngIf="pendiente && puedeAprobar" [disabled]="procesando"
+            (click)="solicitarAprobacion()">
+            <i class="fas fa-check" aria-hidden="true"></i> Aprobar
+          </button>
+          <button type="button" class="close-action cancel-action" *ngIf="pendiente" [disabled]="procesando"
+            (click)="cancelar.emit(despacho.idDespacho)">
+            <i class="fas fa-ban" aria-hidden="true"></i> Cancelar despacho
+          </button>
+          <button (click)="cerrarModal()" type="button" class="close-action">
+            <i class="fas fa-times" aria-hidden="true"></i> Cerrar
+          </button>
+        </div>
+      </footer>
+    </div>
+  </section>
+</div>

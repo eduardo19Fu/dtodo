@@ -1,0 +1,140 @@
+<div class="product-picker-overlay" (click)="cerrarModal()">
+  <div class="product-picker-modal" tabindex="-1" role="dialog" aria-modal="true"
+    aria-labelledby="bodega-picker-title" (click)="$event.stopPropagation()">
+    <div class="product-picker-dialog">
+      <header class="product-picker-header">
+        <div class="modal-heading-icon" aria-hidden="true"><i class="fas fa-warehouse"></i></div>
+        <div>
+          <span class="modal-eyebrow">{{ nombreBodega || 'Inventario de bodega' }}</span>
+          <h4 class="product-picker-title" id="bodega-picker-title">{{ title }}</h4>
+          <p>Elige el producto que deseas despachar. Se muestra la existencia actual de la bodega.</p>
+        </div>
+        <button type="button" class="close-modal" (click)="cerrarModal()" aria-label="Cerrar">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+      </header>
+
+      <div class="product-picker-body">
+        <section class="search-panel" aria-label="Controles de búsqueda">
+          <div class="search-copy">
+            <span class="search-label">Buscar producto</span>
+            <p>Busca por código o nombre.</p>
+          </div>
+          <div class="search-control">
+            <i class="fas fa-search" aria-hidden="true"></i>
+            <input type="search" id="bodega-product-search" class="form-control" [value]="filtro"
+              (input)="onBuscar($event.target.value)" placeholder="Escribe para filtrar resultados..."
+              aria-label="Buscar producto">
+            <span class="search-shortcut" aria-hidden="true">Buscar</span>
+          </div>
+        </section>
+
+        <div class="results-toolbar">
+          <div class="page-size-control">
+            <label for="bodega-product-page-size">Mostrar</label>
+            <div class="compact-select">
+              <select id="bodega-product-page-size" class="form-control" [ngModel]="paginacion.pageSize"
+                (ngModelChange)="cambiarPageSize($event)">
+                <option *ngFor="let opt of paginacion.pageSizeOptions" [ngValue]="opt">{{ opt }}</option>
+              </select>
+              <i class="fas fa-chevron-down" aria-hidden="true"></i>
+            </div>
+            <span>por página</span>
+          </div>
+
+          <div class="results-summary" *ngIf="items.length > 0">
+            <i class="fas fa-list-ul" aria-hidden="true"></i>
+            <span>
+              Mostrando <strong>{{ paginacion.desde() }}–{{ paginacion.hasta(items.length) }}</strong>
+              de <strong>{{ paginacion.totalElementos }}</strong> productos
+            </span>
+          </div>
+        </div>
+
+        <div *ngIf="cargando" class="loading-state" role="status">
+          <div class="spinner-border" aria-hidden="true"></div>
+          <strong>Buscando productos</strong>
+          <span>Estamos preparando los resultados...</span>
+        </div>
+
+        <div *ngIf="!cargando && items.length === 0" class="empty-state">
+          <div class="empty-icon" aria-hidden="true"><i class="fas fa-box-open"></i></div>
+          <h5>No encontramos productos</h5>
+          <p>{{ filtro ? 'Prueba con otro código o nombre.' : 'La bodega todavía no tiene productos en su inventario.' }}</p>
+        </div>
+
+        <div class="products-table-wrapper" *ngIf="!cargando && items.length > 0">
+          <table class="products-table">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Producto</th>
+                <th>Costo</th>
+                <th>Existencia</th>
+                <th class="action-column"><span class="sr-only">Acción</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of items">
+                <td data-label="Código"><span class="listing-id-pill">#{{ item.codProducto }}</span></td>
+                <td data-label="Producto">
+                  <div class="product-name-cell">
+                    <span class="product-icon" aria-hidden="true"><i class="fas fa-box"></i></span>
+                    <strong>{{ item.nombreProducto }}</strong>
+                  </div>
+                </td>
+                <td data-label="Costo"><span class="price-value">{{ item.precioCompra | currency: "Q" : "symbol" }}</span></td>
+                <td data-label="Existencia">
+                  <span class="stock-badge" [ngClass]="{
+                    'low-stock': item.stock <= 3,
+                    'medium-stock': item.stock > 3 && item.stock <= 10,
+                    'available-stock': item.stock > 10
+                  }">
+                    <i class="fas fa-circle" aria-hidden="true"></i>
+                    {{ item.stock }}
+                  </span>
+                </td>
+                <td class="action-column" data-label="Acción">
+                  <button type="button" class="choose-product-button" [disabled]="item.stock === 0" (click)="elegir(item)">
+                    Elegir <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <footer class="results-footer" *ngIf="!cargando && paginacion.totalPaginas > 1">
+          <span>Página <strong>{{ paginacion.paginaActual + 1 }}</strong> de <strong>{{ paginacion.totalPaginas }}</strong></span>
+          <nav aria-label="Paginación de productos">
+            <ul class="pagination">
+              <li class="page-item" [ngClass]="{'disabled': paginacion.isFirst}">
+                <a class="page-link" (click)="cargar(0)" href="javascript:void(0)" aria-label="Primera página">
+                  <i class="fas fa-angle-double-left" aria-hidden="true"></i>
+                </a>
+              </li>
+              <li class="page-item" [ngClass]="{'disabled': paginacion.isFirst}">
+                <a class="page-link" (click)="!paginacion.isFirst && cargar(paginacion.paginaActual - 1)" href="javascript:void(0)" aria-label="Página anterior">
+                  <i class="fas fa-angle-left" aria-hidden="true"></i>
+                </a>
+              </li>
+              <li class="page-item" *ngFor="let pagina of paginacion.paginasVisibles" [ngClass]="{'active': pagina === paginacion.paginaActual}">
+                <a class="page-link" (click)="cargar(pagina)" href="javascript:void(0)">{{ pagina + 1 }}</a>
+              </li>
+              <li class="page-item" [ngClass]="{'disabled': paginacion.isLast}">
+                <a class="page-link" (click)="!paginacion.isLast && cargar(paginacion.paginaActual + 1)" href="javascript:void(0)" aria-label="Página siguiente">
+                  <i class="fas fa-angle-right" aria-hidden="true"></i>
+                </a>
+              </li>
+              <li class="page-item" [ngClass]="{'disabled': paginacion.isLast}">
+                <a class="page-link" (click)="cargar(paginacion.totalPaginas - 1)" href="javascript:void(0)" aria-label="Última página">
+                  <i class="fas fa-angle-double-right" aria-hidden="true"></i>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </footer>
+      </div>
+    </div>
+  </div>
+</div>
