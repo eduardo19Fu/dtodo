@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import xyz.pangosoft.dtodo.dto.ReporteSelectorDto;
+import xyz.pangosoft.dtodo.repository.IBodegaRepository;
 import xyz.pangosoft.dtodo.repository.IClienteRepository;
 import xyz.pangosoft.dtodo.repository.IProformaRepository;
 import xyz.pangosoft.dtodo.repository.IProveedorRepository;
@@ -28,6 +29,7 @@ public class ReporteSelectorServiceImpl implements IReporteSelectorService {
     private final IClienteRepository clienteRepository;
     private final IProveedorRepository proveedorRepository;
     private final IProductoRepository productoRepository;
+    private final IBodegaRepository bodegaRepository;
 
     @Override
     public List<ReporteSelectorDto> listarSucursales() {
@@ -62,5 +64,10 @@ public class ReporteSelectorServiceImpl implements IReporteSelectorService {
     @Override
     public List<ReporteSelectorDto> listarProductos(Integer idSucursal) {
         return productoRepository.findOpcionesReporte(idSucursal);
+    }
+
+    @Override
+    public List<ReporteSelectorDto> listarBodegas() {
+        return bodegaRepository.findOpcionesReporte();
     }
 }

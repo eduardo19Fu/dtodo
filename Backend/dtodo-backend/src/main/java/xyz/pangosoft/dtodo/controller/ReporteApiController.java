@@ -55,6 +55,12 @@ public class ReporteApiController {
         return ResponseEntity.ok(reporteSelectorService.listarUsuariosProformas(idSucursal));
     }
 
+    @Secured({"ROLE_ADMIN", "ROLE_BODEGA"})
+    @GetMapping("/filtros/bodegas")
+    public ResponseEntity<List<ReporteSelectorDto>> bodegasSelector() {
+        return ResponseEntity.ok(reporteSelectorService.listarBodegas());
+    }
+
     @Secured({"ROLE_ADMIN", "ROLE_INVENTARIO"})
     @GetMapping("/filtros/categorias")
     public ResponseEntity<List<ReporteSelectorDto>> categoriasSelector() {
@@ -355,6 +361,52 @@ public class ReporteApiController {
                 idSucursal, fechaInicio, fechaFin, idProveedor);
         return archivo(reporte, XLSX_MEDIA_TYPE,
                 nombrePeriodo("compras_proveedor_producto", fechaInicio, fechaFin, "xlsx"), false);
+    }
+
+    @Secured({"ROLE_ADMIN", "ROLE_BODEGA"})
+    @GetMapping("/bodegas/existencias")
+    public ResponseEntity<byte[]> existenciasBodega(
+            @RequestParam Integer idBodega,
+            @RequestParam(defaultValue = "PDF") String formato) {
+        log.info("Generando existencias de bodega. bodega={}, formato={}", idBodega, formato);
+        byte[] reporte = reporteService.generarExistenciasBodega(idBodega, formato);
+        boolean esPdf = "PDF".equalsIgnoreCase(formato);
+        String extension = esPdf ? "pdf" : "xlsx";
+        return archivo(reporte, esPdf ? MediaType.APPLICATION_PDF : XLSX_MEDIA_TYPE,
+                "existencias_bodega_" + idBodega + "." + extension, esPdf);
+    }
+
+    @Secured({"ROLE_ADMIN", "ROLE_BODEGA"})
+    @GetMapping("/bodegas/movimientos")
+    public ResponseEntity<byte[]> movimientosBodega(
+            @RequestParam Integer idBodega,
+            @RequestParam String fechaInicio,
+            @RequestParam String fechaFin,
+            @RequestParam(defaultValue = "PDF") String formato) {
+        log.info("Generando movimientos de bodega. bodega={}, formato={}, periodo={}..{}",
+                idBodega, formato, fechaInicio, fechaFin);
+        byte[] reporte = reporteService.generarMovimientosBodega(idBodega, fechaInicio, fechaFin, formato);
+        boolean esPdf = "PDF".equalsIgnoreCase(formato);
+        String extension = esPdf ? "pdf" : "xlsx";
+        return archivo(reporte, esPdf ? MediaType.APPLICATION_PDF : XLSX_MEDIA_TYPE,
+                nombrePeriodo("movimientos_bodega_" + idBodega, fechaInicio, fechaFin, extension), esPdf);
+    }
+
+    @Secured({"ROLE_ADMIN", "ROLE_BODEGA"})
+    @GetMapping("/bodegas/despachos")
+    public ResponseEntity<byte[]> despachosBodega(
+            @RequestParam(required = false) Integer idBodega,
+            @RequestParam String fechaInicio,
+            @RequestParam String fechaFin,
+            @RequestParam(required = false) String estado,
+            @RequestParam(defaultValue = "PDF") String formato) {
+        log.info("Generando despachos de bodega. bodega={}, estado={}, formato={}, periodo={}..{}",
+                idBodega, estado, formato, fechaInicio, fechaFin);
+        byte[] reporte = reporteService.generarDespachosBodega(idBodega, fechaInicio, fechaFin, estado, formato);
+        boolean esPdf = "PDF".equalsIgnoreCase(formato);
+        String extension = esPdf ? "pdf" : "xlsx";
+        return archivo(reporte, esPdf ? MediaType.APPLICATION_PDF : XLSX_MEDIA_TYPE,
+                nombrePeriodo("despachos_bodega", fechaInicio, fechaFin, extension), esPdf);
     }
 
     private Integer resolverSucursal(Integer solicitada, Jwt jwt, Authentication authentication) {

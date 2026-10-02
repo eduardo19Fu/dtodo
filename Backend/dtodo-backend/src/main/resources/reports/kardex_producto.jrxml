@@ -29,7 +29,8 @@
     <queryString language="SQL"><![CDATA[
         SELECT mp.id_movimiento AS numero,
                mp.fecha_movimiento AS fecha,
-               CASE mp.tipo_movimiento
+               CASE WHEN mp.tipo_documento_origen = 'DESPACHO_BODEGA' THEN 'Ingreso por despacho de bodega'
+               ELSE CASE mp.tipo_movimiento
                    WHEN 'VENTA' THEN 'Venta'
                    WHEN 'ENTRADA' THEN 'Entrada manual'
                    WHEN 'SALIDA' THEN 'Salida manual'
@@ -39,12 +40,13 @@
                    WHEN 'ANULACION_NOTA' THEN 'Anulación de nota de crédito'
                    WHEN 'ENTREGA_PRODUCTO_NOTA' THEN 'Entrega de nota de crédito'
                    ELSE REPLACE(mp.tipo_movimiento, '_', ' ')
-               END AS movimiento,
+               END END AS movimiento,
                COALESCE(CASE mp.tipo_documento_origen
                    WHEN 'FACTURA' THEN CONCAT('Factura ', COALESCE(NULLIF(f.serie, ''), 'S/S'), '-',
                        COALESCE(f.no_factura, f.id_factura))
                    WHEN 'COMPRA' THEN CONCAT('Compra ', COALESCE(c.no_comprobante, CONCAT('#', c.id_compra)))
                    WHEN 'NOTA_CREDITO' THEN CONCAT('Nota de crédito #', nc.id_nota_credito)
+                   WHEN 'DESPACHO_BODEGA' THEN CONCAT('Despacho de bodega #', mp.id_documento_origen)
                    ELSE CASE WHEN mp.tipo_movimiento IN ('ENTRADA', 'SALIDA')
                        THEN CONCAT('Ajuste manual #', mp.id_movimiento) END
                END, 'No registrado') AS documento,

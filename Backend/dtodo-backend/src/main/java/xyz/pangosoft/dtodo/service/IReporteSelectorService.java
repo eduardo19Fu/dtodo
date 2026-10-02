@@ -19,4 +19,6 @@ public interface IReporteSelectorService {
     List<ReporteSelectorDto> listarProveedores();
 
     List<ReporteSelectorDto> listarProductos(Integer idSucursal);
+
+    List<ReporteSelectorDto> listarBodegas();
 }

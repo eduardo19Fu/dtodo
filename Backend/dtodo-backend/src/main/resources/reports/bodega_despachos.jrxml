@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="bodega_despachos" pageWidth="842" pageHeight="595" orientation="Landscape"
+              whenNoDataType="AllSectionsNoDetail" columnWidth="802" leftMargin="20" rightMargin="20"
+              topMargin="18" bottomMargin="18" isSummaryWithPageHeaderAndFooter="true"
+              uuid="c4a8e1f3-2b57-4d90-8e6a-17f3b9d2a5c8">
+    <property name="net.sf.jasperreports.export.xlsx.detect.cell.type" value="true"/>
+    <property name="net.sf.jasperreports.export.xlsx.remove.empty.space.between.rows" value="true"/>
+    <property name="net.sf.jasperreports.export.xlsx.white.page.background" value="false"/>
+
+    <style name="Base" isDefault="true" fontName="DejaVu Sans" fontSize="8" forecolor="#23344D"/>
+    <style name="Header" style="Base" mode="Opaque" backcolor="#1769D2" forecolor="#FFFFFF"
+           fontSize="8" isBold="true" vTextAlign="Middle"/>
+    <style name="Cell" style="Base" mode="Opaque" backcolor="#FFFFFF" vTextAlign="Middle">
+        <box leftPadding="3" rightPadding="3"><pen lineWidth="0.35" lineColor="#D9E3EF"/></box>
+    </style>
+    <style name="EstadoCell" style="Cell" isBold="true">
+        <conditionalStyle>
+            <conditionExpression><![CDATA["REALIZADO".equals($F{estado_codigo})]]></conditionExpression>
+            <style forecolor="#067647"/>
+        </conditionalStyle>
+        <conditionalStyle>
+            <conditionExpression><![CDATA["PENDIENTE".equals($F{estado_codigo})]]></conditionExpression>
+            <style forecolor="#B54708"/>
+        </conditionalStyle>
+        <conditionalStyle>
+            <conditionExpression><![CDATA["CANCELADO".equals($F{estado_codigo})]]></conditionExpression>
+            <style forecolor="#B42318"/>
+        </conditionalStyle>
+    </style>
+
+    <parameter name="ID_BODEGA" class="java.lang.Integer"/>
+    <parameter name="BODEGA" class="java.lang.String"/>
+    <parameter name="ESTADO" class="java.lang.String"/>
+    <parameter name="ESTADO_ETIQUETA" class="java.lang.String"/>
+    <parameter name="RANGO" class="java.lang.String"/>
+    <parameter name="FECHA_INICIO" class="java.sql.Timestamp"/>
+    <parameter name="FECHA_FIN_EXCLUSIVA" class="java.sql.Timestamp"/>
+    <parameter name="FORMATO" class="java.lang.String"/>
+
+    <queryString language="SQL"><![CDATA[
+        SELECT d.id_despacho AS numero,
+               d.fecha_registro AS fecha,
+               b.nombre AS bodega,
+               s.nombre AS sucursal,
+               d.recibido_por AS recibe,
+               TRIM(CONCAT(COALESCE(ud.primer_nombre, ''), ' ', COALESCE(ud.apellido, ''))) AS despacha,
+               CASE d.estado
+                   WHEN 'PENDIENTE' THEN 'Pendiente'
+                   WHEN 'REALIZADO' THEN 'Realizado'
+                   WHEN 'CANCELADO' THEN 'Cancelado'
+                   ELSE d.estado
+               END AS estado_etiqueta,
+               d.estado AS estado_codigo,
+               CAST((SELECT COUNT(*) FROM despachos_bodega_detalle x
+                      WHERE x.id_despacho = d.id_despacho) AS SIGNED) AS lineas,
+               CAST((SELECT COALESCE(SUM(x.cantidad), 0) FROM despachos_bodega_detalle x
+                      WHERE x.id_despacho = d.id_despacho) AS SIGNED) AS unidades,
+               d.total AS total
+          FROM despachos_bodega d
+          INNER JOIN bodegas b ON b.id_bodega = d.id_bodega
+          INNER JOIN sucursales s ON s.id_sucursal = d.id_sucursal_destino
+          INNER JOIN usuarios ud ON ud.id_usuario = d.id_usuario_despacha
+         WHERE d.fecha_registro >= $P{FECHA_INICIO}
+           AND d.fecha_registro < $P{FECHA_FIN_EXCLUSIVA}
+           AND ($P{ID_BODEGA} IS NULL OR d.id_bodega = $P{ID_BODEGA})
+           AND ($P{ESTADO} IS NULL OR d.estado = $P{ESTADO})
+         ORDER BY d.fecha_registro, d.id_despacho
+    ]]></queryString>
+
+    <field name="numero" class="java.lang.Long"/>
+    <field name="fecha" class="java.sql.Timestamp"/>
+    <field name="bodega" class="java.lang.String"/>
+    <field name="sucursal" class="java.lang.String"/>
+    <field name="recibe" class="java.lang.String"/>
+    <field name="despacha" class="java.lang.String"/>
+    <field name="estado_etiqueta" class="java.lang.String"/>
+    <field name="estado_codigo" class="java.lang.String"/>
+    <field name="lineas" class="java.lang.Long"/>
+    <field name="unidades" class="java.lang.Long"/>
+    <field name="total" class="java.math.BigDecimal"/>
+
+    <variable name="CANTIDAD_DESPACHOS" class="java.lang.Integer" calculation="Count">
+        <variableExpression><![CDATA[$F{numero}]]></variableExpression>
+    </variable>
+    <variable name="TOTAL_VALOR" class="java.math.BigDecimal" calculation="Sum">
+        <variableExpression><![CDATA["CANCELADO".equals($F{estado_codigo}) ? java.math.BigDecimal.ZERO : $F{total}]]></variableExpression>
+        <initialValueExpression><![CDATA[java.math.BigDecimal.ZERO]]></initialValueExpression>
+    </variable>
+
+    <title>
+        <band height="72">
+            <rectangle radius="8">
+                <reportElement x="90" y="0" width="712" height="48" forecolor="#1769D2" backcolor="#1769D2"/>
+            </rectangle>
+            <image scaleImage="RetainShape" hAlign="Center">
+                <reportElement x="0" y="0" width="72" height="48"/>
+                <imageExpression><![CDATA[this.getClass().getResourceAsStream("/static/images/reports-image/logo-dtodo.jpg")]]></imageExpression>
+            </image>
+            <staticText>
+                <reportElement x="90" y="0" width="478" height="24" forecolor="#FFFFFF" backcolor="#1769D2" mode="Opaque"/>
+                <textElement verticalAlignment="Middle"><font size="16" isBold="true"/><paragraph leftIndent="18"/></textElement>
+                <text><![CDATA[Despachos de bodega]]></text>
+            </staticText>
+            <textField isBlankWhenNull="true">
+                <reportElement x="90" y="24" width="478" height="24" forecolor="#DCEBFF" backcolor="#1769D2" mode="Opaque"/>
+                <textElement verticalAlignment="Middle"><font size="8"/><paragraph leftIndent="18"/></textElement>
+                <textFieldExpression><![CDATA[$P{BODEGA} + " · " + $P{ESTADO_ETIQUETA}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="568" y="0" width="234" height="24" forecolor="#FFFFFF" backcolor="#1769D2" mode="Opaque"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/><paragraph rightIndent="18"/></textElement>
+                <textFieldExpression><![CDATA[$P{RANGO}]]></textFieldExpression>
+            </textField>
+            <textField pattern="dd/MM/yyyy HH:mm">
+                <reportElement x="568" y="24" width="234" height="24" forecolor="#DCEBFF" backcolor="#1769D2" mode="Opaque"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="7"/><paragraph rightIndent="18"/></textElement>
+                <textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+            </textField>
+            <staticText>
+                <reportElement x="0" y="54" width="802" height="14" forecolor="#66758A"/>
+                <textElement><font size="8" isItalic="true"/></textElement>
+                <text><![CDATA[El total valorizado al costo excluye los despachos cancelados.]]></text>
+            </staticText>
+        </band>
+    </title>
+
+    <columnHeader>
+        <band height="28">
+            <staticText><reportElement style="Header" x="0" y="0" width="50" height="28"/><textElement textAlignment="Center"/><text><![CDATA[No.]]></text></staticText>
+            <staticText><reportElement style="Header" x="50" y="0" width="85" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Fecha]]></text></staticText>
+            <staticText><reportElement style="Header" x="135" y="0" width="110" height="28"/><text><![CDATA[Bodega]]></text></staticText>
+            <staticText><reportElement style="Header" x="245" y="0" width="110" height="28"/><text><![CDATA[Sucursal destino]]></text></staticText>
+            <staticText><reportElement style="Header" x="355" y="0" width="110" height="28"/><text><![CDATA[Recibe]]></text></staticText>
+            <staticText><reportElement style="Header" x="465" y="0" width="100" height="28"/><text><![CDATA[Despachó]]></text></staticText>
+            <staticText><reportElement style="Header" x="565" y="0" width="80" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Estado]]></text></staticText>
+            <staticText><reportElement style="Header" x="645" y="0" width="40" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Líneas]]></text></staticText>
+            <staticText><reportElement style="Header" x="685" y="0" width="50" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Unidades]]></text></staticText>
+            <staticText><reportElement style="Header" x="735" y="0" width="67" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Total]]></text></staticText>
+        </band>
+    </columnHeader>
+
+    <detail>
+        <band height="24">
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="0" y="0" width="50" height="24"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA[String.format("%06d", $F{numero})]]></textFieldExpression></textField>
+            <textField pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true"><reportElement style="Cell" x="50" y="0" width="85" height="24"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA[$F{fecha}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="135" y="0" width="110" height="24"/><textFieldExpression><![CDATA[$F{bodega}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="245" y="0" width="110" height="24"/><textFieldExpression><![CDATA[$F{sucursal}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="355" y="0" width="110" height="24"/><textFieldExpression><![CDATA[$F{recibe}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="465" y="0" width="100" height="24"/><textFieldExpression><![CDATA[$F{despacha}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="EstadoCell" x="565" y="0" width="80" height="24"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA[$F{estado_etiqueta}]]></textFieldExpression></textField>
+            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="645" y="0" width="40" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{lineas}]]></textFieldExpression></textField>
+            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="685" y="0" width="50" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{unidades}]]></textFieldExpression></textField>
+            <textField pattern="Q #,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="735" y="0" width="67" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{total}]]></textFieldExpression></textField>
+        </band>
+    </detail>
+
+    <pageFooter>
+        <band height="18">
+            <textField>
+                <reportElement x="642" y="2" width="115" height="14" forecolor="#7B8798">
+                    <printWhenExpression><![CDATA["PDF".equals($P{FORMATO})]]></printWhenExpression>
+                </reportElement>
+                <textElement textAlignment="Right"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+            <textField evaluationTime="Report">
+                <reportElement x="757" y="2" width="35" height="14" forecolor="#7B8798">
+                    <printWhenExpression><![CDATA["PDF".equals($P{FORMATO})]]></printWhenExpression>
+                </reportElement>
+                <textElement textAlignment="Left"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA[" de " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+        </band>
+    </pageFooter>
+
+    <summary>
+        <band height="52">
+            <line><reportElement x="0" y="8" width="802" height="1" forecolor="#B9C9DC"/></line>
+            <staticText>
+                <reportElement x="0" y="16" width="330" height="24" forecolor="#52647C" backcolor="#F4F8FC" mode="Opaque">
+                    <printWhenExpression><![CDATA[$V{REPORT_COUNT}.intValue() == 0]]></printWhenExpression>
+                </reportElement>
+                <box><pen lineWidth="0.5" lineColor="#D6E2F0"/></box>
+                <textElement verticalAlignment="Middle"><font size="9" isItalic="true"/></textElement>
+                <text><![CDATA[No hay despachos de bodega con los filtros seleccionados.]]></text>
+            </staticText>
+            <staticText><reportElement x="480" y="16" width="65" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Despachos:]]></text></staticText>
+            <textField><reportElement x="545" y="16" width="40" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{CANTIDAD_DESPACHOS} == null ? 0 : $V{CANTIDAD_DESPACHOS}]]></textFieldExpression></textField>
+            <staticText><reportElement x="605" y="16" width="100" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Total valorizado:]]></text></staticText>
+            <textField pattern="Q #,##0.00"><reportElement x="705" y="16" width="97" height="20" forecolor="#1769D2"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_VALOR} == null ? java.math.BigDecimal.ZERO : $V{TOTAL_VALOR}]]></textFieldExpression></textField>
+        </band>
+    </summary>
+</jasperReport>
