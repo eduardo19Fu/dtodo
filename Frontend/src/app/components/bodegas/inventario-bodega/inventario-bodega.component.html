@@ -1,0 +1,294 @@
+<app-modal-movimiento-bodega *ngIf="modoMovimiento && bodega" [modo]="modoMovimiento" [bodega]="bodega" [item]="itemMovimiento"
+  (completado)="movimientoCompletado()" (cerrar)="cerrarMovimiento()"></app-modal-movimiento-bodega>
+<app-modal-importar-inventario *ngIf="importarVisible && bodega" [bodega]="bodega" [inventarioVacio]="paginacion.totalElementos === 0 && !filtro"
+  (completado)="importacionCompletada()" (cerrar)="cerrarImportar()"></app-modal-importar-inventario>
+
+<section class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-12">
+        <a [routerLink]="['/bodegas/index']" class="back-link"><i class="fas fa-arrow-left"></i> Volver a bodegas</a>
+        <h1>Inventario de bodega</h1>
+        <p class="bodega-subtitle" *ngIf="bodega">
+          <i class="fas fa-warehouse"></i> {{ bodega.nombre }}
+          <span class="subtitle-separator">&middot;</span>
+          <i class="fas fa-map-marker-alt"></i> {{ bodega.ubicacion }}
+        </p>
+        <br>
+        <div class="header-actions">
+          <button type="button" class="btn listing-page-action listing-primary-action" [disabled]="!activa"
+            (click)="abrirMovimiento('AGREGAR')">
+            <i class="fas fa-plus"></i> Agregar producto
+          </button>
+          <button type="button" class="btn listing-page-action listing-secondary-action" [disabled]="!activa"
+            (click)="abrirImportar()">
+            <i class="fas fa-file-import"></i> Importar inventario
+          </button>
+          <a class="btn listing-page-action listing-secondary-action" [class.disabled]="!activa"
+            [routerLink]="['/despachos-bodega/create']" [queryParams]="{ bodega: idBodega }">
+            <i class="fas fa-truck"></i> Nuevo despacho
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="inactive-banner" *ngIf="bodega && !activa" role="alert">
+  <i class="fas fa-ban" aria-hidden="true"></i>
+  <span>Esta bodega est&aacute; <strong>inactiva</strong>: puedes consultar su historial, pero no registrar movimientos ni despachos.</span>
+</div>
+
+<div class="summary-strip" *ngIf="bodega">
+  <article class="strip-card">
+    <span class="strip-icon"><i class="fas fa-boxes" aria-hidden="true"></i></span>
+    <div><span class="strip-label">Productos en bodega</span><strong>{{ paginacion.totalElementos | number }}</strong></div>
+  </article>
+  <article class="strip-card">
+    <span class="strip-icon"><i class="fas fa-store" aria-hidden="true"></i></span>
+    <div><span class="strip-label">Sucursal destino</span><strong>{{ bodega.sucursal?.nombre || 'Sin asignar' }}</strong></div>
+  </article>
+  <article class="strip-card">
+    <span class="strip-icon"><i class="fas fa-toggle-on" aria-hidden="true"></i></span>
+    <div>
+      <span class="strip-label">Estado</span>
+      <span class="listing-status-pill" [ngClass]="activa ? 'listing-status-success' : 'listing-status-danger'">{{ bodega.estado?.estado }}</span>
+    </div>
+  </article>
+</div>
+
+<div class="view-tabs" role="tablist" aria-label="Vistas del inventario">
+  <button type="button" role="tab" [class.active]="vista === 'existencias'" [attr.aria-selected]="vista === 'existencias'"
+    (click)="cambiarVista('existencias')"><i class="fas fa-boxes" aria-hidden="true"></i> Existencias</button>
+  <button type="button" role="tab" [class.active]="vista === 'movimientos'" [attr.aria-selected]="vista === 'movimientos'"
+    (click)="cambiarVista('movimientos')"><i class="fas fa-exchange-alt" aria-hidden="true"></i> Movimientos</button>
+</div>
+
+<!-- ============ EXISTENCIAS ============ -->
+<div class="card listing-card" *ngIf="vista === 'existencias'">
+  <div class="card-header listing-card-header">Existencias de la bodega</div>
+  <div class="card-body table-responsive">
+    <div class="row mb-2 align-items-center table-controls">
+      <div class="col-sm-4">
+        <div class="d-inline-flex align-items-center">
+          <label class="mb-0 mr-2">Mostrar</label>
+          <select class="form-control form-control-sm page-size-select"
+                  [ngModel]="paginacion.pageSize" (ngModelChange)="cambiarPageSize($event)">
+            <option *ngFor="let opt of paginacion.pageSizeOptions" [ngValue]="opt">{{opt}}</option>
+          </select>
+          <label class="mb-0 ml-2">registros</label>
+        </div>
+      </div>
+      <div class="col-sm-4 text-center">
+        <span *ngIf="items.length > 0" class="info-paginacion">
+          Mostrando registros del <strong>{{paginacion.desde()}}</strong>
+          al <strong>{{paginacion.hasta(items.length)}}</strong>
+          de un total de <strong>{{paginacion.totalElementos}}</strong> registros
+        </span>
+      </div>
+      <div class="col-sm-4">
+        <div class="listing-search-control float-right search-control">
+          <label class="mb-0 mr-2">B&uacute;squeda:</label>
+          <input type="text" class="form-control form-control-sm" [value]="filtro"
+                 (input)="onBuscar($event.target.value)" placeholder="C&oacute;digo o nombre del producto">
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="cargando" class="text-center p-4">
+      <div class="spinner-border" role="status"><span class="sr-only">Cargando...</span></div>
+    </div>
+
+    <div *ngIf="!cargando && items.length === 0" class="listing-empty-state">
+      <span class="listing-empty-icon" aria-hidden="true"><i class="fas fa-box-open"></i></span>
+      <div class="listing-empty-state-body">
+        <h5>{{ filtro ? 'No se encontraron productos' : 'La bodega no tiene productos' }}</h5>
+        <p *ngIf="filtro">No hay resultados para el filtro indicado.</p>
+        <p *ngIf="!filtro">Agrega productos uno por uno o importa un inventario desde una sucursal, otra bodega o un archivo Excel.</p>
+        <div class="header-actions mt-2" *ngIf="!filtro && activa">
+          <button type="button" class="btn btn-sm listing-primary-action" (click)="abrirMovimiento('AGREGAR')">
+            <i class="fas fa-plus"></i> Agregar producto
+          </button>
+          <button type="button" class="btn btn-sm listing-secondary-action" (click)="abrirImportar()">
+            <i class="fas fa-file-import"></i> Importar inventario
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <table class="table table-hover table-striped table-bordered table-sm mt-0 catalog-table inventory-table mobile-data-table"
+           *ngIf="!cargando && items.length > 0">
+      <thead>
+        <tr>
+          <th class="col-codigo">C&oacute;digo</th>
+          <th class="col-producto">Producto</th>
+          <th class="col-cantidad">Existencia</th>
+          <th class="col-cantidad">Stock m&iacute;nimo</th>
+          <th class="col-moneda">Costo unitario</th>
+          <th class="col-fecha">Actualizado</th>
+          <th class="col-opciones-corta">Opciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of items">
+          <td class="col-codigo" data-label="C&oacute;digo"><span class="listing-id-pill">{{item.codProducto}}</span></td>
+          <td class="col-producto mobile-primary-cell" data-label="Producto">
+            <span class="cell-ellipsis" [title]="item.nombreProducto">{{item.nombreProducto}}</span>
+          </td>
+          <td class="col-cantidad" data-label="Existencia">
+            <span class="stock-badge" [class.low]="bajoMinimo(item)" [class.empty]="item.stock === 0"
+              [title]="bajoMinimo(item) ? 'En o por debajo del stock m&iacute;nimo' : ''">
+              <i class="fas fa-circle" aria-hidden="true"></i> {{item.stock | number}}
+            </span>
+          </td>
+          <td class="col-cantidad" data-label="Stock m&iacute;nimo">{{item.stockMinimo !== null && item.stockMinimo !== undefined ? (item.stockMinimo | number) : '—'}}</td>
+          <td class="col-moneda" data-label="Costo unitario">{{item.precioCompra | currency: "Q" : "symbol"}}</td>
+          <td class="col-fecha" data-label="Actualizado">
+            <span class="fecha-principal">{{item.fechaActualizacion | date: 'dd/MM/yyyy'}}</span>
+            <small class="fecha-hora">{{item.fechaActualizacion | date: 'HH:mm'}}</small>
+          </td>
+          <td class="col-opciones-corta mobile-actions-cell" data-label="Opciones">
+            <div class="action-buttons">
+              <button class="btn btn-sm listing-table-action listing-action-edit" type="button"
+                      appTooltip="Reducir existencias" aria-label="Reducir existencias del producto"
+                      [disabled]="!activa || item.stock === 0" (click)="abrirMovimiento('REDUCIR', item)">
+                <i class="fas fa-minus"></i>
+              </button>
+              <button class="btn btn-sm listing-table-action listing-action-cancel" type="button"
+                      appTooltip="Eliminar producto de la bodega" aria-label="Eliminar producto de la bodega"
+                      [disabled]="!activa" (click)="abrirMovimiento('ELIMINAR', item)">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <nav class="listing-pagination" *ngIf="!cargando && items.length > 0" aria-label="Paginaci&oacute;n de existencias">
+      <ul class="pagination justify-content-center mt-3 mb-0">
+        <li class="page-item" [ngClass]="{'disabled': paginacion.isFirst}"><a class="page-link" href="javascript:void(0)" (click)="cargarExistencias(0)"><i class="fas fa-angle-double-left"></i></a></li>
+        <li class="page-item" [ngClass]="{'disabled': paginacion.isFirst}"><a class="page-link" href="javascript:void(0)" (click)="!paginacion.isFirst && cargarExistencias(paginacion.paginaActual - 1)"><i class="fas fa-angle-left"></i></a></li>
+        <li class="page-item" *ngFor="let pagina of paginacion.paginasVisibles" [ngClass]="{'active': pagina === paginacion.paginaActual}"><a class="page-link" href="javascript:void(0)" (click)="cargarExistencias(pagina)">{{pagina + 1}}</a></li>
+        <li class="page-item" [ngClass]="{'disabled': paginacion.isLast}"><a class="page-link" href="javascript:void(0)" (click)="!paginacion.isLast && cargarExistencias(paginacion.paginaActual + 1)"><i class="fas fa-angle-right"></i></a></li>
+        <li class="page-item" [ngClass]="{'disabled': paginacion.isLast}"><a class="page-link" href="javascript:void(0)" (click)="cargarExistencias(paginacion.totalPaginas - 1)"><i class="fas fa-angle-double-right"></i></a></li>
+      </ul>
+    </nav>
+  </div>
+</div>
+
+<!-- ============ MOVIMIENTOS ============ -->
+<div class="card listing-card" *ngIf="vista === 'movimientos'">
+  <div class="card-header listing-card-header">Movimientos de la bodega</div>
+  <div class="card-body table-responsive">
+    <div class="movement-filters">
+      <div class="filter-field">
+        <label for="filtro-tipo">Tipo de movimiento</label>
+        <select id="filtro-tipo" class="form-control form-control-sm" [(ngModel)]="tipoMovimiento" (ngModelChange)="aplicarFiltrosMovimientos()">
+          <option value="">Todos los tipos</option>
+          <option *ngFor="let tipo of tiposMovimiento" [value]="tipo.codigo">{{tipo.etiqueta}}</option>
+        </select>
+      </div>
+      <div class="row filter-dates">
+        <app-date-range-picker [(fechaInicio)]="fechaInicio" [(fechaFin)]="fechaFin" tema="bodegas"
+          (fechaFinChange)="aplicarFiltrosMovimientos()"></app-date-range-picker>
+      </div>
+      <div class="filter-field">
+        <label for="filtro-movimientos">B&uacute;squeda</label>
+        <input id="filtro-movimientos" type="text" class="form-control form-control-sm" [value]="filtroMovimientos"
+               (input)="onBuscarMovimientos($event.target.value)" placeholder="Producto, c&oacute;digo o motivo">
+      </div>
+      <button type="button" class="btn btn-sm listing-secondary-action clear-filters" *ngIf="hayFiltrosMovimientos"
+        (click)="limpiarFiltrosMovimientos()"><i class="fas fa-eraser"></i> Limpiar</button>
+    </div>
+
+    <div class="row mb-2 align-items-center table-controls">
+      <div class="col-sm-4">
+        <div class="d-inline-flex align-items-center">
+          <label class="mb-0 mr-2">Mostrar</label>
+          <select class="form-control form-control-sm page-size-select"
+                  [ngModel]="paginacionMovimientos.pageSize" (ngModelChange)="cambiarPageSizeMovimientos($event)">
+            <option *ngFor="let opt of paginacionMovimientos.pageSizeOptions" [ngValue]="opt">{{opt}}</option>
+          </select>
+          <label class="mb-0 ml-2">registros</label>
+        </div>
+      </div>
+      <div class="col-sm-8 text-right">
+        <span *ngIf="movimientos.length > 0" class="info-paginacion">
+          Mostrando registros del <strong>{{paginacionMovimientos.desde()}}</strong>
+          al <strong>{{paginacionMovimientos.hasta(movimientos.length)}}</strong>
+          de un total de <strong>{{paginacionMovimientos.totalElementos}}</strong> registros
+        </span>
+      </div>
+    </div>
+
+    <div *ngIf="cargandoMovimientos" class="text-center p-4">
+      <div class="spinner-border" role="status"><span class="sr-only">Cargando...</span></div>
+    </div>
+
+    <div *ngIf="!cargandoMovimientos && movimientos.length === 0" class="listing-empty-state">
+      <span class="listing-empty-icon" aria-hidden="true"><i class="fas fa-exchange-alt"></i></span>
+      <div class="listing-empty-state-body">
+        <h5>No hay movimientos</h5>
+        <p>{{ hayFiltrosMovimientos ? 'No hay resultados para los filtros indicados.' : 'La bodega todav&iacute;a no registra movimientos.' }}</p>
+      </div>
+    </div>
+
+    <table class="table table-hover table-striped table-bordered table-sm mt-0 catalog-table movements-table mobile-data-table"
+           *ngIf="!cargandoMovimientos && movimientos.length > 0">
+      <thead>
+        <tr>
+          <th class="col-fecha">Fecha</th>
+          <th class="col-tipo">Tipo</th>
+          <th class="col-codigo">C&oacute;digo</th>
+          <th class="col-producto">Producto</th>
+          <th class="col-cantidad">Cantidad</th>
+          <th class="col-saldo">Existencia</th>
+          <th class="col-usuario">Usuario</th>
+          <th class="col-detalle">Detalle</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let movimiento of movimientos">
+          <td class="col-fecha" data-label="Fecha">
+            <span class="fecha-principal">{{movimiento.fechaMovimiento | date: 'dd/MM/yyyy'}}</span>
+            <small class="fecha-hora">{{movimiento.fechaMovimiento | date: 'HH:mm'}}</small>
+          </td>
+          <td class="col-tipo" data-label="Tipo">
+            <span class="movement-pill" [class.entrada]="infoTipo(movimiento.tipoMovimiento)?.entrada"
+              [class.salida]="!infoTipo(movimiento.tipoMovimiento)?.entrada">
+              <i class="fas" [ngClass]="infoTipo(movimiento.tipoMovimiento)?.icono" aria-hidden="true"></i>
+              {{infoTipo(movimiento.tipoMovimiento)?.etiqueta || movimiento.tipoMovimiento}}
+            </span>
+          </td>
+          <td class="col-codigo" data-label="C&oacute;digo"><span class="listing-id-pill">{{movimiento.codProducto}}</span></td>
+          <td class="col-producto mobile-primary-cell" data-label="Producto">
+            <span class="cell-ellipsis" [title]="movimiento.producto">{{movimiento.producto}}</span>
+          </td>
+          <td class="col-cantidad" data-label="Cantidad">
+            <strong [class.text-entrada]="infoTipo(movimiento.tipoMovimiento)?.entrada"
+              [class.text-salida]="!infoTipo(movimiento.tipoMovimiento)?.entrada">{{cantidadConSigno(movimiento)}}</strong>
+          </td>
+          <td class="col-saldo" data-label="Existencia">
+            <span class="saldo">{{movimiento.stockInicial}} <i class="fas fa-long-arrow-alt-right" aria-hidden="true"></i> <strong>{{movimiento.stockFinal}}</strong></span>
+          </td>
+          <td class="col-usuario" data-label="Usuario"><span class="cell-ellipsis">{{movimiento.usuario}}</span></td>
+          <td class="col-detalle" data-label="Detalle">
+            <span class="cell-ellipsis" [title]="movimiento.motivo">{{movimiento.motivo || '—'}}</span>
+            <small class="cell-secondary" *ngIf="movimiento.tipoDocumentoOrigen === 'DESPACHO_BODEGA'">Despacho #{{movimiento.idDocumentoOrigen}}</small>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <nav class="listing-pagination" *ngIf="!cargandoMovimientos && movimientos.length > 0" aria-label="Paginaci&oacute;n de movimientos">
+      <ul class="pagination justify-content-center mt-3 mb-0">
+        <li class="page-item" [ngClass]="{'disabled': paginacionMovimientos.isFirst}"><a class="page-link" href="javascript:void(0)" (click)="cargarMovimientos(0)"><i class="fas fa-angle-double-left"></i></a></li>
+        <li class="page-item" [ngClass]="{'disabled': paginacionMovimientos.isFirst}"><a class="page-link" href="javascript:void(0)" (click)="!paginacionMovimientos.isFirst && cargarMovimientos(paginacionMovimientos.paginaActual - 1)"><i class="fas fa-angle-left"></i></a></li>
+        <li class="page-item" *ngFor="let pagina of paginacionMovimientos.paginasVisibles" [ngClass]="{'active': pagina === paginacionMovimientos.paginaActual}"><a class="page-link" href="javascript:void(0)" (click)="cargarMovimientos(pagina)">{{pagina + 1}}</a></li>
+        <li class="page-item" [ngClass]="{'disabled': paginacionMovimientos.isLast}"><a class="page-link" href="javascript:void(0)" (click)="!paginacionMovimientos.isLast && cargarMovimientos(paginacionMovimientos.paginaActual + 1)"><i class="fas fa-angle-right"></i></a></li>
+        <li class="page-item" [ngClass]="{'disabled': paginacionMovimientos.isLast}"><a class="page-link" href="javascript:void(0)" (click)="cargarMovimientos(paginacionMovimientos.totalPaginas - 1)"><i class="fas fa-angle-double-right"></i></a></li>
+      </ul>
+    </nav>
+  </div>
+</div>

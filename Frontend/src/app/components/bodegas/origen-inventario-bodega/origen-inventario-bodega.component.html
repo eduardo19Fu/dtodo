@@ -1,0 +1,98 @@
+<div class="origin-picker">
+  <div class="origin-options" role="radiogroup" aria-label="Origen del inventario">
+    <button type="button" class="origin-option" role="radio" [attr.aria-checked]="tipo === 'NINGUNO'"
+      [class.selected]="tipo === 'NINGUNO'" *ngIf="permitirNinguno" (click)="seleccionarTipo('NINGUNO')">
+      <span class="origin-icon" aria-hidden="true"><i class="fas fa-box-open"></i></span>
+      <span class="origin-copy"><strong>Sin inventario inicial</strong><small>La bodega queda en cero.</small></span>
+    </button>
+    <button type="button" class="origin-option" role="radio" [attr.aria-checked]="tipo === 'SUCURSAL'"
+      [class.selected]="tipo === 'SUCURSAL'" *ngIf="permitirCopias" (click)="seleccionarTipo('SUCURSAL')">
+      <span class="origin-icon" aria-hidden="true"><i class="fas fa-store"></i></span>
+      <span class="origin-copy"><strong>Copiar de una sucursal</strong><small>Toma los productos con existencias.</small></span>
+    </button>
+    <button type="button" class="origin-option" role="radio" [attr.aria-checked]="tipo === 'BODEGA'"
+      [class.selected]="tipo === 'BODEGA'" *ngIf="permitirCopias" (click)="seleccionarTipo('BODEGA')">
+      <span class="origin-icon" aria-hidden="true"><i class="fas fa-warehouse"></i></span>
+      <span class="origin-copy"><strong>Copiar de otra bodega</strong><small>Duplica su inventario actual.</small></span>
+    </button>
+    <button type="button" class="origin-option" role="radio" [attr.aria-checked]="tipo === 'EXCEL'"
+      [class.selected]="tipo === 'EXCEL'" (click)="seleccionarTipo('EXCEL')">
+      <span class="origin-icon" aria-hidden="true"><i class="fas fa-file-excel"></i></span>
+      <span class="origin-copy"><strong>Importar desde Excel</strong><small>Carga un archivo .xlsx.</small></span>
+    </button>
+  </div>
+
+  <div class="origin-detail" *ngIf="tipo === 'SUCURSAL'">
+    <label for="origen-sucursal">Sucursal de origen <span class="required-mark">*</span></label>
+    <select id="origen-sucursal" class="form-control" [ngModel]="idOrigen" (ngModelChange)="seleccionarOrigen($event)"
+      name="origenSucursal">
+      <option [ngValue]="null">Seleccionar sucursal</option>
+      <option *ngFor="let sucursal of sucursales" [ngValue]="sucursal.idSucursal">
+        {{sucursal.nombre}}{{sucursal.esPrincipal ? ' (Principal)' : ''}}
+      </option>
+    </select>
+    <small>Se copian solo los productos con existencias y su stock m&iacute;nimo. Despu&eacute;s de copiar, la bodega se administra por separado.</small>
+  </div>
+
+  <div class="origin-detail" *ngIf="tipo === 'BODEGA'">
+    <label for="origen-bodega">Bodega de origen <span class="required-mark">*</span></label>
+    <select id="origen-bodega" class="form-control" [ngModel]="idOrigen" (ngModelChange)="seleccionarOrigen($event)"
+      name="origenBodega">
+      <option [ngValue]="null">Seleccionar bodega</option>
+      <option *ngFor="let bodega of bodegas" [ngValue]="bodega.idBodega">{{bodega.nombre}} &middot; {{bodega.ubicacion}}</option>
+    </select>
+    <small *ngIf="bodegas.length === 0">No hay otras bodegas registradas para copiar.</small>
+    <small *ngIf="bodegas.length > 0">Se copian solo los productos con existencias y su stock m&iacute;nimo.</small>
+  </div>
+
+  <div class="origin-detail excel-detail" *ngIf="tipo === 'EXCEL'">
+    <div class="excel-layout">
+      <div class="excel-upload">
+        <label for="origen-archivo">Archivo de Excel (.xlsx) <span class="required-mark">*</span></label>
+        <input #archivoInput type="file" id="origen-archivo" class="visually-hidden-input" name="archivoExcel"
+          accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" (change)="alElegirArchivo($event)">
+        <label for="origen-archivo" class="file-drop" [class.has-file]="archivo">
+          <i class="fas" [ngClass]="archivo ? 'fa-file-excel' : 'fa-cloud-upload-alt'" aria-hidden="true"></i>
+          <span *ngIf="!archivo"><strong>Haz clic para elegir el archivo</strong><small>Formato .xlsx, hasta 10 MB</small></span>
+          <span *ngIf="archivo"><strong>{{archivo.name}}</strong><small>{{tamanioArchivo}}</small></span>
+        </label>
+        <button type="button" class="link-action" *ngIf="archivo" (click)="quitarArchivo(archivoInput)">
+          <i class="fas fa-times" aria-hidden="true"></i> Quitar archivo
+        </button>
+        <button type="button" class="template-button" (click)="descargarPlantilla()" [disabled]="descargandoPlantilla">
+          <i class="fas" [ngClass]="descargandoPlantilla ? 'fa-spinner fa-spin' : 'fa-download'" aria-hidden="true"></i>
+          Descargar plantilla de ejemplo
+        </button>
+      </div>
+
+      <div class="excel-format" aria-label="Ilustraci&oacute;n del formato del archivo">
+        <span class="format-title"><i class="fas fa-table" aria-hidden="true"></i> As&iacute; debe verse tu archivo</span>
+        <div class="sheet" role="img" aria-label="Hoja de c&aacute;lculo con las columnas codigo_producto, cantidad y stock_minimo">
+          <div class="sheet-row sheet-letters">
+            <span class="sheet-corner"></span>
+            <span *ngFor="let columna of columnasEjemplo">{{columna}}</span>
+          </div>
+          <div class="sheet-row sheet-head">
+            <span class="sheet-index">1</span>
+            <span>codigo_producto</span>
+            <span>cantidad</span>
+            <span class="optional">stock_minimo</span>
+          </div>
+          <div class="sheet-row" *ngFor="let fila of filasEjemplo; let i = index">
+            <span class="sheet-index">{{i + 2}}</span>
+            <span>{{fila.codigo}}</span>
+            <span class="num">{{fila.cantidad}}</span>
+            <span class="num">{{fila.minimo}}</span>
+          </div>
+        </div>
+        <ul class="format-rules">
+          <li><strong>codigo_producto</strong> (obligatorio): el c&oacute;digo tal como est&aacute; en el cat&aacute;logo.</li>
+          <li><strong>cantidad</strong> (obligatorio): entero mayor a 0. Si el producto ya est&aacute; en la bodega, se <em>suma</em> a su existencia.</li>
+          <li><strong>stock_minimo</strong> (opcional): entero mayor o igual a 0.</li>
+          <li>La primera fila son los encabezados; los datos empiezan en la fila 2. No repitas c&oacute;digos.</li>
+          <li>Si una fila tiene error no se importa ninguna: se te indicar&aacute; cu&aacute;les corregir.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,109 @@
+<app-modal-buscar-producto *ngIf="catalogoVisible" (producto)="elegirDelCatalogo($event)" (cerrar)="cerrarCatalogo()"></app-modal-buscar-producto>
+
+<div class="movement-backdrop" (click)="cerrarModal()">
+  <section class="movement-dialog" [class.danger]="modo === 'ELIMINAR'" role="dialog" aria-modal="true"
+    aria-labelledby="movement-title" (click)="$event.stopPropagation()">
+    <header class="movement-header">
+      <span class="movement-icon" aria-hidden="true"><i class="fas" [ngClass]="icono"></i></span>
+      <div>
+        <span class="movement-eyebrow">{{ bodega?.nombre }}</span>
+        <h3 id="movement-title">{{ titulo }}</h3>
+      </div>
+      <button type="button" class="movement-close" (click)="cerrarModal()" aria-label="Cerrar">
+        <i class="fas fa-times" aria-hidden="true"></i>
+      </button>
+    </header>
+
+    <form class="movement-body" (submit)="$event.preventDefault(); guardar()" autocomplete="off">
+      <p class="movement-intro">{{ descripcion }}</p>
+
+      <!-- Producto -->
+      <div class="movement-field" *ngIf="modo === 'AGREGAR' && !producto">
+        <label for="mov-codigo">Producto <span class="required-mark">*</span></label>
+        <div class="search-row">
+          <div class="input-icon">
+            <i class="fas fa-barcode" aria-hidden="true"></i>
+            <input id="mov-codigo" name="codigo" type="text" class="form-control" [(ngModel)]="codigoBusqueda"
+              (keydown.enter)="buscarPorCodigo($event)" placeholder="Escribe el código y presiona Enter">
+          </div>
+          <button type="button" class="icon-button" (click)="buscarPorCodigo()" [disabled]="buscando"
+            aria-label="Buscar por código" title="Buscar por código">
+            <i class="fas" [ngClass]="buscando ? 'fa-spinner fa-spin' : 'fa-search'" aria-hidden="true"></i>
+          </button>
+          <button type="button" class="icon-button secondary" (click)="abrirCatalogo()"
+            aria-label="Abrir catálogo de productos" title="Abrir catálogo de productos">
+            <i class="fas fa-list" aria-hidden="true"></i>
+          </button>
+        </div>
+        <small>Busca por c&oacute;digo exacto o elige el producto desde el cat&aacute;logo.</small>
+      </div>
+
+      <div class="product-chip" *ngIf="producto">
+        <span class="chip-icon" aria-hidden="true"><i class="fas fa-box"></i></span>
+        <div>
+          <strong>{{ producto.nombre }}</strong>
+          <small>C&oacute;digo {{ producto.codProducto }}</small>
+        </div>
+        <button type="button" class="chip-clear" *ngIf="modo === 'AGREGAR'" (click)="quitarProducto()"
+          aria-label="Cambiar producto" title="Cambiar producto"><i class="fas fa-times" aria-hidden="true"></i></button>
+      </div>
+
+      <!-- Existencia -->
+      <div class="stock-preview" *ngIf="producto && existenciaActual !== null">
+        <div>
+          <span>Existencia actual</span>
+          <strong>{{ existenciaActual | number }}</strong>
+        </div>
+        <i class="fas fa-long-arrow-alt-right" aria-hidden="true"></i>
+        <div>
+          <span>Quedar&aacute; en</span>
+          <strong [class.negative]="existenciaResultante < 0">{{ existenciaResultante | number }}</strong>
+        </div>
+      </div>
+
+      <!-- Cantidad -->
+      <div class="movement-field" *ngIf="modo !== 'ELIMINAR'">
+        <label for="mov-cantidad">Cantidad <span class="required-mark">*</span></label>
+        <div class="input-icon">
+          <i class="fas fa-sort-numeric-up" aria-hidden="true"></i>
+          <input id="mov-cantidad" name="cantidad" type="number" min="1" step="1" class="form-control"
+            [(ngModel)]="cantidad" placeholder="0" [disabled]="!producto">
+        </div>
+        <small class="field-error" *ngIf="errorCantidad"><i class="fas fa-exclamation-circle" aria-hidden="true"></i> {{ errorCantidad }}</small>
+      </div>
+
+      <div class="movement-field" *ngIf="modo === 'AGREGAR'">
+        <label for="mov-minimo">Stock m&iacute;nimo</label>
+        <div class="input-icon">
+          <i class="fas fa-bell" aria-hidden="true"></i>
+          <input id="mov-minimo" name="stockMinimo" type="number" min="0" step="1" class="form-control"
+            [(ngModel)]="stockMinimo" placeholder="Opcional" [disabled]="!producto">
+        </div>
+        <small>Si lo indicas, los reportes avisan cuando la existencia llegue a ese nivel.</small>
+      </div>
+
+      <div class="delete-warning" *ngIf="modo === 'ELIMINAR' && producto">
+        <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+        <span>Se descontar&aacute;n <strong>{{ existenciaActual | number }}</strong> unidades y el producto dejar&aacute; de aparecer en esta bodega.
+          El historial de movimientos se conserva.</span>
+      </div>
+
+      <!-- Motivo -->
+      <div class="movement-field">
+        <label for="mov-motivo">Motivo <span class="required-mark" *ngIf="motivoObligatorio">*</span></label>
+        <textarea id="mov-motivo" name="motivo" class="form-control" rows="2" maxlength="300" [(ngModel)]="motivo"
+          [placeholder]="motivoObligatorio ? 'Ej. Mercadería dañada, error de conteo...' : 'Opcional. Ej. Compra a proveedor, traslado interno...'"></textarea>
+      </div>
+
+      <footer class="movement-actions">
+        <button type="button" class="btn-cancel" (click)="cerrarModal()" [disabled]="guardando">
+          <i class="fas fa-times" aria-hidden="true"></i> Cancelar
+        </button>
+        <button type="submit" class="btn-confirm" [class.danger]="modo === 'ELIMINAR'" [disabled]="!puedeGuardar">
+          <i class="fas" [ngClass]="guardando ? 'fa-spinner fa-spin' : 'fa-check'" aria-hidden="true"></i>
+          {{ guardando ? 'Guardando...' : textoConfirmar }}
+        </button>
+      </footer>
+    </form>
+  </section>
+</div>

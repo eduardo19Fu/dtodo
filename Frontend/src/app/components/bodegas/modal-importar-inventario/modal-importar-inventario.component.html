@@ -1,0 +1,49 @@
+<div class="import-backdrop" (click)="cerrarModal()">
+  <section class="import-dialog" role="dialog" aria-modal="true" aria-labelledby="import-title" (click)="$event.stopPropagation()">
+    <header class="import-header">
+      <span class="import-icon" aria-hidden="true"><i class="fas fa-file-import"></i></span>
+      <div>
+        <span class="import-eyebrow">{{ bodega?.nombre }}</span>
+        <h3 id="import-title">Importar inventario</h3>
+      </div>
+      <button type="button" class="import-close" (click)="cerrarModal()" aria-label="Cerrar">
+        <i class="fas fa-times" aria-hidden="true"></i>
+      </button>
+    </header>
+
+    <div class="import-body">
+      <p class="import-intro" *ngIf="inventarioVacio">
+        Carga las existencias de la bodega desde una sucursal, otra bodega o un archivo de Excel.
+      </p>
+      <p class="import-intro" *ngIf="!inventarioVacio">
+        La bodega ya tiene inventario: puedes sumarle existencias importando un archivo de Excel. Copiar desde una sucursal u otra bodega solo est&aacute; disponible en bodegas vac&iacute;as.
+      </p>
+
+      <app-origen-inventario-bodega [sucursales]="sucursales" [bodegas]="bodegasOrigen" [permitirNinguno]="false"
+        [permitirCopias]="inventarioVacio" [tipoInicial]="tipoInicial" (cambio)="alCambiarOrigen($event)"></app-origen-inventario-bodega>
+
+      <div class="import-errors" *ngIf="errores.length > 0" role="alert">
+        <div class="errors-title">
+          <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+          <div>
+            <strong>No se import&oacute; nada: el archivo tiene {{ errores.length }} {{ errores.length === 1 ? 'problema' : 'problemas' }}</strong>
+            <small>Se leyeron {{ filasLeidas }} filas. Corrige el archivo y vuelve a intentarlo.</small>
+          </div>
+        </div>
+        <ul>
+          <li *ngFor="let error of errores">{{ error }}</li>
+        </ul>
+      </div>
+    </div>
+
+    <footer class="import-actions">
+      <button type="button" class="btn-cancel" (click)="cerrarModal()" [disabled]="importando">
+        <i class="fas fa-times" aria-hidden="true"></i> Cancelar
+      </button>
+      <button type="button" class="btn-confirm" (click)="importar()" [disabled]="!origen.completa || importando">
+        <i class="fas" [ngClass]="importando ? 'fa-spinner fa-spin' : 'fa-file-import'" aria-hidden="true"></i>
+        {{ importando ? 'Importando...' : 'Importar inventario' }}
+      </button>
+    </footer>
+  </section>
+</div>
