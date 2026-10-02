@@ -6,6 +6,47 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Módulo de Bodegas y Despachos de bodega
+
+Mantenimiento de bodegas con inventario propio, movimientos manuales, importación de inventario, despachos hacia sucursales con comprobante imprimible y reportes. El módulo está disponible para `ROLE_ADMIN` y para el nuevo rol `ROLE_BODEGA`.
+
+**Base de datos** (`Backend/dtodo-backend/sql/bodegas/`, aplicar en orden; `99_rollback_bodegas.sql` revierte todo y es destructivo)
+- `bodegas`: nombre (único), ubicación, descripción, encargado, teléfono, fecha de registro, sucursal asignada (opcional), estado (`estados` compartida: solo ACTIVO/INACTIVO) y usuario que la registró.
+- `inventario_bodega` (producto × bodega, `UNIQUE`, `CHECK (stock >= 0)`) y `movimientos_bodega` (bitácora con tipo, cantidad, existencia inicial y final, motivo y documento origen). El tipo es `VARCHAR`, no `ENUM`, para poder sumar tipos sin alterar la tabla.
+- `despachos_bodega` y `despachos_bodega_detalle`. El detalle guarda el costo unitario y la existencia de la bodega al momento del despacho para que el comprobante sea reproducible. `despachos_bodega_detalle.id_despacho` es `NULL` por el mismo motivo que `compras_detalle.id_compra` (`@OneToMany` unidireccional con `@JoinColumn`).
+- `06_insert_role_bodega.sql`: crea `ROLE_BODEGA` de forma idempotente. `roles.id_role` no es `AUTO_INCREMENT` en este esquema, por eso el id se calcula en el script.
+- No se necesitaron triggers, funciones ni procedimientos: la lógica transaccional vive en los servicios, igual que en Compras y Sucursales.
+- **Importante al desplegar:** `VerificadorEsquema` valida al arrancar que existan las tablas y columnas de las entidades; el backend no inicia en un ambiente al que no se le hayan aplicado estos scripts.
+
+**Backend**
+- Entidades `Bodega`, `InventarioBodega`, `MovimientoBodega`, `DespachoBodega`, `DespachoBodegaDetalle`; enums `TipoMovimientoBodegaEnum`, `EstadoDespachoBodegaEnum`, `OrigenInventarioBodegaEnum`; repositorios, DTOs y servicios `BodegaServiceImpl`, `InventarioBodegaServiceImpl`, `DespachoBodegaServiceImpl`.
+- Movimientos de bodega: **agregar producto** (`INGRESO`), **reducir existencias** (`REDUCCION`, con motivo obligatorio), **eliminar producto** (`ELIMINACION`: descuenta toda la existencia y retira la fila del inventario) y **despachar**. Todo cambio de stock pasa por un único método que bloquea la fila (`PESSIMISTIC_WRITE`), impide stock negativo y registra el movimiento en la misma transacción.
+- La bodega es independiente del inventario de sucursal: no toca `inventario_sucursal` ni `movimientos_producto` salvo al **aprobar** un despacho.
+- Ciclo de vida del despacho: nace `PENDIENTE` (pendiente de aprobación) y **el stock sale de la bodega al registrarlo** (queda reservado, así no se puede despachar dos veces la misma existencia). Al **aprobarlo** (solo `ROLE_ADMIN`) ingresa a la sucursal destino como un movimiento `ENTRADA` con origen `DESPACHO_BODEGA` y pasa a `REALIZADO`. Al **cancelarlo** (motivo obligatorio) el stock regresa a la bodega y pasa a `CANCELADO`. `REALIZADO` y `CANCELADO` son estados finales.
+- La sucursal destino es la asignada a la bodega, pero puede elegirse otra; una bodega o sucursal inactiva no admite despachos. El precio de cada línea es el costo (`precio_compra`) del producto y lo asigna el servidor, igual que la existencia, el estado y los usuarios: el cliente solo envía ids y cantidades (`DespachoBodegaRequest`).
+- El usuario responsable de cada operación sale del claim `id_usuario` del JWT (`Utils.obtenerIdUsuario`), no de un identificador enviado por el cliente.
+- Inventario inicial: **copiar** desde una sucursal u otra bodega (solo a una bodega vacía; se copian los productos con stock positivo y su stock mínimo, con un movimiento `IMPORTACION` por producto) o **importar un Excel** (`.xlsx`). La importación es atómica: si una fila tiene error no se aplica ninguna y se devuelve la lista de errores por número de fila. Si el producto ya está en la bodega la cantidad se **suma**. Un código que corresponde a varios productos del catálogo (existen duplicados históricos) se reporta como error en vez de adivinar. Nueva dependencia: `org.apache.poi:poi-ooxml` 5.4.1.
+- Endpoints: `/api/bodegas` (listado, detalle, alta, edición, inventario, búsqueda por código, movimientos, copiar inventario, importar Excel y plantilla) y `/api/despachos-bodega` (listado, detalle, registrar, aprobar, cancelar, comprobante PDF). Todos `@Secured` con `ROLE_ADMIN`/`ROLE_BODEGA`, salvo aprobar (`ROLE_ADMIN`).
+- `ROLE_BODEGA` puede listar sucursales (`GET /api/sucursales`) para elegir el destino de un despacho.
+- Reportes (módulo de Reportes, categoría Bodegas, PDF y XLSX): **Existencias de bodega** (valorizadas al costo, resalta las que están en o bajo el stock mínimo), **Movimientos de bodega** y **Despachos de bodega** (por período, bodega y estado; el total excluye cancelados). Comprobante de despacho en PDF (`despacho_bodega.jrxml`) con estado, existencias, totales y firmas. El kardex de producto de la sucursal identifica los ingresos por despacho de bodega.
+- Pruebas unitarias nuevas: `BodegaServiceImplTest`, `InventarioBodegaServiceImplTest`, `DespachoBodegaServiceImplTest`, `InventarioBodegaExcelTest`, `BodegaReporteServiceImplTest`, `BodegaTemplatesTest` (compila y llena cada plantilla, también sin datos), `BodegaJacksonTest` (ciclos entre `Bodega`/`Sucursal`/`Usuario` contra el `ObjectMapper` real), `BodegaControllersSecurityTest` (todo endpoint declara `@Secured`; aprobar es solo de admin) y `UtilsObtenerIdUsuarioTest`; se actualizaron `ReporteServiceImplTest` y `ReporteSelectorServiceImplTest` por los nuevos colaboradores.
+
+**Frontend**
+- Menú **Bodegas** (Listado y Despachos) y rutas `/bodegas/*` y `/despachos-bodega/*` protegidas con `RoleGuard`.
+- Listado de bodegas con productos y unidades por bodega, formulario de alta/edición (con estado y sucursal asignada) y modal de detalle, con el mismo lenguaje visual que Sucursales/Compras (acento ocre propio de Bodegas).
+- Inventario de bodega con pestañas **Existencias** (alerta de stock mínimo) y **Movimientos** (filtros por tipo, rango de fechas y texto), y modales para agregar producto (por código o desde el catálogo, con vista previa de la existencia resultante), reducir existencias y eliminar producto.
+- Selector de origen del inventario (`app-origen-inventario-bodega`), usado en el alta de la bodega y en el modal **Importar inventario**: copia desde sucursal/bodega o Excel, con una **ilustración del formato esperado** (`codigo_producto`, `cantidad`, `stock_minimo`), reglas y botón para descargar una plantilla de ejemplo. Los errores del archivo se listan por fila en el modal.
+- Despachos: listado con filtros por estado y bodega y acciones de aprobar/cancelar, formulario de registro (mismo patrón que Registrar compra: tarjeta flotante con el total, edición de cantidad con confirmación, existencia actual y existencias que quedan por línea), buscador de productos de la bodega y detalle con comprobante imprimible.
+- Inicio: tarjetas de **Bodegas** y **Despachos pendientes**. Un usuario que solo tiene `ROLE_BODEGA` ya no consulta productos ni clientes (devolvían 403 y mostraban un aviso en cada inicio de sesión) y no ve el grupo de menú Productos.
+- Reportes: nueva categoría Bodegas con filtro de bodega.
+- Nuevos helpers: `PaginacionTabla` (estado de paginación reutilizable) y `AuthService.esSoloBodega()`.
+- Pruebas unitarias nuevas para modelos, servicios HTTP, todos los componentes nuevos y los reportes de bodegas (283 pruebas frontend en total, todas correctas).
+
+**Decisiones a revisar**
+- Quién aprueba: se asumió que solo `ROLE_ADMIN` aprueba (para eso existe el estado pendiente); quien registró el despacho puede aprobarlo si es administrador.
+- Un despacho `REALIZADO` no se puede revertir; si hace falta, se registra un movimiento manual en la sucursal.
+- Un usuario `ROLE_BODEGA` ve y opera todas las bodegas (no se limita a la de su sucursal).
+
 ### Agregado — Módulo de Compras
 
 Registro, listado, visualización y anulación de compras a proveedores. Cada compra suma existencias al inventario de la sucursal donde ingresa la mercadería; el módulo es exclusivo de `ROLE_ADMIN`.
