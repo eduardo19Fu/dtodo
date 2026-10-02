@@ -25,7 +25,8 @@ export class ReportesComponent implements OnInit, OnDestroy {
     { codigo: 'INVENTARIO', titulo: 'Inventario', icono: 'fa-boxes' },
     { codigo: 'PROFORMAS', titulo: 'Proformas', icono: 'fa-file-alt' },
     { codigo: 'NOTAS_CREDITO', titulo: 'Notas de crédito', icono: 'fa-credit-card' },
-    { codigo: 'COMPRAS', titulo: 'Compras', icono: 'fa-shopping-basket' }
+    { codigo: 'COMPRAS', titulo: 'Compras', icono: 'fa-shopping-basket' },
+    { codigo: 'BODEGAS', titulo: 'Bodegas', icono: 'fa-warehouse' }
   ];
 
   readonly reportes: ReporteDefinicion[] = [
@@ -76,7 +77,16 @@ export class ReportesComponent implements OnInit, OnDestroy {
       ['FECHAS', 'SUCURSAL', 'PROVEEDOR', 'ESTADO'], ['ROLE_ADMIN'], true),
     this.reporte('COMPRAS_PROVEEDOR', 'COMPRAS', 'Compras por proveedor o producto',
       'Detalle de abastecimiento agrupado por proveedor y producto.', 'fa-dolly-flatbed', ['XLSX'],
-      ['FECHAS', 'SUCURSAL', 'PROVEEDOR'], ['ROLE_ADMIN'], true)
+      ['FECHAS', 'SUCURSAL', 'PROVEEDOR'], ['ROLE_ADMIN'], true),
+    this.reporte('BODEGA_EXISTENCIAS', 'BODEGAS', 'Existencias de bodega',
+      'Productos, existencias y valor al costo del inventario de una bodega.', 'fa-boxes', ['PDF', 'XLSX'],
+      ['BODEGA'], ['ROLE_ADMIN', 'ROLE_BODEGA'], true),
+    this.reporte('BODEGA_MOVIMIENTOS', 'BODEGAS', 'Movimientos de bodega',
+      'Ingresos, importaciones, reducciones, eliminaciones y despachos de una bodega.', 'fa-exchange-alt', ['PDF', 'XLSX'],
+      ['FECHAS', 'BODEGA'], ['ROLE_ADMIN', 'ROLE_BODEGA'], true),
+    this.reporte('BODEGA_DESPACHOS', 'BODEGAS', 'Despachos de bodega',
+      'Despachos a sucursales por período, bodega y estado, con su valor al costo.', 'fa-truck-loading', ['PDF', 'XLSX'],
+      ['FECHAS', 'BODEGA_OPCIONAL', 'ESTADO'], ['ROLE_ADMIN', 'ROLE_BODEGA'], true)
   ];
 
   busquedaReportes = '';
@@ -87,10 +97,12 @@ export class ReportesComponent implements OnInit, OnDestroy {
   categoriasProducto: ReporteSelectorOpcionDto[] = [];
   clientes: ReporteSelectorOpcionDto[] = [];
   productos: ReporteSelectorOpcionDto[] = [];
+  bodegas: ReporteSelectorOpcionDto[] = [];
   fechaInicio: string;
   fechaFin: string;
   fechaCorte: string;
   idSucursal: number;
+  idBodega: number;
   idUsuario: number;
   idProveedor: number;
   idCategoria: number;
@@ -111,6 +123,12 @@ export class ReportesComponent implements OnInit, OnDestroy {
     { codigo: 'ACTIVA', nombre: 'Activas' },
     { codigo: 'ANULADA', nombre: 'Anuladas' }
   ];
+  readonly estadosDespachoBodega = [
+    { codigo: '', nombre: 'Todos los estados' },
+    { codigo: 'PENDIENTE', nombre: 'Pendientes de aprobación' },
+    { codigo: 'REALIZADO', nombre: 'Realizados' },
+    { codigo: 'CANCELADO', nombre: 'Cancelados' }
+  ];
   guiaLado: 'top' | 'right' | 'bottom' | 'left' = 'top';
   estilosGuia: { [propiedad: string]: string } = { '--guide-offset': '50%' };
 
@@ -119,6 +137,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
   private readonly escucharScroll = () => this.programarGuia();
   private sucursalesCargadas = false;
   private proveedoresCargados = false;
+  private bodegasCargadas = false;
   private categoriasCargadas = false;
   private clientesCargados = false;
   private readonly productosCache = new Map<number, ReporteSelectorOpcionDto[]>();
@@ -181,8 +200,12 @@ export class ReportesComponent implements OnInit, OnDestroy {
     this.idCategoria = null;
     this.idCliente = null;
     this.idProducto = null;
+    this.idBodega = null;
     this.estado = '';
     this.formatoSeleccionado = reporte.formatos[0];
+    if (reporte.filtros.includes('BODEGA') || reporte.filtros.includes('BODEGA_OPCIONAL')) {
+      this.cargarBodegas();
+    }
     if (reporte.filtros.includes('USUARIO')) {
       this.cargarUsuarios(reporte.codigo);
     }
@@ -216,6 +239,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
     this.idCategoria = null;
     this.idCliente = null;
     this.idProducto = null;
+    this.idBodega = null;
     this.estado = '';
     this.formatoSeleccionado = this.reporteSeleccionado.formatos[0];
   }
@@ -242,6 +266,10 @@ export class ReportesComponent implements OnInit, OnDestroy {
 
   get opcionesProducto(): ReporteSelectorOpcionDto[] {
     return this.productos;
+  }
+
+  get opcionesBodega(): ReporteSelectorOpcionDto[] {
+    return this.bodegas;
   }
 
   get opcionesEstado(): ReporteSelectorOpcionDto[] {
@@ -272,6 +300,9 @@ export class ReportesComponent implements OnInit, OnDestroy {
   }
 
   get estadosDisponibles(): Array<{ codigo: string; nombre: string }> {
+    if (this.reporteSeleccionado && this.reporteSeleccionado.codigo === 'BODEGA_DESPACHOS') {
+      return this.estadosDespachoBodega;
+    }
     return this.reporteSeleccionado && this.reporteSeleccionado.codigo === 'COMPRAS_PERIODO'
       ? this.estadosCompra : this.estadosNotaCredito;
   }
@@ -289,6 +320,9 @@ export class ReportesComponent implements OnInit, OnDestroy {
     if (this.requiereFiltro('PRODUCTO') && !this.idProducto) {
       return false;
     }
+    if (this.requiereFiltro('BODEGA') && !this.idBodega) {
+      return false;
+    }
     if (this.requiereFiltro('FECHA_CORTE') && !this.fechaCorte) {
       return false;
     }
@@ -304,6 +338,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
       fechaFin: this.fechaFin,
       fechaCorte: this.fechaCorte,
       idSucursal: this.idSucursal,
+      idBodega: this.idBodega,
       idUsuario: this.idUsuario,
       idProveedor: this.idProveedor,
       idCategoria: this.idCategoria,
@@ -432,6 +467,17 @@ export class ReportesComponent implements OnInit, OnDestroy {
     this.reporteService.listarProveedoresSelector().subscribe(
       opciones => this.proveedores = opciones,
       () => this.proveedoresCargados = false
+    );
+  }
+
+  private cargarBodegas(): void {
+    if (this.bodegasCargadas) {
+      return;
+    }
+    this.bodegasCargadas = true;
+    this.reporteService.listarBodegasSelector().subscribe(
+      opciones => this.bodegas = opciones,
+      () => this.bodegasCargadas = false
     );
   }
 

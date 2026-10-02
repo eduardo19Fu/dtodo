@@ -6,7 +6,7 @@ import { filter } from 'rxjs/operators';
 import { Usuario } from '../../models/usuario';
 import { AuthService } from '../../services/auth.service';
 
-type MenuDesplegable = 'productos' | 'facturas' | 'compras';
+type MenuDesplegable = 'productos' | 'facturas' | 'compras' | 'bodegas';
 
 @Component({
   selector: 'app-sidebar',
@@ -23,6 +23,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   productosAbierto = false;
   facturasAbierto = false;
   comprasAbierto = false;
+  bodegasAbierto = false;
 
   private routerSubscription: Subscription;
 
@@ -58,6 +59,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
       this.facturasAbierto = !this.facturasAbierto;
       return;
     }
+    if (menu === 'bodegas') {
+      this.bodegasAbierto = !this.bodegasAbierto;
+      return;
+    }
     this.comprasAbierto = !this.comprasAbierto;
   }
 
@@ -68,6 +73,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
     if (menu === 'productos') {
       return this.productosAbierto;
     }
+    if (menu === 'bodegas') {
+      return this.bodegasAbierto;
+    }
     return menu === 'facturas' ? this.facturasAbierto : this.comprasAbierto;
   }
 
@@ -77,6 +85,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
     }
     if (menu === 'facturas') {
       return this.coincide('facturas', 'facturas emitidas', 'correlativos');
+    }
+    if (menu === 'bodegas') {
+      return this.coincide('bodegas', 'inventario', 'despachos', 'despachos de bodega');
     }
     return this.coincide('compras', 'registrar compra', 'proveedores');
   }
@@ -109,6 +120,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       this.productosAbierto = url.startsWith('/productos') && !url.includes('/inventario');
       this.facturasAbierto = url.startsWith('/facturas');
       this.comprasAbierto = url.startsWith('/compras') || url.startsWith('/proveedores');
+      this.bodegasAbierto = url.startsWith('/bodegas') || url.startsWith('/despachos-bodega');
     }
   }
 }

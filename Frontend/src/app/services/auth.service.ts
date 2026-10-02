@@ -147,6 +147,11 @@ export class AuthService {
     return this.usuario.roles.length === 1 && this.usuario.roles[0] === 'ROLE_COBRADOR';
   }
 
+  /** true si el usuario logueado tiene únicamente el rol ROLE_BODEGA (sin ADMIN ni otros roles operativos). */
+  esSoloBodega(): boolean {
+    return this.usuario.roles.length === 1 && this.usuario.roles[0] === 'ROLE_BODEGA';
+  }
+
   logout(): void {
     this._token = null;
     this.refreshTokenValue = null;

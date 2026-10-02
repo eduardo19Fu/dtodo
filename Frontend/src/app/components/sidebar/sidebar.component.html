@@ -28,7 +28,7 @@
     <nav class="sidebar-navigation" aria-label="Navegación principal">
       <span class="navigation-label">Menú principal</span>
 
-      <section class="menu-group" *ngIf="mostrarGrupo('productos')"
+      <section class="menu-group" *ngIf="mostrarGrupo('productos') && (authService.hasRole('ROLE_INVENTARIO') || authService.hasRole('ROLE_ADMIN') || authService.hasRole('ROLE_COBRADOR'))"
         [class.is-open]="menuAbierto('productos')" [class.is-active]="router.url.startsWith('/productos') && !router.url.includes('/inventario')">
         <button type="button" class="menu-link group-trigger" (click)="alternarMenu('productos')"
           [attr.aria-expanded]="menuAbierto('productos')" title="Productos">
@@ -112,13 +112,29 @@
         </div>
       </section>
 
+      <section class="menu-group" *ngIf="mostrarGrupo('bodegas') && (authService.hasRole('ROLE_ADMIN') || authService.hasRole('ROLE_BODEGA'))"
+        [class.is-open]="menuAbierto('bodegas')" [class.is-active]="router.url.startsWith('/bodegas') || router.url.startsWith('/despachos-bodega')">
+        <button type="button" class="menu-link group-trigger" (click)="alternarMenu('bodegas')"
+          [attr.aria-expanded]="menuAbierto('bodegas')" title="Bodegas">
+          <span class="menu-icon"><i class="fas fa-warehouse" aria-hidden="true"></i></span>
+          <span class="menu-label">Bodegas</span>
+          <i class="fas fa-chevron-down menu-chevron" aria-hidden="true"></i>
+        </button>
+        <div class="submenu" *ngIf="menuAbierto('bodegas')">
+          <a *ngIf="coincide('bodegas', 'inventario')" [routerLink]="['/bodegas/index']" class="submenu-link"
+            [class.active]="router.url.startsWith('/bodegas')" (click)="notificarNavegacion()"><span></span>Listado</a>
+          <a *ngIf="coincide('despachos', 'despachos de bodega')" [routerLink]="['/despachos-bodega/index']" class="submenu-link"
+            [class.active]="router.url.startsWith('/despachos-bodega')" (click)="notificarNavegacion()"><span></span>Despachos</a>
+        </div>
+      </section>
+
       <a *ngIf="coincide('sucursales') && authService.hasRole('ROLE_ADMIN')" [routerLink]="['/sucursales/index']"
         class="menu-link" [class.active]="router.url.startsWith('/sucursales')" (click)="notificarNavegacion()" title="Sucursales">
         <span class="menu-icon"><i class="fas fa-store" aria-hidden="true"></i></span>
         <span class="menu-label">Sucursales</span>
       </a>
 
-      <a *ngIf="coincide('reportes', 'informes', 'análisis', 'analisis') && (authService.hasRole('ROLE_ADMIN') || authService.hasRole('ROLE_INVENTARIO'))"
+      <a *ngIf="coincide('reportes', 'informes', 'análisis', 'analisis') && (authService.hasRole('ROLE_ADMIN') || authService.hasRole('ROLE_INVENTARIO') || authService.hasRole('ROLE_BODEGA'))"
         [routerLink]="['/reportes']" class="menu-link" [class.active]="router.url.startsWith('/reportes')"
         (click)="notificarNavegacion()" title="Reportes">
         <span class="menu-icon"><i class="fas fa-chart-bar" aria-hidden="true"></i></span>

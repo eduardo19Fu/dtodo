@@ -43,7 +43,7 @@ public class SucursalApiController {
 
 	private final IInventarioSucursalService serviceInventarioSucursal;
 
-	@Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
+	@Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_BODEGA"})
 	@GetMapping(value = "/sucursales")
 	public ResponseEntity<List<Sucursal>> index() {
 		log.info("Listando sucursales registradas");
