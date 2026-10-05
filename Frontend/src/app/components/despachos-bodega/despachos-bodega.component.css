@@ -1,15 +1,15 @@
 /* Complementa los estilos de listado compartidos en ../bodegas/bodegas.component.css */
 
-.dispatch-table { min-width: 1120px; }
+.dispatch-table { min-width: 1160px; }
 .dispatch-table .col-id { width: 80px; }
 .dispatch-table .col-fecha { width: 105px; }
 .dispatch-table .col-bodega { width: 170px; }
 .dispatch-table .col-sucursal { width: 140px; }
-.dispatch-table .col-recibe { width: 130px; }
+.dispatch-table .col-recibe { width: 125px; }
 .dispatch-table .col-lineas { text-align: center; width: 80px; }
 .dispatch-table .col-total { text-align: right; width: 100px; }
-.dispatch-table .col-estado { width: 165px; }
-.dispatch-table .col-opciones { text-align: center; width: 150px; }
+.dispatch-table .col-estado { width: 160px; }
+.dispatch-table .col-opciones { text-align: center; width: 190px; }
 
 .table-controls,
 .listing-empty-state { min-width: 0; }
