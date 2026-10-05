@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -82,9 +83,12 @@ public class DespachoBodegaApiController {
 	@Secured(value = { "ROLE_ADMIN", "ROLE_BODEGA" })
 	@PutMapping(value = "/despachos-bodega/{id}/cancelar")
 	public ResponseEntity<DespachoBodega> cancelar(@PathVariable("id") Long id,
-			@RequestBody Map<String, String> body, @AuthenticationPrincipal Jwt jwt) {
+			@RequestBody Map<String, String> body, @AuthenticationPrincipal Jwt jwt, Authentication authentication) {
 		log.info("Cancelando despacho de bodega: {}", id);
-		return ResponseEntity.ok(serviceDespacho.cancelar(id, body.get("motivo"), Utils.obtenerIdUsuario(jwt)));
+		boolean esAdministrador = authentication.getAuthorities().stream()
+				.anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+		return ResponseEntity.ok(serviceDespacho.cancelar(
+				id, body.get("motivo"), Utils.obtenerIdUsuario(jwt), esAdministrador));
 	}
 
 	@Secured(value = { "ROLE_ADMIN", "ROLE_BODEGA" })

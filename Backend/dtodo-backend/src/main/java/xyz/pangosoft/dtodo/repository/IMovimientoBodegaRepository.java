@@ -40,12 +40,15 @@ public interface IMovimientoBodegaRepository extends JpaRepository<MovimientoBod
 			@Param("filtro") String filtro,
 			Pageable pageable);
 
-	/** Registra un movimiento IMPORTACION por cada producto que la bodega tiene actualmente en inventario. */
+	/**
+	 * Registra un movimiento IMPORTACION por cada producto que la bodega tiene actualmente con existencias.
+	 * Los productos con stock cero se copian al inventario pero no generan movimiento (no hay nada que trasladar).
+	 */
 	@Modifying(flushAutomatically = true, clearAutomatically = true)
 	@Query(value = "INSERT INTO movimientos_bodega (fecha_movimiento, tipo_movimiento, cantidad, stock_inicial, " +
 			"stock_final, motivo, id_bodega, id_producto, id_usuario) " +
 			"SELECT NOW(), 'IMPORTACION', i.stock, 0, i.stock, :motivo, i.id_bodega, i.id_producto, :idUsuario " +
-			"FROM inventario_bodega i WHERE i.id_bodega = :idBodega",
+			"FROM inventario_bodega i WHERE i.id_bodega = :idBodega AND i.stock > 0",
 			nativeQuery = true)
 	int registrarImportacionMasiva(@Param("idBodega") Integer idBodega,
 			@Param("idUsuario") Integer idUsuario, @Param("motivo") String motivo);

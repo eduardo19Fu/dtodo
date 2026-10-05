@@ -402,7 +402,7 @@ class InventarioBodegaServiceImplTest {
     }
 
     @Test
-    void clonarRechazaUnOrigenSinExistenciasYNoRegistraMovimientos() {
+    void clonarRechazaUnOrigenSinProductosYNoRegistraMovimientos() {
         prepararEntorno();
         when(inventarioRepo.existsByBodega_IdBodega(1)).thenReturn(false);
         when(sucursalService.findById(2)).thenReturn(Sucursal.builder().idSucursal(2).nombre("Norte").build());
@@ -473,6 +473,35 @@ class InventarioBodegaServiceImplTest {
         verify(movimientoRepo, org.mockito.Mockito.times(2)).save(movimientos.capture());
         assertTrue(movimientos.getAllValues().stream()
                 .allMatch(m -> m.getTipoMovimiento() == TipoMovimientoBodegaEnum.IMPORTACION));
+    }
+
+    @Test
+    void importarRegistraLosProductosConCantidadCeroSinExistenciasYSinMovimiento() throws Exception {
+        prepararEntorno();
+        Producto sinStock = productoConCodigo(11, "A-1");
+        Producto conStock = productoConCodigo(12, "B-2");
+        when(productoRepo.findByCodProductoIn(anyCollection())).thenReturn(List.of(sinStock, conStock));
+        when(inventarioRepo.findParaActualizar(1, 11)).thenReturn(Optional.empty());
+        when(inventarioRepo.findParaActualizar(1, 12)).thenReturn(Optional.empty());
+
+        ImportacionInventarioDto resultado = service.importarDesdeExcel(
+                1, excel(new Object[][] { { "A-1", 0, 4 }, { "B-2", 6 } }), 9);
+
+        assertTrue(resultado.getErrores().isEmpty());
+        assertEquals(2, resultado.getProductosImportados());
+        assertEquals(6, resultado.getUnidadesImportadas());
+
+        ArgumentCaptor<InventarioBodega> filas = ArgumentCaptor.forClass(InventarioBodega.class);
+        verify(inventarioRepo, atLeastOnce()).save(filas.capture());
+        InventarioBodega filaSinStock = filas.getAllValues().stream()
+                .filter(fila -> fila.getProducto().getIdProducto() == 11).reduce((a, b) -> b).orElseThrow();
+        assertEquals(0, filaSinStock.getStock());
+        assertEquals(4, filaSinStock.getStockMinimo());
+
+        // Solo el producto con existencias genera movimiento de importación
+        ArgumentCaptor<MovimientoBodega> movimientos = ArgumentCaptor.forClass(MovimientoBodega.class);
+        verify(movimientoRepo, org.mockito.Mockito.times(1)).save(movimientos.capture());
+        assertEquals(12, movimientos.getValue().getProducto().getIdProducto());
     }
 
     @Test

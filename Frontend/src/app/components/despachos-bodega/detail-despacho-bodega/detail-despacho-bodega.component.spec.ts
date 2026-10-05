@@ -61,4 +61,28 @@ describe('DetailDespachoBodegaComponent', () => {
 
     expect(cierres).toBe(1);
   });
+
+  it('un pendiente se cancela y un aprobado solo lo revierte quien puede aprobar', () => {
+    expect(component.puedeCancelar).toBeTrue();
+
+    component.despacho.estado = 'REALIZADO';
+    component.puedeAprobar = false;
+    expect(component.puedeCancelar).toBeFalse();
+
+    component.puedeAprobar = true;
+    expect(component.puedeCancelar).toBeTrue();
+
+    component.despacho.estado = 'CANCELADO';
+    expect(component.puedeCancelar).toBeFalse();
+  });
+
+  it('solicita la cancelación indicando el estado actual del despacho', () => {
+    let solicitud: any;
+    component.cancelar.subscribe(valor => solicitud = valor);
+    component.despacho.estado = 'REALIZADO';
+
+    component.solicitarCancelacion();
+
+    expect(solicitud).toEqual({ idDespacho: 12, estado: 'REALIZADO' });
+  });
 });

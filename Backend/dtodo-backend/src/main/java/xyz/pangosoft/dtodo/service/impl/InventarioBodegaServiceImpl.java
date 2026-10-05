@@ -222,7 +222,7 @@ public class InventarioBodegaServiceImpl implements IInventarioBodegaService {
 				copiados = inventarioRepo.clonarDesdeBodega(idBodegaDestino, idOrigen);
 			}
 			if (copiados == 0) {
-				throw new BadRequestException("El origen seleccionado no tiene productos con existencias para copiar.", null);
+				throw new BadRequestException("El origen seleccionado no tiene productos para copiar.", null);
 			}
 			movimientoRepo.registrarImportacionMasiva(idBodegaDestino, idUsuario, motivo);
 		} catch (DataAccessException e) {
@@ -282,8 +282,13 @@ public class InventarioBodegaServiceImpl implements IInventarioBodegaService {
 			if (aplicable.fila().stockMinimo() != null) {
 				inventario.setStockMinimo(aplicable.fila().stockMinimo());
 			}
-			aplicar(inventario, bodega, aplicable.producto(), TipoMovimientoBodegaEnum.IMPORTACION,
-					aplicable.fila().cantidad(), "Importación desde archivo Excel", usuario, null, null);
+			// Una fila con cantidad 0 registra el producto en la bodega sin existencias y sin movimiento
+			if (aplicable.fila().cantidad() > 0) {
+				aplicar(inventario, bodega, aplicable.producto(), TipoMovimientoBodegaEnum.IMPORTACION,
+						aplicable.fila().cantidad(), "Importación desde archivo Excel", usuario, null, null);
+			} else {
+				inventarioRepo.save(inventario);
+			}
 			resultado.setProductosImportados(resultado.getProductosImportados() + 1);
 			resultado.setUnidadesImportadas(resultado.getUnidadesImportadas() + aplicable.fila().cantidad());
 		}

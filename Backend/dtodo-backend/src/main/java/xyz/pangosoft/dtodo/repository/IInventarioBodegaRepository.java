@@ -50,20 +50,20 @@ public interface IInventarioBodegaRepository extends JpaRepository<InventarioBod
 	Optional<InventarioBodegaDto> findDtoPorCodigo(
 			@Param("idBodega") Integer idBodega, @Param("codigo") String codigo);
 
-	/** Copia a la bodega las existencias de una sucursal (solo productos con stock positivo). */
+	/** Copia a la bodega todos los productos de una sucursal, incluso los que están sin existencias. */
 	@Modifying(flushAutomatically = true, clearAutomatically = true)
 	@Query(value = "INSERT INTO inventario_bodega (id_bodega, id_producto, stock, stock_minimo, fecha_actualizacion) " +
 			"SELECT :idBodegaDestino, id_producto, stock, stock_minimo, NOW() " +
-			"FROM inventario_sucursal WHERE id_sucursal = :idSucursalOrigen AND stock > 0",
+			"FROM inventario_sucursal WHERE id_sucursal = :idSucursalOrigen",
 			nativeQuery = true)
 	int clonarDesdeSucursal(@Param("idBodegaDestino") Integer idBodegaDestino,
 			@Param("idSucursalOrigen") Integer idSucursalOrigen);
 
-	/** Copia a la bodega las existencias de otra bodega (solo productos con stock positivo). */
+	/** Copia a la bodega todos los productos de otra bodega, incluso los que están sin existencias. */
 	@Modifying(flushAutomatically = true, clearAutomatically = true)
 	@Query(value = "INSERT INTO inventario_bodega (id_bodega, id_producto, stock, stock_minimo, fecha_actualizacion) " +
 			"SELECT :idBodegaDestino, id_producto, stock, stock_minimo, NOW() " +
-			"FROM inventario_bodega WHERE id_bodega = :idBodegaOrigen AND stock > 0",
+			"FROM inventario_bodega WHERE id_bodega = :idBodegaOrigen",
 			nativeQuery = true)
 	int clonarDesdeBodega(@Param("idBodegaDestino") Integer idBodegaDestino,
 			@Param("idBodegaOrigen") Integer idBodegaOrigen);

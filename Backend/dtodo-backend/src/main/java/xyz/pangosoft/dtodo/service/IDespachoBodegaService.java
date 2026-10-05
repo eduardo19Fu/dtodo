@@ -21,7 +21,8 @@ public interface IDespachoBodegaService {
 	// Aprueba un despacho pendiente: las existencias ingresan al inventario de la sucursal destino
 	public DespachoBodega aprobar(Long idDespacho, Integer idUsuario);
 
-	// Cancela un despacho pendiente: las existencias reservadas regresan a la bodega
-	public DespachoBodega cancelar(Long idDespacho, String motivo, Integer idUsuario);
+	// Cancela un despacho pendiente (las existencias reservadas regresan a la bodega) o, solo un administrador,
+	// revierte uno aprobado (las unidades salen de la sucursal destino y regresan a la bodega)
+	public DespachoBodega cancelar(Long idDespacho, String motivo, Integer idUsuario, boolean esAdministrador);
 
 }

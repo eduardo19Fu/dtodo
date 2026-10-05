@@ -325,7 +325,7 @@ class DespachoBodegaServiceImplTest {
         DespachoBodega despacho = despachoPendiente();
         when(despachoRepo.findParaResolver(77L)).thenReturn(Optional.of(despacho));
 
-        DespachoBodega resultado = service.cancelar(77L, "  Error en cantidades ", 9);
+        DespachoBodega resultado = service.cancelar(77L, "  Error en cantidades ", 9, false);
 
         assertEquals(EstadoDespachoBodegaEnum.CANCELADO, resultado.getEstado());
         assertEquals("Error en cantidades", resultado.getMotivoCancelacion());
@@ -342,19 +342,106 @@ class DespachoBodegaServiceImplTest {
     }
 
     @Test
-    void cancelarExigeMotivoYNoCancelaUnDespachoYaRealizado() {
+    void cancelarExigeMotivo() {
+        prepararEntorno();
+        when(despachoRepo.findParaResolver(77L)).thenReturn(Optional.of(despachoPendiente()));
+
+        assertThrows(BadRequestException.class, () -> service.cancelar(77L, " ", 9, true));
+        assertThrows(BadRequestException.class, () -> service.cancelar(77L, null, 9, true));
+        assertThrows(BadRequestException.class, () -> service.cancelar(77L, "x".repeat(301), 9, true));
+
+        verify(inventarioBodegaService, never()).registrarMovimiento(
+                any(), any(), any(), anyInt(), anyString(), any(), any(), anyLong());
+    }
+
+    @Test
+    void unDespachoYaCanceladoNoSePuedeCancelarNiSiquieraUnAdministrador() {
+        prepararEntorno();
+        DespachoBodega cancelado = despachoPendiente();
+        cancelado.setEstado(EstadoDespachoBodegaEnum.CANCELADO);
+        when(despachoRepo.findParaResolver(77L)).thenReturn(Optional.of(cancelado));
+
+        assertThrows(BadRequestException.class, () -> service.cancelar(77L, "Motivo", 9, true));
+        assertThrows(BadRequestException.class, () -> service.cancelar(77L, "Motivo", 9, false));
+
+        verify(movimientoProductoService, never()).save(any(MovimientoProducto.class));
+    }
+
+    @Test
+    void soloUnAdministradorPuedeRevertirUnDespachoAprobado() {
         prepararEntorno();
         DespachoBodega realizado = despachoPendiente();
         realizado.setEstado(EstadoDespachoBodegaEnum.REALIZADO);
         when(despachoRepo.findParaResolver(77L)).thenReturn(Optional.of(realizado));
 
-        assertThrows(BadRequestException.class, () -> service.cancelar(77L, " ", 9));
-        assertThrows(BadRequestException.class, () -> service.cancelar(77L, null, 9));
-        assertThrows(BadRequestException.class, () -> service.cancelar(77L, "x".repeat(301), 9));
-        assertThrows(BadRequestException.class, () -> service.cancelar(77L, "Motivo válido", 9));
+        BadRequestException error = assertThrows(BadRequestException.class,
+                () -> service.cancelar(77L, "Motivo válido", 9, false));
 
+        assertTrue(error.getMessage().contains("administrador"));
+        assertEquals(EstadoDespachoBodegaEnum.REALIZADO, realizado.getEstado());
+        verify(movimientoProductoService, never()).save(any(MovimientoProducto.class));
         verify(inventarioBodegaService, never()).registrarMovimiento(
                 any(), any(), any(), anyInt(), anyString(), any(), any(), anyLong());
+    }
+
+    @Test
+    void revertirUnDespachoAprobadoRetiraLasUnidadesDeLaSucursalYLasRegresaALaBodega() {
+        prepararEntorno();
+        DespachoBodega realizado = despachoPendiente();
+        realizado.setEstado(EstadoDespachoBodegaEnum.REALIZADO);
+        realizado.setUsuarioResuelve(bodeguero);
+        when(despachoRepo.findParaResolver(77L)).thenReturn(Optional.of(realizado));
+
+        DespachoBodega resultado = service.cancelar(77L, "  Enviado por error ", 1, true);
+
+        assertEquals(EstadoDespachoBodegaEnum.CANCELADO, resultado.getEstado());
+        assertEquals("Enviado por error", resultado.getMotivoCancelacion());
+        assertEquals(admin, resultado.getUsuarioResuelve());
+
+        ArgumentCaptor<MovimientoProducto> salidas = ArgumentCaptor.forClass(MovimientoProducto.class);
+        verify(movimientoProductoService, times(2)).save(salidas.capture());
+        for (MovimientoProducto salida : salidas.getAllValues()) {
+            assertEquals(TipoMovimientoEnum.SALIDA, salida.getTipoMovimiento());
+            assertEquals("DESPACHO_BODEGA", salida.getTipoDocumentoOrigen());
+            assertEquals(77L, salida.getIdDocumentoOrigen());
+            assertEquals(norte, salida.getSucursal());
+            assertEquals(admin, salida.getUsuario());
+        }
+        verify(inventarioBodegaService).registrarMovimiento(eq(bodega), eq(cuaderno),
+                eq(TipoMovimientoBodegaEnum.ANULACION_DESPACHO), eq(4), eq("Reversión del despacho #77"), eq(admin),
+                eq("DESPACHO_BODEGA"), eq(77L));
+        verify(inventarioBodegaService).registrarMovimiento(eq(bodega), eq(lapiz),
+                eq(TipoMovimientoBodegaEnum.ANULACION_DESPACHO), eq(20), eq("Reversión del despacho #77"), eq(admin),
+                eq("DESPACHO_BODEGA"), eq(77L));
+    }
+
+    @Test
+    void siLaSucursalYaNoTieneLasUnidadesLaReversionSeRechazaSinTocarLaBodega() {
+        prepararEntorno();
+        DespachoBodega realizado = despachoPendiente();
+        realizado.setEstado(EstadoDespachoBodegaEnum.REALIZADO);
+        when(despachoRepo.findParaResolver(77L)).thenReturn(Optional.of(realizado));
+        when(movimientoProductoService.save(any(MovimientoProducto.class)))
+                .thenThrow(new BadRequestException("Stock insuficiente para Cuaderno. Disponible: 1, solicitado: 4.", null));
+
+        BadRequestException error = assertThrows(BadRequestException.class,
+                () -> service.cancelar(77L, "Motivo", 1, true));
+
+        assertTrue(error.getMessage().contains("No se puede revertir el despacho #77"));
+        assertTrue(error.getMessage().contains("Norte"));
+        assertEquals(EstadoDespachoBodegaEnum.REALIZADO, realizado.getEstado());
+        verify(inventarioBodegaService, never()).registrarMovimiento(
+                any(), any(), any(), anyInt(), anyString(), any(), any(), anyLong());
+    }
+
+    @Test
+    void cancelarUnDespachoPendienteNoToscaElInventarioDeLaSucursalAunSiEsAdministrador() {
+        prepararEntorno();
+        when(despachoRepo.findParaResolver(77L)).thenReturn(Optional.of(despachoPendiente()));
+
+        service.cancelar(77L, "Motivo", 1, true);
+
+        verify(movimientoProductoService, never()).save(any(MovimientoProducto.class));
     }
 
     // ---------- consultas ----------

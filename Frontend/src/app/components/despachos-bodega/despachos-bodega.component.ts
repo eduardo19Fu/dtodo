@@ -68,6 +68,11 @@ export class DespachosBodegaComponent implements OnInit, OnDestroy {
     return this.auth.hasRole('ROLE_ADMIN');
   }
 
+  /** Un pendiente lo cancela cualquier usuario del módulo; uno aprobado solo lo puede revertir un administrador. */
+  puedeCancelar(estado: EstadoDespachoBodega): boolean {
+    return estado === 'PENDIENTE' || (estado === 'REALIZADO' && this.puedeAprobar);
+  }
+
   etiquetaEstado(estado: EstadoDespachoBodega): string {
     return ETIQUETAS_ESTADO_DESPACHO[estado] || estado;
   }
@@ -176,21 +181,26 @@ export class DespachosBodegaComponent implements OnInit, OnDestroy {
     });
   }
 
-  cancelar(idDespacho: number): void {
+  cancelar(idDespacho: number, estado: EstadoDespachoBodega = 'PENDIENTE'): void {
     if (this.procesandoId !== null) {
       return;
     }
+    const revierteAprobado = estado === 'REALIZADO';
+    const numero = this.numeroDespacho(idDespacho);
     Swal.fire({
-      title: '¿Cancelar este despacho?',
-      html: `Las existencias reservadas del despacho <strong>${this.numeroDespacho(idDespacho)}</strong> regresarán a la bodega.`,
+      title: revierteAprobado ? '¿Revertir este despacho aprobado?' : '¿Cancelar este despacho?',
+      html: revierteAprobado
+        ? `Las unidades del despacho <strong>${numero}</strong> saldrán del inventario de la sucursal destino y regresarán a la bodega. ` +
+          'Si la sucursal ya no cuenta con todas las unidades, no se podrá revertir.'
+        : `Las existencias reservadas del despacho <strong>${numero}</strong> regresarán a la bodega.`,
       icon: 'warning',
       input: 'textarea',
-      inputLabel: 'Motivo de la cancelación',
+      inputLabel: revierteAprobado ? 'Motivo de la reversión' : 'Motivo de la cancelación',
       inputPlaceholder: 'Ej. Error en las cantidades, la sucursal ya no lo necesita...',
       inputAttributes: { maxlength: '300' },
-      inputValidator: valor => !valor || !valor.trim() ? 'Debes indicar el motivo de la cancelación.' : null,
+      inputValidator: valor => !valor || !valor.trim() ? 'Debes indicar el motivo.' : null,
       showCancelButton: true,
-      confirmButtonText: 'Sí, cancelar despacho',
+      confirmButtonText: revierteAprobado ? 'Sí, revertir despacho' : 'Sí, cancelar despacho',
       cancelButtonText: 'Volver'
     }).then(resultado => {
       if (!resultado.isConfirmed) {
@@ -199,8 +209,10 @@ export class DespachosBodegaComponent implements OnInit, OnDestroy {
       this.procesandoId = idDespacho;
       this.despachoService.cancelar(idDespacho, resultado.value).subscribe(
         () => {
-          this.finalizarAccion('Despacho cancelado',
-            `El despacho ${this.numeroDespacho(idDespacho)} fue cancelado y las existencias regresaron a la bodega.`);
+          this.finalizarAccion(revierteAprobado ? 'Despacho revertido' : 'Despacho cancelado',
+            revierteAprobado
+              ? `El despacho ${numero} fue revertido: las unidades salieron de la sucursal y regresaron a la bodega.`
+              : `El despacho ${numero} fue cancelado y las existencias regresaron a la bodega.`);
         },
         () => this.procesandoId = null
       );

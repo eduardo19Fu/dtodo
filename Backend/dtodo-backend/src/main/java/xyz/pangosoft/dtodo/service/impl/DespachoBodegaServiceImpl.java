@@ -181,17 +181,23 @@ public class DespachoBodegaServiceImpl implements IDespachoBodegaService {
 
 	@Transactional(rollbackFor = Exception.class)
 	@Override
-	public DespachoBodega cancelar(Long idDespacho, String motivo, Integer idUsuario) {
+	public DespachoBodega cancelar(Long idDespacho, String motivo, Integer idUsuario, boolean esAdministrador) {
 		if (motivo == null || motivo.isBlank()) {
 			throw new BadRequestException("Debe indicar el motivo de la cancelación.", null);
 		}
 		if (motivo.length() > 300) {
 			throw new BadRequestException("El motivo de la cancelación no puede superar los 300 caracteres.", null);
 		}
-		DespachoBodega despacho = obtenerPendiente(idDespacho);
+		DespachoBodega despacho = obtenerCancelable(idDespacho, esAdministrador);
 		Usuario usuario = usuarioService.findById(idUsuario);
 
-		String motivoMovimiento = "Cancelación del despacho #" + idDespacho;
+		// Un despacho aprobado ya sumó stock a la sucursal: primero se retira de ahí (falla si la sucursal ya no lo tiene)
+		boolean revertirAprobado = despacho.getEstado() == EstadoDespachoBodegaEnum.REALIZADO;
+		if (revertirAprobado) {
+			retirarDeSucursal(despacho, usuario);
+		}
+
+		String motivoMovimiento = (revertirAprobado ? "Reversión del despacho #" : "Cancelación del despacho #") + idDespacho;
 		for (DespachoBodegaDetalle item : despacho.getItems()) {
 			MovimientoBodega reintegro = inventarioBodegaService.registrarMovimiento(despacho.getBodega(),
 					item.getProducto(), TipoMovimientoBodegaEnum.ANULACION_DESPACHO, item.getCantidad(),
@@ -201,8 +207,42 @@ public class DespachoBodegaServiceImpl implements IDespachoBodegaService {
 
 		despacho.setMotivoCancelacion(motivo.trim());
 		resolver(despacho, EstadoDespachoBodegaEnum.CANCELADO, usuario);
-		log.info("Despacho {} cancelado por el usuario {}", idDespacho, idUsuario);
+		log.info("Despacho {} {} por el usuario {}", idDespacho, revertirAprobado ? "revertido" : "cancelado", idUsuario);
 		return despachoRepo.save(despacho);
+	}
+
+	/** Deshace el ingreso que generó la aprobación: una salida por línea en el inventario de la sucursal destino. */
+	private void retirarDeSucursal(DespachoBodega despacho, Usuario usuario) {
+		for (DespachoBodegaDetalle item : despacho.getItems()) {
+			try {
+				movimientoProductoService.save(MovimientoProducto.builder()
+						.tipoMovimiento(TipoMovimientoEnum.SALIDA)
+						.tipoDocumentoOrigen(DOCUMENTO_ORIGEN)
+						.idDocumentoOrigen(despacho.getIdDespacho())
+						.usuario(usuario)
+						.producto(item.getProducto())
+						.sucursal(despacho.getSucursalDestino())
+						.cantidad(item.getCantidad())
+						.build());
+			} catch (BadRequestException e) {
+				throw new BadRequestException("No se puede revertir el despacho #" + despacho.getIdDespacho()
+						+ " porque la sucursal \"" + despacho.getSucursalDestino().getNombre()
+						+ "\" ya no cuenta con todas las unidades. " + e.getMessage(), e);
+			}
+		}
+	}
+
+	/** Pendiente: lo puede cancelar quien opera bodegas. Aprobado: solo un administrador puede revertirlo. */
+	private DespachoBodega obtenerCancelable(Long idDespacho, boolean esAdministrador) {
+		DespachoBodega despacho = despachoRepo.findParaResolver(idDespacho).orElseThrow(() ->
+				new NotFoundException("El despacho " + idDespacho + " no se encuentra registrado en la base de datos"));
+		if (despacho.getEstado() == EstadoDespachoBodegaEnum.CANCELADO) {
+			throw new BadRequestException("El despacho #" + idDespacho + " ya fue cancelado y no admite más cambios.", null);
+		}
+		if (despacho.getEstado() == EstadoDespachoBodegaEnum.REALIZADO && !esAdministrador) {
+			throw new BadRequestException("Solo un administrador puede revertir un despacho que ya fue aprobado.", null);
+		}
+		return despacho;
 	}
 
 	private DespachoBodega obtenerPendiente(Long idDespacho) {

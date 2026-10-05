@@ -165,4 +165,43 @@ describe('DespachosBodegaComponent', () => {
     expect(opciones.inputValidator('  ')).toBeTruthy();
     expect(opciones.inputValidator('Motivo')).toBeNull();
   });
+
+  it('un administrador puede cancelar pendientes y revertir aprobados, pero no despachos cancelados', () => {
+    expect(component.puedeCancelar('PENDIENTE')).toBeTrue();
+    expect(component.puedeCancelar('REALIZADO')).toBeTrue();
+    expect(component.puedeCancelar('CANCELADO')).toBeFalse();
+  });
+
+  it('quien no es administrador solo puede cancelar los pendientes', () => {
+    auth.hasRole = () => false;
+
+    expect(component.puedeCancelar('PENDIENTE')).toBeTrue();
+    expect(component.puedeCancelar('REALIZADO')).toBeFalse();
+  });
+
+  it('revierte un despacho aprobado con su motivo y un aviso distinto al de cancelar', async () => {
+    const alerta = spyOn(swal, 'fire').and.returnValues(
+      Promise.resolve({ isConfirmed: true, value: 'Enviado por error' } as any), Promise.resolve({} as any));
+
+    component.cancelar(12, 'REALIZADO');
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const dialogo: any = alerta.calls.argsFor(0)[0];
+    expect(dialogo.title).toContain('Revertir');
+    expect(dialogo.html).toContain('regresarán a la bodega');
+    expect(despachoService.cancelar).toHaveBeenCalledWith(12, 'Enviado por error');
+    expect(alerta.calls.argsFor(1)[0]).toBe('Despacho revertido');
+  });
+
+  it('si no se puede revertir (por ejemplo la sucursal ya vendió) libera el estado de procesamiento', async () => {
+    despachoService.cancelar.and.returnValue(throwError({ status: 400 }));
+    spyOn(swal, 'fire').and.returnValue(Promise.resolve({ isConfirmed: true, value: 'Motivo' } as any));
+
+    component.cancelar(12, 'REALIZADO');
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(component.procesandoId).toBeNull();
+  });
 });

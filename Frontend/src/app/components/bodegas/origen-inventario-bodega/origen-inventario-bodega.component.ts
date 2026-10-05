@@ -48,7 +48,8 @@ export class OrigenInventarioBodegaComponent {
   readonly filasEjemplo = [
     { codigo: '7501234567890', cantidad: 25, minimo: 5 },
     { codigo: '4011200296908', cantidad: 100, minimo: null },
-    { codigo: 'LIB-0042', cantidad: 8, minimo: 2 }
+    { codigo: 'LIB-0042', cantidad: 8, minimo: 2 },
+    { codigo: 'LIB-0099', cantidad: 0, minimo: null }
   ];
 
   seleccionarTipo(tipo: TipoOrigenInventario): void {

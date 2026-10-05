@@ -29,7 +29,9 @@
     <queryString language="SQL"><![CDATA[
         SELECT mp.id_movimiento AS numero,
                mp.fecha_movimiento AS fecha,
-               CASE WHEN mp.tipo_documento_origen = 'DESPACHO_BODEGA' THEN 'Ingreso por despacho de bodega'
+               CASE WHEN mp.tipo_documento_origen = 'DESPACHO_BODEGA' THEN
+                   CASE WHEN mp.tipo_movimiento = 'SALIDA' THEN 'Reversión de despacho de bodega'
+                        ELSE 'Ingreso por despacho de bodega' END
                ELSE CASE mp.tipo_movimiento
                    WHEN 'VENTA' THEN 'Venta'
                    WHEN 'ENTRADA' THEN 'Entrada manual'

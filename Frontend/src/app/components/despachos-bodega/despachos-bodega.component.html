@@ -1,6 +1,6 @@
 <app-detail-despacho-bodega *ngIf="despachoSeleccionado" [despacho]="despachoSeleccionado" [puedeAprobar]="puedeAprobar"
   [procesando]="procesandoId !== null" (cerrar)="cerrarDetalle()" (imprimir)="imprimir($event)"
-  (aprobar)="aprobar($event.idDespacho, $event.sucursalDestino)" (cancelar)="cancelar($event)"></app-detail-despacho-bodega>
+  (aprobar)="aprobar($event.idDespacho, $event.sucursalDestino)" (cancelar)="cancelar($event.idDespacho, $event.estado)"></app-detail-despacho-bodega>
 
 <section class="content-header">
   <div class="container-fluid">
@@ -131,9 +131,10 @@
                 <i class="fas fa-check"></i>
               </button>
               <button class="btn btn-sm listing-table-action listing-action-cancel" type="button"
-                      *ngIf="despacho.estado === 'PENDIENTE'"
-                      appTooltip="Cancelar despacho" aria-label="Cancelar despacho"
-                      [disabled]="procesandoId !== null" (click)="cancelar(despacho.idDespacho)">
+                      *ngIf="puedeCancelar(despacho.estado)"
+                      [appTooltip]="despacho.estado === 'REALIZADO' ? 'Revertir despacho aprobado' : 'Cancelar despacho'"
+                      [attr.aria-label]="despacho.estado === 'REALIZADO' ? 'Revertir despacho aprobado' : 'Cancelar despacho'"
+                      [disabled]="procesandoId !== null" (click)="cancelar(despacho.idDespacho, despacho.estado)">
                 <i class="fas fa-ban"></i>
               </button>
             </div>

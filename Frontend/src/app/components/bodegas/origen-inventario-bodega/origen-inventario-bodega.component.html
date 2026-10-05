@@ -8,7 +8,7 @@
     <button type="button" class="origin-option" role="radio" [attr.aria-checked]="tipo === 'SUCURSAL'"
       [class.selected]="tipo === 'SUCURSAL'" *ngIf="permitirCopias" (click)="seleccionarTipo('SUCURSAL')">
       <span class="origin-icon" aria-hidden="true"><i class="fas fa-store"></i></span>
-      <span class="origin-copy"><strong>Copiar de una sucursal</strong><small>Toma los productos con existencias.</small></span>
+      <span class="origin-copy"><strong>Copiar de una sucursal</strong><small>Incluye también los productos sin existencias.</small></span>
     </button>
     <button type="button" class="origin-option" role="radio" [attr.aria-checked]="tipo === 'BODEGA'"
       [class.selected]="tipo === 'BODEGA'" *ngIf="permitirCopias" (click)="seleccionarTipo('BODEGA')">
@@ -31,7 +31,7 @@
         {{sucursal.nombre}}{{sucursal.esPrincipal ? ' (Principal)' : ''}}
       </option>
     </select>
-    <small>Se copian solo los productos con existencias y su stock m&iacute;nimo. Despu&eacute;s de copiar, la bodega se administra por separado.</small>
+    <small>Se copian todos los productos (tambi&eacute;n los que no tienen existencias) con su stock y su stock m&iacute;nimo. Despu&eacute;s de copiar, la bodega se administra por separado.</small>
   </div>
 
   <div class="origin-detail" *ngIf="tipo === 'BODEGA'">
@@ -42,7 +42,7 @@
       <option *ngFor="let bodega of bodegas" [ngValue]="bodega.idBodega">{{bodega.nombre}} &middot; {{bodega.ubicacion}}</option>
     </select>
     <small *ngIf="bodegas.length === 0">No hay otras bodegas registradas para copiar.</small>
-    <small *ngIf="bodegas.length > 0">Se copian solo los productos con existencias y su stock m&iacute;nimo.</small>
+    <small *ngIf="bodegas.length > 0">Se copian todos los productos (tambi&eacute;n los que no tienen existencias) con su stock m&iacute;nimo.</small>
   </div>
 
   <div class="origin-detail excel-detail" *ngIf="tipo === 'EXCEL'">
@@ -87,7 +87,7 @@
         </div>
         <ul class="format-rules">
           <li><strong>codigo_producto</strong> (obligatorio): el c&oacute;digo tal como est&aacute; en el cat&aacute;logo.</li>
-          <li><strong>cantidad</strong> (obligatorio): entero mayor a 0. Si el producto ya est&aacute; en la bodega, se <em>suma</em> a su existencia.</li>
+          <li><strong>cantidad</strong> (obligatorio): entero mayor o igual a 0; usa <strong>0</strong> para registrar un producto sin existencias. Si el producto ya est&aacute; en la bodega, se <em>suma</em> a su existencia.</li>
           <li><strong>stock_minimo</strong> (opcional): entero mayor o igual a 0.</li>
           <li>La primera fila son los encabezados; los datos empiezan en la fila 2. No repitas c&oacute;digos.</li>
           <li>Si una fila tiene error no se importa ninguna: se te indicar&aacute; cu&aacute;les corregir.</li>

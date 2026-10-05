@@ -29,7 +29,7 @@ import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
  * | codigo_producto | cantidad | stock_minimo |
  * | 7501234567890   | 25       | 5            |
  * </pre>
- * {@code stock_minimo} es opcional. Las filas totalmente vacías se ignoran.
+ * {@code cantidad} puede ser 0 (producto registrado sin existencias). {@code stock_minimo} es opcional. Las filas totalmente vacías se ignoran.
  */
 public final class InventarioBodegaExcel {
 
@@ -100,8 +100,8 @@ public final class InventarioBodegaExcel {
 					continue;
 				}
 				Integer cantidad = enteroNoNegativo(cantidadTexto);
-				if (cantidad == null || cantidad <= 0) {
-					errores.add("Fila " + numero + ": la cantidad debe ser un número entero mayor a 0 (se leyó \""
+				if (cantidad == null) {
+					errores.add("Fila " + numero + ": la cantidad debe ser un número entero mayor o igual a 0 (se leyó \""
 							+ cantidadTexto + "\").");
 					continue;
 				}
@@ -142,7 +142,7 @@ public final class InventarioBodegaExcel {
 				celda.setCellValue(titulos[i]);
 				celda.setCellStyle(estiloEncabezado);
 			}
-			String[][] ejemplos = { { "EJEMPLO-001", "25", "5" }, { "EJEMPLO-002", "100", "" }, { "EJEMPLO-003", "8", "2" } };
+			String[][] ejemplos = { { "EJEMPLO-001", "25", "5" }, { "EJEMPLO-002", "100", "" }, { "EJEMPLO-003", "8", "2" }, { "EJEMPLO-004", "0", "" } };
 			for (int i = 0; i < ejemplos.length; i++) {
 				Row fila = inventario.createRow(i + 1);
 				fila.createCell(0).setCellValue(ejemplos[i][0]);
@@ -160,12 +160,13 @@ public final class InventarioBodegaExcel {
 					"Cómo llenar la hoja \"Inventario\"",
 					"",
 					"codigo_producto (obligatorio): código del producto tal como está registrado en el catálogo.",
-					"cantidad (obligatorio): unidades que ingresan a la bodega. Número entero mayor a 0.",
+					"cantidad (obligatorio): unidades que ingresan a la bodega. Número entero mayor o igual a 0; usa 0 para registrar el producto sin existencias.",
 					"stock_minimo (opcional): existencia mínima deseada en la bodega. Número entero mayor o igual a 0.",
 					"",
 					"Reglas:",
 					"- La primera fila debe conservar los encabezados; los datos empiezan en la fila 2.",
 					"- Elimina las filas de ejemplo (EJEMPLO-001...) antes de importar.",
+					"- Incluye también los productos sin existencias (cantidad 0) para que queden registrados en la bodega.",
 					"- Un mismo código no puede repetirse en el archivo.",
 					"- Si el producto ya existe en la bodega, la cantidad se SUMA a la existencia actual.",
 					"- Si una sola fila tiene error, no se importa ninguna: corrige el archivo y vuelve a intentarlo.",

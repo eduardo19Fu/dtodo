@@ -104,11 +104,24 @@ class InventarioBodegaExcelTest {
                 { "F", 3, -4 },
                 { "OK", 1 } }));
 
-        assertEquals(1, lectura.filas().size());
-        assertEquals("OK", lectura.filas().get(0).codigo());
-        assertEquals(7, lectura.errores().size());
+        // "A" con cantidad 0 es válida: registra el producto sin existencias
+        assertEquals(2, lectura.filas().size());
+        assertEquals("A", lectura.filas().get(0).codigo());
+        assertEquals(0, lectura.filas().get(0).cantidad());
+        assertEquals("OK", lectura.filas().get(1).codigo());
+        assertEquals(6, lectura.errores().size());
         assertTrue(lectura.errores().get(0).startsWith("Fila 2:"));
-        assertTrue(lectura.errores().get(6).startsWith("Fila 8:"));
+        assertTrue(lectura.errores().get(5).startsWith("Fila 8:"));
+    }
+
+    @Test
+    void aceptaCantidadCeroParaRegistrarProductosSinExistencias() throws Exception {
+        InventarioBodegaExcel.Lectura lectura = InventarioBodegaExcel.leer(
+                libro(ENCABEZADOS, new Object[][] { { "SIN-STOCK", 0, 3 }, { "OTRO", 5 } }));
+
+        assertTrue(lectura.errores().isEmpty());
+        assertEquals(0, lectura.filas().get(0).cantidad());
+        assertEquals(3, lectura.filas().get(0).stockMinimo());
     }
 
     @Test
@@ -142,8 +155,9 @@ class InventarioBodegaExcelTest {
         InventarioBodegaExcel.Lectura lectura = InventarioBodegaExcel.leer(new ByteArrayInputStream(plantilla));
 
         assertTrue(lectura.errores().isEmpty());
-        assertEquals(3, lectura.filas().size());
+        assertEquals(4, lectura.filas().size());
         assertTrue(lectura.filas().stream().allMatch(fila -> fila.codigo().startsWith("EJEMPLO-")));
+        assertTrue(lectura.filas().stream().anyMatch(fila -> fila.cantidad() == 0));
     }
 
     @Test

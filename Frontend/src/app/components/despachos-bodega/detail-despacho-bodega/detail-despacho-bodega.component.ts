@@ -3,7 +3,7 @@ import {
   AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Inject, Input, OnDestroy, Output
 } from '@angular/core';
 
-import { DespachoBodega, ETIQUETAS_ESTADO_DESPACHO } from 'src/app/models/despacho-bodega';
+import { DespachoBodega, ETIQUETAS_ESTADO_DESPACHO, EstadoDespachoBodega } from 'src/app/models/despacho-bodega';
 import { UsuarioAuxiliar } from 'src/app/models/auxiliar/usuario-auxiliar';
 
 @Component({
@@ -22,7 +22,7 @@ export class DetailDespachoBodegaComponent implements AfterViewInit, OnDestroy {
   @Output() cerrar = new EventEmitter<void>();
   @Output() imprimir = new EventEmitter<number>();
   @Output() aprobar = new EventEmitter<{ idDespacho: number; sucursalDestino: string }>();
-  @Output() cancelar = new EventEmitter<number>();
+  @Output() cancelar = new EventEmitter<{ idDespacho: number; estado: EstadoDespachoBodega }>();
 
   constructor(
     private elementRef: ElementRef<HTMLElement>,
@@ -71,6 +71,15 @@ export class DetailDespachoBodegaComponent implements AfterViewInit, OnDestroy {
 
   get pendiente(): boolean {
     return this.despacho?.estado === 'PENDIENTE';
+  }
+
+  /** Un pendiente se cancela; uno aprobado solo lo revierte un administrador (el mismo permiso que aprobar). */
+  get puedeCancelar(): boolean {
+    return this.pendiente || (this.despacho?.estado === 'REALIZADO' && this.puedeAprobar);
+  }
+
+  solicitarCancelacion(): void {
+    this.cancelar.emit({ idDespacho: this.despacho.idDespacho, estado: this.despacho.estado });
   }
 
   nombreCompleto(usuario: UsuarioAuxiliar): string {
