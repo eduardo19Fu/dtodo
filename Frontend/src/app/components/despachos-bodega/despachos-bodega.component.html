@@ -47,12 +47,12 @@
       </div>
       <div class="col-sm-6">
         <div class="filters-inline">
-          <select class="form-control form-control-sm" [(ngModel)]="estadoFiltro" (ngModelChange)="aplicarFiltros()"
+          <select class="form-control form-control-sm page-size-select filter-select" [(ngModel)]="estadoFiltro" (ngModelChange)="aplicarFiltros()"
             aria-label="Filtrar por estado">
             <option value="">Todos los estados</option>
             <option *ngFor="let estado of estados" [value]="estado.codigo">{{estado.etiqueta}}</option>
           </select>
-          <select class="form-control form-control-sm" [(ngModel)]="idBodegaFiltro" (ngModelChange)="aplicarFiltros()"
+          <select class="form-control form-control-sm page-size-select filter-select" [(ngModel)]="idBodegaFiltro" (ngModelChange)="aplicarFiltros()"
             aria-label="Filtrar por bodega">
             <option [ngValue]="null">Todas las bodegas</option>
             <option *ngFor="let bodega of bodegas" [ngValue]="bodega.idBodega">{{bodega.nombre}}</option>

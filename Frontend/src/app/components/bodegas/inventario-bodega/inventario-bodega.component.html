@@ -184,7 +184,7 @@
     <div class="movement-filters">
       <div class="filter-field">
         <label for="filtro-tipo">Tipo de movimiento</label>
-        <select id="filtro-tipo" class="form-control form-control-sm" [(ngModel)]="tipoMovimiento" (ngModelChange)="aplicarFiltrosMovimientos()">
+        <select id="filtro-tipo" class="form-control form-control-sm page-size-select filter-select" [(ngModel)]="tipoMovimiento" (ngModelChange)="aplicarFiltrosMovimientos()">
           <option value="">Todos los tipos</option>
           <option *ngFor="let tipo of tiposMovimiento" [value]="tipo.codigo">{{tipo.etiqueta}}</option>
         </select>

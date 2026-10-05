@@ -80,6 +80,9 @@
 
 .header-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 
+/* Selects de filtro: mismo estilo que el selector "Mostrar", pero más anchos para su texto */
+select.page-size-select.filter-select { min-width: 190px; width: auto; }
+
 .btn.listing-primary-action {
   background: linear-gradient(135deg, var(--warehouse-accent), var(--warehouse-dark));
   border-color: var(--warehouse-accent);
