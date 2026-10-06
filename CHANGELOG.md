@@ -39,8 +39,9 @@ Mantenimiento de bodegas con inventario propio, movimientos manuales, importaci�
 - Despachos: listado con filtros por estado y bodega y acciones de aprobar/cancelar, formulario de registro (mismo patrón que Registrar compra: tarjeta flotante con el total, edición de cantidad con confirmación, existencia actual y existencias que quedan por línea), buscador de productos de la bodega y detalle con comprobante imprimible.
 - Inicio: tarjetas de **Bodegas** y **Despachos pendientes**. Un usuario que solo tiene `ROLE_BODEGA` ya no consulta productos ni clientes (devolvían 403 y mostraban un aviso en cada inicio de sesión) y no ve el grupo de menú Productos.
 - Reportes: nueva categoría Bodegas con filtro de bodega.
+- **Manual de usuario** (`Frontend/src/assets/manual/manual-bodegas.html`): página HTML independiente, imprimible y con índice, que explica bodegas, inventario, importación (con el formato de Excel), movimientos, despachos (registrar, aprobar, cancelar y revertir), reportes y preguntas frecuentes. Se abre desde el nuevo submenú **Bodegas → Tutorial** (en una pestaña nueva). El grupo Bodegas y el Tutorial llevan una etiqueta **Nuevo** (un punto si el menú está colapsado); es una señal fija en `sidebar.component.html`, que se puede retirar cuando deje de ser novedad.
 - Nuevos helpers: `PaginacionTabla` (estado de paginación reutilizable) y `AuthService.esSoloBodega()`.
-- Pruebas unitarias nuevas para modelos, servicios HTTP, todos los componentes nuevos y los reportes de bodegas (283 pruebas frontend en total, todas correctas).
+- Pruebas unitarias nuevas para modelos, servicios HTTP, todos los componentes nuevos y los reportes de bodegas (290 pruebas frontend en total, todas correctas).
 
 **Decisiones a revisar**
 - Quién aprueba: se asumió que solo `ROLE_ADMIN` aprueba (para eso existe el estado pendiente); quien registró el despacho puede aprobarlo si es administrador.

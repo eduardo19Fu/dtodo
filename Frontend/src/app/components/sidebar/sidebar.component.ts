@@ -87,7 +87,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       return this.coincide('facturas', 'facturas emitidas', 'correlativos');
     }
     if (menu === 'bodegas') {
-      return this.coincide('bodegas', 'inventario', 'despachos', 'despachos de bodega');
+      return this.coincide('bodegas', 'inventario', 'despachos', 'despachos de bodega', 'tutorial', 'manual', 'ayuda');
     }
     return this.coincide('compras', 'registrar compra', 'proveedores');
   }

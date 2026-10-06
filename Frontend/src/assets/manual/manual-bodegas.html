@@ -1,0 +1,987 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manual de usuario - Bodegas y Despachos - D'Todo</title>
+  <style>
+    :root {
+      --ink: #1c2b36;
+      --muted: #5b6b78;
+      --line: #dbe4ea;
+      --paper: #ffffff;
+      --bg: #f3f6f8;
+      --teal: #2991a9;
+      --teal-dark: #1f6f84;
+      --teal-soft: #e4f3f6;
+      --navy: #13232f;
+      --ok: #1f7a4d;
+      --ok-soft: #e3f4ea;
+      --warn: #9a6200;
+      --warn-soft: #fff3d6;
+      --bad: #a8323f;
+      --bad-soft: #fbe6e8;
+      --info-soft: #e8f0fb;
+      --info: #2a5ea8;
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 20px; }
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font: 16px/1.65 "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+      margin: 0;
+    }
+
+    a { color: var(--teal-dark); }
+    h1, h2, h3, h4 { color: var(--navy); line-height: 1.25; margin: 0; }
+    p { margin: 0 0 12px; }
+    ul, ol { margin: 0 0 14px; padding-left: 22px; }
+    li { margin-bottom: 5px; }
+    code, kbd {
+      background: #eef3f6;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      font: 600 .88em Consolas, "Courier New", monospace;
+      padding: 1px 6px;
+    }
+
+    /* ---------- Encabezado ---------- */
+    .hero {
+      background: linear-gradient(135deg, #13232f 0%, #1c4a5a 55%, #2991a9 100%);
+      color: #fff;
+      padding: 44px 24px 40px;
+    }
+    .hero-inner { margin: 0 auto; max-width: 1180px; }
+    .hero .eyebrow {
+      background: rgba(255, 255, 255, .14);
+      border-radius: 999px;
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      padding: 4px 12px;
+      text-transform: uppercase;
+    }
+    .hero h1 { color: #fff; font-size: clamp(28px, 4vw, 42px); margin: 14px 0 10px; }
+    .hero p { color: #d3e6ec; font-size: 18px; margin: 0; max-width: 760px; }
+    .hero-meta { color: #a9c7d1; font-size: 14px; margin-top: 18px !important; }
+
+    /* ---------- Estructura ---------- */
+    .layout {
+      display: grid;
+      gap: 28px;
+      grid-template-columns: 270px minmax(0, 1fr);
+      margin: 0 auto;
+      max-width: 1180px;
+      padding: 28px 24px 70px;
+    }
+
+    .toc {
+      align-self: start;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      max-height: calc(100vh - 40px);
+      overflow-y: auto;
+      padding: 16px 12px;
+      position: sticky;
+      top: 20px;
+    }
+    .toc strong {
+      color: var(--muted);
+      display: block;
+      font-size: 12px;
+      letter-spacing: .08em;
+      margin: 0 8px 8px;
+      text-transform: uppercase;
+    }
+    .toc a {
+      border-radius: 8px;
+      color: var(--ink);
+      display: block;
+      font-size: 14.5px;
+      line-height: 1.35;
+      padding: 7px 10px;
+      text-decoration: none;
+    }
+    .toc a:hover { background: var(--teal-soft); }
+    .toc a.active { background: var(--teal); color: #fff; font-weight: 600; }
+
+    main { min-width: 0; }
+
+    section.chapter {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      margin-bottom: 22px;
+      padding: 28px 30px 20px;
+    }
+    .chapter > h2 {
+      align-items: center;
+      border-bottom: 2px solid var(--teal-soft);
+      display: flex;
+      font-size: 24px;
+      gap: 12px;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+    }
+    .chapter > h2 .num {
+      align-items: center;
+      background: var(--teal);
+      border-radius: 10px;
+      color: #fff;
+      display: inline-flex;
+      flex: 0 0 38px;
+      font-size: 17px;
+      height: 38px;
+      justify-content: center;
+    }
+    .chapter h3 { font-size: 18px; margin: 26px 0 10px; }
+    .chapter h4 { color: var(--teal-dark); font-size: 15px; margin: 18px 0 6px; }
+
+    /* ---------- Componentes ---------- */
+    .callout {
+      border-left: 4px solid;
+      border-radius: 8px;
+      margin: 16px 0;
+      padding: 12px 16px;
+    }
+    .callout > :last-child { margin-bottom: 0; }
+    .callout .callout-title { display: block; font-size: 13px; font-weight: 700; letter-spacing: .05em; margin-bottom: 4px; text-transform: uppercase; }
+    .callout.note { background: var(--info-soft); border-color: var(--info); }
+    .callout.note .callout-title { color: var(--info); }
+    .callout.tip { background: var(--ok-soft); border-color: var(--ok); }
+    .callout.tip .callout-title { color: var(--ok); }
+    .callout.warn { background: var(--warn-soft); border-color: #e0a100; }
+    .callout.warn .callout-title { color: var(--warn); }
+    .callout.danger { background: var(--bad-soft); border-color: var(--bad); }
+    .callout.danger .callout-title { color: var(--bad); }
+
+    .steps { counter-reset: paso; list-style: none; margin: 14px 0 18px; padding: 0; }
+    .steps > li {
+      counter-increment: paso;
+      margin: 0 0 12px;
+      min-height: 32px;
+      padding-left: 46px;
+      position: relative;
+    }
+    .steps > li::before {
+      align-items: center;
+      background: var(--teal-soft);
+      border: 2px solid var(--teal);
+      border-radius: 50%;
+      color: var(--teal-dark);
+      content: counter(paso);
+      display: flex;
+      font-size: 14px;
+      font-weight: 700;
+      height: 30px;
+      justify-content: center;
+      left: 0;
+      position: absolute;
+      top: 0;
+      width: 30px;
+    }
+
+    .table-wrap { margin: 14px 0 18px; overflow-x: auto; }
+    table { border-collapse: collapse; font-size: 14.5px; width: 100%; }
+    th, td { border: 1px solid var(--line); padding: 9px 12px; text-align: left; vertical-align: top; }
+    th { background: #eef4f7; color: var(--navy); font-weight: 700; white-space: nowrap; }
+    tbody tr:nth-child(even) td { background: #fafcfd; }
+    td.c, th.c { text-align: center; }
+
+    /* Botones y etiquetas dibujados como en el sistema */
+    .btn {
+      background: var(--teal);
+      border-radius: 7px;
+      color: #fff;
+      display: inline-block;
+      font-size: 13.5px;
+      font-weight: 600;
+      line-height: 1.4;
+      padding: 2px 11px;
+      white-space: nowrap;
+    }
+    .btn.light { background: #fff; border: 1px solid var(--teal); color: var(--teal-dark); }
+    .btn.green { background: #2f9e62; }
+    .btn.red { background: #c24a57; }
+    .btn.gray { background: #6c7c89; }
+
+    .pill {
+      border-radius: 999px;
+      display: inline-block;
+      font-size: 12.5px;
+      font-weight: 700;
+      line-height: 1.5;
+      padding: 1px 11px;
+      white-space: nowrap;
+    }
+    .pill.ok { background: var(--ok-soft); color: var(--ok); }
+    .pill.wait { background: var(--warn-soft); color: var(--warn); }
+    .pill.bad { background: var(--bad-soft); color: var(--bad); }
+    .pill.plus { background: var(--ok-soft); color: var(--ok); }
+    .pill.minus { background: var(--bad-soft); color: var(--bad); }
+
+    .menu-demo {
+      background: #1a2f3c;
+      border-radius: 10px;
+      color: #cbd8e0;
+      display: inline-block;
+      font-size: 14.5px;
+      margin: 8px 0 14px;
+      min-width: 240px;
+      padding: 14px 16px;
+    }
+    .menu-demo .group { align-items: center; color: #fff; display: flex; font-weight: 700; gap: 8px; }
+    .menu-demo .sub { border-left: 1px solid #3c5565; margin: 6px 0 0 8px; padding-left: 14px; }
+    .menu-demo .sub div { padding: 3px 0; }
+    .menu-demo .badge-new {
+      background: #e8a317;
+      border-radius: 999px;
+      color: #1c1500;
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: .05em;
+      padding: 1px 8px;
+      text-transform: uppercase;
+    }
+
+    /* Hoja de Excel */
+    .sheet { border: 1px solid #b9c5cd; border-radius: 6px; display: block; font: 13.5px Consolas, "Courier New", monospace; margin: 8px 0 14px; max-width: 460px; overflow: hidden; width: 100%; }
+    .sheet .r { display: grid; grid-template-columns: 30px minmax(0, 1.7fr) minmax(0, 1fr) minmax(0, 1.2fr); }
+    .sheet .r > span { border-bottom: 1px solid #dfe6ea; border-right: 1px solid #dfe6ea; overflow: hidden; padding: 5px 7px; text-overflow: ellipsis; white-space: nowrap; }
+    .sheet .r > span:last-child { border-right: 0; }
+    .sheet .letters > span, .sheet .idx { background: #eef3f6; color: #6b7b87; text-align: center; }
+    .sheet .head > span:not(.idx) { background: #e1f1e7; color: #185a37; font-weight: 700; }
+    .sheet .head > span.opt { background: #f0f5e1; color: #55611a; }
+    .sheet .num { text-align: right; }
+
+    /* Diagramas */
+    .flow { display: grid; gap: 10px; grid-template-columns: 1fr 34px 1fr 34px 1fr; margin: 16px 0 6px; }
+    .flow .node {
+      background: var(--teal-soft);
+      border: 1px solid #b5dbe3;
+      border-radius: 10px;
+      padding: 12px 14px;
+      text-align: center;
+    }
+    .flow .node strong { color: var(--navy); display: block; }
+    .flow .node span { color: var(--muted); font-size: 13.5px; }
+    .flow .arrow { align-self: center; color: var(--teal-dark); font-size: 26px; text-align: center; }
+
+    .cards { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin: 14px 0 18px; }
+    .card { background: #f8fbfc; border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+    .card h4 { margin-top: 0; }
+    .card p:last-child { margin-bottom: 0; }
+
+    details { background: #f8fbfc; border: 1px solid var(--line); border-radius: 10px; margin: 0 0 10px; padding: 0 16px; }
+    details[open] { padding-bottom: 6px; }
+    summary { cursor: pointer; font-weight: 700; padding: 12px 0; }
+    summary:hover { color: var(--teal-dark); }
+
+    .ok-mark { color: var(--ok); font-weight: 800; }
+    .no-mark { color: #9aa7b0; }
+
+    footer.page-footer { color: var(--muted); font-size: 13.5px; margin-top: 8px; text-align: center; }
+
+    .to-top {
+      background: var(--teal);
+      border-radius: 999px;
+      bottom: 22px;
+      box-shadow: 0 6px 16px rgba(19, 35, 47, .28);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 9px 16px;
+      position: fixed;
+      right: 22px;
+      text-decoration: none;
+    }
+    .to-top:hover { background: var(--teal-dark); }
+
+    .print-btn {
+      background: rgba(255, 255, 255, .16);
+      border: 1px solid rgba(255, 255, 255, .45);
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+      font: 600 14px inherit;
+      margin-top: 18px;
+      padding: 8px 16px;
+    }
+    .print-btn:hover { background: rgba(255, 255, 255, .26); }
+
+    @media (max-width: 960px) {
+      .layout { grid-template-columns: 1fr; padding: 18px 14px 60px; }
+      .toc { max-height: none; position: static; }
+      section.chapter { padding: 22px 18px 14px; }
+      .flow { grid-template-columns: 1fr; }
+      .flow .arrow { transform: rotate(90deg); }
+    }
+
+    @media print {
+      body { background: #fff; font-size: 12.5px; }
+      .hero { background: #13232f !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 24px; }
+      .toc, .to-top, .print-btn { display: none; }
+      .layout { display: block; padding: 0 12px; }
+      section.chapter { border: 0; break-inside: auto; padding: 14px 0 0; }
+      .chapter > h2 { break-after: avoid; }
+      .callout, .card, table, .flow, .steps > li { break-inside: avoid; }
+      details { display: block; }
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <span class="eyebrow">Manual de usuario</span>
+    <h1>Bodegas y Despachos de bodega</h1>
+    <p>Guía paso a paso para administrar bodegas, llevar su inventario y movimientos, y trasladar mercadería a las sucursales con un despacho aprobado.</p>
+    <p class="hero-meta">Sistema D'Todo &middot; Dirigido a los roles <strong>Administrador</strong> y <strong>Bodega</strong> &middot; Octubre 2026</p>
+    <button type="button" class="print-btn" onclick="window.print()">Imprimir o guardar como PDF</button>
+  </div>
+</header>
+
+<div class="layout">
+
+  <nav class="toc" aria-label="Contenido del manual">
+    <strong>Contenido</strong>
+    <a href="#introduccion">1. Introducción</a>
+    <a href="#roles">2. Roles y permisos</a>
+    <a href="#acceso">3. Cómo entrar al módulo</a>
+    <a href="#bodegas">4. Bodegas</a>
+    <a href="#inventario">5. Inventario de una bodega</a>
+    <a href="#importar">6. Importar inventario</a>
+    <a href="#movimientos">7. Movimientos</a>
+    <a href="#despachos">8. Despachos</a>
+    <a href="#ciclo">9. Qué pasa con las existencias</a>
+    <a href="#reportes">10. Reportes</a>
+    <a href="#faq">11. Preguntas y problemas frecuentes</a>
+    <a href="#resumen">12. Resumen rápido</a>
+  </nav>
+
+  <main>
+
+    <!-- ===================== 1 ===================== -->
+    <section class="chapter" id="introduccion">
+      <h2><span class="num">1</span> Introducción</h2>
+      <p>El módulo de <strong>Bodegas</strong> sirve para controlar la mercadería que se guarda fuera de las sucursales y para enviarla a donde se necesita, dejando constancia de quién despachó, quién recibió y cuándo.</p>
+
+      <div class="cards">
+        <div class="card">
+          <h4>Bodega</h4>
+          <p>Un lugar de almacenamiento con nombre, ubicación y, opcionalmente, una sucursal a la que normalmente abastece.</p>
+        </div>
+        <div class="card">
+          <h4>Inventario de bodega</h4>
+          <p>Los productos y las unidades que hay en esa bodega. Es <strong>independiente</strong> del inventario de las sucursales.</p>
+        </div>
+        <div class="card">
+          <h4>Movimiento</h4>
+          <p>Cada vez que cambian las existencias de la bodega (ingreso, reducción, despacho...) queda un registro con fecha, usuario y motivo.</p>
+        </div>
+        <div class="card">
+          <h4>Despacho</h4>
+          <p>El traslado de productos desde una bodega hacia una sucursal. Debe ser <strong>aprobado</strong> por un administrador para sumar al inventario de la sucursal.</p>
+        </div>
+      </div>
+
+      <h3>La idea general en tres pasos</h3>
+      <div class="flow">
+        <div class="node"><strong>1. Preparar la bodega</strong><span>Crearla y cargar su inventario</span></div>
+        <div class="arrow">&rarr;</div>
+        <div class="node"><strong>2. Registrar el despacho</strong><span>Las unidades salen de la bodega y quedan reservadas</span></div>
+        <div class="arrow">&rarr;</div>
+        <div class="node"><strong>3. Aprobarlo</strong><span>Las unidades entran al inventario de la sucursal</span></div>
+      </div>
+
+      <div class="callout note">
+        <span class="callout-title">Importante</span>
+        <p>El inventario de una bodega y el de una sucursal <strong>no se mezclan</strong>. Si copias el inventario de una sucursal a una bodega, solo se toma una &laquo;fotografía&raquo; inicial: después cada uno se administra por separado y lo único que los conecta son los despachos aprobados.</p>
+      </div>
+    </section>
+
+    <!-- ===================== 2 ===================== -->
+    <section class="chapter" id="roles">
+      <h2><span class="num">2</span> Roles y permisos</h2>
+      <p>Hay dos roles que pueden trabajar con este módulo. El rol <strong>Bodega</strong> está pensado para la persona que opera la bodega día a día; el <strong>Administrador</strong> además aprueba y revierte despachos.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Acción</th><th class="c">Administrador</th><th class="c">Bodega</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Ver bodegas, inventario, movimientos y despachos</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
+            <tr><td>Crear y editar bodegas (incluido activar o desactivar)</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
+            <tr><td>Agregar, reducir y eliminar productos del inventario</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
+            <tr><td>Importar inventario (sucursal, otra bodega o Excel)</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
+            <tr><td>Registrar un despacho</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
+            <tr><td>Imprimir el comprobante de un despacho</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
+            <tr><td>Cancelar un despacho <strong>pendiente</strong></td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
+            <tr><td>Consultar los reportes de bodega</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
+            <tr><td><strong>Aprobar</strong> un despacho</td><td class="c ok-mark">Sí</td><td class="c no-mark">No</td></tr>
+            <tr><td><strong>Revertir</strong> un despacho ya aprobado</td><td class="c ok-mark">Sí</td><td class="c no-mark">No</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout warn">
+        <span class="callout-title">Tenlo presente</span>
+        <p>Los usuarios con rol <strong>Bodega</strong> pueden trabajar con <strong>todas</strong> las bodegas, no solo con una. Si necesitas que alguien vea únicamente una bodega, avisa al equipo de sistemas antes de asignarle el rol.</p>
+      </div>
+    </section>
+
+    <!-- ===================== 3 ===================== -->
+    <section class="chapter" id="acceso">
+      <h2><span class="num">3</span> Cómo entrar al módulo</h2>
+      <p>En el menú lateral encontrarás el grupo <strong>Bodegas</strong>, marcado con la etiqueta <span class="pill wait" style="background:#e8a317;color:#1c1500">NUEVO</span>. Al abrirlo verás:</p>
+
+      <div class="menu-demo" aria-label="Ilustración del menú lateral">
+        <div class="group">Bodegas <span class="badge-new">Nuevo</span></div>
+        <div class="sub">
+          <div>Listado</div>
+          <div>Despachos</div>
+          <div>Tutorial <span class="badge-new">Nuevo</span></div>
+        </div>
+      </div>
+
+      <ul>
+        <li><strong>Listado:</strong> las bodegas registradas, con acceso a su inventario y movimientos.</li>
+        <li><strong>Despachos:</strong> todos los despachos, con sus estados.</li>
+        <li><strong>Tutorial:</strong> este manual, que se abre en una pestaña nueva.</li>
+      </ul>
+
+      <p>Si tu rol es <strong>Bodega</strong>, el menú solo muestra Bodegas y Reportes, y la pantalla de inicio presenta dos tarjetas: <strong>Bodegas</strong> (cuántas hay) y <strong>Despachos pendientes</strong> (cuántos esperan aprobación), cada una con un enlace directo.</p>
+
+      <div class="callout tip">
+        <span class="callout-title">Consejo</span>
+        <p>El cuadro <strong>Buscar módulo</strong> del menú lateral filtra las opciones. Escribe, por ejemplo, <code>despachos</code> para llegar más rápido.</p>
+      </div>
+    </section>
+
+    <!-- ===================== 4 ===================== -->
+    <section class="chapter" id="bodegas">
+      <h2><span class="num">4</span> Bodegas</h2>
+
+      <h3>4.1 El listado de bodegas</h3>
+      <p>Entra a <strong>Bodegas &rarr; Listado</strong>. Verás una tabla con estas columnas:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Columna</th><th>Qué muestra</th></tr></thead>
+          <tbody>
+            <tr><td>ID</td><td>Número de la bodega.</td></tr>
+            <tr><td>Nombre</td><td>Nombre de la bodega y, debajo, su encargado si se registró.</td></tr>
+            <tr><td>Ubicación</td><td>Dirección o referencia.</td></tr>
+            <tr><td>Sucursal</td><td>Sucursal asignada, o &laquo;Sin asignar&raquo;.</td></tr>
+            <tr><td>Productos / Unidades</td><td>Cuántos productos distintos y cuántas unidades hay en total.</td></tr>
+            <tr><td>Estado</td><td><span class="pill ok">Activo</span> o <span class="pill bad">Inactivo</span>.</td></tr>
+            <tr><td>Registro</td><td>Fecha y hora en que se creó.</td></tr>
+            <tr><td>Opciones</td><td>Los botones de acción (ver abajo).</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Arriba de la tabla puedes elegir cuántos registros ver, y buscar por <strong>nombre, ubicación o encargado</strong>. Las columnas ID, Nombre, Ubicación y Registro se ordenan al hacer clic en su título.</p>
+
+      <h4>Botones de cada fila</h4>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Botón</th><th>Para qué sirve</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Inventario y movimientos</strong> (cajas)</td><td>Abre las existencias de la bodega y su historial de movimientos.</td></tr>
+            <tr><td><strong>Nuevo despacho</strong> (camión)</td><td>Empieza un despacho con esa bodega ya elegida. Se desactiva si la bodega está inactiva.</td></tr>
+            <tr><td><strong>Ver detalle</strong> (ojo)</td><td>Muestra una ventana con los datos completos de la bodega.</td></tr>
+            <tr><td><strong>Editar</strong> (lápiz)</td><td>Abre el formulario para modificar la bodega.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>4.2 Crear una bodega</h3>
+      <ol class="steps">
+        <li>Pulsa <span class="btn">+ Nueva</span> en la parte superior del listado.</li>
+        <li>En <strong>Datos de la bodega</strong> completa el <em>Nombre</em> y la <em>Ubicación</em> (obligatorios). Opcionalmente indica el <em>Encargado</em>, el <em>Teléfono</em> y una <em>Descripción</em>.</li>
+        <li>En <strong>Sucursal asignada</strong> elige la sucursal a la que normalmente abastece esta bodega. Es opcional: si la dejas en blanco, tendrás que elegir el destino en cada despacho.</li>
+        <li>En <strong>Inventario inicial</strong> elige cómo cargar las existencias (ver <a href="#importar">capítulo 6</a>) o deja <em>Sin inventario inicial</em> para empezar en cero.</li>
+        <li>Pulsa <span class="btn">Guardar bodega</span>.</li>
+      </ol>
+
+      <div class="callout note">
+        <span class="callout-title">Nombres únicos</span>
+        <p>No puede haber dos bodegas con el mismo nombre. Si lo intentas, el sistema te avisará.</p>
+      </div>
+
+      <h3>4.3 Editar, activar y desactivar</h3>
+      <p>Desde el botón <strong>Editar</strong> puedes cambiar cualquier dato, incluida la sucursal asignada. Al editar aparece además el campo <strong>Estado de la bodega</strong>:</p>
+      <ul>
+        <li><span class="pill ok">Activo</span>: la bodega funciona con normalidad.</li>
+        <li><span class="pill bad">Inactivo</span>: se conserva todo su historial y se puede consultar, pero <strong>no admite movimientos ni despachos nuevos</strong>. Los botones de agregar, importar, reducir, eliminar y despachar aparecen desactivados y la pantalla muestra un aviso.</li>
+      </ul>
+      <p>Desactivar una bodega es la forma correcta de &laquo;darla de baja&raquo;: no se borra nada.</p>
+    </section>
+
+    <!-- ===================== 5 ===================== -->
+    <section class="chapter" id="inventario">
+      <h2><span class="num">5</span> Inventario de una bodega</h2>
+      <p>Desde el listado pulsa el botón <strong>Inventario y movimientos</strong> de la bodega. La pantalla tiene tres tarjetas de resumen (productos en bodega, sucursal destino y estado) y dos pestañas: <strong>Existencias</strong> y <strong>Movimientos</strong>.</p>
+
+      <h3>5.1 Pestaña Existencias</h3>
+      <p>Lista cada producto de la bodega con su código, nombre, <strong>existencia</strong>, <strong>stock mínimo</strong>, <strong>costo unitario</strong> y la fecha de la última actualización. Puedes buscar por código o por nombre.</p>
+      <ul>
+        <li>La existencia aparece con un indicador de color. Si llega al <strong>stock mínimo</strong> o por debajo, se resalta como alerta; si es <strong>cero</strong>, se marca como agotado.</li>
+        <li>Los productos con existencia cero <strong>siguen apareciendo</strong>: así sabes qué productos maneja la bodega aunque hoy no tenga unidades.</li>
+        <li>El <strong>costo unitario</strong> es el precio de compra del producto en el catálogo. Lo asigna el sistema; no se escribe a mano.</li>
+      </ul>
+
+      <h3>5.2 Agregar un producto</h3>
+      <p>Úsalo para sumar unidades a la bodega, por ejemplo cuando llega mercadería de un proveedor.</p>
+      <ol class="steps">
+        <li>Pulsa <span class="btn">+ Agregar producto</span>.</li>
+        <li>Busca el producto: escribe su <strong>código exacto</strong> y presiona <kbd>Enter</kbd>, o pulsa el botón de lista para abrir el <strong>catálogo de productos</strong> y elegirlo ahí.</li>
+        <li>Verás el producto elegido y su <strong>existencia actual</strong> junto a la cantidad en que <em>quedará</em>.</li>
+        <li>Escribe la <strong>cantidad</strong> (entero mayor a 0). Opcionalmente fija el <strong>stock mínimo</strong>: los reportes avisarán cuando la existencia llegue a ese nivel.</li>
+        <li>En <strong>Motivo</strong> puedes anotar el origen (por ejemplo &laquo;Compra a proveedor&raquo;). Es opcional al agregar.</li>
+        <li>Pulsa <span class="btn">Agregar a la bodega</span>.</li>
+      </ol>
+      <p>Si el producto ya estaba en la bodega, las unidades <strong>se suman</strong> a su existencia; no se crea un duplicado.</p>
+
+      <h3>5.3 Reducir existencias</h3>
+      <p>Para descontar unidades por <strong>merma, daño, pérdida o ajuste de conteo</strong>, sin retirar el producto de la bodega.</p>
+      <ol class="steps">
+        <li>En la fila del producto pulsa el botón <strong>Reducir existencias</strong> (signo menos).</li>
+        <li>Escribe la cantidad a restar. El sistema te muestra con cuánta existencia quedará y no te dejará pasar de lo disponible.</li>
+        <li>Escribe el <strong>motivo</strong> (obligatorio), por ejemplo &laquo;Mercadería dañada&raquo;.</li>
+        <li>Pulsa <span class="btn">Registrar reducción</span>.</li>
+      </ol>
+
+      <h3>5.4 Eliminar un producto de la bodega</h3>
+      <p>Retira el producto de la lista <strong>descontando toda su existencia</strong>.</p>
+      <ol class="steps">
+        <li>Pulsa el botón <strong>Eliminar producto de la bodega</strong> (bote de basura) en su fila.</li>
+        <li>Lee el aviso: indica cuántas unidades se descontarán.</li>
+        <li>Escribe el <strong>motivo</strong> (obligatorio) y pulsa <span class="btn red">Eliminar producto</span>.</li>
+      </ol>
+      <div class="callout note">
+        <span class="callout-title">El historial se conserva</span>
+        <p>Eliminar un producto no borra sus movimientos: seguirás viendo todo lo que ocurrió con él en la pestaña Movimientos y en los reportes. Si más adelante vuelves a agregarlo, empieza de nuevo desde cero.</p>
+      </div>
+    </section>
+
+    <!-- ===================== 6 ===================== -->
+    <section class="chapter" id="importar">
+      <h2><span class="num">6</span> Importar inventario</h2>
+      <p>Cargar productos uno por uno es lento cuando son muchos. Por eso hay tres formas de importarlos. Puedes usarlas al <strong>crear la bodega</strong> (sección &laquo;Inventario inicial&raquo;) o después, con el botón <span class="btn light">Importar inventario</span> de la pantalla de inventario.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Origen</th><th>Qué hace</th><th>Cuándo se puede usar</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>Copiar de una sucursal</strong></td>
+              <td>Trae <strong>todos</strong> los productos de la sucursal, también los que tienen existencia cero, con su stock y su stock mínimo.</td>
+              <td>Solo si la bodega está <strong>vacía</strong>. Puedes elegir <em>cualquier</em> sucursal, no solo la asignada.</td>
+            </tr>
+            <tr>
+              <td><strong>Copiar de otra bodega</strong></td>
+              <td>Duplica el inventario actual de otra bodega, incluidos los productos sin existencias.</td>
+              <td>Solo si la bodega está <strong>vacía</strong>.</td>
+            </tr>
+            <tr>
+              <td><strong>Importar desde Excel</strong></td>
+              <td>Carga un archivo <code>.xlsx</code> con códigos y cantidades.</td>
+              <td>Siempre. Si la bodega ya tiene inventario, las cantidades se <strong>suman</strong>.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout tip">
+        <span class="callout-title">Productos con existencia cero</span>
+        <p>Al copiar desde una sucursal o bodega, los productos sin existencias también se registran. Así el cliente sabe qué productos maneja y cuáles se quedaron sin unidades, en lugar de que simplemente &laquo;desaparezcan&raquo; de la lista.</p>
+      </div>
+
+      <h3>6.1 Importar desde Excel paso a paso</h3>
+      <ol class="steps">
+        <li>Abre <span class="btn light">Importar inventario</span> y elige <strong>Importar desde Excel</strong>.</li>
+        <li>Pulsa <span class="btn light">Descargar plantilla de ejemplo</span>. Es un archivo listo para llenar, con ejemplos e instrucciones.</li>
+        <li>Llena tus productos respetando el formato (abajo) y guarda el archivo como <code>.xlsx</code>.</li>
+        <li>Haz clic en el recuadro para elegir el archivo. Verás su nombre y tamaño (máximo 10 MB).</li>
+        <li>Pulsa <span class="btn">Importar inventario</span>.</li>
+      </ol>
+
+      <h4>Así debe verse el archivo</h4>
+      <div class="sheet" role="img" aria-label="Hoja de cálculo con las columnas codigo_producto, cantidad y stock_minimo">
+        <div class="r letters"><span></span><span>A</span><span>B</span><span>C</span></div>
+        <div class="r head"><span class="idx">1</span><span>codigo_producto</span><span>cantidad</span><span class="opt">stock_minimo</span></div>
+        <div class="r"><span class="idx">2</span><span>LIB-0001</span><span class="num">120</span><span class="num">20</span></div>
+        <div class="r"><span class="idx">3</span><span>LIB-0002</span><span class="num">45</span><span class="num">10</span></div>
+        <div class="r"><span class="idx">4</span><span>LIB-0099</span><span class="num">0</span><span class="num">5</span></div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Columna</th><th>¿Obligatoria?</th><th>Qué debe contener</th></tr></thead>
+          <tbody>
+            <tr><td><code>codigo_producto</code></td><td>Sí</td><td>El código del producto <strong>tal como está en el catálogo</strong>.</td></tr>
+            <tr><td><code>cantidad</code></td><td>Sí</td><td>Un número entero igual o mayor a 0. Usa <strong>0</strong> para registrar un producto sin existencias (en el ejemplo, la fila 4).</td></tr>
+            <tr><td><code>stock_minimo</code></td><td>No</td><td>Un número entero igual o mayor a 0.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Reglas que conviene recordar</h4>
+      <ul>
+        <li>La <strong>primera fila</strong> son los encabezados; los datos empiezan en la fila 2.</li>
+        <li>No repitas códigos: si un código aparece dos veces, el sistema lo marca como error.</li>
+        <li>Si el producto <strong>ya está</strong> en la bodega, la cantidad se <strong>suma</strong> a su existencia.</li>
+        <li>Máximo <strong>10,000 filas</strong> por archivo.</li>
+        <li>Una cantidad de 0 deja el producto registrado sin existencias y <strong>no genera movimiento</strong> (no hubo unidades que mover).</li>
+      </ul>
+
+      <div class="callout danger">
+        <span class="callout-title">Todo o nada</span>
+        <p>Si <strong>una sola fila</strong> tiene un error, <strong>no se importa ninguna</strong>. El sistema te muestra la lista de problemas con el número de fila de Excel (&laquo;Fila 5: falta el código del producto&raquo;, &laquo;El código X no existe en el catálogo&raquo;, etc.). Corrige el archivo y vuelve a intentarlo: nunca quedará una importación a medias.</p>
+      </div>
+    </section>
+
+    <!-- ===================== 7 ===================== -->
+    <section class="chapter" id="movimientos">
+      <h2><span class="num">7</span> Movimientos</h2>
+      <p>Toda variación de existencias queda registrada. Para consultarla entra al inventario de la bodega y abre la pestaña <strong>Movimientos</strong>.</p>
+
+      <h3>7.1 Tipos de movimiento</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Tipo</th><th>Efecto</th><th>Cuándo se genera</th></tr></thead>
+          <tbody>
+            <tr><td><span class="pill plus">Ingreso</span></td><td>Suma</td><td>Al <strong>agregar un producto</strong> manualmente.</td></tr>
+            <tr><td><span class="pill plus">Importación</span></td><td>Suma</td><td>Al importar desde una sucursal, otra bodega o Excel (solo productos con unidades).</td></tr>
+            <tr><td><span class="pill plus">Cancelación de despacho</span></td><td>Suma</td><td>Al <strong>cancelar</strong> un despacho pendiente o <strong>revertir</strong> uno aprobado: las unidades regresan a la bodega.</td></tr>
+            <tr><td><span class="pill minus">Reducción</span></td><td>Resta</td><td>Al <strong>reducir existencias</strong> por merma, daño o ajuste.</td></tr>
+            <tr><td><span class="pill minus">Eliminación</span></td><td>Resta</td><td>Al <strong>eliminar un producto</strong> de la bodega.</td></tr>
+            <tr><td><span class="pill minus">Despacho</span></td><td>Resta</td><td>Al <strong>registrar un despacho</strong>: las unidades salen y quedan reservadas.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>7.2 Cómo leer la tabla</h3>
+      <ul>
+        <li><strong>Fecha:</strong> día y hora del movimiento.</li>
+        <li><strong>Cantidad:</strong> con signo; en verde si suma (<code>+30</code>) y en rojo si resta (<code>-30</code>).</li>
+        <li><strong>Existencia:</strong> muestra el saldo <em>antes &rarr; después</em> (por ejemplo <code>100 &rarr; 70</code>), para que puedas seguir la cuenta.</li>
+        <li><strong>Usuario:</strong> quién lo hizo.</li>
+        <li><strong>Detalle:</strong> el motivo. Los movimientos que vienen de un despacho indican además <em>Despacho #N</em>.</li>
+      </ul>
+
+      <h3>7.3 Filtros</h3>
+      <p>Puedes combinar: <strong>Tipo de movimiento</strong>, un <strong>rango de fechas</strong> (inicio y fin) y una <strong>búsqueda</strong> por producto, código o motivo. El botón <span class="btn light">Limpiar</span> quita todos los filtros.</p>
+    </section>
+
+    <!-- ===================== 8 ===================== -->
+    <section class="chapter" id="despachos">
+      <h2><span class="num">8</span> Despachos</h2>
+      <p>Un despacho traslada productos de una bodega a una sucursal. Cada uno tiene un número (por ejemplo <code>000012</code>), una bodega de origen, una sucursal destino, quién lo despacha, quién recibe y un <strong>estado</strong>.</p>
+
+      <h3>8.1 Estados de un despacho</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Estado</th><th>Significa</th><th>Qué puede hacerse</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><span class="pill wait">Pendiente de aprobación</span></td>
+              <td>Se registró y las unidades ya salieron de la bodega (están reservadas), pero la sucursal todavía no las recibe en su inventario.</td>
+              <td>Aprobar (administrador) o Cancelar (administrador o bodega).</td>
+            </tr>
+            <tr>
+              <td><span class="pill ok">Realizado</span></td>
+              <td>Fue aprobado: las unidades ya forman parte del inventario de la sucursal.</td>
+              <td>Revertir (solo administrador).</td>
+            </tr>
+            <tr>
+              <td><span class="pill bad">Cancelado</span></td>
+              <td>Se canceló o se revirtió. Las unidades regresaron a la bodega.</td>
+              <td>Nada: es un estado final. Solo consulta.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>8.2 Registrar un despacho</h3>
+      <p>Pulsa <span class="btn">+ Nuevo despacho</span> en el listado de despachos, o el botón del camión en la fila de una bodega (que ya deja la bodega elegida).</p>
+      <ol class="steps">
+        <li>En <strong>Datos del despacho</strong> elige la <strong>Bodega de origen</strong>. Si la bodega tiene sucursal asignada, se propone como destino.</li>
+        <li>Confirma o cambia la <strong>Sucursal destino</strong> (solo aparecen sucursales activas).</li>
+        <li>Escribe quién <strong>Recibe</strong> la mercadería (obligatorio). Lo anota la persona que despacha. Las <strong>Observaciones</strong> son opcionales.</li>
+        <li>En <strong>Detalle de productos</strong>, escanea o escribe el <strong>código</strong> y presiona <kbd>Enter</kbd>, o pulsa la lupa para ver los productos de esa bodega.</li>
+        <li>Debajo del producto verás <em>Disponible en bodega</em> y su costo. Escribe la <strong>cantidad</strong> y pulsa <span class="btn">+ Agregar</span>.</li>
+        <li>Repite para cada producto. Si agregas dos veces el mismo, las cantidades se acumulan en una sola línea.</li>
+        <li>Revisa la tabla: para cada línea ves la existencia actual y <em>cuántas quedarán</em>. Con el lápiz cambias la cantidad; con el bote de basura quitas la línea.</li>
+        <li>La barra superior muestra el <strong>total de productos, unidades y el total al costo</strong>. Cuando todo esté bien pulsa <span class="btn">Registrar despacho</span>.</li>
+      </ol>
+
+      <div class="callout note">
+        <span class="callout-title">Cosas que el sistema cuida por ti</span>
+        <ul>
+          <li>Solo puedes despachar productos que la bodega tiene, y <strong>hasta su existencia actual</strong>.</li>
+          <li>La bodega de origen se bloquea mientras haya productos en el detalle. Para cambiarla, quita primero las líneas.</li>
+          <li>El <strong>costo</strong> lo toma el sistema del catálogo; nadie lo escribe. Así el total al costo es confiable.</li>
+          <li>Tú no eliges &laquo;quién despacha&raquo;: se registra automáticamente con tu usuario.</li>
+        </ul>
+      </div>
+
+      <p>Al registrar, el despacho queda <span class="pill wait">Pendiente de aprobación</span> y se te avisa que las unidades ya salieron de la bodega.</p>
+
+      <h3>8.3 El listado de despachos</h3>
+      <p>Muestra número, fecha, bodega (y quién despachó), sucursal destino, quién recibe, cantidad de productos, total y estado. Arriba puedes filtrar por <strong>estado</strong>, por <strong>bodega</strong> y buscar por número, bodega, sucursal o quien recibe.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Botón</th><th>Qué hace</th><th>Quién lo ve</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Ver detalle</strong> (ojo)</td><td>Abre el detalle completo del despacho.</td><td>Todos</td></tr>
+            <tr><td><strong>Imprimir comprobante</strong> (impresora)</td><td>Genera el comprobante en PDF.</td><td>Todos</td></tr>
+            <tr><td><strong>Aprobar despacho</strong> (visto)</td><td>Aprueba un despacho pendiente.</td><td>Solo administrador, en pendientes</td></tr>
+            <tr><td><strong>Cancelar despacho</strong> (prohibido)</td><td>Cancela un despacho pendiente.</td><td>Administrador y bodega, en pendientes</td></tr>
+            <tr><td><strong>Revertir despacho aprobado</strong> (prohibido)</td><td>Deshace un despacho ya aprobado.</td><td>Solo administrador, en realizados</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>8.4 El detalle de un despacho</h3>
+      <p>La ventana de detalle reúne: total al costo, estado, unidades despachadas, bodega de origen, sucursal destino, <strong>recibido por</strong>, <strong>despachado por</strong>, fecha de registro, las observaciones y, si aplica, quién y cuándo lo aprobó o canceló junto con el <strong>motivo de la cancelación</strong>. Abajo aparece cada producto con la <strong>existencia que tenía la bodega al momento del despacho</strong>, la cantidad, el costo unitario y el subtotal.</p>
+      <p>Desde allí también puedes imprimir el comprobante y, según tu rol y el estado, aprobar, cancelar o revertir.</p>
+
+      <h3>8.5 Imprimir el comprobante</h3>
+      <p>El comprobante es el documento que acompaña la mercadería. Incluye el número, las fechas, la bodega, la sucursal, quién despacha y quién recibe, el detalle con costos y el total, y espacios para firmas. Se puede imprimir en cualquier estado.</p>
+
+      <h3>8.6 Aprobar un despacho <small style="font-weight:400;color:var(--muted)">(administrador)</small></h3>
+      <ol class="steps">
+        <li>Cuando la mercadería llegó a la sucursal, localiza el despacho <span class="pill wait">Pendiente de aprobación</span>.</li>
+        <li>Pulsa <span class="btn green">Aprobar</span> (en la fila o en el detalle).</li>
+        <li>El sistema pregunta <em>&laquo;¿Aprobar este despacho?&raquo;</em> y recuerda a qué sucursal ingresarán las existencias. Confirma con <strong>Sí, aprobar</strong>.</li>
+      </ol>
+      <p>Resultado: el despacho pasa a <span class="pill ok">Realizado</span>, las unidades se suman al inventario de la sucursal destino y quedan en su kardex como <em>&laquo;Ingreso por despacho de bodega&raquo;</em>. Queda registrado quién aprobó y cuándo.</p>
+      <div class="callout warn">
+        <span class="callout-title">Antes de aprobar</span>
+        <p>La aprobación suma stock real a la sucursal. Aprueba solo cuando la mercadería llegó y se verificó; si te equivocas, un administrador puede <a href="#revertir">revertirla</a>, pero conviene evitarlo.</p>
+      </div>
+
+      <h3>8.7 Cancelar un despacho pendiente</h3>
+      <ol class="steps">
+        <li>En el despacho pendiente pulsa <span class="btn red">Cancelar despacho</span>.</li>
+        <li>Escribe el <strong>motivo</strong> (obligatorio, hasta 300 caracteres).</li>
+        <li>Confirma con <strong>Sí, cancelar despacho</strong>.</li>
+      </ol>
+      <p>Las unidades reservadas <strong>regresan a la bodega</strong> y se registra un movimiento de <em>Cancelación de despacho</em>. La sucursal nunca llegó a recibir nada, así que su inventario no cambia.</p>
+
+      <h3 id="revertir">8.8 Revertir un despacho aprobado <small style="font-weight:400;color:var(--muted)">(solo administrador)</small></h3>
+      <p>Sirve para deshacer un despacho que ya fue aprobado: por error de cantidades, porque la mercadería no llegó, o por cualquier otra razón.</p>
+      <ol class="steps">
+        <li>En el despacho <span class="pill ok">Realizado</span> pulsa <span class="btn red">Revertir despacho</span>.</li>
+        <li>Lee el aviso: las unidades saldrán de la sucursal destino y regresarán a la bodega.</li>
+        <li>Escribe el <strong>motivo de la reversión</strong> (obligatorio) y confirma con <strong>Sí, revertir despacho</strong>.</li>
+      </ol>
+      <p>Resultado: el despacho pasa a <span class="pill bad">Cancelado</span>; en la sucursal queda un movimiento de salida (<em>&laquo;Reversión de despacho de bodega&raquo;</em>) y en la bodega uno de <em>Cancelación de despacho</em> con el motivo <em>&laquo;Reversión del despacho #N&raquo;</em>.</p>
+
+      <div class="callout danger">
+        <span class="callout-title">Cuándo no se puede revertir</span>
+        <p>Si la sucursal <strong>ya vendió o movió</strong> parte de esas unidades y no cuenta con todas, la reversión se rechaza por completo y no cambia nada. El mensaje indica cuál sucursal no tiene las unidades. En ese caso, primero hay que regularizar el inventario de la sucursal.</p>
+      </div>
+      <div class="callout note">
+        <span class="callout-title">Sobre el registro de auditoría</span>
+        <p>El despacho guarda un único dato de &laquo;resuelto por&raquo;. Al revertir, ese dato pasa a ser <strong>quien hizo la reversión</strong>. La aprobación original sigue visible en los movimientos de la sucursal, con su fecha y usuario.</p>
+      </div>
+    </section>
+
+    <!-- ===================== 9 ===================== -->
+    <section class="chapter" id="ciclo">
+      <h2><span class="num">9</span> Qué pasa con las existencias</h2>
+      <p>Este ejemplo resume el recorrido de un mismo producto. Supón que la <strong>Bodega Central</strong> tiene 100 unidades y la sucursal <strong>Norte</strong> tiene 20.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Qué se hace</th><th class="c">Bodega</th><th class="c">Sucursal Norte</th><th>Estado del despacho</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Situación inicial</td><td class="c">100</td><td class="c">20</td><td>&mdash;</td></tr>
+            <tr><td>Se <strong>registra</strong> un despacho de 30 unidades</td><td class="c"><strong>70</strong></td><td class="c">20</td><td><span class="pill wait">Pendiente</span></td></tr>
+            <tr><td>El administrador lo <strong>aprueba</strong></td><td class="c">70</td><td class="c"><strong>50</strong></td><td><span class="pill ok">Realizado</span></td></tr>
+            <tr><td>El administrador lo <strong>revierte</strong> (si la sucursal aún tiene las 30)</td><td class="c"><strong>100</strong></td><td class="c"><strong>20</strong></td><td><span class="pill bad">Cancelado</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>Alternativa:</strong> si en lugar de aprobarlo se <em>cancela</em> estando pendiente, la bodega vuelve a 100 y la sucursal nunca cambió (siempre 20).</p>
+
+      <div class="callout tip">
+        <span class="callout-title">¿Por qué la bodega descuenta al registrar y no al aprobar?</span>
+        <p>Para que la mercadería <strong>no pueda despacharse dos veces</strong>. Mientras el despacho espera aprobación, esas unidades ya no están disponibles para otro despacho. Si el despacho no se concreta, regresan a la bodega.</p>
+      </div>
+    </section>
+
+    <!-- ===================== 10 ===================== -->
+    <section class="chapter" id="reportes">
+      <h2><span class="num">10</span> Reportes</h2>
+      <p>En <strong>Reportes</strong> hay una categoría llamada <strong>Bodegas</strong> con tres informes. Todos se pueden descargar en <strong>PDF</strong> o <strong>Excel (XLSX)</strong>.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Reporte</th><th>Qué contiene</th><th>Filtros</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>Existencias de bodega</strong></td>
+              <td>Productos, existencias y valor al costo del inventario de una bodega.</td>
+              <td>Bodega (obligatorio)</td>
+            </tr>
+            <tr>
+              <td><strong>Movimientos de bodega</strong></td>
+              <td>Ingresos, importaciones, reducciones, eliminaciones y despachos de una bodega en un período.</td>
+              <td>Rango de fechas y bodega (obligatorios)</td>
+            </tr>
+            <tr>
+              <td><strong>Despachos de bodega</strong></td>
+              <td>Despachos a sucursales por período, con su valor al costo.</td>
+              <td>Rango de fechas; bodega y estado (opcionales)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ol class="steps">
+        <li>Entra a <strong>Reportes</strong> y busca la categoría <strong>Bodegas</strong>.</li>
+        <li>Elige el reporte y completa sus filtros.</li>
+        <li>Selecciona el formato (PDF o XLSX) y genéralo.</li>
+      </ol>
+    </section>
+
+    <!-- ===================== 11 ===================== -->
+    <section class="chapter" id="faq">
+      <h2><span class="num">11</span> Preguntas y problemas frecuentes</h2>
+
+      <details>
+        <summary>No puedo agregar productos, importar ni despachar: los botones están desactivados.</summary>
+        <p>La bodega está <strong>inactiva</strong>. Edítala y cambia su estado a Activo. Mientras esté inactiva solo se puede consultar.</p>
+      </details>
+
+      <details>
+        <summary>Me dice &laquo;Existencias insuficientes en la bodega&raquo;.</summary>
+        <p>Intentaste despachar o reducir más unidades de las que hay. Revisa la existencia en la pestaña <em>Existencias</em>. Si ya tienes ese producto en el detalle del despacho, recuerda que esas unidades también cuentan.</p>
+      </details>
+
+      <details>
+        <summary>El producto que busco no aparece al crear un despacho.</summary>
+        <p>Solo se pueden despachar productos que <strong>ya están en el inventario de esa bodega</strong>. Agrégalo primero desde <em>Inventario &rarr; Agregar producto</em> o impórtalo.</p>
+      </details>
+
+      <details>
+        <summary>La importación de Excel dice que no se importó nada.</summary>
+        <p>Es normal: si una fila falla, no se importa ninguna. Lee la lista de problemas (cada uno indica la fila), corrígelos en el archivo y vuelve a subirlo. Los errores más comunes son: código que no existe en el catálogo, código repetido, cantidad vacía o con decimales, y encabezados cambiados. Descarga la plantilla si dudas del formato.</p>
+      </details>
+
+      <details>
+        <summary>No puedo copiar el inventario de una sucursal o de otra bodega.</summary>
+        <p>Copiar solo está disponible en bodegas <strong>vacías</strong>. Si la bodega ya tiene productos, usa la importación desde Excel, que suma a lo existente. Tampoco se puede copiar el inventario de una bodega a sí misma.</p>
+      </details>
+
+      <details>
+        <summary>No veo el botón Aprobar.</summary>
+        <p>Aprobar es exclusivo del rol <strong>Administrador</strong>. Si eres de Bodega, pide a un administrador que apruebe el despacho. El botón tampoco aparece en despachos que ya no están pendientes.</p>
+      </details>
+
+      <details>
+        <summary>Me equivoqué en las cantidades de un despacho que ya registré.</summary>
+        <p>Un despacho registrado no se edita. Si está <strong>pendiente</strong>, cancélalo (con motivo) y registra uno nuevo correcto. Si ya fue aprobado, un administrador debe <a href="#revertir">revertirlo</a> y luego registrar otro.</p>
+      </details>
+
+      <details>
+        <summary>Al revertir me dice que la sucursal ya no cuenta con todas las unidades.</summary>
+        <p>La sucursal ya vendió o trasladó parte de lo que recibió, y no es posible dejar su inventario en negativo. Regulariza primero el inventario de la sucursal y vuelve a intentar la reversión.</p>
+      </details>
+
+      <details>
+        <summary>La bodega no tiene sucursal asignada, ¿puedo despachar?</summary>
+        <p>Sí. Simplemente elige la sucursal destino manualmente en cada despacho.</p>
+      </details>
+
+      <details>
+        <summary>¿Un producto con existencia cero se puede despachar?</summary>
+        <p>No: no hay unidades que despachar. Sin embargo, aparece en la lista de existencias para que se sepa que la bodega lo maneja; cuando le ingreses unidades podrás despacharlo.</p>
+      </details>
+
+      <details>
+        <summary>¿Puedo ver quién hizo cada cosa?</summary>
+        <p>Sí. Los movimientos registran el usuario, y los despachos muestran quién despachó, quién aprobó o canceló, y quién recibió (este último lo escribe quien despacha).</p>
+      </details>
+    </section>
+
+    <!-- ===================== 12 ===================== -->
+    <section class="chapter" id="resumen">
+      <h2><span class="num">12</span> Resumen rápido</h2>
+
+      <div class="cards">
+        <div class="card">
+          <h4>Empezar</h4>
+          <p>Bodegas &rarr; Listado &rarr; <em>Nueva</em>. Elige sucursal y, si quieres, carga el inventario inicial.</p>
+        </div>
+        <div class="card">
+          <h4>Llevar el inventario</h4>
+          <p><em>Agregar</em> suma, <em>Reducir</em> resta con motivo, <em>Eliminar</em> retira el producto. Todo queda en Movimientos.</p>
+        </div>
+        <div class="card">
+          <h4>Enviar mercadería</h4>
+          <p>Nuevo despacho &rarr; productos y cantidades &rarr; <em>Registrar</em>. Queda pendiente y reserva el stock.</p>
+        </div>
+        <div class="card">
+          <h4>Cerrar el ciclo</h4>
+          <p>El administrador <em>aprueba</em> cuando llega la mercadería. Si hay un error: <em>cancelar</em> (pendiente) o <em>revertir</em> (aprobado).</p>
+        </div>
+      </div>
+
+      <div class="callout tip">
+        <span class="callout-title">Reglas de oro</span>
+        <ul>
+          <li>Toda reducción, eliminación, cancelación o reversión lleva un <strong>motivo</strong>.</li>
+          <li>El inventario de una bodega es <strong>independiente</strong> del de las sucursales.</li>
+          <li>Las unidades salen de la bodega <strong>al registrar</strong> y entran a la sucursal <strong>al aprobar</strong>.</li>
+          <li>Una importación de Excel es <strong>todo o nada</strong>.</li>
+          <li>Una bodega inactiva conserva su historial pero ya no admite cambios.</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">Manual de usuario &middot; Bodegas y Despachos de bodega &middot; D'Todo</footer>
+    </section>
+
+  </main>
+</div>
+
+<a href="#introduccion" class="to-top" aria-label="Volver al inicio del manual">&uarr; Arriba</a>
+
+<script>
+  // Resalta en el índice el capítulo que se está leyendo.
+  (function () {
+    var enlaces = Array.prototype.slice.call(document.querySelectorAll('.toc a'));
+    var capitulos = enlaces
+      .map(function (a) { return document.querySelector(a.getAttribute('href')); })
+      .filter(Boolean);
+    if (!('IntersectionObserver' in window) || capitulos.length === 0) { return; }
+
+    var observador = new IntersectionObserver(function (entradas) {
+      entradas.forEach(function (entrada) {
+        if (!entrada.isIntersecting) { return; }
+        enlaces.forEach(function (a) {
+          a.classList.toggle('active', a.getAttribute('href') === '#' + entrada.target.id);
+        });
+      });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+
+    capitulos.forEach(function (capitulo) { observador.observe(capitulo); });
+  })();
+</script>
+</body>
+</html>

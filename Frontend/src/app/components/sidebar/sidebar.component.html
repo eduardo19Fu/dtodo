@@ -116,8 +116,9 @@
         [class.is-open]="menuAbierto('bodegas')" [class.is-active]="router.url.startsWith('/bodegas') || router.url.startsWith('/despachos-bodega')">
         <button type="button" class="menu-link group-trigger" (click)="alternarMenu('bodegas')"
           [attr.aria-expanded]="menuAbierto('bodegas')" title="Bodegas">
-          <span class="menu-icon"><i class="fas fa-warehouse" aria-hidden="true"></i></span>
+          <span class="menu-icon"><i class="fas fa-warehouse" aria-hidden="true"></i><span class="new-dot" aria-hidden="true"></span></span>
           <span class="menu-label">Bodegas</span>
+          <span class="new-badge">Nuevo</span>
           <i class="fas fa-chevron-down menu-chevron" aria-hidden="true"></i>
         </button>
         <div class="submenu" *ngIf="menuAbierto('bodegas')">
@@ -125,6 +126,9 @@
             [class.active]="router.url.startsWith('/bodegas')" (click)="notificarNavegacion()"><span></span>Listado</a>
           <a *ngIf="coincide('despachos', 'despachos de bodega')" [routerLink]="['/despachos-bodega/index']" class="submenu-link"
             [class.active]="router.url.startsWith('/despachos-bodega')" (click)="notificarNavegacion()"><span></span>Despachos</a>
+          <a *ngIf="coincide('tutorial', 'manual', 'ayuda')" href="assets/manual/manual-bodegas.html" target="_blank" rel="noopener"
+            class="submenu-link" (click)="notificarNavegacion()" title="Manual de usuario de bodegas y despachos (se abre en una pestaña nueva)">
+            <span></span>Tutorial<span class="new-badge">Nuevo</span></a>
         </div>
       </section>
 

@@ -193,6 +193,36 @@
   flex: 0 0 28px;
   font-size: 13px;
   justify-content: center;
+  position: relative;
+}
+
+/* Señal de funcionalidad nueva: etiqueta con el menú abierto y puntito con el menú colapsado. */
+.new-badge,
+.submenu-link > span.new-badge {
+  background: #e8a317;
+  border-radius: 999px;
+  color: #1c1500;
+  flex: 0 0 auto;
+  font-size: 10px;
+  font-weight: 800;
+  height: auto;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  margin-left: auto;
+  padding: 3px 7px;
+  text-transform: uppercase;
+  width: auto;
+}
+.menu-link > .new-badge { margin-left: 0; }
+.new-dot {
+  background: #e8a317;
+  border-radius: 50%;
+  display: none;
+  height: 8px;
+  position: absolute;
+  right: 1px;
+  top: -3px;
+  width: 8px;
 }
 
 .menu-label { flex: 1 1 auto; min-width: 0; }
@@ -249,6 +279,7 @@
 .is-collapsed .brand-copy,
 .is-collapsed .user-copy,
 .is-collapsed .menu-label,
+.is-collapsed .new-badge,
 .is-collapsed .menu-chevron,
 .is-collapsed .navigation-label,
 .is-collapsed .sidebar-search { display: none; opacity: 0; }
@@ -257,6 +288,7 @@
 .is-collapsed .menu-link { justify-content: center; padding-left: 8px; padding-right: 8px; }
 .is-collapsed .menu-link:hover { transform: none; }
 .is-collapsed .submenu { display: none; }
+.is-collapsed .new-dot { display: block; }
 .is-collapsed .logout-button { justify-content: center; padding: 9px; }
 
 @keyframes submenu-in {
@@ -272,6 +304,8 @@
   .app-sidebar.is-collapsed .menu-chevron,
   .app-sidebar.is-collapsed .navigation-label,
   .app-sidebar.is-collapsed .sidebar-search { display: block; opacity: 1; }
+  .app-sidebar.is-collapsed .new-badge { display: inline-block; opacity: 1; }
+  .app-sidebar.is-collapsed .new-dot { display: none; }
   .app-sidebar.is-collapsed .user-card { justify-content: flex-start; padding: 11px; }
   .app-sidebar.is-collapsed .menu-link { justify-content: flex-start; padding: 7px 10px; }
   .app-sidebar.is-collapsed .logout-button { justify-content: flex-start; padding: 9px 22px; }
