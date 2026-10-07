@@ -64,14 +64,13 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
 
-      - name: Instalar hook de certbot y generar el keystore SSL
+      - name: Verificar que existe el keystore SSL (lo mantiene el hook de certbot)
         run: |
-          scp -o StrictHostKeyChecking=no             deploy/certbot/dtodo-p12-deploy-hook.sh             ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/tmp/dtodo-p12-deploy-hook.sh
           ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} '
-            set -e
-            sudo -n install -m 0755 /tmp/dtodo-p12-deploy-hook.sh /etc/letsencrypt/renewal-hooks/deploy/dtodo-p12.sh
-            rm -f /tmp/dtodo-p12-deploy-hook.sh
-            sudo -n env DTODO_NO_RESTART=1 /etc/letsencrypt/renewal-hooks/deploy/dtodo-p12.sh
+            if [ ! -s /var/apps/dtodo/ssl/dtodo.p12 ]; then
+              echo "::error::Falta /var/apps/dtodo/ssl/dtodo.p12. Instalar el hook como root (ver deploy/certbot/README.md) antes de desplegar."
+              exit 1
+            fi
           '
 
       - name: Subir jar del backend
@@ -143,14 +142,13 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
 
-      - name: Instalar hook de certbot y generar el keystore SSL
+      - name: Verificar que existe el keystore SSL (lo mantiene el hook de certbot)
         run: |
-          scp -o StrictHostKeyChecking=no             deploy/certbot/dtodo-p12-deploy-hook.sh             ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/tmp/dtodo-p12-deploy-hook.sh
           ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} '
-            set -e
-            sudo -n install -m 0755 /tmp/dtodo-p12-deploy-hook.sh /etc/letsencrypt/renewal-hooks/deploy/dtodo-p12.sh
-            rm -f /tmp/dtodo-p12-deploy-hook.sh
-            sudo -n env DTODO_NO_RESTART=1 /etc/letsencrypt/renewal-hooks/deploy/dtodo-p12.sh
+            if [ ! -s /var/apps/dtodo/ssl/dtodo.p12 ]; then
+              echo "::error::Falta /var/apps/dtodo/ssl/dtodo.p12. Instalar el hook como root (ver deploy/certbot/README.md) antes de desplegar."
+              exit 1
+            fi
           '
 
       - name: Subir jar del backend

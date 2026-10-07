@@ -10,17 +10,24 @@ El keystore se genera en el VPS desde el certificado Let's Encrypt de `dtodojala
   se pueda abrir y lo reemplaza de forma atómica.
 - Se instala en `/etc/letsencrypt/renewal-hooks/deploy/dtodo-p12.sh`. Certbot lo ejecuta solo después de
   cada renovación exitosa; el hook reinicia `dtodo-api.service` y `dtodo-dev-api.service`.
-- El workflow `Deploy` reinstala el hook y refresca el `.p12` en cada despliegue (sin reiniciar nada: el
-  despliegue reinicia el servicio), por lo que el primer despliegue tras este cambio deja todo configurado.
+- El hook se instala **una sola vez, como root** (ver abajo). El workflow `Deploy` no puede hacerlo: su usuario
+  SSH solo tiene `sudo` sin contraseña para reiniciar servicios. Antes de subir el jar solo verifica que
+  `/var/apps/dtodo/ssl/dtodo.p12` exista y, si no, falla sin tocar nada.
 - `application-prod.properties` y `application-test.properties` leen la ruta y la clave de
   `DTODO_SSL_KEYSTORE` y `DTODO_SSL_KEYSTORE_PASSWORD` (por defecto `file:/var/apps/dtodo/ssl/dtodo.p12` y `12345`).
 
 ## Requisitos en el VPS
 
 - `certbot-renew.timer` habilitado (`systemctl enable --now certbot-renew.timer`).
-- El usuario SSH del workflow (`VPS_USER`) debe poder ejecutar `sudo -n` sin contraseña (como mínimo
-  `install` y el propio hook); si es `root` no hay nada que hacer.
 - `setfacl` disponible (paquete `acl`) si algún servicio del backend corre con un usuario distinto de root.
+
+## Instalación inicial (una vez, como root en el VPS)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/eduardo19Fu/dtodo/main/deploy/certbot/dtodo-p12-deploy-hook.sh -o /etc/letsencrypt/renewal-hooks/deploy/dtodo-p12.sh && chmod 0755 /etc/letsencrypt/renewal-hooks/deploy/dtodo-p12.sh && DTODO_NO_RESTART=1 /etc/letsencrypt/renewal-hooks/deploy/dtodo-p12.sh
+```
+
+Si el script del hook cambia en el repositorio, hay que repetir este paso para actualizarlo en el VPS.
 
 ## Operación manual
 
