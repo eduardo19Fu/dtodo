@@ -64,6 +64,16 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
 
+      - name: Instalar hook de certbot y generar el keystore SSL
+        run: |
+          scp -o StrictHostKeyChecking=no             deploy/certbot/dtodo-p12-deploy-hook.sh             ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/tmp/dtodo-p12-deploy-hook.sh
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} '
+            set -e
+            sudo -n install -m 0755 /tmp/dtodo-p12-deploy-hook.sh /etc/letsencrypt/renewal-hooks/deploy/dtodo-p12.sh
+            rm -f /tmp/dtodo-p12-deploy-hook.sh
+            sudo -n env DTODO_NO_RESTART=1 /etc/letsencrypt/renewal-hooks/deploy/dtodo-p12.sh
+          '
+
       - name: Subir jar del backend
         run: |
           scp -o StrictHostKeyChecking=no \
@@ -132,6 +142,16 @@ jobs:
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
+
+      - name: Instalar hook de certbot y generar el keystore SSL
+        run: |
+          scp -o StrictHostKeyChecking=no             deploy/certbot/dtodo-p12-deploy-hook.sh             ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/tmp/dtodo-p12-deploy-hook.sh
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} '
+            set -e
+            sudo -n install -m 0755 /tmp/dtodo-p12-deploy-hook.sh /etc/letsencrypt/renewal-hooks/deploy/dtodo-p12.sh
+            rm -f /tmp/dtodo-p12-deploy-hook.sh
+            sudo -n env DTODO_NO_RESTART=1 /etc/letsencrypt/renewal-hooks/deploy/dtodo-p12.sh
+          '
 
       - name: Subir jar del backend
         run: |
