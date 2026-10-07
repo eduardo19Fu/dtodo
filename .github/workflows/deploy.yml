@@ -64,6 +64,15 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
 
+      - name: Verificar que existe el keystore SSL (lo mantiene el hook de certbot)
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} '
+            if [ ! -s /var/apps/dtodo/ssl/dtodo.p12 ]; then
+              echo "::error::Falta /var/apps/dtodo/ssl/dtodo.p12. Instalar el hook como root (ver deploy/certbot/README.md) antes de desplegar."
+              exit 1
+            fi
+          '
+
       - name: Subir jar del backend
         run: |
           scp -o StrictHostKeyChecking=no \
@@ -132,6 +141,15 @@ jobs:
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
+
+      - name: Verificar que existe el keystore SSL (lo mantiene el hook de certbot)
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} '
+            if [ ! -s /var/apps/dtodo/ssl/dtodo.p12 ]; then
+              echo "::error::Falta /var/apps/dtodo/ssl/dtodo.p12. Instalar el hook como root (ver deploy/certbot/README.md) antes de desplegar."
+              exit 1
+            fi
+          '
 
       - name: Subir jar del backend
         run: |
