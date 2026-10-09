@@ -9,6 +9,7 @@ import { InventarioBodegaDto } from 'src/app/dtos/inventario-bodega-dto';
 import {
   MovimientoBodegaDto, TIPOS_MOVIMIENTO_BODEGA, TipoMovimientoBodega, TipoMovimientoBodegaInfo
 } from 'src/app/dtos/movimiento-bodega-dto';
+import { AuthService } from 'src/app/services/auth.service';
 import { BodegaService } from 'src/app/services/bodega.service';
 import { ModoMovimientoBodega } from '../modal-movimiento-bodega/modal-movimiento-bodega.component';
 
@@ -54,7 +55,8 @@ export class InventarioBodegaComponent implements OnInit, OnDestroy {
 
   constructor(
     private bodegaService: BodegaService,
-    private activatedRoute: ActivatedRoute
+    private activatedRoute: ActivatedRoute,
+    private auth: AuthService
   ) { }
 
   ngOnInit(): void {
@@ -75,6 +77,11 @@ export class InventarioBodegaComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.suscripciones.unsubscribe();
+  }
+
+  /** Reducir existencias y eliminar productos es una decisión del administrador: el rol Bodega solo suma y despacha. */
+  get puedeAjustar(): boolean {
+    return this.auth.hasRole('ROLE_ADMIN');
   }
 
   get activa(): boolean {

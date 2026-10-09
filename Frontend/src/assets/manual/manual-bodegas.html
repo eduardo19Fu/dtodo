@@ -387,7 +387,7 @@
         </div>
         <div class="card">
           <h4>Despacho</h4>
-          <p>El traslado de productos desde una bodega hacia una sucursal. Debe ser <strong>aprobado</strong> por un administrador para sumar al inventario de la sucursal.</p>
+          <p>El traslado de productos desde una bodega hacia una sucursal <strong>o hacia otra bodega</strong>. Debe ser <strong>aprobado</strong> por un administrador para sumar al inventario del destino.</p>
         </div>
       </div>
 
@@ -397,12 +397,12 @@
         <div class="arrow">&rarr;</div>
         <div class="node"><strong>2. Registrar el despacho</strong><span>Las unidades salen de la bodega y quedan reservadas</span></div>
         <div class="arrow">&rarr;</div>
-        <div class="node"><strong>3. Aprobarlo</strong><span>Las unidades entran al inventario de la sucursal</span></div>
+        <div class="node"><strong>3. Aprobarlo</strong><span>Las unidades entran al inventario de la sucursal o de la otra bodega</span></div>
       </div>
 
       <div class="callout note">
         <span class="callout-title">Importante</span>
-        <p>El inventario de una bodega y el de una sucursal <strong>no se mezclan</strong>. Si copias el inventario de una sucursal a una bodega, solo se toma una &laquo;fotografía&raquo; inicial: después cada uno se administra por separado y lo único que los conecta son los despachos aprobados.</p>
+        <p>El inventario de una bodega y el de una sucursal <strong>no se mezclan</strong>. Si copias el inventario de una sucursal a una bodega, solo se toma una &laquo;fotografía&raquo; inicial: después cada uno se administra por separado y lo único que los conecta son los despachos aprobados (a una sucursal o a otra bodega).</p>
       </div>
     </section>
 
@@ -419,9 +419,10 @@
           <tbody>
             <tr><td>Ver bodegas, inventario, movimientos y despachos</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
             <tr><td>Crear y editar bodegas (incluido activar o desactivar)</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
-            <tr><td>Agregar, reducir y eliminar productos del inventario</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
+            <tr><td>Agregar productos al inventario</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
+            <tr><td><strong>Reducir existencias</strong> y <strong>eliminar productos</strong> del inventario</td><td class="c ok-mark">Sí</td><td class="c no-mark">No</td></tr>
             <tr><td>Importar inventario (sucursal, otra bodega o Excel)</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
-            <tr><td>Registrar un despacho</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
+            <tr><td>Registrar un despacho a una sucursal o un traslado a otra bodega</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
             <tr><td>Imprimir el comprobante de un despacho</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
             <tr><td>Cancelar un despacho <strong>pendiente</strong></td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
             <tr><td>Consultar los reportes de bodega</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
@@ -434,6 +435,10 @@
       <div class="callout warn">
         <span class="callout-title">Tenlo presente</span>
         <p>Los usuarios con rol <strong>Bodega</strong> pueden trabajar con <strong>todas</strong> las bodegas, no solo con una. Si necesitas que alguien vea únicamente una bodega, avisa al equipo de sistemas antes de asignarle el rol.</p>
+      </div>
+      <div class="callout note">
+        <span class="callout-title">¿Por qué Bodega no puede reducir ni eliminar?</span>
+        <p>Para que una diferencia de inventario no se corrija &laquo;en silencio&raquo;. Si a quien opera la bodega no le cuadra el conteo, lo reporta y el <strong>administrador</strong> hace el ajuste, que queda registrado con su usuario y su motivo.</p>
       </div>
     </section>
 
@@ -533,6 +538,7 @@
       <h3>5.1 Pestaña Existencias</h3>
       <p>Lista cada producto de la bodega con su código, nombre, <strong>existencia</strong>, <strong>stock mínimo</strong>, <strong>costo unitario</strong> y la fecha de la última actualización. Puedes buscar por código o por nombre.</p>
       <ul>
+        <li>El rol <strong>Bodega</strong> no ve la columna <em>Opciones</em>: reducir y eliminar son exclusivos del administrador (ver <a href="#roles">Roles y permisos</a>).</li>
         <li>La existencia aparece con un indicador de color. Si llega al <strong>stock mínimo</strong> o por debajo, se resalta como alerta; si es <strong>cero</strong>, se marca como agotado.</li>
         <li>Los productos con existencia cero <strong>siguen apareciendo</strong>: así sabes qué productos maneja la bodega aunque hoy no tenga unidades.</li>
         <li>El <strong>costo unitario</strong> es el precio de compra del producto en el catálogo. Lo asigna el sistema; no se escribe a mano.</li>
@@ -550,7 +556,7 @@
       </ol>
       <p>Si el producto ya estaba en la bodega, las unidades <strong>se suman</strong> a su existencia; no se crea un duplicado.</p>
 
-      <h3>5.3 Reducir existencias</h3>
+      <h3>5.3 Reducir existencias <small style="font-weight:400;color:var(--muted)">(solo administrador)</small></h3>
       <p>Para descontar unidades por <strong>merma, daño, pérdida o ajuste de conteo</strong>, sin retirar el producto de la bodega.</p>
       <ol class="steps">
         <li>En la fila del producto pulsa el botón <strong>Reducir existencias</strong> (signo menos).</li>
@@ -559,7 +565,7 @@
         <li>Pulsa <span class="btn">Registrar reducción</span>.</li>
       </ol>
 
-      <h3>5.4 Eliminar un producto de la bodega</h3>
+      <h3>5.4 Eliminar un producto de la bodega <small style="font-weight:400;color:var(--muted)">(solo administrador)</small></h3>
       <p>Retira el producto de la lista <strong>descontando toda su existencia</strong>.</p>
       <ol class="steps">
         <li>Pulsa el botón <strong>Eliminar producto de la bodega</strong> (bote de basura) en su fila.</li>
@@ -661,10 +667,12 @@
           <tbody>
             <tr><td><span class="pill plus">Ingreso</span></td><td>Suma</td><td>Al <strong>agregar un producto</strong> manualmente.</td></tr>
             <tr><td><span class="pill plus">Importación</span></td><td>Suma</td><td>Al importar desde una sucursal, otra bodega o Excel (solo productos con unidades).</td></tr>
+            <tr><td><span class="pill plus">Ingreso por despacho</span></td><td>Suma</td><td>Cuando se <strong>aprueba un traslado</strong> desde otra bodega hacia esta.</td></tr>
             <tr><td><span class="pill plus">Cancelación de despacho</span></td><td>Suma</td><td>Al <strong>cancelar</strong> un despacho pendiente o <strong>revertir</strong> uno aprobado: las unidades regresan a la bodega.</td></tr>
             <tr><td><span class="pill minus">Reducción</span></td><td>Resta</td><td>Al <strong>reducir existencias</strong> por merma, daño o ajuste.</td></tr>
             <tr><td><span class="pill minus">Eliminación</span></td><td>Resta</td><td>Al <strong>eliminar un producto</strong> de la bodega.</td></tr>
-            <tr><td><span class="pill minus">Despacho</span></td><td>Resta</td><td>Al <strong>registrar un despacho</strong>: las unidades salen y quedan reservadas.</td></tr>
+            <tr><td><span class="pill minus">Despacho</span></td><td>Resta</td><td>Al <strong>registrar un despacho o un traslado</strong>: las unidades salen y quedan reservadas.</td></tr>
+            <tr><td><span class="pill minus">Reversión de despacho</span></td><td>Resta</td><td>Cuando se <strong>revierte un traslado aprobado</strong>: las unidades salen de la bodega destino.</td></tr>
           </tbody>
         </table>
       </div>
@@ -685,7 +693,7 @@
     <!-- ===================== 8 ===================== -->
     <section class="chapter" id="despachos">
       <h2><span class="num">8</span> Despachos</h2>
-      <p>Un despacho traslada productos de una bodega a una sucursal. Cada uno tiene un número (por ejemplo <code>000012</code>), una bodega de origen, una sucursal destino, quién lo despacha, quién recibe y un <strong>estado</strong>.</p>
+      <p>Un despacho traslada productos de una bodega a una <strong>sucursal</strong> o a <strong>otra bodega</strong> (ver <a href="#traslado">8.3</a>). Cada uno tiene un número (por ejemplo <code>000012</code>), una bodega de origen, un destino, quién lo despacha, quién recibe y un <strong>estado</strong>.</p>
 
       <h3>8.1 Estados de un despacho</h3>
       <div class="table-wrap">
@@ -699,7 +707,7 @@
             </tr>
             <tr>
               <td><span class="pill ok">Realizado</span></td>
-              <td>Fue aprobado: las unidades ya forman parte del inventario de la sucursal.</td>
+              <td>Fue aprobado: las unidades ya forman parte del inventario de la sucursal o de la bodega destino.</td>
               <td>Revertir (solo administrador).</td>
             </tr>
             <tr>
@@ -715,7 +723,7 @@
       <p>Pulsa <span class="btn">+ Nuevo despacho</span> en el listado de despachos, o el botón del camión en la fila de una bodega (que ya deja la bodega elegida).</p>
       <ol class="steps">
         <li>En <strong>Datos del despacho</strong> elige la <strong>Bodega de origen</strong>. Si la bodega tiene sucursal asignada, se propone como destino.</li>
-        <li>Confirma o cambia la <strong>Sucursal destino</strong> (solo aparecen sucursales activas).</li>
+        <li>En <strong>Enviar a</strong> elige <em>Una sucursal</em> y confirma o cambia la <strong>Sucursal destino</strong> (solo aparecen sucursales activas). Para mover mercadería a otra bodega elige <em>Otra bodega (traslado)</em>: ver <a href="#traslado">8.3</a>.</li>
         <li>Escribe quién <strong>Recibe</strong> la mercadería (obligatorio). Lo anota la persona que despacha. Las <strong>Observaciones</strong> son opcionales.</li>
         <li>En <strong>Detalle de productos</strong>, escanea o escribe el <strong>código</strong> y presiona <kbd>Enter</kbd>, o pulsa la lupa para ver los productos de esa bodega.</li>
         <li>Debajo del producto verás <em>Disponible en bodega</em> y su costo. Escribe la <strong>cantidad</strong> y pulsa <span class="btn">+ Agregar</span>.</li>
@@ -736,8 +744,27 @@
 
       <p>Al registrar, el despacho queda <span class="pill wait">Pendiente de aprobación</span> y se te avisa que las unidades ya salieron de la bodega.</p>
 
-      <h3>8.3 El listado de despachos</h3>
-      <p>Muestra número, fecha, bodega (y quién despachó), sucursal destino, quién recibe, cantidad de productos, total y estado. Arriba puedes filtrar por <strong>estado</strong>, por <strong>bodega</strong> y buscar por número, bodega, sucursal o quien recibe.</p>
+      <h3 id="traslado">8.3 Trasladar productos a otra bodega</h3>
+      <p>Si tienes más de una bodega, puedes mover mercadería de una a otra con el mismo flujo de un despacho. Es útil, por ejemplo, para reabastecer una bodega con lo que sobra en otra.</p>
+      <ol class="steps">
+        <li>Pulsa <span class="btn">+ Nuevo despacho</span> y elige la <strong>Bodega de origen</strong>.</li>
+        <li>En <strong>Enviar a</strong> elige <em>Otra bodega (traslado)</em>. En lugar de la sucursal aparece el campo <strong>Bodega destino</strong>, donde se ofrecen las demás bodegas activas (nunca la de origen).</li>
+        <li>Indica quién <strong>Recibe</strong>, agrega los productos y las cantidades igual que en cualquier despacho, y pulsa <span class="btn">Registrar despacho</span>.</li>
+      </ol>
+      <p>Qué pasa con las existencias:</p>
+      <ul>
+        <li><strong>Al registrar:</strong> las unidades salen de la bodega de origen y quedan reservadas (movimiento <em>Despacho</em>, con el motivo &laquo;Despacho #N hacia la bodega X&raquo;).</li>
+        <li><strong>Al aprobar (administrador):</strong> se suman a la bodega destino (movimiento <em>Ingreso por despacho</em>). Si el producto no estaba en esa bodega, se registra en ese momento.</li>
+        <li><strong>Al cancelar un traslado pendiente:</strong> las unidades regresan a la bodega de origen.</li>
+        <li><strong>Al revertir un traslado aprobado (administrador):</strong> se retiran de la bodega destino (movimiento <em>Reversión de despacho</em>) y regresan al origen. Si la bodega destino ya no tiene todas las unidades, la reversión se rechaza sin cambiar nada.</li>
+      </ul>
+      <div class="callout note">
+        <span class="callout-title">Sucursal o bodega, nunca ambas</span>
+        <p>Un despacho tiene un solo destino. En el listado aparece en la columna <strong>Destino</strong>; los traslados se identifican con el nombre de la bodega y la etiqueta <em>Traslado entre bodegas</em>. Los traslados <strong>no tocan</strong> el inventario de ninguna sucursal.</p>
+      </div>
+
+      <h3>8.4 El listado de despachos</h3>
+      <p>Muestra número, fecha, bodega (y quién despachó), destino (sucursal o bodega), quién recibe, cantidad de productos, total y estado. Arriba puedes filtrar por <strong>estado</strong>, por <strong>bodega</strong> y buscar por número, bodega, sucursal o quien recibe.</p>
 
       <div class="table-wrap">
         <table>
@@ -752,14 +779,14 @@
         </table>
       </div>
 
-      <h3>8.4 El detalle de un despacho</h3>
-      <p>La ventana de detalle reúne: total al costo, estado, unidades despachadas, bodega de origen, sucursal destino, <strong>recibido por</strong>, <strong>despachado por</strong>, fecha de registro, las observaciones y, si aplica, quién y cuándo lo aprobó o canceló junto con el <strong>motivo de la cancelación</strong>. Abajo aparece cada producto con la <strong>existencia que tenía la bodega al momento del despacho</strong>, la cantidad, el costo unitario y el subtotal.</p>
+      <h3>8.5 El detalle de un despacho</h3>
+      <p>La ventana de detalle reúne: total al costo, estado, unidades despachadas, bodega de origen, sucursal o bodega destino, <strong>recibido por</strong>, <strong>despachado por</strong>, fecha de registro, las observaciones y, si aplica, quién y cuándo lo aprobó o canceló junto con el <strong>motivo de la cancelación</strong>. Abajo aparece cada producto con la <strong>existencia que tenía la bodega al momento del despacho</strong>, la cantidad, el costo unitario y el subtotal.</p>
       <p>Desde allí también puedes imprimir el comprobante y, según tu rol y el estado, aprobar, cancelar o revertir.</p>
 
-      <h3>8.5 Imprimir el comprobante</h3>
+      <h3>8.6 Imprimir el comprobante</h3>
       <p>El comprobante es el documento que acompaña la mercadería. Incluye el número, las fechas, la bodega, la sucursal, quién despacha y quién recibe, el detalle con costos y el total, y espacios para firmas. Se puede imprimir en cualquier estado.</p>
 
-      <h3>8.6 Aprobar un despacho <small style="font-weight:400;color:var(--muted)">(administrador)</small></h3>
+      <h3>8.7 Aprobar un despacho <small style="font-weight:400;color:var(--muted)">(administrador)</small></h3>
       <ol class="steps">
         <li>Cuando la mercadería llegó a la sucursal, localiza el despacho <span class="pill wait">Pendiente de aprobación</span>.</li>
         <li>Pulsa <span class="btn green">Aprobar</span> (en la fila o en el detalle).</li>
@@ -771,7 +798,7 @@
         <p>La aprobación suma stock real a la sucursal. Aprueba solo cuando la mercadería llegó y se verificó; si te equivocas, un administrador puede <a href="#revertir">revertirla</a>, pero conviene evitarlo.</p>
       </div>
 
-      <h3>8.7 Cancelar un despacho pendiente</h3>
+      <h3>8.8 Cancelar un despacho pendiente</h3>
       <ol class="steps">
         <li>En el despacho pendiente pulsa <span class="btn red">Cancelar despacho</span>.</li>
         <li>Escribe el <strong>motivo</strong> (obligatorio, hasta 300 caracteres).</li>
@@ -779,18 +806,18 @@
       </ol>
       <p>Las unidades reservadas <strong>regresan a la bodega</strong> y se registra un movimiento de <em>Cancelación de despacho</em>. La sucursal nunca llegó a recibir nada, así que su inventario no cambia.</p>
 
-      <h3 id="revertir">8.8 Revertir un despacho aprobado <small style="font-weight:400;color:var(--muted)">(solo administrador)</small></h3>
+      <h3 id="revertir">8.9 Revertir un despacho aprobado <small style="font-weight:400;color:var(--muted)">(solo administrador)</small></h3>
       <p>Sirve para deshacer un despacho que ya fue aprobado: por error de cantidades, porque la mercadería no llegó, o por cualquier otra razón.</p>
       <ol class="steps">
         <li>En el despacho <span class="pill ok">Realizado</span> pulsa <span class="btn red">Revertir despacho</span>.</li>
-        <li>Lee el aviso: las unidades saldrán de la sucursal destino y regresarán a la bodega.</li>
+        <li>Lee el aviso: las unidades saldrán del inventario del destino (sucursal o bodega) y regresarán a la bodega de origen.</li>
         <li>Escribe el <strong>motivo de la reversión</strong> (obligatorio) y confirma con <strong>Sí, revertir despacho</strong>.</li>
       </ol>
-      <p>Resultado: el despacho pasa a <span class="pill bad">Cancelado</span>; en la sucursal queda un movimiento de salida (<em>&laquo;Reversión de despacho de bodega&raquo;</em>) y en la bodega uno de <em>Cancelación de despacho</em> con el motivo <em>&laquo;Reversión del despacho #N&raquo;</em>.</p>
+      <p>Resultado: el despacho pasa a <span class="pill bad">Cancelado</span>; en la sucursal destino queda un movimiento de salida (<em>&laquo;Reversión de despacho de bodega&raquo;</em>) o, si era un traslado, uno de <em>Reversión de despacho</em> en la bodega destino; y en la bodega de origen uno de <em>Cancelación de despacho</em> con el motivo <em>&laquo;Reversión del despacho #N&raquo;</em>.</p>
 
       <div class="callout danger">
         <span class="callout-title">Cuándo no se puede revertir</span>
-        <p>Si la sucursal <strong>ya vendió o movió</strong> parte de esas unidades y no cuenta con todas, la reversión se rechaza por completo y no cambia nada. El mensaje indica cuál sucursal no tiene las unidades. En ese caso, primero hay que regularizar el inventario de la sucursal.</p>
+        <p>Si la sucursal <strong>ya vendió o movió</strong> parte de esas unidades (o la bodega destino ya las despachó o redujo) y no cuenta con todas, la reversión se rechaza por completo y no cambia nada. El mensaje indica cuál sucursal o bodega no tiene las unidades. En ese caso, primero hay que regularizar su inventario.</p>
       </div>
       <div class="callout note">
         <span class="callout-title">Sobre el registro de auditoría</span>
@@ -818,6 +845,7 @@
       </div>
 
       <p><strong>Alternativa:</strong> si en lugar de aprobarlo se <em>cancela</em> estando pendiente, la bodega vuelve a 100 y la sucursal nunca cambió (siempre 20).</p>
+      <p><strong>Traslado entre bodegas:</strong> el recorrido es el mismo, pero el destino es otra bodega. Si la <em>Bodega Central</em> (100) traslada 30 unidades a la <em>Bodega Norte</em> (0): al registrar queda 70 / 0; al aprobar, 70 / 30; y al revertir (si Norte aún tiene las 30), 100 / 0.</p>
 
       <div class="callout tip">
         <span class="callout-title">¿Por qué la bodega descuenta al registrar y no al aprobar?</span>
@@ -846,7 +874,7 @@
             </tr>
             <tr>
               <td><strong>Despachos de bodega</strong></td>
-              <td>Despachos a sucursales por período, con su valor al costo.</td>
+              <td>Despachos a sucursales y traslados entre bodegas por período, con su valor al costo.</td>
               <td>Rango de fechas; bodega y estado (opcionales)</td>
             </tr>
           </tbody>
@@ -890,6 +918,16 @@
       </details>
 
       <details>
+        <summary>¿Puedo mover productos de una bodega a otra?</summary>
+        <p>Sí, con un <a href="#traslado">traslado entre bodegas</a>: en un despacho nuevo elige <em>Enviar a &rarr; Otra bodega (traslado)</em>. Igual que un despacho a sucursal, un administrador debe aprobarlo para que las unidades entren a la bodega destino.</p>
+      </details>
+
+      <details>
+        <summary>No me aparecen los botones para reducir o eliminar productos.</summary>
+        <p>Reducir existencias y eliminar productos son acciones exclusivas del <strong>Administrador</strong>. Si el conteo físico no coincide con el sistema, repórtalo al administrador para que haga el ajuste con su motivo.</p>
+      </details>
+
+      <details>
         <summary>No veo el botón Aprobar.</summary>
         <p>Aprobar es exclusivo del rol <strong>Administrador</strong>. Si eres de Bodega, pide a un administrador que apruebe el despacho. El botón tampoco aparece en despachos que ya no están pendientes.</p>
       </details>
@@ -911,7 +949,7 @@
 
       <details>
         <summary>¿Un producto con existencia cero se puede despachar?</summary>
-        <p>No: no hay unidades que despachar. Sin embargo, aparece en la lista de existencias para que se sepa que la bodega lo maneja; cuando le ingreses unidades podrás despacharlo.</p>
+        <p>No: no hay unidades que despachar ni trasladar. Sin embargo, aparece en la lista de existencias para que se sepa que la bodega lo maneja; cuando le ingreses unidades podrás despacharlo.</p>
       </details>
 
       <details>
@@ -931,11 +969,11 @@
         </div>
         <div class="card">
           <h4>Llevar el inventario</h4>
-          <p><em>Agregar</em> suma, <em>Reducir</em> resta con motivo, <em>Eliminar</em> retira el producto. Todo queda en Movimientos.</p>
+          <p><em>Agregar</em> suma; <em>Reducir</em> y <em>Eliminar</em> (solo administrador) restan con motivo. Todo queda en Movimientos.</p>
         </div>
         <div class="card">
           <h4>Enviar mercadería</h4>
-          <p>Nuevo despacho &rarr; productos y cantidades &rarr; <em>Registrar</em>. Queda pendiente y reserva el stock.</p>
+          <p>Nuevo despacho &rarr; sucursal u otra bodega &rarr; productos y cantidades &rarr; <em>Registrar</em>. Queda pendiente y reserva el stock.</p>
         </div>
         <div class="card">
           <h4>Cerrar el ciclo</h4>
@@ -946,9 +984,9 @@
       <div class="callout tip">
         <span class="callout-title">Reglas de oro</span>
         <ul>
-          <li>Toda reducción, eliminación, cancelación o reversión lleva un <strong>motivo</strong>.</li>
+          <li>Toda reducción, eliminación, cancelación o reversión lleva un <strong>motivo</strong>, y reducir o eliminar solo lo hace el administrador.</li>
           <li>El inventario de una bodega es <strong>independiente</strong> del de las sucursales.</li>
-          <li>Las unidades salen de la bodega <strong>al registrar</strong> y entran a la sucursal <strong>al aprobar</strong>.</li>
+          <li>Las unidades salen de la bodega <strong>al registrar</strong> y entran a la sucursal (o a la otra bodega) <strong>al aprobar</strong>.</li>
           <li>Una importación de Excel es <strong>todo o nada</strong>.</li>
           <li>Una bodega inactiva conserva su historial pero ya no admite cambios.</li>
         </ul>

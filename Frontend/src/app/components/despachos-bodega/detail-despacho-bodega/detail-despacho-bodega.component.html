@@ -58,10 +58,10 @@
               </div>
             </article>
             <article class="summary-card">
-              <span class="card-icon"><i class="fas fa-store" aria-hidden="true"></i></span>
+              <span class="card-icon"><i class="fas" [ngClass]="esTraslado ? 'fa-warehouse' : 'fa-store'" aria-hidden="true"></i></span>
               <div>
-                <span class="summary-label">Sucursal destino</span>
-                <strong>{{despacho.sucursalDestino?.nombre}}</strong>
+                <span class="summary-label">{{esTraslado ? 'Bodega destino' : 'Sucursal destino'}}</span>
+                <strong>{{nombreDestino}}</strong>
               </div>
             </article>
             <article class="summary-card">

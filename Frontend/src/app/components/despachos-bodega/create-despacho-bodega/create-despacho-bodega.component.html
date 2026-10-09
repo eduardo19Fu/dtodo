@@ -6,7 +6,7 @@
     <div>
       <span class="page-eyebrow">Despachos de bodega</span>
       <h1>{{ title }}</h1>
-      <p>Traslada existencias de una bodega a una sucursal. El stock sale de la bodega al registrar y entra a la sucursal cuando se aprueba.</p>
+      <p>Traslada existencias de una bodega a una sucursal o a otra bodega. El stock sale de la bodega al registrar y entra al destino cuando se aprueba.</p>
     </div>
     <div class="heading-icon" aria-hidden="true"><i class="fas fa-truck-loading"></i></div>
   </header>
@@ -71,6 +71,19 @@
           </div>
 
           <div class="field-group">
+            <label for="tipoDestino">Enviar a <span class="required-mark">*</span></label>
+            <div class="select-control">
+              <i class="fas fa-route" aria-hidden="true"></i>
+              <select id="tipoDestino" name="tipoDestino" class="form-control" [ngModel]="tipoDestino"
+                (ngModelChange)="cambiarTipoDestino($event)">
+                <option value="SUCURSAL">Una sucursal</option>
+                <option value="BODEGA">Otra bodega (traslado)</option>
+              </select>
+            </div>
+            <small *ngIf="esTraslado">Un traslado entre bodegas tambi&eacute;n requiere la aprobaci&oacute;n de un administrador.</small>
+          </div>
+
+          <div class="field-group" *ngIf="!esTraslado">
             <label for="sucursalDestino">Sucursal destino <span class="required-mark">*</span></label>
             <div class="select-control">
               <i class="fas fa-store" aria-hidden="true"></i>
@@ -84,6 +97,19 @@
               Sucursal asignada a la bodega.
             </small>
             <small *ngIf="bodegaSeleccionada && !bodegaSeleccionada.sucursal">La bodega no tiene sucursal asignada: elige el destino.</small>
+          </div>
+
+          <div class="field-group" *ngIf="esTraslado">
+            <label for="bodegaDestino">Bodega destino <span class="required-mark">*</span></label>
+            <div class="select-control">
+              <i class="fas fa-warehouse" aria-hidden="true"></i>
+              <select id="bodegaDestino" name="bodegaDestino" class="form-control"
+                [(ngModel)]="despacho.idBodegaDestino" required>
+                <option [ngValue]="null">Seleccionar bodega</option>
+                <option *ngFor="let bodegaDestino of bodegasDestino" [ngValue]="bodegaDestino.idBodega">{{ bodegaDestino.nombre }}</option>
+              </select>
+            </div>
+            <small *ngIf="bodegasDestino.length === 0">No hay otra bodega activa a la que trasladar.</small>
           </div>
 
           <div class="field-group">

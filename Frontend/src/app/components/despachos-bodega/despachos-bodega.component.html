@@ -1,6 +1,6 @@
 <app-detail-despacho-bodega *ngIf="despachoSeleccionado" [despacho]="despachoSeleccionado" [puedeAprobar]="puedeAprobar"
   [procesando]="procesandoId !== null" (cerrar)="cerrarDetalle()" (imprimir)="imprimir($event)"
-  (aprobar)="aprobar($event.idDespacho, $event.sucursalDestino)" (cancelar)="cancelar($event.idDespacho, $event.estado)"></app-detail-despacho-bodega>
+  (aprobar)="aprobar($event.idDespacho, $event.destino)" (cancelar)="cancelar($event.idDespacho, $event.estado)"></app-detail-despacho-bodega>
 
 <section class="content-header">
   <div class="container-fluid">
@@ -84,7 +84,7 @@
           <th class="col-id">No.</th>
           <th class="col-fecha">Fecha</th>
           <th class="col-bodega">Bodega</th>
-          <th class="col-sucursal">Sucursal destino</th>
+          <th class="col-sucursal">Destino</th>
           <th class="col-recibe">Recibe</th>
           <th class="col-lineas">Productos</th>
           <th class="col-total">Total</th>
@@ -103,8 +103,9 @@
             <span class="cell-ellipsis" [title]="despacho.bodega">{{despacho.bodega}}</span>
             <span class="cell-secondary cell-ellipsis">Despach&oacute;: {{despacho.usuarioDespacha}}</span>
           </td>
-          <td class="col-sucursal" data-label="Sucursal destino">
-            <span class="cell-ellipsis" [title]="despacho.sucursalDestino">{{despacho.sucursalDestino}}</span>
+          <td class="col-sucursal" data-label="Destino">
+            <span class="cell-ellipsis" [title]="nombreDestino(despacho)">{{nombreDestino(despacho)}}</span>
+            <span class="cell-secondary" *ngIf="despacho.bodegaDestino">Traslado entre bodegas</span>
           </td>
           <td class="col-recibe" data-label="Recibe"><span class="cell-ellipsis" [title]="despacho.recibidoPor">{{despacho.recibidoPor}}</span></td>
           <td class="col-lineas" data-label="Productos">{{despacho.totalLineas}}</td>
@@ -127,7 +128,7 @@
               <button class="btn btn-sm listing-table-action listing-action-approve" type="button"
                       *ngIf="despacho.estado === 'PENDIENTE' && puedeAprobar"
                       appTooltip="Aprobar despacho" aria-label="Aprobar despacho"
-                      [disabled]="procesandoId !== null" (click)="aprobar(despacho.idDespacho, despacho.sucursalDestino)">
+                      [disabled]="procesandoId !== null" (click)="aprobar(despacho.idDespacho, nombreDestino(despacho))">
                 <i class="fas fa-check"></i>
               </button>
               <button class="btn btn-sm listing-table-action listing-action-cancel" type="button"

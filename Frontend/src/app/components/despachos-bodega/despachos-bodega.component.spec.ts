@@ -204,4 +204,20 @@ describe('DespachosBodegaComponent', () => {
 
     expect(component.procesandoId).toBeNull();
   });
+
+  it('el destino es la sucursal o, en un traslado entre bodegas, la bodega destino', () => {
+    expect(component.nombreDestino({ sucursalDestino: 'Norte', bodegaDestino: null } as any)).toBe('Norte');
+    expect(component.nombreDestino({ sucursalDestino: null, bodegaDestino: 'Secundaria' } as any)).toBe('Bodega Secundaria');
+  });
+
+  it('el diálogo de reversión habla del destino, sea sucursal o bodega', async () => {
+    const alerta = spyOn(swal, 'fire').and.returnValue(Promise.resolve({ isConfirmed: false } as any));
+
+    component.cancelar(12, 'REALIZADO');
+    await Promise.resolve();
+
+    const dialogo: any = alerta.calls.argsFor(0)[0];
+    expect(dialogo.html).toContain('destino');
+    expect(dialogo.html).toContain('regresarán a la bodega de origen');
+  });
 });

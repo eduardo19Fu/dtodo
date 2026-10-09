@@ -381,4 +381,80 @@ describe('CreateDespachoBodegaComponent', () => {
       expect(router.navigate).not.toHaveBeenCalled();
     });
   });
+
+  describe('traslado entre bodegas', () => {
+    const otraBodega: any = { idBodega: 5, nombre: 'Secundaria', ubicacion: 'Zona 4', sucursal: null };
+
+    beforeEach(() => {
+      bodegaService.getBodegas.and.returnValue(of([bodega, otraBodega]));
+      component.ngOnInit();
+      component.alCambiarBodega(1);
+      component.despacho.recibidoPor = 'Maria';
+      component.lineas = [detalle(4, 10, 20, 7)];
+    });
+
+    it('por defecto el despacho va a una sucursal', () => {
+      expect(component.esTraslado).toBeFalse();
+      expect(component.despacho.idSucursalDestino).toBe(2);
+    });
+
+    it('al elegir traslado se quita la sucursal y no se ofrece la bodega de origen como destino', () => {
+      component.cambiarTipoDestino('BODEGA');
+
+      expect(component.esTraslado).toBeTrue();
+      expect(component.despacho.idSucursalDestino).toBeNull();
+      expect(component.despacho.idBodegaDestino).toBeNull();
+      expect(component.bodegasDestino.map(destino => destino.idBodega)).toEqual([5]);
+    });
+
+    it('al volver a sucursal se limpia la bodega destino y se recupera la sucursal de la bodega', () => {
+      component.cambiarTipoDestino('BODEGA');
+      component.despacho.idBodegaDestino = 5;
+
+      component.cambiarTipoDestino('SUCURSAL');
+
+      expect(component.despacho.idBodegaDestino).toBeNull();
+      expect(component.despacho.idSucursalDestino).toBe(2);
+    });
+
+    it('si la bodega de origen pasa a ser la elegida como destino, el destino se limpia', () => {
+      component.cambiarTipoDestino('BODEGA');
+      component.despacho.idBodegaDestino = 5;
+
+      component.alCambiarBodega(5);
+
+      expect(component.despacho.idBodegaDestino).toBeNull();
+    });
+
+    it('no vuelve a proponer la sucursal de la bodega mientras es un traslado', () => {
+      component.cambiarTipoDestino('BODEGA');
+
+      component.alCambiarBodega(1);
+
+      expect(component.despacho.idSucursalDestino).toBeNull();
+    });
+
+    it('envía la bodega destino y no la sucursal', () => {
+      component.cambiarTipoDestino('BODEGA');
+      component.despacho.idBodegaDestino = 5;
+
+      component.crear();
+
+      expect(despachoService.create).toHaveBeenCalledWith({
+        idBodega: 1,
+        idBodegaDestino: 5,
+        recibidoPor: 'Maria',
+        observaciones: '',
+        items: [{ idProducto: 7, cantidad: 4 }]
+      });
+    });
+
+    it('exige elegir la bodega destino', () => {
+      component.cambiarTipoDestino('BODEGA');
+
+      component.crear();
+
+      expect(despachoService.create).not.toHaveBeenCalled();
+    });
+  });
 });

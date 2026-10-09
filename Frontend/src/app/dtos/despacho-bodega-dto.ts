@@ -12,6 +12,8 @@ export class DespachoBodegaDto {
   bodega: string;
   idSucursalDestino: number;
   sucursalDestino: string;
+  idBodegaDestino: number;
+  bodegaDestino: string;
   usuarioDespacha: string;
   usuarioResuelve: string;
   totalLineas: number;

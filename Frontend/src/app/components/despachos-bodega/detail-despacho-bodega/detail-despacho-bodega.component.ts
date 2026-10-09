@@ -21,7 +21,7 @@ export class DetailDespachoBodegaComponent implements AfterViewInit, OnDestroy {
 
   @Output() cerrar = new EventEmitter<void>();
   @Output() imprimir = new EventEmitter<number>();
-  @Output() aprobar = new EventEmitter<{ idDespacho: number; sucursalDestino: string }>();
+  @Output() aprobar = new EventEmitter<{ idDespacho: number; destino: string }>();
   @Output() cancelar = new EventEmitter<{ idDespacho: number; estado: EstadoDespachoBodega }>();
 
   constructor(
@@ -65,6 +65,15 @@ export class DetailDespachoBodegaComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  get esTraslado(): boolean {
+    return !!this.despacho?.bodegaDestino;
+  }
+
+  /** Nombre de la sucursal destino o, en un traslado, de la bodega destino. */
+  get nombreDestino(): string {
+    return (this.esTraslado ? this.despacho.bodegaDestino.nombre : this.despacho?.sucursalDestino?.nombre) || '';
+  }
+
   get totalUnidades(): number {
     return (this.despacho?.items || []).reduce((total, item) => total + (item.cantidad || 0), 0);
   }
@@ -91,7 +100,7 @@ export class DetailDespachoBodegaComponent implements AfterViewInit, OnDestroy {
   }
 
   solicitarAprobacion(): void {
-    this.aprobar.emit({ idDespacho: this.despacho.idDespacho, sucursalDestino: this.despacho.sucursalDestino.nombre });
+    this.aprobar.emit({ idDespacho: this.despacho.idDespacho, destino: this.nombreDestino });
   }
 
   cerrarModal(): void {

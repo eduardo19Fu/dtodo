@@ -48,7 +48,7 @@ describe('DetailDespachoBodegaComponent', () => {
 
     component.solicitarAprobacion();
 
-    expect(solicitud).toEqual({ idDespacho: 12, sucursalDestino: 'Norte' });
+    expect(solicitud).toEqual({ idDespacho: 12, destino: 'Norte' });
   });
 
   it('cierra al hacer clic en el fondo pero no en el contenido', () => {
@@ -84,5 +84,23 @@ describe('DetailDespachoBodegaComponent', () => {
     component.solicitarCancelacion();
 
     expect(solicitud).toEqual({ idDespacho: 12, estado: 'REALIZADO' });
+  });
+
+  it('un despacho a una sucursal no es un traslado y su destino es la sucursal', () => {
+    expect(component.esTraslado).toBeFalse();
+    expect(component.nombreDestino).toBe('Norte');
+  });
+
+  it('en un traslado el destino es la bodega y la aprobación la nombra', () => {
+    component.despacho.sucursalDestino = null;
+    component.despacho.bodegaDestino = { idBodega: 3, nombre: 'Secundaria' } as any;
+    let solicitud: any;
+    component.aprobar.subscribe(valor => solicitud = valor);
+
+    component.solicitarAprobacion();
+
+    expect(component.esTraslado).toBeTrue();
+    expect(component.nombreDestino).toBe('Secundaria');
+    expect(solicitud).toEqual({ idDespacho: 12, destino: 'Secundaria' });
   });
 });

@@ -31,6 +31,9 @@ export class CreateDespachoBodegaComponent implements OnInit {
   bodegas: Bodega[] = [];
   sucursales: Sucursal[] = [];
 
+  /** El despacho va a una sucursal o, como traslado, a otra bodega. */
+  tipoDestino: 'SUCURSAL' | 'BODEGA' = 'SUCURSAL';
+
   /** Producto elegido (con la existencia de la bodega) antes de agregarlo al detalle. */
   itemActual: InventarioBodegaDto = null;
   codigoBusqueda = '';
@@ -77,6 +80,15 @@ export class CreateDespachoBodegaComponent implements OnInit {
     return this.bodegas.find(bodega => bodega.idBodega === this.despacho.idBodega);
   }
 
+  get esTraslado(): boolean {
+    return this.tipoDestino === 'BODEGA';
+  }
+
+  /** Una bodega no puede trasladarse a sí misma. */
+  get bodegasDestino(): Bodega[] {
+    return this.bodegas.filter(bodega => bodega.idBodega !== this.despacho.idBodega);
+  }
+
   get sucursalDestino(): Sucursal {
     return this.sucursales.find(sucursal => sucursal.idSucursal === this.despacho.idSucursalDestino);
   }
@@ -87,10 +99,27 @@ export class CreateDespachoBodegaComponent implements OnInit {
     this.itemActual = null;
     this.codigoBusqueda = '';
     this.cantidadActual = null;
+    if (this.despacho.idBodegaDestino === idBodega) {
+      this.despacho.idBodegaDestino = null;
+    }
     this.aplicarSucursalPorDefecto();
   }
 
+  cambiarTipoDestino(tipo: 'SUCURSAL' | 'BODEGA'): void {
+    this.tipoDestino = tipo;
+    if (tipo === 'BODEGA') {
+      this.despacho.idSucursalDestino = null;
+      this.despacho.idBodegaDestino = null;
+    } else {
+      this.despacho.idBodegaDestino = null;
+      this.aplicarSucursalPorDefecto();
+    }
+  }
+
   private aplicarSucursalPorDefecto(): void {
+    if (this.esTraslado) {
+      return;
+    }
     const sucursalBodega = this.bodegaSeleccionada?.sucursal;
     if (sucursalBodega && this.sucursales.some(sucursal => sucursal.idSucursal === sucursalBodega.idSucursal)) {
       this.despacho.idSucursalDestino = sucursalBodega.idSucursal;
@@ -312,8 +341,9 @@ export class CreateDespachoBodegaComponent implements OnInit {
       swal.fire('Sin productos', 'Agrega al menos un producto al detalle del despacho.', 'warning');
       return;
     }
-    if (!this.despacho.idBodega || !this.despacho.idSucursalDestino) {
-      swal.fire('Datos incompletos', 'Selecciona la bodega y la sucursal destino del despacho.', 'warning');
+    if (!this.despacho.idBodega || !(this.esTraslado ? this.despacho.idBodegaDestino : this.despacho.idSucursalDestino)) {
+      swal.fire('Datos incompletos',
+        `Selecciona la bodega de origen y ${this.esTraslado ? 'la bodega' : 'la sucursal'} destino del despacho.`, 'warning');
       return;
     }
     if (!this.despacho.recibidoPor || !this.despacho.recibidoPor.trim()) {
@@ -321,9 +351,12 @@ export class CreateDespachoBodegaComponent implements OnInit {
       return;
     }
 
+    const destino = this.esTraslado
+      ? { idBodegaDestino: this.despacho.idBodegaDestino }
+      : { idSucursalDestino: this.despacho.idSucursalDestino };
     const request: DespachoBodegaRequest = {
       idBodega: this.despacho.idBodega,
-      idSucursalDestino: this.despacho.idSucursalDestino,
+      ...destino,
       recibidoPor: this.despacho.recibidoPor.trim(),
       observaciones: (this.despacho.observaciones || '').trim(),
       items: this.lineas.map(linea => ({ idProducto: linea.producto.idProducto, cantidad: linea.cantidad }))
@@ -338,7 +371,8 @@ export class CreateDespachoBodegaComponent implements OnInit {
           title: 'Despacho registrado',
           html: `El despacho <strong>${String(creado.idDespacho).padStart(6, '0')}</strong> qued&oacute; ` +
             '<strong>pendiente de aprobaci&oacute;n</strong>. ' +
-            'Las existencias ya salieron de la bodega y ingresar&aacute;n a la sucursal cuando sea aprobado.',
+            'Las existencias ya salieron de la bodega y ingresar&aacute;n ' +
+            (this.esTraslado ? 'a la bodega destino' : 'a la sucursal') + ' cuando sea aprobado.',
           icon: 'success',
           showCancelButton: true,
           confirmButtonText: '<i class="fas fa-print"></i> Imprimir comprobante',

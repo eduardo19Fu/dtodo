@@ -23,6 +23,7 @@ export class DespachoBodega {
 
     bodega: Bodega;
     sucursalDestino: Sucursal;
+    bodegaDestino: Bodega;
     usuarioDespacha: UsuarioAuxiliar;
     usuarioResuelve: UsuarioAuxiliar;
     items: DetalleDespachoBodega[] = [];

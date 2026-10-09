@@ -7,6 +7,7 @@ describe('InventarioBodegaComponent', () => {
   let component: InventarioBodegaComponent;
   let bodegaService: any;
   let params$: any;
+  let auth: any;
 
   const pagina = (contenido: any[], extra: any = {}) => ({
     content: contenido, number: 0, totalPages: 1, totalElements: contenido.length, size: 10, first: true, last: true, ...extra
@@ -19,7 +20,8 @@ describe('InventarioBodegaComponent', () => {
       getMovimientos: jasmine.createSpy('getMovimientos').and.returnValue(of(pagina([{ idMovimiento: 1 }])))
     };
     params$ = of({ id: '2' });
-    component = new InventarioBodegaComponent(bodegaService, { params: params$ } as any);
+    auth = { hasRole: (rol: string) => rol === 'ROLE_ADMIN' };
+    component = new InventarioBodegaComponent(bodegaService, { params: params$ } as any, auth);
   });
 
   afterEach(() => component.ngOnDestroy());
@@ -169,5 +171,13 @@ describe('InventarioBodegaComponent', () => {
 
     component.importacionCompletada();
     expect(component.importarVisible).toBeFalse();
+  });
+
+  it('solo un administrador puede reducir existencias o eliminar productos', () => {
+    expect(component.puedeAjustar).toBeTrue();
+
+    auth.hasRole = () => false;
+
+    expect(component.puedeAjustar).toBeFalse();
   });
 });

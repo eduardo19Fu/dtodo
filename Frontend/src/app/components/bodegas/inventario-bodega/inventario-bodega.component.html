@@ -126,7 +126,7 @@
           <th class="col-cantidad">Stock m&iacute;nimo</th>
           <th class="col-moneda">Costo unitario</th>
           <th class="col-fecha">Actualizado</th>
-          <th class="col-opciones-corta">Opciones</th>
+          <th class="col-opciones-corta" *ngIf="puedeAjustar">Opciones</th>
         </tr>
       </thead>
       <tbody>
@@ -147,7 +147,7 @@
             <span class="fecha-principal">{{item.fechaActualizacion | date: 'dd/MM/yyyy'}}</span>
             <small class="fecha-hora">{{item.fechaActualizacion | date: 'HH:mm'}}</small>
           </td>
-          <td class="col-opciones-corta mobile-actions-cell" data-label="Opciones">
+          <td class="col-opciones-corta mobile-actions-cell" data-label="Opciones" *ngIf="puedeAjustar">
             <div class="action-buttons">
               <button class="btn btn-sm listing-table-action listing-action-edit" type="button"
                       appTooltip="Reducir existencias" aria-label="Reducir existencias del producto"

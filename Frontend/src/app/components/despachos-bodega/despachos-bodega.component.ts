@@ -85,6 +85,11 @@ export class DespachosBodegaComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Nombre de la sucursal destino o, en un traslado, de la bodega destino. */
+  nombreDestino(despacho: DespachoBodegaDto): string {
+    return despacho.sucursalDestino || `Bodega ${despacho.bodegaDestino}`;
+  }
+
   numeroDespacho(id: number): string {
     return String(id).padStart(6, '0');
   }
@@ -154,14 +159,14 @@ export class DespachosBodegaComponent implements OnInit, OnDestroy {
 
   /*********** APROBAR / CANCELAR ***********/
 
-  aprobar(idDespacho: number, sucursalDestino: string): void {
+  aprobar(idDespacho: number, destino: string): void {
     if (this.procesandoId !== null) {
       return;
     }
     Swal.fire({
       title: '¿Aprobar este despacho?',
       html: `Las existencias del despacho <strong>${this.numeroDespacho(idDespacho)}</strong> ingresarán al inventario de ` +
-        `<strong>${sucursalDestino}</strong>. Esta acción no se puede deshacer.`,
+        `<strong>${destino}</strong>. Esta acción no se puede deshacer.`,
       icon: 'question',
       showCancelButton: true,
       confirmButtonText: 'Sí, aprobar',
@@ -174,7 +179,7 @@ export class DespachosBodegaComponent implements OnInit, OnDestroy {
       this.despachoService.aprobar(idDespacho).subscribe(
         () => {
           this.finalizarAccion('Despacho aprobado',
-            `El despacho ${this.numeroDespacho(idDespacho)} fue aprobado y el inventario de ${sucursalDestino} se actualizó.`);
+            `El despacho ${this.numeroDespacho(idDespacho)} fue aprobado y el inventario de ${destino} se actualizó.`);
         },
         () => this.procesandoId = null
       );
@@ -190,8 +195,8 @@ export class DespachosBodegaComponent implements OnInit, OnDestroy {
     Swal.fire({
       title: revierteAprobado ? '¿Revertir este despacho aprobado?' : '¿Cancelar este despacho?',
       html: revierteAprobado
-        ? `Las unidades del despacho <strong>${numero}</strong> saldrán del inventario de la sucursal destino y regresarán a la bodega. ` +
-          'Si la sucursal ya no cuenta con todas las unidades, no se podrá revertir.'
+        ? `Las unidades del despacho <strong>${numero}</strong> saldrán del inventario del destino (sucursal o bodega) ` +
+          'y regresarán a la bodega de origen. Si el destino ya no cuenta con todas las unidades, no se podrá revertir.'
         : `Las existencias reservadas del despacho <strong>${numero}</strong> regresarán a la bodega.`,
       icon: 'warning',
       input: 'textarea',
@@ -211,7 +216,7 @@ export class DespachosBodegaComponent implements OnInit, OnDestroy {
         () => {
           this.finalizarAccion(revierteAprobado ? 'Despacho revertido' : 'Despacho cancelado',
             revierteAprobado
-              ? `El despacho ${numero} fue revertido: las unidades salieron de la sucursal y regresaron a la bodega.`
+              ? `El despacho ${numero} fue revertido: las unidades salieron del destino y regresaron a la bodega de origen.`
               : `El despacho ${numero} fue cancelado y las existencias regresaron a la bodega.`);
         },
         () => this.procesandoId = null
