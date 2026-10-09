@@ -139,7 +139,7 @@ public class BodegaApiController {
 		return ResponseEntity.ok(serviceInventarioBodega.findPorCodigo(idBodega, codigo));
 	}
 
-	@Secured(value = { "ROLE_ADMIN", "ROLE_BODEGA" })
+	@Secured(value = { "ROLE_ADMIN" })
 	@DeleteMapping(value = "/bodegas/{id}/inventario/{idProducto}")
 	public ResponseEntity<Map<String, Object>> eliminarProducto(
 			@PathVariable("id") Integer idBodega,
@@ -164,7 +164,7 @@ public class BodegaApiController {
 		return new ResponseEntity<>(respuestaMovimiento("Producto agregado a la bodega", movimiento), HttpStatus.CREATED);
 	}
 
-	@Secured(value = { "ROLE_ADMIN", "ROLE_BODEGA" })
+	@Secured(value = { "ROLE_ADMIN" })
 	@PostMapping(value = "/bodegas/{id}/movimientos/reducir")
 	public ResponseEntity<Map<String, Object>> reducirExistencias(
 			@PathVariable("id") Integer idBodega,

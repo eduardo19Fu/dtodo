@@ -18,8 +18,12 @@ public enum TipoMovimientoBodegaEnum {
     REDUCCION(false),
     /** Retiro del producto del inventario de la bodega; descuenta toda la existencia restante. */
     ELIMINACION(false),
-    /** Salida de producto hacia una sucursal mediante un despacho. */
-    DESPACHO(false);
+    /** Salida de producto hacia una sucursal o hacia otra bodega mediante un despacho. */
+    DESPACHO(false),
+    /** Ingreso de producto desde otra bodega cuando se aprueba un despacho cuyo destino es esta bodega. */
+    INGRESO_DESPACHO(true),
+    /** Salida del producto que ingresó por un despacho entre bodegas que luego se revirtió. */
+    REVERSION_DESPACHO(false);
 
     private final boolean incrementaStock;
 

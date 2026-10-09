@@ -28,8 +28,8 @@
                d.motivo_cancelacion,
                b.nombre AS bodega,
                b.ubicacion AS bodega_ubicacion,
-               s.nombre AS sucursal_destino,
-               s.direccion AS sucursal_direccion,
+               COALESCE(s.nombre, CONCAT('Bodega ', bd.nombre)) AS sucursal_destino,
+               COALESCE(s.direccion, bd.ubicacion) AS sucursal_direccion,
                TRIM(CONCAT(COALESCE(ud.primer_nombre, ''), ' ', COALESCE(ud.apellido, ''))) AS despachado_por,
                TRIM(CONCAT(COALESCE(ur.primer_nombre, ''), ' ', COALESCE(ur.apellido, ''))) AS resuelto_por,
                p.cod_producto AS codigo,
@@ -40,7 +40,8 @@
                dd.existencia_bodega
           FROM despachos_bodega d
           INNER JOIN bodegas b ON b.id_bodega = d.id_bodega
-          INNER JOIN sucursales s ON s.id_sucursal = d.id_sucursal_destino
+          LEFT JOIN sucursales s ON s.id_sucursal = d.id_sucursal_destino
+          LEFT JOIN bodegas bd ON bd.id_bodega = d.id_bodega_destino
           INNER JOIN usuarios ud ON ud.id_usuario = d.id_usuario_despacha
           LEFT JOIN usuarios ur ON ur.id_usuario = d.id_usuario_resuelve
           INNER JOIN despachos_bodega_detalle dd ON dd.id_despacho = d.id_despacho
@@ -95,7 +96,7 @@
             <staticText>
                 <reportElement x="90" y="32" width="300" height="24" forecolor="#DCEBFF" backcolor="#1769D2" mode="Opaque"/>
                 <textElement verticalAlignment="Middle"><font size="8"/><paragraph leftIndent="16"/></textElement>
-                <text><![CDATA[Traslado de existencias de bodega a sucursal]]></text>
+                <text><![CDATA[Traslado de existencias de bodega a sucursal u otra bodega]]></text>
             </staticText>
             <textField>
                 <reportElement x="390" y="0" width="166" height="32" forecolor="#FFFFFF" backcolor="#1769D2" mode="Opaque"/>
@@ -114,7 +115,7 @@
                     <printWhenExpression><![CDATA["PENDIENTE".equals($F{estado})]]></printWhenExpression>
                 </reportElement>
                 <textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
-                <text><![CDATA[PENDIENTE DE APROBACIÓN · Las existencias aún no ingresan a la sucursal destino]]></text>
+                <text><![CDATA[PENDIENTE DE APROBACIÓN · Las existencias aún no ingresan al destino]]></text>
             </staticText>
             <staticText>
                 <reportElement x="0" y="66" width="556" height="20" forecolor="#067647" backcolor="#D1FADF" mode="Opaque">
@@ -143,7 +144,7 @@
             <textField isBlankWhenNull="true"><reportElement style="Value" x="0" y="182" width="270" height="14"/><textFieldExpression><![CDATA[$F{recibido_por}]]></textFieldExpression></textField>
 
             <!-- Datos generales: columna derecha -->
-            <staticText><reportElement style="Label" x="286" y="96" width="270" height="10"/><text><![CDATA[SUCURSAL DESTINO]]></text></staticText>
+            <staticText><reportElement style="Label" x="286" y="96" width="270" height="10"/><text><![CDATA[DESTINO]]></text></staticText>
             <textField isBlankWhenNull="true"><reportElement style="Value" x="286" y="106" width="270" height="14"/><textElement><font isBold="true"/></textElement><textFieldExpression><![CDATA[$F{sucursal_destino}]]></textFieldExpression></textField>
             <textField isBlankWhenNull="true"><reportElement style="Base" x="286" y="120" width="270" height="12" forecolor="#66758A"/><textFieldExpression><![CDATA[$F{sucursal_direccion}]]></textFieldExpression></textField>
 

@@ -35,13 +35,15 @@
                    WHEN 'ELIMINACION' THEN 'Eliminación'
                    WHEN 'DESPACHO' THEN 'Despacho'
                    WHEN 'ANULACION_DESPACHO' THEN 'Cancelación de despacho'
+                   WHEN 'INGRESO_DESPACHO' THEN 'Ingreso por despacho'
+                   WHEN 'REVERSION_DESPACHO' THEN 'Reversión de despacho'
                    ELSE m.tipo_movimiento
                END AS tipo,
                p.cod_producto AS codigo,
                p.nombre AS producto,
-               CAST(CASE WHEN m.tipo_movimiento IN ('INGRESO', 'IMPORTACION', 'ANULACION_DESPACHO')
+               CAST(CASE WHEN m.tipo_movimiento IN ('INGRESO', 'IMPORTACION', 'ANULACION_DESPACHO', 'INGRESO_DESPACHO')
                          THEN m.cantidad ELSE 0 END AS SIGNED) AS entrada,
-               CAST(CASE WHEN m.tipo_movimiento IN ('INGRESO', 'IMPORTACION', 'ANULACION_DESPACHO')
+               CAST(CASE WHEN m.tipo_movimiento IN ('INGRESO', 'IMPORTACION', 'ANULACION_DESPACHO', 'INGRESO_DESPACHO')
                          THEN 0 ELSE m.cantidad END AS SIGNED) AS salida,
                CAST(m.stock_final AS SIGNED) AS saldo,
                COALESCE(u.usuario, '') AS usuario,

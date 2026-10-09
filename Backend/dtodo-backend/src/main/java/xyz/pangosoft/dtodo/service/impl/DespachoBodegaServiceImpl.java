@@ -40,12 +40,13 @@ import xyz.pangosoft.dtodo.service.ISucursalService;
 import xyz.pangosoft.dtodo.service.IUsuarioService;
 
 /**
- * Despachos de bodega hacia una sucursal.
+ * Despachos de bodega hacia una sucursal o hacia otra bodega (traslado).
  *
  * <p>El stock se mueve en dos tiempos: al registrar el despacho sale de la bodega (queda reservado y el
- * despacho en {@link EstadoDespachoBodegaEnum#PENDIENTE}); al aprobarlo ingresa a la sucursal destino
- * ({@link EstadoDespachoBodegaEnum#REALIZADO}); si se cancela estando pendiente regresa a la bodega
- * ({@link EstadoDespachoBodegaEnum#CANCELADO}). Un despacho resuelto no vuelve a cambiar de estado.</p>
+ * despacho en {@link EstadoDespachoBodegaEnum#PENDIENTE}); al aprobarlo ingresa a la sucursal o a la bodega
+ * destino ({@link EstadoDespachoBodegaEnum#REALIZADO}); si se cancela estando pendiente regresa a la bodega
+ * de origen ({@link EstadoDespachoBodegaEnum#CANCELADO}). Un administrador puede revertir un despacho
+ * aprobado, siempre que el destino todavía cuente con las unidades. Un despacho cancelado no vuelve a cambiar.</p>
  */
 @Service
 @RequiredArgsConstructor
@@ -97,13 +98,15 @@ public class DespachoBodegaServiceImpl implements IDespachoBodegaService {
 		validarSolicitud(request);
 
 		Bodega bodega = bodegaService.findActivaById(request.getIdBodega());
-		Sucursal destino = resolverDestino(request, bodega);
+		Bodega bodegaDestino = request.getIdBodegaDestino() == null ? null : resolverBodegaDestino(request, bodega);
+		Sucursal sucursalDestino = bodegaDestino == null ? resolverDestino(request, bodega) : null;
 		Usuario usuario = usuarioService.findById(idUsuario);
 
 		DespachoBodega despacho = DespachoBodega.builder()
 				.estado(EstadoDespachoBodegaEnum.PENDIENTE)
 				.bodega(bodega)
-				.sucursalDestino(destino)
+				.sucursalDestino(sucursalDestino)
+				.bodegaDestino(bodegaDestino)
 				.usuarioDespacha(usuario)
 				.recibidoPor(request.getRecibidoPor().trim())
 				.observaciones(request.getObservaciones() == null || request.getObservaciones().isBlank()
@@ -144,13 +147,14 @@ public class DespachoBodegaServiceImpl implements IDespachoBodegaService {
 					"Ha ocurrido un error al registrar el despacho", e);
 		}
 
-		String motivo = "Despacho #" + guardado.getIdDespacho() + " hacia " + destino.getNombre();
+		String motivo = "Despacho #" + guardado.getIdDespacho() + " hacia "
+				+ (bodegaDestino == null ? sucursalDestino.getNombre() : "la bodega " + bodegaDestino.getNombre());
 		for (DespachoBodegaDetalle item : guardado.getItems()) {
 			inventarioBodegaService.registrarMovimiento(bodega, item.getProducto(), TipoMovimientoBodegaEnum.DESPACHO,
 					item.getCantidad(), motivo, usuario, DOCUMENTO_ORIGEN, guardado.getIdDespacho());
 		}
-		log.info("Despacho {} registrado desde la bodega {} hacia la sucursal {}",
-				guardado.getIdDespacho(), bodega.getIdBodega(), destino.getIdSucursal());
+		log.info("Despacho {} registrado desde la bodega {} hacia {}", guardado.getIdDespacho(), bodega.getIdBodega(),
+				bodegaDestino == null ? "la sucursal " + sucursalDestino.getIdSucursal() : "la bodega " + bodegaDestino.getIdBodega());
 		return guardado;
 	}
 
@@ -159,19 +163,10 @@ public class DespachoBodegaServiceImpl implements IDespachoBodegaService {
 	public DespachoBodega aprobar(Long idDespacho, Integer idUsuario) {
 		DespachoBodega despacho = obtenerPendiente(idDespacho);
 		Usuario usuario = usuarioService.findById(idUsuario);
-		Sucursal destino = despacho.getSucursalDestino();
-		validarSucursalActiva(destino);
-
-		for (DespachoBodegaDetalle item : despacho.getItems()) {
-			movimientoProductoService.save(MovimientoProducto.builder()
-					.tipoMovimiento(TipoMovimientoEnum.ENTRADA)
-					.tipoDocumentoOrigen(DOCUMENTO_ORIGEN)
-					.idDocumentoOrigen(despacho.getIdDespacho())
-					.usuario(usuario)
-					.producto(item.getProducto())
-					.sucursal(destino)
-					.cantidad(item.getCantidad())
-					.build());
+		if (despacho.getBodegaDestino() != null) {
+			ingresarEnBodegaDestino(despacho, usuario);
+		} else {
+			ingresarEnSucursal(despacho, usuario);
 		}
 
 		resolver(despacho, EstadoDespachoBodegaEnum.REALIZADO, usuario);
@@ -191,10 +186,14 @@ public class DespachoBodegaServiceImpl implements IDespachoBodegaService {
 		DespachoBodega despacho = obtenerCancelable(idDespacho, esAdministrador);
 		Usuario usuario = usuarioService.findById(idUsuario);
 
-		// Un despacho aprobado ya sumó stock a la sucursal: primero se retira de ahí (falla si la sucursal ya no lo tiene)
+		// Un despacho aprobado ya sumó stock al destino: primero se retira de ahí (falla si el destino ya no lo tiene)
 		boolean revertirAprobado = despacho.getEstado() == EstadoDespachoBodegaEnum.REALIZADO;
 		if (revertirAprobado) {
-			retirarDeSucursal(despacho, usuario);
+			if (despacho.getBodegaDestino() != null) {
+				retirarDeBodegaDestino(despacho, usuario);
+			} else {
+				retirarDeSucursal(despacho, usuario);
+			}
 		}
 
 		String motivoMovimiento = (revertirAprobado ? "Reversión del despacho #" : "Cancelación del despacho #") + idDespacho;
@@ -209,6 +208,52 @@ public class DespachoBodegaServiceImpl implements IDespachoBodegaService {
 		resolver(despacho, EstadoDespachoBodegaEnum.CANCELADO, usuario);
 		log.info("Despacho {} {} por el usuario {}", idDespacho, revertirAprobado ? "revertido" : "cancelado", idUsuario);
 		return despachoRepo.save(despacho);
+	}
+
+	/** Suma cada línea al inventario de la sucursal destino. */
+	private void ingresarEnSucursal(DespachoBodega despacho, Usuario usuario) {
+		Sucursal destino = despacho.getSucursalDestino();
+		validarSucursalActiva(destino);
+		for (DespachoBodegaDetalle item : despacho.getItems()) {
+			movimientoProductoService.save(MovimientoProducto.builder()
+					.tipoMovimiento(TipoMovimientoEnum.ENTRADA)
+					.tipoDocumentoOrigen(DOCUMENTO_ORIGEN)
+					.idDocumentoOrigen(despacho.getIdDespacho())
+					.usuario(usuario)
+					.producto(item.getProducto())
+					.sucursal(destino)
+					.cantidad(item.getCantidad())
+					.build());
+		}
+	}
+
+	/** Suma cada línea al inventario de la bodega destino, que debe seguir activa. */
+	private void ingresarEnBodegaDestino(DespachoBodega despacho, Usuario usuario) {
+		Bodega destino = bodegaService.findActivaById(despacho.getBodegaDestino().getIdBodega());
+		String motivo = "Ingreso por el despacho #" + despacho.getIdDespacho() + " desde la bodega "
+				+ despacho.getBodega().getNombre();
+		for (DespachoBodegaDetalle item : despacho.getItems()) {
+			inventarioBodegaService.registrarMovimiento(destino, item.getProducto(),
+					TipoMovimientoBodegaEnum.INGRESO_DESPACHO, item.getCantidad(), motivo, usuario,
+					DOCUMENTO_ORIGEN, despacho.getIdDespacho());
+		}
+	}
+
+	/** Deshace el ingreso a la bodega destino; falla sin cambios si ya no cuenta con todas las unidades. */
+	private void retirarDeBodegaDestino(DespachoBodega despacho, Usuario usuario) {
+		Bodega destino = despacho.getBodegaDestino();
+		String motivo = "Reversión del despacho #" + despacho.getIdDespacho();
+		for (DespachoBodegaDetalle item : despacho.getItems()) {
+			try {
+				inventarioBodegaService.registrarMovimiento(destino, item.getProducto(),
+						TipoMovimientoBodegaEnum.REVERSION_DESPACHO, item.getCantidad(), motivo, usuario,
+						DOCUMENTO_ORIGEN, despacho.getIdDespacho());
+			} catch (BadRequestException e) {
+				throw new BadRequestException("No se puede revertir el despacho #" + despacho.getIdDespacho()
+						+ " porque la bodega \"" + destino.getNombre() + "\" ya no cuenta con todas las unidades. "
+						+ e.getMessage(), e);
+			}
+		}
 	}
 
 	/** Deshace el ingreso que generó la aprobación: una salida por línea en el inventario de la sucursal destino. */
@@ -274,6 +319,16 @@ public class DespachoBodegaServiceImpl implements IDespachoBodegaService {
 		Sucursal destino = sucursalService.findById(idDestino);
 		validarSucursalActiva(destino);
 		return destino;
+	}
+
+	private Bodega resolverBodegaDestino(DespachoBodegaRequest request, Bodega origen) {
+		if (request.getIdSucursalDestino() != null) {
+			throw new BadRequestException("Indique una sucursal o una bodega como destino, no ambas.", null);
+		}
+		if (request.getIdBodegaDestino().equals(origen.getIdBodega())) {
+			throw new BadRequestException("La bodega destino debe ser distinta de la bodega de origen.", null);
+		}
+		return bodegaService.findActivaById(request.getIdBodegaDestino());
 	}
 
 	private void validarSucursalActiva(Sucursal sucursal) {

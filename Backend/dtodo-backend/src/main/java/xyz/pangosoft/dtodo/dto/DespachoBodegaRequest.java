@@ -23,6 +23,9 @@ public class DespachoBodegaRequest {
 	/** Sucursal destino; si se omite se usa la sucursal asignada a la bodega. */
 	private Integer idSucursalDestino;
 
+	/** Bodega destino (traslado entre bodegas). No se combina con la sucursal destino. */
+	private Integer idBodegaDestino;
+
 	private String recibidoPor;
 	private String observaciones;
 	private List<Linea> items = new ArrayList<>();

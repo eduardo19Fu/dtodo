@@ -33,7 +33,7 @@ import xyz.pangosoft.dtodo.model.enums.EstadoDespachoBodegaEnum;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@ToString(exclude = { "bodega", "sucursalDestino", "usuarioDespacha", "usuarioResuelve", "items" })
+@ToString(exclude = { "bodega", "sucursalDestino", "bodegaDestino", "usuarioDespacha", "usuarioResuelve", "items" })
 @Entity
 @Table(name = "despachos_bodega")
 public class DespachoBodega implements Serializable {
@@ -65,10 +65,17 @@ public class DespachoBodega implements Serializable {
 	@JsonIgnoreProperties({ "usuario", "hibernateLazyInitializer", "handler" })
 	private Bodega bodega;
 
+	/** Sucursal que recibe el despacho; nula cuando el destino es otra bodega. */
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "id_sucursal_destino")
 	@JsonIgnoreProperties({ "usuario", "hibernateLazyInitializer", "handler" })
 	private Sucursal sucursalDestino;
+
+	/** Bodega que recibe el despacho (traslado entre bodegas); nula cuando el destino es una sucursal. */
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "id_bodega_destino")
+	@JsonIgnoreProperties({ "usuario", "hibernateLazyInitializer", "handler" })
+	private Bodega bodegaDestino;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "id_usuario_despacha")

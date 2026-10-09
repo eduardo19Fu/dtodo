@@ -44,7 +44,7 @@
         SELECT d.id_despacho AS numero,
                d.fecha_registro AS fecha,
                b.nombre AS bodega,
-               s.nombre AS sucursal,
+               COALESCE(s.nombre, CONCAT('Bodega ', bd.nombre)) AS sucursal,
                d.recibido_por AS recibe,
                TRIM(CONCAT(COALESCE(ud.primer_nombre, ''), ' ', COALESCE(ud.apellido, ''))) AS despacha,
                CASE d.estado
@@ -61,7 +61,8 @@
                d.total AS total
           FROM despachos_bodega d
           INNER JOIN bodegas b ON b.id_bodega = d.id_bodega
-          INNER JOIN sucursales s ON s.id_sucursal = d.id_sucursal_destino
+          LEFT JOIN sucursales s ON s.id_sucursal = d.id_sucursal_destino
+          LEFT JOIN bodegas bd ON bd.id_bodega = d.id_bodega_destino
           INNER JOIN usuarios ud ON ud.id_usuario = d.id_usuario_despacha
          WHERE d.fecha_registro >= $P{FECHA_INICIO}
            AND d.fecha_registro < $P{FECHA_FIN_EXCLUSIVA}
@@ -132,7 +133,7 @@
             <staticText><reportElement style="Header" x="0" y="0" width="50" height="28"/><textElement textAlignment="Center"/><text><![CDATA[No.]]></text></staticText>
             <staticText><reportElement style="Header" x="50" y="0" width="85" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Fecha]]></text></staticText>
             <staticText><reportElement style="Header" x="135" y="0" width="110" height="28"/><text><![CDATA[Bodega]]></text></staticText>
-            <staticText><reportElement style="Header" x="245" y="0" width="110" height="28"/><text><![CDATA[Sucursal destino]]></text></staticText>
+            <staticText><reportElement style="Header" x="245" y="0" width="110" height="28"/><text><![CDATA[Destino]]></text></staticText>
             <staticText><reportElement style="Header" x="355" y="0" width="110" height="28"/><text><![CDATA[Recibe]]></text></staticText>
             <staticText><reportElement style="Header" x="465" y="0" width="100" height="28"/><text><![CDATA[Despachó]]></text></staticText>
             <staticText><reportElement style="Header" x="565" y="0" width="80" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Estado]]></text></staticText>

@@ -64,6 +64,26 @@ class BodegaControllersSecurityTest {
     }
 
     @Test
+    void reducirExistenciasYEliminarProductosDeUnaBodegaEsExclusivoDeAdmin() {
+        List<Method> metodos = endpoints(BodegaApiController.class);
+        for (String nombre : List.of("reducirExistencias", "eliminarProducto")) {
+            Method ajuste = metodos.stream().filter(metodo -> metodo.getName().equals(nombre)).findFirst().orElseThrow();
+
+            assertEquals(Set.of("ROLE_ADMIN"), roles(ajuste), nombre);
+        }
+    }
+
+    @Test
+    void agregarEImportarInventarioSigueAbiertoAlRolBodega() {
+        List<Method> metodos = endpoints(BodegaApiController.class);
+        for (String nombre : List.of("agregarProducto", "importarExcel", "clonarInventario")) {
+            Method alta = metodos.stream().filter(metodo -> metodo.getName().equals(nombre)).findFirst().orElseThrow();
+
+            assertEquals(ROLES_DEL_MODULO, roles(alta), nombre);
+        }
+    }
+
+    @Test
     void elRestoDeLosEndpointsDeDespachosAdmiteAAdminYBodega() {
         for (Method metodo : endpoints(DespachoBodegaApiController.class)) {
             if (!metodo.getName().equals("aprobar")) {

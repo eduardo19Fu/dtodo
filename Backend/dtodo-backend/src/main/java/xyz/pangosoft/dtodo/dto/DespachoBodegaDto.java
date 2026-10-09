@@ -25,6 +25,8 @@ public class DespachoBodegaDto {
 	private String bodega;
 	private Integer idSucursalDestino;
 	private String sucursalDestino;
+	private Integer idBodegaDestino;
+	private String bodegaDestino;
 	private String usuarioDespacha;
 	private String usuarioResuelve;
 	private Integer totalLineas;

@@ -65,6 +65,7 @@ class DespachoBodegaServiceImplTest {
     private final Estado activo = Estado.builder().idEstado(1).estado("ACTIVO").build();
     private final Sucursal norte = Sucursal.builder().idSucursal(2).nombre("Norte").estado(activo).build();
     private final Bodega bodega = Bodega.builder().idBodega(1).nombre("Principal").estado(activo).sucursal(norte).build();
+    private final Bodega secundaria = Bodega.builder().idBodega(3).nombre("Secundaria").estado(activo).build();
     private final Usuario bodeguero = Usuario.builder().idUsuario(9).usuario("bodeguero").build();
     private final Usuario admin = Usuario.builder().idUsuario(1).usuario("admin").build();
     private final Producto cuaderno = Producto.builder().idProducto(10).codProducto("C-10").nombre("Cuaderno")
@@ -442,6 +443,185 @@ class DespachoBodegaServiceImplTest {
         service.cancelar(77L, "Motivo", 1, true);
 
         verify(movimientoProductoService, never()).save(any(MovimientoProducto.class));
+    }
+
+    // ---------- traslados entre bodegas ----------
+
+    private DespachoBodegaRequest trasladoASecundaria(DespachoBodegaRequest.Linea... lineas) {
+        DespachoBodegaRequest request = solicitud(lineas);
+        request.setIdBodegaDestino(3);
+        return request;
+    }
+
+    private DespachoBodega trasladoPendiente() {
+        DespachoBodega despacho = despachoPendiente();
+        despacho.setSucursalDestino(null);
+        despacho.setBodegaDestino(secundaria);
+        return despacho;
+    }
+
+    @Test
+    void registraUnTrasladoHaciaOtraBodegaSinSucursalDestino() {
+        prepararEntorno();
+        when(bodegaService.findActivaById(3)).thenReturn(secundaria);
+        when(inventarioBodegaService.obtenerStockParaActualizar(bodega, cuaderno)).thenReturn(50);
+
+        DespachoBodega despacho = service.crear(trasladoASecundaria(linea(10, 4)), 9);
+
+        assertEquals(EstadoDespachoBodegaEnum.PENDIENTE, despacho.getEstado());
+        assertEquals(secundaria, despacho.getBodegaDestino());
+        assertNull(despacho.getSucursalDestino());
+        verify(sucursalService, never()).findById(anyInt());
+        verify(inventarioBodegaService).registrarMovimiento(eq(bodega), eq(cuaderno),
+                eq(TipoMovimientoBodegaEnum.DESPACHO), eq(4), eq("Despacho #77 hacia la bodega Secundaria"), eq(bodeguero),
+                eq("DESPACHO_BODEGA"), eq(77L));
+    }
+
+    @Test
+    void elTrasladoNoUsaLaSucursalAsignadaALaBodegaDeOrigen() {
+        prepararEntorno();
+        when(bodegaService.findActivaById(3)).thenReturn(secundaria);
+        when(inventarioBodegaService.obtenerStockParaActualizar(bodega, cuaderno)).thenReturn(50);
+
+        DespachoBodega despacho = service.crear(trasladoASecundaria(linea(10, 1)), 9);
+
+        // la bodega de origen tiene sucursal (Norte), pero el destino elegido es una bodega
+        assertNull(despacho.getSucursalDestino());
+    }
+
+    @Test
+    void rechazaUnTrasladoHaciaLaMismaBodegaDeOrigen() {
+        prepararEntorno();
+        DespachoBodegaRequest request = solicitud(linea(10, 1));
+        request.setIdBodegaDestino(1);
+
+        BadRequestException error = assertThrows(BadRequestException.class, () -> service.crear(request, 9));
+
+        assertTrue(error.getMessage().contains("distinta"));
+        verify(despachoRepo, never()).save(any(DespachoBodega.class));
+    }
+
+    @Test
+    void rechazaIndicarSucursalYBodegaComoDestinoAlMismoTiempo() {
+        prepararEntorno();
+        DespachoBodegaRequest request = trasladoASecundaria(linea(10, 1));
+        request.setIdSucursalDestino(2);
+
+        assertThrows(BadRequestException.class, () -> service.crear(request, 9));
+
+        verify(despachoRepo, never()).save(any(DespachoBodega.class));
+    }
+
+    @Test
+    void rechazaUnTrasladoHaciaUnaBodegaInactiva() {
+        prepararEntorno();
+        when(bodegaService.findActivaById(3)).thenThrow(new BadRequestException("La bodega \"Secundaria\" está inactiva.", null));
+
+        assertThrows(BadRequestException.class, () -> service.crear(trasladoASecundaria(linea(10, 1)), 9));
+
+        verify(despachoRepo, never()).save(any(DespachoBodega.class));
+    }
+
+    @Test
+    void aprobarUnTrasladoSumaLasExistenciasALaBodegaDestinoYNoToscaLasSucursales() {
+        prepararEntorno();
+        when(bodegaService.findActivaById(3)).thenReturn(secundaria);
+        DespachoBodega despacho = trasladoPendiente();
+        when(despachoRepo.findParaResolver(77L)).thenReturn(Optional.of(despacho));
+
+        DespachoBodega resultado = service.aprobar(77L, 1);
+
+        assertEquals(EstadoDespachoBodegaEnum.REALIZADO, resultado.getEstado());
+        assertEquals(admin, resultado.getUsuarioResuelve());
+        verify(inventarioBodegaService).registrarMovimiento(eq(secundaria), eq(cuaderno),
+                eq(TipoMovimientoBodegaEnum.INGRESO_DESPACHO), eq(4),
+                eq("Ingreso por el despacho #77 desde la bodega Principal"), eq(admin), eq("DESPACHO_BODEGA"), eq(77L));
+        verify(inventarioBodegaService).registrarMovimiento(eq(secundaria), eq(lapiz),
+                eq(TipoMovimientoBodegaEnum.INGRESO_DESPACHO), eq(20),
+                eq("Ingreso por el despacho #77 desde la bodega Principal"), eq(admin), eq("DESPACHO_BODEGA"), eq(77L));
+        verify(movimientoProductoService, never()).save(any(MovimientoProducto.class));
+    }
+
+    @Test
+    void aprobarUnTrasladoRechazaUnaBodegaDestinoQueSeDesactivo() {
+        prepararEntorno();
+        when(bodegaService.findActivaById(3)).thenThrow(new BadRequestException("La bodega \"Secundaria\" está inactiva.", null));
+        DespachoBodega despacho = trasladoPendiente();
+        when(despachoRepo.findParaResolver(77L)).thenReturn(Optional.of(despacho));
+
+        assertThrows(BadRequestException.class, () -> service.aprobar(77L, 1));
+
+        assertEquals(EstadoDespachoBodegaEnum.PENDIENTE, despacho.getEstado());
+        verify(inventarioBodegaService, never()).registrarMovimiento(eq(secundaria), any(), any(), anyInt(), anyString(),
+                any(), any(), any());
+    }
+
+    @Test
+    void cancelarUnTrasladoPendienteSoloRegresaLasUnidadesALaBodegaDeOrigen() {
+        prepararEntorno();
+        when(despachoRepo.findParaResolver(77L)).thenReturn(Optional.of(trasladoPendiente()));
+
+        service.cancelar(77L, "Motivo", 9, false);
+
+        verify(inventarioBodegaService).registrarMovimiento(eq(bodega), eq(cuaderno),
+                eq(TipoMovimientoBodegaEnum.ANULACION_DESPACHO), eq(4), anyString(), eq(bodeguero), eq("DESPACHO_BODEGA"), eq(77L));
+        verify(inventarioBodegaService, never()).registrarMovimiento(eq(secundaria), any(), any(), anyInt(), anyString(),
+                any(), any(), any());
+    }
+
+    @Test
+    void revertirUnTrasladoAprobadoRetiraLasUnidadesDeLaBodegaDestinoYLasRegresaAlOrigen() {
+        prepararEntorno();
+        DespachoBodega realizado = trasladoPendiente();
+        realizado.setEstado(EstadoDespachoBodegaEnum.REALIZADO);
+        when(despachoRepo.findParaResolver(77L)).thenReturn(Optional.of(realizado));
+
+        DespachoBodega resultado = service.cancelar(77L, "Se envió por error", 1, true);
+
+        assertEquals(EstadoDespachoBodegaEnum.CANCELADO, resultado.getEstado());
+        verify(inventarioBodegaService).registrarMovimiento(eq(secundaria), eq(cuaderno),
+                eq(TipoMovimientoBodegaEnum.REVERSION_DESPACHO), eq(4), eq("Reversión del despacho #77"), eq(admin),
+                eq("DESPACHO_BODEGA"), eq(77L));
+        verify(inventarioBodegaService).registrarMovimiento(eq(secundaria), eq(lapiz),
+                eq(TipoMovimientoBodegaEnum.REVERSION_DESPACHO), eq(20), eq("Reversión del despacho #77"), eq(admin),
+                eq("DESPACHO_BODEGA"), eq(77L));
+        verify(inventarioBodegaService).registrarMovimiento(eq(bodega), eq(cuaderno),
+                eq(TipoMovimientoBodegaEnum.ANULACION_DESPACHO), eq(4), eq("Reversión del despacho #77"), eq(admin),
+                eq("DESPACHO_BODEGA"), eq(77L));
+        verify(movimientoProductoService, never()).save(any(MovimientoProducto.class));
+    }
+
+    @Test
+    void siLaBodegaDestinoYaNoTieneLasUnidadesLaReversionSeRechazaSinTocarElOrigen() {
+        prepararEntorno();
+        DespachoBodega realizado = trasladoPendiente();
+        realizado.setEstado(EstadoDespachoBodegaEnum.REALIZADO);
+        when(despachoRepo.findParaResolver(77L)).thenReturn(Optional.of(realizado));
+        when(inventarioBodegaService.registrarMovimiento(eq(secundaria), any(), eq(TipoMovimientoBodegaEnum.REVERSION_DESPACHO),
+                anyInt(), anyString(), any(), any(), any()))
+                .thenThrow(new BadRequestException("Existencias insuficientes en la bodega para Cuaderno.", null));
+
+        BadRequestException error = assertThrows(BadRequestException.class,
+                () -> service.cancelar(77L, "Motivo", 1, true));
+
+        assertTrue(error.getMessage().contains("No se puede revertir el despacho #77"));
+        assertTrue(error.getMessage().contains("Secundaria"));
+        assertEquals(EstadoDespachoBodegaEnum.REALIZADO, realizado.getEstado());
+        verify(inventarioBodegaService, never()).registrarMovimiento(eq(bodega), any(),
+                eq(TipoMovimientoBodegaEnum.ANULACION_DESPACHO), anyInt(), anyString(), any(), any(), any());
+    }
+
+    @Test
+    void soloUnAdministradorPuedeRevertirUnTrasladoAprobado() {
+        prepararEntorno();
+        DespachoBodega realizado = trasladoPendiente();
+        realizado.setEstado(EstadoDespachoBodegaEnum.REALIZADO);
+        when(despachoRepo.findParaResolver(77L)).thenReturn(Optional.of(realizado));
+
+        assertThrows(BadRequestException.class, () -> service.cancelar(77L, "Motivo", 9, false));
+
+        verify(inventarioBodegaService, never()).registrarMovimiento(
+                any(), any(), any(), anyInt(), anyString(), any(), any(), any());
     }
 
     // ---------- consultas ----------
