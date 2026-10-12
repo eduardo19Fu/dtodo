@@ -129,7 +129,9 @@ describe('OrigenInventarioBodegaComponent', () => {
   });
 
   it('ilustra el formato con las tres columnas esperadas', () => {
-    expect(component.columnasEjemplo).toEqual(['A', 'B', 'C']);
+    expect(component.columnasEjemplo.length).toBe(8);
+    expect(component.encabezadosEjemplo.length).toBe(8);
     expect(component.filasEjemplo.length).toBeGreaterThan(0);
+    expect(component.filasEjemplo.every(fila => fila.length === component.columnasEjemplo.length)).toBeTrue();
   });
 });

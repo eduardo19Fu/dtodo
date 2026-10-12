@@ -2,7 +2,7 @@ import { Component, EventEmitter, HostListener, Input, OnInit, Output } from '@a
 
 import { Bodega } from 'src/app/models/bodega';
 import { Sucursal } from 'src/app/models/sucursal';
-import { ImportacionInventarioDto } from 'src/app/dtos/movimiento-bodega-request';
+import { ImportacionInventarioDto, resumenImportacion } from 'src/app/dtos/movimiento-bodega-request';
 import { BodegaService } from 'src/app/services/bodega.service';
 import { SucursalService } from 'src/app/services/sucursal.service';
 import { OrigenInventarioSeleccion } from '../origen-inventario-bodega/origen-inventario-bodega.component';
@@ -83,8 +83,7 @@ export class ModalImportarInventarioComponent implements OnInit {
       this.filasLeidas = resultado.filasLeidas;
       return;
     }
-    Swal.fire('Inventario importado',
-      `Se importaron ${resultado.productosImportados} productos (${resultado.unidadesImportadas} unidades).`, 'success');
+    Swal.fire('Inventario importado', resumenImportacion(resultado), 'success');
     this.completado.emit();
   }
 

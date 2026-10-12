@@ -44,12 +44,24 @@ export class OrigenInventarioBodegaComponent {
   archivo: File = null;
   descargandoPlantilla = false;
 
-  readonly columnasEjemplo = ['A', 'B', 'C'];
-  readonly filasEjemplo = [
-    { codigo: '7501234567890', cantidad: 25, minimo: 5 },
-    { codigo: '4011200296908', cantidad: 100, minimo: null },
-    { codigo: 'LIB-0042', cantidad: 8, minimo: 2 },
-    { codigo: 'LIB-0099', cantidad: 0, minimo: null }
+  readonly columnasEjemplo = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+  /** Las columnas de catálogo solo se usan al crear productos que todavía no existen. */
+  readonly encabezadosEjemplo: { nombre: string; tipo: 'obligatorio' | 'opcional' | 'catalogo' }[] = [
+    { nombre: 'codigo_producto', tipo: 'obligatorio' },
+    { nombre: 'cantidad', tipo: 'obligatorio' },
+    { nombre: 'stock_minimo', tipo: 'opcional' },
+    { nombre: 'nombre', tipo: 'catalogo' },
+    { nombre: 'precio_compra', tipo: 'catalogo' },
+    { nombre: 'precio_venta', tipo: 'catalogo' },
+    { nombre: 'marca', tipo: 'opcional' },
+    { nombre: 'categoria', tipo: 'opcional' }
+  ];
+  readonly columnasNumericas = new Set([1, 2, 4, 5]);
+  readonly filasEjemplo: string[][] = [
+    ['7501234567890', '25', '5', '', '', '', '', ''],
+    ['4011200296908', '100', '', '', '', '', '', ''],
+    ['LIB-0099', '0', '', '', '', '', '', ''],
+    ['NUEVO-001', '24', '5', 'CUADERNO RAYADO', '8.50', '12.00', 'MAPED', 'BLOCK']
   ];
 
   seleccionarTipo(tipo: TipoOrigenInventario): void {

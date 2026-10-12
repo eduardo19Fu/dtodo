@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 import { Bodega } from 'src/app/models/bodega';
 import { Estado } from 'src/app/models/estado';
+import { resumenImportacion } from 'src/app/dtos/movimiento-bodega-request';
 import { Sucursal } from 'src/app/models/sucursal';
 import { BodegaService } from 'src/app/services/bodega.service';
 import { SucursalService } from 'src/app/services/sucursal.service';
@@ -107,8 +108,7 @@ export class CreateBodegaComponent implements OnInit {
       this.bodegaService.importarExcel(nueva.idBodega, origen.archivo).subscribe(
         resultado => {
           if (resultado.errores.length === 0) {
-            this.finalizarCreacion(nueva,
-              `Se importaron ${resultado.productosImportados} productos (${resultado.unidadesImportadas} unidades).`);
+            this.finalizarCreacion(nueva, resumenImportacion(resultado));
           } else {
             this.finalizarCreacion(nueva,
               `El archivo tenía ${resultado.errores.length} fila(s) con errores y no se importó. ` +

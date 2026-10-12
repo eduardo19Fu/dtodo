@@ -250,13 +250,14 @@
     }
 
     /* Hoja de Excel */
-    .sheet { border: 1px solid #b9c5cd; border-radius: 6px; display: block; font: 13.5px Consolas, "Courier New", monospace; margin: 8px 0 14px; max-width: 460px; overflow: hidden; width: 100%; }
-    .sheet .r { display: grid; grid-template-columns: 30px minmax(0, 1.7fr) minmax(0, 1fr) minmax(0, 1.2fr); }
+    .sheet { border: 1px solid #b9c5cd; border-radius: 6px; display: block; font: 13px Consolas, "Courier New", monospace; margin: 8px 0 10px; max-width: 100%; overflow-x: auto; width: 100%; }
+    .sheet .r { display: grid; grid-template-columns: 30px 132px 80px 108px 170px 116px 108px 74px 88px; min-width: 906px; }
     .sheet .r > span { border-bottom: 1px solid #dfe6ea; border-right: 1px solid #dfe6ea; overflow: hidden; padding: 5px 7px; text-overflow: ellipsis; white-space: nowrap; }
     .sheet .r > span:last-child { border-right: 0; }
     .sheet .letters > span, .sheet .idx { background: #eef3f6; color: #6b7b87; text-align: center; }
     .sheet .head > span:not(.idx) { background: #e1f1e7; color: #185a37; font-weight: 700; }
     .sheet .head > span.opt { background: #f0f5e1; color: #55611a; }
+    .sheet .head > span.cat { background: #fdf1d8; color: #8a5a00; }
     .sheet .num { text-align: right; }
 
     /* Diagramas */
@@ -421,7 +422,8 @@
             <tr><td>Crear y editar bodegas (incluido activar o desactivar)</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
             <tr><td>Agregar productos al inventario</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
             <tr><td><strong>Reducir existencias</strong> y <strong>eliminar productos</strong> del inventario</td><td class="c ok-mark">Sí</td><td class="c no-mark">No</td></tr>
-            <tr><td>Importar inventario (sucursal, otra bodega o Excel)</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
+            <tr><td>Importar inventario (sucursal, otra bodega o Excel con productos que ya existen)</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
+            <tr><td><strong>Crear productos nuevos</strong> al importar un Excel</td><td class="c ok-mark">Sí</td><td class="c no-mark">No</td></tr>
             <tr><td>Registrar un despacho a una sucursal o un traslado a otra bodega</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
             <tr><td>Imprimir el comprobante de un despacho</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
             <tr><td>Cancelar un despacho <strong>pendiente</strong></td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
@@ -599,7 +601,7 @@
             </tr>
             <tr>
               <td><strong>Importar desde Excel</strong></td>
-              <td>Carga un archivo <code>.xlsx</code> con códigos y cantidades.</td>
+              <td>Carga un archivo <code>.xlsx</code> con códigos y cantidades. Si trae productos que <strong>no existen</strong> en el catálogo, el administrador puede <strong>crearlos</strong> en el mismo paso.</td>
               <td>Siempre. Si la bodega ya tiene inventario, las cantidades se <strong>suman</strong>.</td>
             </tr>
           </tbody>
@@ -621,23 +623,44 @@
       </ol>
 
       <h4>Así debe verse el archivo</h4>
-      <div class="sheet" role="img" aria-label="Hoja de cálculo con las columnas codigo_producto, cantidad y stock_minimo">
-        <div class="r letters"><span></span><span>A</span><span>B</span><span>C</span></div>
-        <div class="r head"><span class="idx">1</span><span>codigo_producto</span><span>cantidad</span><span class="opt">stock_minimo</span></div>
-        <div class="r"><span class="idx">2</span><span>LIB-0001</span><span class="num">120</span><span class="num">20</span></div>
-        <div class="r"><span class="idx">3</span><span>LIB-0002</span><span class="num">45</span><span class="num">10</span></div>
-        <div class="r"><span class="idx">4</span><span>LIB-0099</span><span class="num">0</span><span class="num">5</span></div>
+      <div class="sheet" role="img" aria-label="Hoja de cálculo con las columnas codigo_producto, cantidad, stock_minimo, nombre, precio_compra, precio_venta, marca y categoria">
+        <div class="r letters"><span></span><span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>H</span></div>
+        <div class="r head"><span class="idx">1</span><span>codigo_producto</span><span>cantidad</span><span class="opt">stock_minimo</span><span class="cat">nombre</span><span class="cat">precio_compra</span><span class="cat">precio_venta</span><span class="opt">marca</span><span class="opt">categoria</span></div>
+        <div class="r"><span class="idx">2</span><span>7501234567890</span><span class="num">25</span><span class="num">5</span><span></span><span></span><span></span><span></span><span></span></div>
+        <div class="r"><span class="idx">3</span><span>4011200296908</span><span class="num">100</span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+        <div class="r"><span class="idx">4</span><span>LIB-0099</span><span class="num">0</span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+        <div class="r"><span class="idx">5</span><span>NUEVO-001</span><span class="num">24</span><span class="num">5</span><span>CUADERNO RAYADO</span><span class="num">8.50</span><span class="num">12.00</span><span>MAPED</span><span>BLOCK</span></div>
       </div>
+      <p><span class="pill ok">Obligatoria</span> <span class="pill" style="background:#f0f5e1;color:#55611a">Opcional</span> <span class="pill wait">Solo para productos nuevos</span></p>
 
       <div class="table-wrap">
         <table>
           <thead><tr><th>Columna</th><th>¿Obligatoria?</th><th>Qué debe contener</th></tr></thead>
           <tbody>
-            <tr><td><code>codigo_producto</code></td><td>Sí</td><td>El código del producto <strong>tal como está en el catálogo</strong>.</td></tr>
+            <tr><td><code>codigo_producto</code></td><td>Sí</td><td>El código del producto. Si ya está en el catálogo se usa ese producto; si no, se crea (ver más abajo).</td></tr>
             <tr><td><code>cantidad</code></td><td>Sí</td><td>Un número entero igual o mayor a 0. Usa <strong>0</strong> para registrar un producto sin existencias (en el ejemplo, la fila 4).</td></tr>
             <tr><td><code>stock_minimo</code></td><td>No</td><td>Un número entero igual o mayor a 0.</td></tr>
+            <tr><td><code>nombre</code></td><td>Solo al crear</td><td>El nombre del producto nuevo (hasta 100 caracteres). Se guarda en mayúsculas.</td></tr>
+            <tr><td><code>precio_compra</code></td><td>Solo al crear</td><td>El costo del producto. Número igual o mayor a 0; puedes escribirlo con símbolo de moneda o separador de miles (<code>Q1,200.50</code>).</td></tr>
+            <tr><td><code>precio_venta</code></td><td>Solo al crear</td><td>El precio de venta, con el mismo formato. El porcentaje de ganancia se calcula solo.</td></tr>
+            <tr><td><code>marca</code></td><td>No</td><td>Una marca que <strong>ya exista</strong> en el catálogo. Si la dejas vacía se usa <em>SIN MARCA</em>.</td></tr>
+            <tr><td><code>categoria</code></td><td>No</td><td>Una categoría que <strong>ya exista</strong> en el catálogo. Si la dejas vacía se usa <em>SIN CATEGORIA</em>.</td></tr>
           </tbody>
         </table>
+      </div>
+
+      <h3>6.2 Productos que todavía no existen en el catálogo</h3>
+      <p>Si tienes inventarios previos en Excel, es normal que algunos productos aún no estén registrados en el sistema. En lugar de crearlos uno por uno, puedes incluirlos en el mismo archivo.</p>
+      <ul>
+        <li><strong>Si el código ya existe</strong> en el catálogo, se usa ese producto tal como está. Las columnas de nombre, precios, marca y categoría de esa fila <strong>se ignoran</strong>: el Excel nunca modifica productos existentes. Para corregir un precio o un nombre usa el módulo de Productos.</li>
+        <li><strong>Si el código no existe</strong>, se crea el producto con los datos de esa fila. Para eso la fila debe traer <code>nombre</code>, <code>precio_compra</code> y <code>precio_venta</code>.</li>
+        <li><strong>Marca y categoría</strong> se buscan por nombre sin distinguir mayúsculas ni tildes (&laquo;Plástico&raquo; encuentra &laquo;PLASTICO&raquo;). Si escribes una que no existe, esa fila da error y se te indica cuál; así no se llena el catálogo de duplicados por errores de dedo. Créala primero en Productos &rarr; Marcas o Categorías, o corrige el nombre.</li>
+        <li>El producto nuevo queda registrado en el catálogo y visible en el módulo de Productos de la <strong>sucursal asignada a la bodega</strong> (o, si la bodega no tiene sucursal, la de quien importa), con existencia 0 en esa sucursal: las unidades están en la bodega y llegarán a la sucursal con un despacho aprobado.</li>
+      </ul>
+
+      <div class="callout warn">
+        <span class="callout-title">Solo el administrador crea productos</span>
+        <p>Igual que en el módulo de Productos, crear productos nuevos es exclusivo del <strong>Administrador</strong>. Si un usuario con rol Bodega importa un archivo con códigos que no existen, el sistema no importa nada y le indica que debe pedirle a un administrador que haga esa carga. Un usuario Bodega sí puede importar archivos cuyos productos ya existen en el catálogo.</p>
       </div>
 
       <h4>Reglas que conviene recordar</h4>
@@ -651,7 +674,7 @@
 
       <div class="callout danger">
         <span class="callout-title">Todo o nada</span>
-        <p>Si <strong>una sola fila</strong> tiene un error, <strong>no se importa ninguna</strong>. El sistema te muestra la lista de problemas con el número de fila de Excel (&laquo;Fila 5: falta el código del producto&raquo;, &laquo;El código X no existe en el catálogo&raquo;, etc.). Corrige el archivo y vuelve a intentarlo: nunca quedará una importación a medias.</p>
+        <p>Si <strong>una sola fila</strong> tiene un error, <strong>no se importa ninguna ni se crea ningún producto</strong>. El sistema te muestra la lista de problemas con el número de fila de Excel (&laquo;Fila 5: falta el código del producto&raquo;, &laquo;Fila 7: para crear el producto X falta el precio de venta&raquo;, &laquo;Fila 9: la marca Y no existe en el catálogo&raquo;, etc.). Corrige el archivo y vuelve a intentarlo: nunca quedará una importación a medias.</p>
       </div>
     </section>
 
@@ -909,7 +932,17 @@
 
       <details>
         <summary>La importación de Excel dice que no se importó nada.</summary>
-        <p>Es normal: si una fila falla, no se importa ninguna. Lee la lista de problemas (cada uno indica la fila), corrígelos en el archivo y vuelve a subirlo. Los errores más comunes son: código que no existe en el catálogo, código repetido, cantidad vacía o con decimales, y encabezados cambiados. Descarga la plantilla si dudas del formato.</p>
+        <p>Es normal: si una fila falla, no se importa ninguna ni se crea ningún producto. Lee la lista de problemas (cada uno indica la fila), corrígelos en el archivo y vuelve a subirlo. Los errores más comunes son: código que no existe en el catálogo (y quien importa no es administrador), código repetido, cantidad vacía o con decimales, un producto nuevo sin nombre o sin precios, una marca o categoría que no existe, y encabezados cambiados. Descarga la plantilla si dudas del formato.</p>
+      </details>
+
+      <details>
+        <summary>Mi Excel trae productos que no están en el sistema, ¿se crean solos?</summary>
+        <p>Sí, pero solo si quien importa es <strong>Administrador</strong>. Cada producto nuevo necesita <code>nombre</code>, <code>precio_compra</code> y <code>precio_venta</code>; la marca y la categoría son opcionales, pero si las escribes deben existir. Los productos que ya existen se usan tal cual y nunca se modifican. Más detalle en <a href="#importar">6.2</a>.</p>
+      </details>
+
+      <details>
+        <summary>Importé un archivo y los precios o nombres de un producto existente no cambiaron.</summary>
+        <p>Es lo esperado: el Excel solo usa el código para ubicar el producto y suma la cantidad a la bodega. Para cambiar un nombre o un precio edita el producto en el módulo de Productos.</p>
       </details>
 
       <details>

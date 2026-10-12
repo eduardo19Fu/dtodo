@@ -119,4 +119,16 @@ describe('ModalImportarInventarioComponent', () => {
     component.cerrarModal();
     expect(cerrado).toBeTrue();
   });
+
+  it('al importar informa también los productos nuevos que se crearon en el catálogo', () => {
+    bodegaService.importarExcel.and.returnValue(of({
+      filasLeidas: 3, productosImportados: 3, unidadesImportadas: 20, productosCreados: 2, errores: []
+    }));
+    component.alCambiarOrigen({ tipo: 'EXCEL', idOrigen: null, archivo: new File(['x'], 'a.xlsx'), completa: true });
+
+    component.importar();
+
+    expect(swal.fire).toHaveBeenCalledWith('Inventario importado',
+      'Se importaron 3 productos (20 unidades). Se crearon 2 productos nuevos en el catálogo.', 'success');
+  });
 });

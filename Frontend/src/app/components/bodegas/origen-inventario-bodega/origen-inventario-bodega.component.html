@@ -67,30 +67,35 @@
 
       <div class="excel-format" aria-label="Ilustraci&oacute;n del formato del archivo">
         <span class="format-title"><i class="fas fa-table" aria-hidden="true"></i> As&iacute; debe verse tu archivo</span>
-        <div class="sheet" role="img" aria-label="Hoja de c&aacute;lculo con las columnas codigo_producto, cantidad y stock_minimo">
+        <div class="sheet" role="img"
+          aria-label="Hoja de c&aacute;lculo con las columnas codigo_producto, cantidad, stock_minimo, nombre, precio_compra, precio_venta, marca y categoria">
           <div class="sheet-row sheet-letters">
             <span class="sheet-corner"></span>
             <span *ngFor="let columna of columnasEjemplo">{{columna}}</span>
           </div>
           <div class="sheet-row sheet-head">
             <span class="sheet-index">1</span>
-            <span>codigo_producto</span>
-            <span>cantidad</span>
-            <span class="optional">stock_minimo</span>
+            <span *ngFor="let encabezado of encabezadosEjemplo" [ngClass]="encabezado.tipo">{{encabezado.nombre}}</span>
           </div>
           <div class="sheet-row" *ngFor="let fila of filasEjemplo; let i = index">
             <span class="sheet-index">{{i + 2}}</span>
-            <span>{{fila.codigo}}</span>
-            <span class="num">{{fila.cantidad}}</span>
-            <span class="num">{{fila.minimo}}</span>
+            <span *ngFor="let valor of fila; let j = index" [class.num]="columnasNumericas.has(j)">{{valor}}</span>
           </div>
         </div>
+        <div class="sheet-legend" aria-hidden="true">
+          <span class="legend-chip obligatorio">Obligatoria</span>
+          <span class="legend-chip opcional">Opcional</span>
+          <span class="legend-chip catalogo">Solo para productos nuevos</span>
+        </div>
         <ul class="format-rules">
-          <li><strong>codigo_producto</strong> (obligatorio): el c&oacute;digo tal como est&aacute; en el cat&aacute;logo.</li>
+          <li><strong>codigo_producto</strong> (obligatorio): el c&oacute;digo del producto. Si no existe en el cat&aacute;logo, se <em>crea</em> (ver abajo).</li>
           <li><strong>cantidad</strong> (obligatorio): entero mayor o igual a 0; usa <strong>0</strong> para registrar un producto sin existencias. Si el producto ya est&aacute; en la bodega, se <em>suma</em> a su existencia.</li>
           <li><strong>stock_minimo</strong> (opcional): entero mayor o igual a 0.</li>
+          <li><strong>nombre</strong>, <strong>precio_compra</strong> y <strong>precio_venta</strong>: obligatorios solo si el c&oacute;digo <em>no existe</em> en el cat&aacute;logo. Si ya existe, se ignoran y el producto no se modifica.</li>
+          <li><strong>marca</strong> y <strong>categoria</strong> (opcionales): deben existir en el cat&aacute;logo; si las dejas vac&iacute;as se usa SIN MARCA y SIN CATEGORIA.</li>
+          <li>Solo un <strong>administrador</strong> puede crear productos nuevos al importar.</li>
           <li>La primera fila son los encabezados; los datos empiezan en la fila 2. No repitas c&oacute;digos.</li>
-          <li>Si una fila tiene error no se importa ninguna: se te indicar&aacute; cu&aacute;les corregir.</li>
+          <li>Si una fila tiene error no se importa ninguna ni se crea ning&uacute;n producto: se te indicar&aacute; cu&aacute;les corregir.</li>
         </ul>
       </div>
     </div>
