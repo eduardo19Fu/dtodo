@@ -20,9 +20,11 @@ import xyz.pangosoft.dtodo.error.exceptions.NotFoundException;
 import xyz.pangosoft.dtodo.model.Bodega;
 import xyz.pangosoft.dtodo.model.Estado;
 import xyz.pangosoft.dtodo.model.InventarioBodega;
+import xyz.pangosoft.dtodo.model.MarcaProducto;
 import xyz.pangosoft.dtodo.model.MovimientoBodega;
 import xyz.pangosoft.dtodo.model.Producto;
 import xyz.pangosoft.dtodo.model.Sucursal;
+import xyz.pangosoft.dtodo.model.TipoProducto;
 import xyz.pangosoft.dtodo.model.Usuario;
 import xyz.pangosoft.dtodo.model.enums.OrigenInventarioBodegaEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoMovimientoBodegaEnum;
@@ -30,8 +32,11 @@ import xyz.pangosoft.dtodo.repository.IInventarioBodegaRepository;
 import xyz.pangosoft.dtodo.repository.IMovimientoBodegaRepository;
 import xyz.pangosoft.dtodo.repository.IProductoRepository;
 import xyz.pangosoft.dtodo.service.IBodegaService;
+import xyz.pangosoft.dtodo.service.IInventarioSucursalService;
+import xyz.pangosoft.dtodo.service.IMarcaProductoService;
 import xyz.pangosoft.dtodo.service.IProductoService;
 import xyz.pangosoft.dtodo.service.ISucursalService;
+import xyz.pangosoft.dtodo.service.ITipoProductoService;
 import xyz.pangosoft.dtodo.service.IUsuarioService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -58,10 +63,13 @@ class InventarioBodegaServiceImplTest {
     private final IProductoService productoService = mock(IProductoService.class);
     private final IUsuarioService usuarioService = mock(IUsuarioService.class);
     private final ISucursalService sucursalService = mock(ISucursalService.class);
+    private final IMarcaProductoService marcaService = mock(IMarcaProductoService.class);
+    private final ITipoProductoService tipoService = mock(ITipoProductoService.class);
+    private final IInventarioSucursalService inventarioSucursalService = mock(IInventarioSucursalService.class);
 
     private final InventarioBodegaServiceImpl service = new InventarioBodegaServiceImpl(
             inventarioRepo, movimientoRepo, productoRepo, bodegaService, productoService, usuarioService,
-            sucursalService);
+            sucursalService, marcaService, tipoService, inventarioSucursalService);
 
     private final Bodega bodega = Bodega.builder().idBodega(1).nombre("Principal")
             .estado(Estado.builder().idEstado(1).estado("ACTIVO").build()).build();
@@ -424,12 +432,16 @@ class InventarioBodegaServiceImplTest {
     // ---------- importación desde Excel ----------
 
     private ByteArrayInputStream excel(Object[][] filas) throws Exception {
+        return excel(new String[] { "codigo_producto", "cantidad", "stock_minimo" }, filas);
+    }
+
+    private ByteArrayInputStream excel(String[] encabezados, Object[][] filas) throws Exception {
         try (XSSFWorkbook libro = new XSSFWorkbook(); ByteArrayOutputStream salida = new ByteArrayOutputStream()) {
             Sheet hoja = libro.createSheet("Inventario");
             Row encabezado = hoja.createRow(0);
-            encabezado.createCell(0).setCellValue("codigo_producto");
-            encabezado.createCell(1).setCellValue("cantidad");
-            encabezado.createCell(2).setCellValue("stock_minimo");
+            for (int i = 0; i < encabezados.length; i++) {
+                encabezado.createCell(i).setCellValue(encabezados[i]);
+            }
             for (int i = 0; i < filas.length; i++) {
                 Row fila = hoja.createRow(i + 1);
                 for (int j = 0; j < filas[i].length; j++) {
@@ -461,7 +473,7 @@ class InventarioBodegaServiceImplTest {
         when(inventarioRepo.findParaActualizar(1, 12)).thenReturn(Optional.empty());
 
         ImportacionInventarioDto resultado = service.importarDesdeExcel(
-                1, excel(new Object[][] { { "B-2", 7, 2 }, { "A-1", 5, null } }), 9);
+                1, excel(new Object[][] { { "B-2", 7, 2 }, { "A-1", 5, null } }), 9, false);
 
         assertTrue(resultado.getErrores().isEmpty());
         assertEquals(2, resultado.getFilasLeidas());
@@ -485,7 +497,7 @@ class InventarioBodegaServiceImplTest {
         when(inventarioRepo.findParaActualizar(1, 12)).thenReturn(Optional.empty());
 
         ImportacionInventarioDto resultado = service.importarDesdeExcel(
-                1, excel(new Object[][] { { "A-1", 0, 4 }, { "B-2", 6 } }), 9);
+                1, excel(new Object[][] { { "A-1", 0, 4 }, { "B-2", 6 } }), 9, false);
 
         assertTrue(resultado.getErrores().isEmpty());
         assertEquals(2, resultado.getProductosImportados());
@@ -510,7 +522,7 @@ class InventarioBodegaServiceImplTest {
         when(productoRepo.findByCodProductoIn(anyCollection())).thenReturn(List.of(productoConCodigo(11, "A-1")));
 
         ImportacionInventarioDto resultado = service.importarDesdeExcel(
-                1, excel(new Object[][] { { "A-1", 5 }, { "NO-EXISTE", 3 } }), 9);
+                1, excel(new Object[][] { { "A-1", 5 }, { "NO-EXISTE", 3 } }), 9, false);
 
         assertEquals(1, resultado.getErrores().size());
         assertTrue(resultado.getErrores().get(0).startsWith("Fila 3:"));
@@ -526,7 +538,7 @@ class InventarioBodegaServiceImplTest {
         when(productoRepo.findByCodProductoIn(anyCollection())).thenReturn(List.of(productoConCodigo(11, "A-1")));
 
         ImportacionInventarioDto resultado = service.importarDesdeExcel(1, excel(new Object[][] {
-                { "A-1", 5 }, { "A-1", 2 }, { "B-9", "abc" }, { "C-3", 0 } }), 9);
+                { "A-1", 5 }, { "A-1", 2 }, { "B-9", "abc" }, { "C-3", 0 } }), 9, false);
 
         List<String> errores = resultado.getErrores();
         assertEquals(3, errores.size());
@@ -541,7 +553,7 @@ class InventarioBodegaServiceImplTest {
         when(productoRepo.findByCodProductoIn(anyCollection()))
                 .thenReturn(List.of(productoConCodigo(11, "DUP"), productoConCodigo(12, "DUP")));
 
-        ImportacionInventarioDto resultado = service.importarDesdeExcel(1, excel(new Object[][] { { "DUP", 1 } }), 9);
+        ImportacionInventarioDto resultado = service.importarDesdeExcel(1, excel(new Object[][] { { "DUP", 1 } }), 9, false);
 
         assertEquals(1, resultado.getErrores().size());
         assertTrue(resultado.getErrores().get(0).contains("2 productos distintos"));
@@ -555,7 +567,7 @@ class InventarioBodegaServiceImplTest {
         when(productoRepo.findByCodProductoIn(anyCollection())).thenReturn(List.of(p1));
         when(inventarioRepo.findParaActualizar(1, 11)).thenReturn(Optional.empty());
 
-        ImportacionInventarioDto resultado = service.importarDesdeExcel(1, excel(new Object[][] { { "abc-1", 4 } }), 9);
+        ImportacionInventarioDto resultado = service.importarDesdeExcel(1, excel(new Object[][] { { "abc-1", 4 } }), 9, false);
 
         assertTrue(resultado.getErrores().isEmpty());
         assertEquals(1, resultado.getProductosImportados());
@@ -566,6 +578,210 @@ class InventarioBodegaServiceImplTest {
         prepararEntorno();
 
         assertThrows(BadRequestException.class,
-                () -> service.importarDesdeExcel(1, new ByteArrayInputStream("no es excel".getBytes()), 9));
+                () -> service.importarDesdeExcel(1, new ByteArrayInputStream("no es excel".getBytes()), 9, false));
+    }
+
+    // ---------- importar: productos que aún no existen en el catálogo ----------
+
+    private static final String[] CON_CATALOGO = { "codigo_producto", "cantidad", "stock_minimo", "nombre", "precio_compra",
+            "precio_venta", "marca", "categoria" };
+
+    private final Sucursal central = Sucursal.builder().idSucursal(3).nombre("Central").build();
+    private final MarcaProducto maped = MarcaProducto.builder().idMarcaProducto(7).marca("MAPED").build();
+    private final MarcaProducto sinMarca = MarcaProducto.builder().idMarcaProducto(15).marca("SIN MARCA").build();
+    private final TipoProducto block = TipoProducto.builder().idTipoProducto(6).tipoProducto("BLOCK").build();
+    private final TipoProducto plastico = TipoProducto.builder().idTipoProducto(9).tipoProducto("PLASTICO").build();
+
+    /** Ningún código existe en el catálogo; los productos que se creen reciben ids consecutivos desde 500. */
+    private void prepararProductosNuevos() {
+        prepararEntorno();
+        bodega.setSucursal(central);
+        java.util.concurrent.atomic.AtomicInteger siguiente = new java.util.concurrent.atomic.AtomicInteger(500);
+        when(productoRepo.findByCodProductoIn(anyCollection())).thenReturn(List.of());
+        when(marcaService.findAll()).thenReturn(List.of(maped, sinMarca));
+        when(tipoService.findAll()).thenReturn(List.of(block, plastico));
+        when(productoService.save(any(Producto.class))).thenAnswer(invocation -> {
+            Producto creado = invocation.getArgument(0);
+            creado.setIdProducto(siguiente.getAndIncrement());
+            return creado;
+        });
+        when(inventarioRepo.findParaActualizar(anyInt(), anyInt())).thenReturn(Optional.empty());
+    }
+
+    @Test
+    void unAdministradorCreaLosProductosQueNoExistenYLosImportaALaBodega() throws Exception {
+        prepararProductosNuevos();
+
+        ImportacionInventarioDto resultado = service.importarDesdeExcel(1, excel(CON_CATALOGO, new Object[][] {
+                { "NUEVO-1", 5, 2, "cuaderno rayado", 8.5, 12, "MAPED", "BLOCK" } }), 9, true);
+
+        assertTrue(resultado.getErrores().isEmpty());
+        assertEquals(1, resultado.getProductosCreados());
+        assertEquals(1, resultado.getProductosImportados());
+        assertEquals(5, resultado.getUnidadesImportadas());
+
+        ArgumentCaptor<Producto> creado = ArgumentCaptor.forClass(Producto.class);
+        verify(productoService).save(creado.capture());
+        Producto producto = creado.getValue();
+        assertEquals("NUEVO-1", producto.getCodProducto());
+        assertEquals("cuaderno rayado", producto.getNombre());
+        assertEquals(new java.math.BigDecimal("8.50"), producto.getPrecioCompra());
+        assertEquals(new java.math.BigDecimal("12.00"), producto.getPrecioVenta());
+        assertEquals(41.18f, producto.getPorcentajeGanancia(), 0.001f);
+        assertEquals(maped, producto.getMarcaProducto());
+        assertEquals(block, producto.getTipoProducto());
+
+        // El producto nuevo queda visible en la sucursal de la bodega y con sus existencias en la bodega
+        verify(inventarioSucursalService).obtenerOCrear(central, producto);
+        ArgumentCaptor<MovimientoBodega> movimiento = ArgumentCaptor.forClass(MovimientoBodega.class);
+        verify(movimientoRepo).save(movimiento.capture());
+        assertEquals(TipoMovimientoBodegaEnum.IMPORTACION, movimiento.getValue().getTipoMovimiento());
+        assertEquals(500, movimiento.getValue().getProducto().getIdProducto());
+    }
+
+    @Test
+    void sinMarcaNiCategoriaUsaLasGenericasYCreaLaCategoriaSiNoExiste() throws Exception {
+        prepararProductosNuevos();
+        when(tipoService.findAll()).thenReturn(List.of(block));
+        when(tipoService.save(any(TipoProducto.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ImportacionInventarioDto resultado = service.importarDesdeExcel(1, excel(CON_CATALOGO, new Object[][] {
+                { "N-1", 3, null, "Lapicero azul", 3.25, 5 }, { "N-2", 1, null, "Regla", 2, 4 } }), 9, true);
+
+        assertTrue(resultado.getErrores().isEmpty());
+        assertEquals(2, resultado.getProductosCreados());
+
+        ArgumentCaptor<Producto> creados = ArgumentCaptor.forClass(Producto.class);
+        verify(productoService, org.mockito.Mockito.times(2)).save(creados.capture());
+        for (Producto producto : creados.getAllValues()) {
+            assertEquals(sinMarca, producto.getMarcaProducto());
+            assertEquals("SIN CATEGORIA", producto.getTipoProducto().getTipoProducto());
+        }
+        // La categoría genérica se crea una sola vez aunque haya varios productos sin categoría; la marca ya existía
+        ArgumentCaptor<TipoProducto> tipoCreado = ArgumentCaptor.forClass(TipoProducto.class);
+        verify(tipoService).save(tipoCreado.capture());
+        assertEquals(usuario, tipoCreado.getValue().getUsuario());
+        verify(marcaService, never()).save(any(MarcaProducto.class));
+    }
+
+    @Test
+    void marcaYCategoriaSeBuscanSinDistinguirMayusculasTildesNiEspaciosSobrantes() throws Exception {
+        prepararProductosNuevos();
+
+        service.importarDesdeExcel(1, excel(CON_CATALOGO, new Object[][] {
+                { "N-1", 1, null, "Regla", 2, 4, "  maped ", "  Pl\u00E1stico " } }), 9, true);
+
+        ArgumentCaptor<Producto> creado = ArgumentCaptor.forClass(Producto.class);
+        verify(productoService).save(creado.capture());
+        assertEquals(maped, creado.getValue().getMarcaProducto());
+        assertEquals(plastico, creado.getValue().getTipoProducto());
+    }
+
+    @Test
+    void unProductoQueYaExisteSeUsaTalCualYSusDatosDeCatalogoSeIgnoran() throws Exception {
+        prepararEntorno();
+        Producto existente = productoConCodigo(11, "A-1");
+        when(productoRepo.findByCodProductoIn(anyCollection())).thenReturn(List.of(existente));
+        when(inventarioRepo.findParaActualizar(1, 11)).thenReturn(Optional.empty());
+
+        ImportacionInventarioDto resultado = service.importarDesdeExcel(1, excel(CON_CATALOGO, new Object[][] {
+                { "A-1", 5, null, "OTRO NOMBRE", "no es precio", "tampoco", "NO EXISTE", "NI ESTA" } }), 9, true);
+
+        assertTrue(resultado.getErrores().isEmpty());
+        assertEquals(0, resultado.getProductosCreados());
+        assertEquals(1, resultado.getProductosImportados());
+        verify(productoService, never()).save(any(Producto.class));
+        // Sin productos nuevos ni siquiera se consultan marcas y categorías
+        verifyNoInteractions(marcaService, tipoService, inventarioSucursalService);
+    }
+
+    @Test
+    void unUsuarioQueNoEsAdministradorNoPuedeCrearProductosNuevos() throws Exception {
+        prepararProductosNuevos();
+
+        ImportacionInventarioDto resultado = service.importarDesdeExcel(1, excel(CON_CATALOGO, new Object[][] {
+                { "NUEVO-1", 5, null, "Cuaderno", 8.5, 12 } }), 9, false);
+
+        assertEquals(1, resultado.getErrores().size());
+        assertTrue(resultado.getErrores().get(0).startsWith("Fila 2:"));
+        assertTrue(resultado.getErrores().get(0).contains("administrador"));
+        assertEquals(0, resultado.getProductosCreados());
+        verify(productoService, never()).save(any(Producto.class));
+        verify(movimientoRepo, never()).save(any(MovimientoBodega.class));
+    }
+
+    @Test
+    void siHayErroresEnLosDatosDeUnProductoNuevoNoSeCreaNadaNiSiquieraLasMarcasGenericas() throws Exception {
+        prepararProductosNuevos();
+        when(tipoService.findAll()).thenReturn(List.of(block));
+
+        ImportacionInventarioDto resultado = service.importarDesdeExcel(1, excel(CON_CATALOGO, new Object[][] {
+                { "N-1", 1, null, null, 5, 6 },
+                { "N-2", 1, null, "Dos", "abc", 6 },
+                { "N-3", 1, null, "Tres", 1, null },
+                { "N-4", 1, null, "Cuatro", 1, 2, "NO-EXISTE", "TAMPOCO" },
+                { "N-5", 1, null, "Cinco", 1, 2 } }), 9, true);
+
+        List<String> errores = resultado.getErrores();
+        assertEquals(5, errores.size());
+        assertTrue(errores.get(0).startsWith("Fila 2:") && errores.get(0).contains("falta el nombre"));
+        assertTrue(errores.get(1).startsWith("Fila 3:") && errores.get(1).contains("precio de compra") && errores.get(1).contains("abc"));
+        assertTrue(errores.get(2).startsWith("Fila 4:") && errores.get(2).contains("falta el precio de venta"));
+        assertTrue(errores.get(3).startsWith("Fila 5:") && errores.get(3).contains("la marca \"NO-EXISTE\""));
+        assertTrue(errores.get(4).startsWith("Fila 5:") && errores.get(4).contains("la categor\u00EDa \"TAMPOCO\""));
+        assertEquals(0, resultado.getProductosCreados());
+        assertEquals(0, resultado.getProductosImportados());
+        verify(productoService, never()).save(any(Producto.class));
+        verify(tipoService, never()).save(any(TipoProducto.class));
+        verify(marcaService, never()).save(any(MarcaProducto.class));
+        verify(inventarioSucursalService, never()).obtenerOCrear(any(), any());
+        verify(inventarioRepo, never()).save(any(InventarioBodega.class));
+    }
+
+    @Test
+    void rechazaNombresOCodigosDemasiadoLargosYPreciosQueNoCabenEnLaColumna() throws Exception {
+        prepararProductosNuevos();
+
+        ImportacionInventarioDto resultado = service.importarDesdeExcel(1, excel(CON_CATALOGO, new Object[][] {
+                { "N-1", 1, null, "x".repeat(101), 1, 2 },
+                { "c".repeat(101), 1, null, "Largo", 1, 2 },
+                { "N-3", 1, null, "Caro", 1, 100000000 } }), 9, true);
+
+        assertEquals(3, resultado.getErrores().size());
+        assertTrue(resultado.getErrores().get(0).contains("nombre supera"));
+        assertTrue(resultado.getErrores().get(1).contains("c\u00F3digo supera"));
+        assertTrue(resultado.getErrores().get(2).contains("precio de venta"));
+        verify(productoService, never()).save(any(Producto.class));
+    }
+
+    @Test
+    void sinSucursalEnLaBodegaUsaLaDelUsuarioYSiNoHayNingunaRechazaLaCreacion() throws Exception {
+        prepararProductosNuevos();
+        bodega.setSucursal(null);
+
+        assertThrows(BadRequestException.class, () -> service.importarDesdeExcel(1, excel(CON_CATALOGO, new Object[][] {
+                { "N-1", 1, null, "Regla", 2, 4 } }), 9, true));
+        verify(productoService, never()).save(any(Producto.class));
+
+        usuario.setSucursal(central);
+        service.importarDesdeExcel(1, excel(CON_CATALOGO, new Object[][] { { "N-1", 1, null, "Regla", 2, 4 } }), 9, true);
+
+        verify(inventarioSucursalService).obtenerOCrear(eq(central), any(Producto.class));
+    }
+
+    @Test
+    void mezclaProductosExistentesYNuevosEnUnMismoArchivo() throws Exception {
+        prepararProductosNuevos();
+        Producto existente = productoConCodigo(11, "A-1");
+        when(productoRepo.findByCodProductoIn(anyCollection())).thenReturn(List.of(existente));
+
+        ImportacionInventarioDto resultado = service.importarDesdeExcel(1, excel(CON_CATALOGO, new Object[][] {
+                { "A-1", 4 }, { "N-1", 6, null, "Regla", 2, 4 } }), 9, true);
+
+        assertTrue(resultado.getErrores().isEmpty());
+        assertEquals(2, resultado.getProductosImportados());
+        assertEquals(1, resultado.getProductosCreados());
+        assertEquals(10, resultado.getUnidadesImportadas());
+        verify(movimientoRepo, org.mockito.Mockito.times(2)).save(any(MovimientoBodega.class));
     }
 }

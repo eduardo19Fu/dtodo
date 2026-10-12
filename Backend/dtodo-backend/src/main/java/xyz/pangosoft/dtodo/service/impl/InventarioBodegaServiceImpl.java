@@ -1,6 +1,9 @@
 package xyz.pangosoft.dtodo.service.impl;
 
 import java.io.InputStream;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
@@ -29,9 +32,11 @@ import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
 import xyz.pangosoft.dtodo.error.exceptions.NotFoundException;
 import xyz.pangosoft.dtodo.model.Bodega;
 import xyz.pangosoft.dtodo.model.InventarioBodega;
+import xyz.pangosoft.dtodo.model.MarcaProducto;
 import xyz.pangosoft.dtodo.model.MovimientoBodega;
 import xyz.pangosoft.dtodo.model.Producto;
 import xyz.pangosoft.dtodo.model.Sucursal;
+import xyz.pangosoft.dtodo.model.TipoProducto;
 import xyz.pangosoft.dtodo.model.Usuario;
 import xyz.pangosoft.dtodo.model.enums.OrigenInventarioBodegaEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoMovimientoBodegaEnum;
@@ -40,8 +45,11 @@ import xyz.pangosoft.dtodo.repository.IMovimientoBodegaRepository;
 import xyz.pangosoft.dtodo.repository.IProductoRepository;
 import xyz.pangosoft.dtodo.service.IBodegaService;
 import xyz.pangosoft.dtodo.service.IInventarioBodegaService;
+import xyz.pangosoft.dtodo.service.IInventarioSucursalService;
+import xyz.pangosoft.dtodo.service.IMarcaProductoService;
 import xyz.pangosoft.dtodo.service.IProductoService;
 import xyz.pangosoft.dtodo.service.ISucursalService;
+import xyz.pangosoft.dtodo.service.ITipoProductoService;
 import xyz.pangosoft.dtodo.service.IUsuarioService;
 import xyz.pangosoft.dtodo.util.InventarioBodegaExcel;
 
@@ -59,6 +67,11 @@ public class InventarioBodegaServiceImpl implements IInventarioBodegaService {
 	private static final LocalDateTime DESDE_SIN_LIMITE = LocalDateTime.of(2000, 1, 1, 0, 0);
 	private static final LocalDateTime HASTA_SIN_LIMITE = LocalDateTime.of(2999, 12, 31, 0, 0);
 	private static final int TAMANIO_LOTE_CODIGOS = 1000;
+	// Límites de las columnas de la tabla productos
+	private static final int LONGITUD_MAXIMA_TEXTO_PRODUCTO = 100;
+	private static final BigDecimal PRECIO_MAXIMO = new BigDecimal("99999999.99");
+	static final String MARCA_POR_DEFECTO = "SIN MARCA";
+	static final String CATEGORIA_POR_DEFECTO = "SIN CATEGORIA";
 
 	private final IInventarioBodegaRepository inventarioRepo;
 
@@ -73,6 +86,12 @@ public class InventarioBodegaServiceImpl implements IInventarioBodegaService {
 	private final IUsuarioService usuarioService;
 
 	private final ISucursalService sucursalService;
+
+	private final IMarcaProductoService marcaService;
+
+	private final ITipoProductoService tipoService;
+
+	private final IInventarioSucursalService inventarioSucursalService;
 
 	@Transactional(readOnly = true)
 	@Override
@@ -236,7 +255,8 @@ public class InventarioBodegaServiceImpl implements IInventarioBodegaService {
 
 	@Transactional(rollbackFor = Exception.class)
 	@Override
-	public ImportacionInventarioDto importarDesdeExcel(Integer idBodega, InputStream archivo, Integer idUsuario) {
+	public ImportacionInventarioDto importarDesdeExcel(Integer idBodega, InputStream archivo, Integer idUsuario,
+			boolean esAdministrador) {
 		Bodega bodega = bodegaService.findActivaById(idBodega);
 		Usuario usuario = usuarioService.findById(idUsuario);
 
@@ -256,11 +276,16 @@ public class InventarioBodegaServiceImpl implements IInventarioBodegaService {
 
 		Map<String, List<Producto>> productosPorCodigo = buscarProductos(filasPorCodigo);
 		List<Aplicable> aplicables = new ArrayList<>();
+		List<InventarioBodegaExcel.Fila> filasNuevas = new ArrayList<>();
 		for (InventarioBodegaExcel.Fila fila : filasPorCodigo.values()) {
 			List<Producto> coincidencias = productosPorCodigo.getOrDefault(fila.codigo().toLowerCase(), List.of());
 			if (coincidencias.isEmpty()) {
-				resultado.getErrores().add("Fila " + fila.numeroFila() + ": el producto con código \"" + fila.codigo()
-						+ "\" no existe en el catálogo.");
+				if (esAdministrador) {
+					filasNuevas.add(fila);
+				} else {
+					resultado.getErrores().add("Fila " + fila.numeroFila() + ": el producto con código \"" + fila.codigo()
+							+ "\" no existe en el catálogo. Solo un administrador puede crear productos nuevos al importar.");
+				}
 			} else if (coincidencias.size() > 1) {
 				resultado.getErrores().add("Fila " + fila.numeroFila() + ": el código \"" + fila.codigo()
 						+ "\" corresponde a " + coincidencias.size() + " productos distintos; no se puede importar.");
@@ -269,10 +294,26 @@ public class InventarioBodegaServiceImpl implements IInventarioBodegaService {
 			}
 		}
 
+		// Los catálogos de marcas y categorías solo se consultan si hay productos por crear
+		Catalogos catalogos = filasNuevas.isEmpty() ? null : cargarCatalogos();
+		List<NuevoProducto> nuevos = validarProductosNuevos(filasNuevas, catalogos, resultado.getErrores());
+
 		if (!resultado.getErrores().isEmpty()) {
 			resultado.getErrores().sort(Comparator.comparingInt(InventarioBodegaServiceImpl::numeroDeFila));
 			log.warn("Importación a la bodega {} rechazada: {} errores", idBodega, resultado.getErrores().size());
 			return resultado;
+		}
+
+		// Recién aquí, con el archivo ya validado por completo, se crean los productos que faltaban en el catálogo
+		if (!nuevos.isEmpty()) {
+			Sucursal sucursalBase = sucursalParaProductosNuevos(bodega, usuario);
+			for (NuevoProducto nuevo : nuevos) {
+				Producto creado = crearProducto(nuevo, catalogos, usuario);
+				// Todo producto debe tener al menos una fila de inventario de sucursal, igual que al crearlo desde Productos
+				inventarioSucursalService.obtenerOCrear(sucursalBase, creado);
+				aplicables.add(new Aplicable(creado, nuevo.fila()));
+			}
+			resultado.setProductosCreados(nuevos.size());
 		}
 
 		// Se procesa en orden de producto para tomar los bloqueos de fila siempre en la misma secuencia
@@ -292,8 +333,104 @@ public class InventarioBodegaServiceImpl implements IInventarioBodegaService {
 			resultado.setProductosImportados(resultado.getProductosImportados() + 1);
 			resultado.setUnidadesImportadas(resultado.getUnidadesImportadas() + aplicable.fila().cantidad());
 		}
-		log.info("Se importaron {} productos a la bodega {} desde Excel", resultado.getProductosImportados(), idBodega);
+		log.info("Se importaron {} productos a la bodega {} desde Excel ({} creados en el catálogo)",
+				resultado.getProductosImportados(), idBodega, resultado.getProductosCreados());
 		return resultado;
+	}
+
+	/**
+	 * Valida los datos de catálogo de las filas cuyo código no existe. No escribe nada: los errores se acumulan en la
+	 * lista recibida y, si hay alguno, la importación se rechaza antes de crear productos.
+	 */
+	private List<NuevoProducto> validarProductosNuevos(List<InventarioBodegaExcel.Fila> filas, Catalogos catalogos,
+			List<String> errores) {
+		List<NuevoProducto> nuevos = new ArrayList<>();
+		for (InventarioBodegaExcel.Fila fila : filas) {
+			InventarioBodegaExcel.DatosProducto datos = fila.producto();
+			String prefijo = "Fila " + fila.numeroFila() + ": para crear el producto \"" + fila.codigo() + "\" ";
+			int antes = errores.size();
+
+			if (fila.codigo().length() > LONGITUD_MAXIMA_TEXTO_PRODUCTO) {
+				errores.add("Fila " + fila.numeroFila() + ": el código supera los " + LONGITUD_MAXIMA_TEXTO_PRODUCTO + " caracteres.");
+			}
+			if (datos.nombre().isEmpty()) {
+				errores.add(prefijo + "falta el nombre.");
+			} else if (datos.nombre().length() > LONGITUD_MAXIMA_TEXTO_PRODUCTO) {
+				errores.add(prefijo + "el nombre supera los " + LONGITUD_MAXIMA_TEXTO_PRODUCTO + " caracteres.");
+			}
+			BigDecimal compra = validarPrecio(datos.precioCompra(), "precio de compra", prefijo, errores);
+			BigDecimal venta = validarPrecio(datos.precioVenta(), "precio de venta", prefijo, errores);
+			MarcaProducto marca = datos.marca().isEmpty() ? null : catalogos.marcas().get(clave(datos.marca()));
+			if (!datos.marca().isEmpty() && marca == null) {
+				errores.add("Fila " + fila.numeroFila() + ": la marca \"" + datos.marca() + "\" no existe en el catálogo.");
+			}
+			TipoProducto tipo = datos.categoria().isEmpty() ? null : catalogos.tipos().get(clave(datos.categoria()));
+			if (!datos.categoria().isEmpty() && tipo == null) {
+				errores.add("Fila " + fila.numeroFila() + ": la categoría \"" + datos.categoria() + "\" no existe en el catálogo.");
+			}
+			if (errores.size() == antes) {
+				nuevos.add(new NuevoProducto(fila, datos.nombre(), compra, venta, marca, tipo));
+			}
+		}
+		return nuevos;
+	}
+
+	private BigDecimal validarPrecio(String texto, String nombre, String prefijo, List<String> errores) {
+		if (texto.isEmpty()) {
+			errores.add(prefijo + "falta el " + nombre + ".");
+			return null;
+		}
+		BigDecimal valor = InventarioBodegaExcel.precio(texto);
+		if (valor == null || valor.compareTo(PRECIO_MAXIMO) > 0) {
+			errores.add(prefijo + "el " + nombre + " debe ser un número mayor o igual a 0 (se leyó \"" + texto + "\").");
+			return null;
+		}
+		return valor;
+	}
+
+	/** Marca y categoría de un producto nuevo; si la fila no las trae se usan las genéricas, que se crean si faltan. */
+	private Producto crearProducto(NuevoProducto nuevo, Catalogos catalogos, Usuario usuario) {
+		MarcaProducto marca = nuevo.marca() != null ? nuevo.marca()
+				: catalogos.marcas().computeIfAbsent(clave(MARCA_POR_DEFECTO), clave -> marcaService.save(
+						MarcaProducto.builder().marca(MARCA_POR_DEFECTO).usuario(usuario).build()));
+		TipoProducto tipo = nuevo.tipo() != null ? nuevo.tipo()
+				: catalogos.tipos().computeIfAbsent(clave(CATEGORIA_POR_DEFECTO), clave -> tipoService.save(
+						TipoProducto.builder().tipoProducto(CATEGORIA_POR_DEFECTO).usuario(usuario).build()));
+		float porcentaje = nuevo.precioCompra().signum() == 0 ? 0f : nuevo.precioVenta().subtract(nuevo.precioCompra())
+				.multiply(BigDecimal.valueOf(100)).divide(nuevo.precioCompra(), 2, RoundingMode.HALF_UP).floatValue();
+		return productoService.save(Producto.builder()
+				.codProducto(nuevo.fila().codigo())
+				.nombre(nuevo.nombre())
+				.precioCompra(nuevo.precioCompra())
+				.precioVenta(nuevo.precioVenta())
+				.porcentajeGanancia(porcentaje)
+				.marcaProducto(marca)
+				.tipoProducto(tipo)
+				.build());
+	}
+
+	/** Sucursal donde queda visible el producto nuevo: la de la bodega o, si no tiene, la de quien importa. */
+	private Sucursal sucursalParaProductosNuevos(Bodega bodega, Usuario usuario) {
+		Sucursal sucursal = bodega.getSucursal() != null ? bodega.getSucursal() : usuario.getSucursal();
+		if (sucursal == null) {
+			throw new BadRequestException("No se pueden crear productos nuevos: la bodega no tiene una sucursal asignada "
+					+ "y tu usuario tampoco. Asigna una sucursal a la bodega e inténtalo de nuevo.", null);
+		}
+		return sucursal;
+	}
+
+	private Catalogos cargarCatalogos() {
+		Map<String, MarcaProducto> marcas = new HashMap<>();
+		marcaService.findAll().forEach(marca -> marcas.putIfAbsent(clave(marca.getMarca()), marca));
+		Map<String, TipoProducto> tipos = new HashMap<>();
+		tipoService.findAll().forEach(tipo -> tipos.putIfAbsent(clave(tipo.getTipoProducto()), tipo));
+		return new Catalogos(marcas, tipos);
+	}
+
+	/** Nombre sin tildes, en minúsculas y con los espacios normalizados, para comparar marcas y categorías. */
+	private static String clave(String texto) {
+		return Normalizer.normalize(texto == null ? "" : texto, Normalizer.Form.NFD)
+				.replaceAll("\\p{M}", "").trim().replaceAll("\\s+", " ").toLowerCase();
 	}
 
 	/** Número de fila con el que empieza un mensaje de error ("Fila 7: ..."), para ordenarlos como en el archivo. */
@@ -307,6 +444,14 @@ public class InventarioBodegaServiceImpl implements IInventarioBodegaService {
 	}
 
 	private record Aplicable(Producto producto, InventarioBodegaExcel.Fila fila) {
+	}
+
+	/** Producto por crear con sus datos ya validados; una marca o categoría nula significa "usar la genérica". */
+	private record NuevoProducto(InventarioBodegaExcel.Fila fila, String nombre, BigDecimal precioCompra,
+			BigDecimal precioVenta, MarcaProducto marca, TipoProducto tipo) {
+	}
+
+	private record Catalogos(Map<String, MarcaProducto> marcas, Map<String, TipoProducto> tipos) {
 	}
 
 	private Map<String, List<Producto>> buscarProductos(Map<String, InventarioBodegaExcel.Fila> filasPorCodigo) {

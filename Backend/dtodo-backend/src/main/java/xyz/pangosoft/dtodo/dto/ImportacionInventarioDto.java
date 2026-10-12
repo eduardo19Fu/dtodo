@@ -18,6 +18,8 @@ import lombok.NoArgsConstructor;
 public class ImportacionInventarioDto {
 	private int filasLeidas;
 	private int productosImportados;
+	/** Productos que no existían en el catálogo y se crearon durante la importación. */
+	private int productosCreados;
 	private long unidadesImportadas;
 	private List<String> errores = new ArrayList<>();
 }

@@ -48,7 +48,9 @@ public interface IInventarioBodegaService {
 	public int clonarInventario(Integer idBodegaDestino, OrigenInventarioBodegaEnum origen, Integer idOrigen,
 			Integer idUsuario);
 
-	// Importa existencias desde un archivo Excel (.xlsx); es atómica: si hay errores no aplica ninguna fila
-	public ImportacionInventarioDto importarDesdeExcel(Integer idBodega, InputStream archivo, Integer idUsuario);
+	// Importa existencias desde un archivo Excel (.xlsx); es atómica: si hay errores no aplica ninguna fila ni crea
+	// ningún producto. Los códigos que no existen en el catálogo solo se crean si quien importa es administrador.
+	public ImportacionInventarioDto importarDesdeExcel(Integer idBodega, InputStream archivo, Integer idUsuario,
+			boolean esAdministrador);
 
 }

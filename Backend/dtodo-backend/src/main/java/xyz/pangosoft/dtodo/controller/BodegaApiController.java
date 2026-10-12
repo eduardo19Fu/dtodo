@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -216,7 +217,7 @@ public class BodegaApiController {
 	public ResponseEntity<ImportacionInventarioDto> importarExcel(
 			@PathVariable("id") Integer idBodega,
 			@RequestParam("archivo") MultipartFile archivo,
-			@AuthenticationPrincipal Jwt jwt) throws IOException {
+			@AuthenticationPrincipal Jwt jwt, Authentication authentication) throws IOException {
 		log.info("Importando inventario desde Excel hacia la bodega {}", idBodega);
 		String nombre = archivo.getOriginalFilename();
 		if (archivo.isEmpty()) {
@@ -226,8 +227,10 @@ public class BodegaApiController {
 			throw new BadRequestException("El archivo debe ser un Excel con formato .xlsx.", null);
 		}
 		try (java.io.InputStream contenido = archivo.getInputStream()) {
+			boolean esAdministrador = authentication.getAuthorities().stream()
+					.anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
 			return ResponseEntity.ok(serviceInventarioBodega.importarDesdeExcel(
-					idBodega, contenido, Utils.obtenerIdUsuario(jwt)));
+					idBodega, contenido, Utils.obtenerIdUsuario(jwt), esAdministrador));
 		}
 	}
 
