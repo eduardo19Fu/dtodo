@@ -28,6 +28,8 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import xyz.pangosoft.dtodo.model.enums.EstadoDespachoBodegaEnum;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import xyz.pangosoft.dtodo.util.SoloAdministradorSerializer;
 
 @Data
 @AllArgsConstructor
@@ -52,6 +54,7 @@ public class DespachoBodega implements Serializable {
 	@Enumerated(EnumType.STRING)
 	private EstadoDespachoBodegaEnum estado;
 
+	@JsonSerialize(using = SoloAdministradorSerializer.class)
 	private BigDecimal total;
 
 	/** Nombre de quien recibe la mercadería; lo captura el usuario que despacha. */

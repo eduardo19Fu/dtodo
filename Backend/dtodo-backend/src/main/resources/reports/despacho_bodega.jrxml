@@ -17,6 +17,8 @@
 
     <parameter name="ID_DESPACHO" class="java.lang.Long"/>
 
+    <parameter name="VER_COSTOS" class="java.lang.Boolean"><defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression></parameter>
+
     <queryString language="SQL"><![CDATA[
         SELECT d.id_despacho,
                d.fecha_registro,
@@ -173,8 +175,8 @@
             <staticText><reportElement style="Header" x="80" y="0" width="216" height="26"/><text><![CDATA[Producto]]></text></staticText>
             <staticText><reportElement style="Header" x="296" y="0" width="70" height="26"/><textElement textAlignment="Center"/><text><![CDATA[Existencia en bodega]]></text></staticText>
             <staticText><reportElement style="Header" x="366" y="0" width="60" height="26"/><textElement textAlignment="Center"/><text><![CDATA[Cantidad]]></text></staticText>
-            <staticText><reportElement style="Header" x="426" y="0" width="62" height="26"/><textElement textAlignment="Center"/><text><![CDATA[Costo unit.]]></text></staticText>
-            <staticText><reportElement style="Header" x="488" y="0" width="68" height="26"/><textElement textAlignment="Center"/><text><![CDATA[Subtotal]]></text></staticText>
+            <staticText><reportElement style="Header" x="426" y="0" width="62" height="26"><printWhenExpression><![CDATA[$P{VER_COSTOS}]]></printWhenExpression></reportElement><textElement textAlignment="Center"/><text><![CDATA[Costo unit.]]></text></staticText>
+            <staticText><reportElement style="Header" x="488" y="0" width="68" height="26"><printWhenExpression><![CDATA[$P{VER_COSTOS}]]></printWhenExpression></reportElement><textElement textAlignment="Center"/><text><![CDATA[Subtotal]]></text></staticText>
         </band>
     </columnHeader>
 
@@ -184,8 +186,8 @@
             <textField isBlankWhenNull="true"><reportElement style="Cell" x="80" y="0" width="216" height="22"/><textFieldExpression><![CDATA[$F{producto}]]></textFieldExpression></textField>
             <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="296" y="0" width="70" height="22"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{existencia_bodega}]]></textFieldExpression></textField>
             <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="366" y="0" width="60" height="22"/><textElement textAlignment="Right"><font isBold="true"/></textElement><textFieldExpression><![CDATA[$F{cantidad}]]></textFieldExpression></textField>
-            <textField pattern="Q #,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="426" y="0" width="62" height="22"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{precio_unitario}]]></textFieldExpression></textField>
-            <textField pattern="Q #,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="488" y="0" width="68" height="22"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{sub_total}]]></textFieldExpression></textField>
+            <textField pattern="Q #,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="426" y="0" width="62" height="22"><printWhenExpression><![CDATA[$P{VER_COSTOS}]]></printWhenExpression></reportElement><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{precio_unitario}]]></textFieldExpression></textField>
+            <textField pattern="Q #,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="488" y="0" width="68" height="22"><printWhenExpression><![CDATA[$P{VER_COSTOS}]]></printWhenExpression></reportElement><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{sub_total}]]></textFieldExpression></textField>
         </band>
     </detail>
 
@@ -216,8 +218,8 @@
             <textField><reportElement x="325" y="14" width="35" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{CANTIDAD_LINEAS} == null ? 0 : $V{CANTIDAD_LINEAS}]]></textFieldExpression></textField>
             <staticText><reportElement x="370" y="14" width="55" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Unidades:]]></text></staticText>
             <textField pattern="#,##0"><reportElement x="425" y="14" width="40" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_UNIDADES} == null ? 0 : $V{TOTAL_UNIDADES}]]></textFieldExpression></textField>
-            <staticText><reportElement x="470" y="14" width="30" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Total:]]></text></staticText>
-            <textField pattern="Q #,##0.00" isBlankWhenNull="true"><reportElement x="500" y="14" width="56" height="20" forecolor="#1769D2"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$F{total}]]></textFieldExpression></textField>
+            <staticText><reportElement x="470" y="14" width="30" height="20" forecolor="#53647A"><printWhenExpression><![CDATA[$P{VER_COSTOS}]]></printWhenExpression></reportElement><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Total:]]></text></staticText>
+            <textField pattern="Q #,##0.00" isBlankWhenNull="true"><reportElement x="500" y="14" width="56" height="20" forecolor="#1769D2"><printWhenExpression><![CDATA[$P{VER_COSTOS}]]></printWhenExpression></reportElement><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$F{total}]]></textFieldExpression></textField>
 
             <staticText>
                 <reportElement style="Label" x="0" y="46" width="556" height="10">

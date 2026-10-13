@@ -35,6 +35,7 @@ import xyz.pangosoft.dtodo.model.enums.EstadoDespachoBodegaEnum;
 import xyz.pangosoft.dtodo.repository.IBodegaRepository;
 import xyz.pangosoft.dtodo.repository.IDespachoBodegaRepository;
 import xyz.pangosoft.dtodo.service.IBodegaReporteService;
+import xyz.pangosoft.dtodo.util.Utils;
 
 @Service
 @RequiredArgsConstructor
@@ -109,6 +110,8 @@ public class BodegaReporteServiceImpl implements IBodegaReporteService {
         boolean xlsx = "XLSX".equals(formato);
         parametros.put(JRParameter.IS_IGNORE_PAGINATION, xlsx);
         parametros.put("FORMATO", formato);
+        // El costo y los totales valorizados solo los ve un administrador
+        parametros.put("VER_COSTOS", Utils.esAdministrador());
 
         try (Connection connection = dataSource.getConnection();
              InputStream template = getClass().getResourceAsStream(plantilla)) {

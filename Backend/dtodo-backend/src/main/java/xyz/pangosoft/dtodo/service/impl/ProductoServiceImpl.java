@@ -640,6 +640,8 @@ public class ProductoServiceImpl implements IProductoService {
 			Map<String, Object> parameters = new HashMap<>();
 			parameters.put(JRParameter.IS_IGNORE_PAGINATION, true);
 			parameters.put("idSucursal", idSucursal);
+			// El precio de compra y el margen solo los ve un administrador
+			parameters.put("VER_COSTOS", Utils.esAdministrador());
 
 			JasperReport report = JasperCompileManager.compileReport(template);
 			JasperPrint print = JasperFillManager.fillReport(report, parameters, connection);
@@ -651,6 +653,8 @@ public class ProductoServiceImpl implements IProductoService {
 			SimpleXlsxReportConfiguration configuration = new SimpleXlsxReportConfiguration();
 			configuration.setDetectCellType(true);
 			configuration.setRemoveEmptySpaceBetweenRows(true);
+			// Sin costo ni margen no deben quedar columnas vacías en medio de la hoja
+			configuration.setRemoveEmptySpaceBetweenColumns(true);
 			configuration.setWhitePageBackground(false);
 			configuration.setOnePagePerSheet(false);
 			configuration.setSheetNames(new String[] { "Productos" });

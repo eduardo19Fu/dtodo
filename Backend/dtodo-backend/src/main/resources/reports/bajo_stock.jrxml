@@ -24,6 +24,8 @@
     <parameter name="CATEGORIA" class="java.lang.String"/>
     <parameter name="FORMATO" class="java.lang.String"/>
 
+    <parameter name="VER_COSTOS" class="java.lang.Boolean"><defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression></parameter>
+
     <queryString language="SQL"><![CDATA[
         SELECT p.cod_producto AS codigo,
                p.nombre AS producto,
@@ -117,8 +119,8 @@
             <staticText><reportElement style="Header" x="370" y="0" width="65" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Stock actual]]></text></staticText>
             <staticText><reportElement style="Header" x="435" y="0" width="70" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Stock mínimo]]></text></staticText>
             <staticText><reportElement style="Header" x="505" y="0" width="70" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Faltante]]></text></staticText>
-            <staticText><reportElement style="Header" x="575" y="0" width="105" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Precio compra]]></text></staticText>
-            <staticText><reportElement style="Header" x="680" y="0" width="122" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Inversión estimada]]></text></staticText>
+            <staticText><reportElement style="Header" x="575" y="0" width="105" height="28"><printWhenExpression><![CDATA[$P{VER_COSTOS}]]></printWhenExpression></reportElement><textElement textAlignment="Center"/><text><![CDATA[Precio compra]]></text></staticText>
+            <staticText><reportElement style="Header" x="680" y="0" width="122" height="28"><printWhenExpression><![CDATA[$P{VER_COSTOS}]]></printWhenExpression></reportElement><textElement textAlignment="Center"/><text><![CDATA[Inversión estimada]]></text></staticText>
         </band>
     </columnHeader>
 
@@ -130,8 +132,8 @@
             <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="AlertCell" x="370" y="0" width="65" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{stock_actual}]]></textFieldExpression></textField>
             <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="435" y="0" width="70" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{stock_minimo}]]></textFieldExpression></textField>
             <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="AlertCell" x="505" y="0" width="70" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{faltante}]]></textFieldExpression></textField>
-            <textField pattern="Q #,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="575" y="0" width="105" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{precio_compra}]]></textFieldExpression></textField>
-            <textField pattern="Q #,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="680" y="0" width="122" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{inversion_estimada}]]></textFieldExpression></textField>
+            <textField pattern="Q #,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="575" y="0" width="105" height="24"><printWhenExpression><![CDATA[$P{VER_COSTOS}]]></printWhenExpression></reportElement><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{precio_compra}]]></textFieldExpression></textField>
+            <textField pattern="Q #,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="680" y="0" width="122" height="24"><printWhenExpression><![CDATA[$P{VER_COSTOS}]]></printWhenExpression></reportElement><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{inversion_estimada}]]></textFieldExpression></textField>
         </band>
     </detail>
 
@@ -169,8 +171,8 @@
             <textField><reportElement x="430" y="16" width="40" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{CANTIDAD_PRODUCTOS} == null ? 0 : $V{CANTIDAD_PRODUCTOS}]]></textFieldExpression></textField>
             <staticText><reportElement x="485" y="16" width="95" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Unidades faltantes:]]></text></staticText>
             <textField pattern="#,##0"><reportElement x="580" y="16" width="50" height="20" forecolor="#B42318"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_FALTANTE} == null ? 0 : $V{TOTAL_FALTANTE}]]></textFieldExpression></textField>
-            <staticText><reportElement x="640" y="16" width="65" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Inversión:]]></text></staticText>
-            <textField pattern="Q #,##0.00"><reportElement x="705" y="16" width="97" height="20" forecolor="#1769D2"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_INVERSION} == null ? java.math.BigDecimal.ZERO : $V{TOTAL_INVERSION}]]></textFieldExpression></textField>
+            <staticText><reportElement x="640" y="16" width="65" height="20" forecolor="#53647A"><printWhenExpression><![CDATA[$P{VER_COSTOS}]]></printWhenExpression></reportElement><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Inversión:]]></text></staticText>
+            <textField pattern="Q #,##0.00"><reportElement x="705" y="16" width="97" height="20" forecolor="#1769D2"><printWhenExpression><![CDATA[$P{VER_COSTOS}]]></printWhenExpression></reportElement><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_INVERSION} == null ? java.math.BigDecimal.ZERO : $V{TOTAL_INVERSION}]]></textFieldExpression></textField>
         </band>
     </summary>
 </jasperReport>

@@ -8,6 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import xyz.pangosoft.dtodo.model.enums.EstadoDespachoBodegaEnum;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import xyz.pangosoft.dtodo.util.SoloAdministradorSerializer;
 
 /** Fila del listado de despachos de bodega. */
 @Data
@@ -18,6 +20,7 @@ public class DespachoBodegaDto {
 	private LocalDateTime fechaRegistro;
 	private LocalDateTime fechaResolucion;
 	private EstadoDespachoBodegaEnum estado;
+	@JsonSerialize(using = SoloAdministradorSerializer.class)
 	private BigDecimal total;
 	private String recibidoPor;
 	private String observaciones;

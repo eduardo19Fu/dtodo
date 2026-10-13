@@ -40,6 +40,8 @@
     <parameter name="FECHA_FIN_EXCLUSIVA" class="java.sql.Timestamp"/>
     <parameter name="FORMATO" class="java.lang.String"/>
 
+    <parameter name="VER_COSTOS" class="java.lang.Boolean"><defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression></parameter>
+
     <queryString language="SQL"><![CDATA[
         SELECT d.id_despacho AS numero,
                d.fecha_registro AS fecha,
@@ -121,7 +123,9 @@
                 <textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
             </textField>
             <staticText>
-                <reportElement x="0" y="54" width="802" height="14" forecolor="#66758A"/>
+                <reportElement x="0" y="54" width="802" height="14" forecolor="#66758A">
+                    <printWhenExpression><![CDATA[$P{VER_COSTOS}]]></printWhenExpression>
+                </reportElement>
                 <textElement><font size="8" isItalic="true"/></textElement>
                 <text><![CDATA[El total valorizado al costo excluye los despachos cancelados.]]></text>
             </staticText>
@@ -139,7 +143,7 @@
             <staticText><reportElement style="Header" x="565" y="0" width="80" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Estado]]></text></staticText>
             <staticText><reportElement style="Header" x="645" y="0" width="40" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Líneas]]></text></staticText>
             <staticText><reportElement style="Header" x="685" y="0" width="50" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Unidades]]></text></staticText>
-            <staticText><reportElement style="Header" x="735" y="0" width="67" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Total]]></text></staticText>
+            <staticText><reportElement style="Header" x="735" y="0" width="67" height="28"><printWhenExpression><![CDATA[$P{VER_COSTOS}]]></printWhenExpression></reportElement><textElement textAlignment="Center"/><text><![CDATA[Total]]></text></staticText>
         </band>
     </columnHeader>
 
@@ -154,7 +158,7 @@
             <textField isBlankWhenNull="true"><reportElement style="EstadoCell" x="565" y="0" width="80" height="24"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA[$F{estado_etiqueta}]]></textFieldExpression></textField>
             <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="645" y="0" width="40" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{lineas}]]></textFieldExpression></textField>
             <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="685" y="0" width="50" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{unidades}]]></textFieldExpression></textField>
-            <textField pattern="Q #,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="735" y="0" width="67" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{total}]]></textFieldExpression></textField>
+            <textField pattern="Q #,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="735" y="0" width="67" height="24"><printWhenExpression><![CDATA[$P{VER_COSTOS}]]></printWhenExpression></reportElement><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{total}]]></textFieldExpression></textField>
         </band>
     </detail>
 
@@ -190,8 +194,8 @@
             </staticText>
             <staticText><reportElement x="480" y="16" width="65" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Despachos:]]></text></staticText>
             <textField><reportElement x="545" y="16" width="40" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{CANTIDAD_DESPACHOS} == null ? 0 : $V{CANTIDAD_DESPACHOS}]]></textFieldExpression></textField>
-            <staticText><reportElement x="605" y="16" width="100" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Total valorizado:]]></text></staticText>
-            <textField pattern="Q #,##0.00"><reportElement x="705" y="16" width="97" height="20" forecolor="#1769D2"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_VALOR} == null ? java.math.BigDecimal.ZERO : $V{TOTAL_VALOR}]]></textFieldExpression></textField>
+            <staticText><reportElement x="605" y="16" width="100" height="20" forecolor="#53647A"><printWhenExpression><![CDATA[$P{VER_COSTOS}]]></printWhenExpression></reportElement><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Total valorizado:]]></text></staticText>
+            <textField pattern="Q #,##0.00"><reportElement x="705" y="16" width="97" height="20" forecolor="#1769D2"><printWhenExpression><![CDATA[$P{VER_COSTOS}]]></printWhenExpression></reportElement><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_VALOR} == null ? java.math.BigDecimal.ZERO : $V{TOTAL_VALOR}]]></textFieldExpression></textField>
         </band>
     </summary>
 </jasperReport>

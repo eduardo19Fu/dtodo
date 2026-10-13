@@ -227,10 +227,8 @@ public class BodegaApiController {
 			throw new BadRequestException("El archivo debe ser un Excel con formato .xlsx.", null);
 		}
 		try (java.io.InputStream contenido = archivo.getInputStream()) {
-			boolean esAdministrador = authentication.getAuthorities().stream()
-					.anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
 			return ResponseEntity.ok(serviceInventarioBodega.importarDesdeExcel(
-					idBodega, contenido, Utils.obtenerIdUsuario(jwt), esAdministrador));
+					idBodega, contenido, Utils.obtenerIdUsuario(jwt), Utils.esAdministrador(authentication)));
 		}
 	}
 

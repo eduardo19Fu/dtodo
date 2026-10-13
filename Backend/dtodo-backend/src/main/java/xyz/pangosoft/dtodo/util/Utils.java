@@ -11,6 +11,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * Esta es una clase que contiene distintos métodos de manejo de strings, conversión de tipos y demás funcionalidades
@@ -19,6 +21,17 @@ import java.util.TimeZone;
 
 @NoArgsConstructor
 public class Utils {
+
+    /** Indica si la autenticación recibida tiene el rol de administrador. */
+    public static boolean esAdministrador(Authentication authentication) {
+        return authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+    }
+
+    /** Indica si el usuario de la petición en curso es administrador; sin sesión (por ejemplo en pruebas) es {@code false}. */
+    public static boolean esAdministrador() {
+        return esAdministrador(SecurityContextHolder.getContext().getAuthentication());
+    }
 
     /**
      * Método que devuelve configura una fecha en determinado formato y la devuelve

@@ -18,6 +18,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import xyz.pangosoft.dtodo.util.SoloAdministradorSerializer;
 
 @Data
 @AllArgsConstructor
@@ -37,7 +39,9 @@ public class DespachoBodegaDetalle implements Serializable {
 	private Integer cantidad;
 
 	/** Costo del producto al momento del despacho; el servidor lo asigna, no se toma del cliente. */
+	@JsonSerialize(using = SoloAdministradorSerializer.class)
 	private BigDecimal precioUnitario;
+	@JsonSerialize(using = SoloAdministradorSerializer.class)
 	private BigDecimal subTotal;
 
 	/** Existencia que tenía la bodega justo antes de descontar esta línea. */

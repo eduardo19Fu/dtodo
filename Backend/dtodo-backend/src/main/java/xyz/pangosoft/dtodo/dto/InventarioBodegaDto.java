@@ -6,6 +6,8 @@ import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import xyz.pangosoft.dtodo.util.SoloAdministradorSerializer;
 
 @Data
 @AllArgsConstructor
@@ -17,6 +19,7 @@ public class InventarioBodegaDto {
 	private String nombreProducto;
 	private int stock;
 	private Integer stockMinimo;
+	@JsonSerialize(using = SoloAdministradorSerializer.class)
 	private BigDecimal precioCompra;
 	private LocalDateTime fechaActualizacion;
 }

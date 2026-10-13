@@ -85,10 +85,8 @@ public class DespachoBodegaApiController {
 	public ResponseEntity<DespachoBodega> cancelar(@PathVariable("id") Long id,
 			@RequestBody Map<String, String> body, @AuthenticationPrincipal Jwt jwt, Authentication authentication) {
 		log.info("Cancelando despacho de bodega: {}", id);
-		boolean esAdministrador = authentication.getAuthorities().stream()
-				.anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
 		return ResponseEntity.ok(serviceDespacho.cancelar(
-				id, body.get("motivo"), Utils.obtenerIdUsuario(jwt), esAdministrador));
+				id, body.get("motivo"), Utils.obtenerIdUsuario(jwt), Utils.esAdministrador(authentication)));
 	}
 
 	@Secured(value = { "ROLE_ADMIN", "ROLE_BODEGA" })

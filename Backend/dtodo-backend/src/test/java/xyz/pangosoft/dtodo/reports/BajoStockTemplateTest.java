@@ -1,6 +1,7 @@
 package xyz.pangosoft.dtodo.reports;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -78,6 +79,33 @@ class BajoStockTemplateTest {
 
             assertXlsx(xlsx);
             guardarMuestra("reporte.bajo.stock.xlsx.muestra.path", xlsx);
+        }
+    }
+
+    @Test
+    void elPrecioDeCompraYLaInversionSoloSeImprimenParaElAdministrador() throws Exception {
+        try (InputStream template = getClass().getResourceAsStream("/reports/bajo_stock.jrxml")) {
+            JasperReport report = JasperCompileManager.compileReport(template);
+            Map<String, Object> comoOtroRol = parametros();
+            comoOtroRol.put(JRParameter.IS_IGNORE_PAGINATION, false);
+            Map<String, Object> comoAdmin = parametros();
+            comoAdmin.put(JRParameter.IS_IGNORE_PAGINATION, false);
+            comoAdmin.put("VER_COSTOS", true);
+
+            TextosImpresos sinCostos = new TextosImpresos(JasperFillManager.fillReport(
+                    report, comoOtroRol, new JRMapCollectionDataSource(filas())));
+            TextosImpresos conCostos = new TextosImpresos(JasperFillManager.fillReport(
+                    report, comoAdmin, new JRMapCollectionDataSource(filas())));
+
+            assertTrue(sinCostos.contiene("Cuaderno universitario"));
+            assertTrue(sinCostos.contiene("Faltante"));
+            assertFalse(sinCostos.contiene("Precio compra"));
+            assertFalse(sinCostos.contiene("Inversión"));
+            assertFalse(sinCostos.contiene("15.00"));
+            assertFalse(sinCostos.contiene("165.00"));
+            assertTrue(conCostos.contiene("Precio compra"));
+            assertTrue(conCostos.contiene("Inversión estimada"));
+            assertTrue(conCostos.contiene("165.00"));
         }
     }
 

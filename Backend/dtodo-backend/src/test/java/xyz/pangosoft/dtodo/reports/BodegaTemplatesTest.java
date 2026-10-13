@@ -82,6 +82,14 @@ class BodegaTemplatesTest {
         return parametros;
     }
 
+    // ---------- visibilidad del costo ----------
+
+    private Map<String, Object> conCostos(Map<String, Object> parametros) {
+        parametros.put("VER_COSTOS", true);
+        return parametros;
+    }
+
+
     // ---------- existencias ----------
 
     private Map<String, Object> parametrosExistencias(String formato) {
@@ -247,7 +255,7 @@ class BodegaTemplatesTest {
         assertPdf(JasperExportManager.exportReportToPdf(pdf));
 
         JasperPrint xlsx = JasperFillManager.fillReport(
-                report, parametrosDespachos("XLSX"), new JRMapCollectionDataSource(filasDespachos()));
+                report, conCostos(parametrosDespachos("XLSX")), new JRMapCollectionDataSource(filasDespachos()));
         byte[] contenido = exportarXlsx(xlsx, "Despachos de bodega");
         assertXlsx(contenido);
         // 75.00 (realizado) + 30.00 (pendiente) = 105.00; los 999.00 del cancelado no se suman
@@ -328,5 +336,69 @@ class BodegaTemplatesTest {
                     report, parametros, new JRMapCollectionDataSource(filasComprobante(estado)));
             assertPdf(JasperExportManager.exportReportToPdf(print));
         }
+    }
+
+    // ---------- el costo solo lo imprime el administrador ----------
+
+    @Test
+    void existenciasSoloMuestraElCostoYElValorAlAdministrador() throws Exception {
+        JasperReport report = compilar("bodega_existencias");
+
+        TextosImpresos sinCostos = new TextosImpresos(JasperFillManager.fillReport(
+                report, parametrosExistencias("PDF"), new JRMapCollectionDataSource(filasExistencias())));
+        TextosImpresos conCostos = new TextosImpresos(JasperFillManager.fillReport(
+                report, conCostos(parametrosExistencias("PDF")), new JRMapCollectionDataSource(filasExistencias())));
+
+        assertTrue(sinCostos.contiene("Cuaderno universitario"));
+        assertFalse(sinCostos.contiene("Costo unitario"));
+        assertFalse(sinCostos.contiene("Valor total"));
+        assertFalse(sinCostos.contiene("12.50"));
+        assertFalse(sinCostos.contiene("al costo"));
+        assertTrue(conCostos.contiene("Costo unitario"));
+        assertTrue(conCostos.contiene("Valor total:"));
+        assertTrue(conCostos.contiene("12.50"));
+        assertTrue(conCostos.contiene("al costo"));
+    }
+
+    @Test
+    void despachosSoloMuestraElTotalValorizadoAlAdministrador() throws Exception {
+        JasperReport report = compilar("bodega_despachos");
+
+        TextosImpresos sinCostos = new TextosImpresos(JasperFillManager.fillReport(
+                report, parametrosDespachos("PDF"), new JRMapCollectionDataSource(filasDespachos())));
+        TextosImpresos conCostos = new TextosImpresos(JasperFillManager.fillReport(
+                report, conCostos(parametrosDespachos("PDF")), new JRMapCollectionDataSource(filasDespachos())));
+
+        assertTrue(sinCostos.contiene("Despachos:"));
+        assertFalse(sinCostos.contiene("Total valorizado"));
+        assertFalse(sinCostos.contiene("75.00"));
+        assertFalse(sinCostos.contiene("al costo"));
+        assertTrue(conCostos.contiene("Total valorizado:"));
+        assertTrue(conCostos.contiene("75.00"));
+    }
+
+    @Test
+    void elComprobanteSoloMuestraCostosSubtotalesYTotalAlAdministrador() throws Exception {
+        JasperReport report = compilar("despacho_bodega");
+        Map<String, Object> parametros = new HashMap<>();
+        parametros.put("ID_DESPACHO", 12L);
+
+        // Sin indicar VER_COSTOS el comprobante sale sin valores: es el comportamiento seguro por defecto
+        TextosImpresos sinCostos = new TextosImpresos(JasperFillManager.fillReport(
+                report, parametros, new JRMapCollectionDataSource(filasComprobante("REALIZADO"))));
+        TextosImpresos conCostos = new TextosImpresos(JasperFillManager.fillReport(
+                report, conCostos(new HashMap<>(parametros)), new JRMapCollectionDataSource(filasComprobante("REALIZADO"))));
+
+        assertTrue(sinCostos.contiene("Cuaderno universitario"));
+        assertTrue(sinCostos.contiene("Cantidad"));
+        assertFalse(sinCostos.contiene("Costo unit."));
+        assertFalse(sinCostos.contiene("Subtotal"));
+        assertFalse(sinCostos.contiene("Total:"));
+        assertFalse(sinCostos.contiene("12.50"));
+        assertFalse(sinCostos.contiene("75.00"));
+        assertTrue(conCostos.contiene("Costo unit."));
+        assertTrue(conCostos.contiene("Subtotal"));
+        assertTrue(conCostos.contiene("12.50"));
+        assertTrue(conCostos.contiene("75.00"));
     }
 }

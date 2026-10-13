@@ -24,6 +24,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import xyz.pangosoft.dtodo.util.SoloAdministradorSerializer;
 
 @Data
 @AllArgsConstructor
@@ -42,8 +44,11 @@ public class Producto implements Serializable {
 
 	private String codProducto;
 	private String nombre;
+	/** El costo y el margen (que lo revela) solo los ve un administrador: ver {@link SoloAdministradorSerializer}. */
+	@JsonSerialize(using = SoloAdministradorSerializer.class)
 	private BigDecimal precioCompra;
 	private BigDecimal precioVenta;
+	@JsonSerialize(using = SoloAdministradorSerializer.class)
 	private float porcentajeGanancia;
 	private String imagen;
 	private String descripcion;

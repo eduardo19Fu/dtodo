@@ -29,6 +29,7 @@ import xyz.pangosoft.dtodo.error.exceptions.ReportGenerationException;
 import xyz.pangosoft.dtodo.repository.ISucursalRepository;
 import xyz.pangosoft.dtodo.repository.ITipoProductoRepository;
 import xyz.pangosoft.dtodo.service.IBajoStockReporteService;
+import xyz.pangosoft.dtodo.util.Utils;
 
 @Service
 @RequiredArgsConstructor
@@ -76,6 +77,8 @@ public class BajoStockReporteServiceImpl implements IBajoStockReporteService {
                         .map(tipo -> tipo.getTipoProducto())
                         .orElse("Categoría #" + idCategoria));
         parameters.put("FORMATO", formato);
+        // El precio de compra y la inversión estimada solo los ve un administrador
+        parameters.put("VER_COSTOS", Utils.esAdministrador());
         return parameters;
     }
 
