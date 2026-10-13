@@ -93,6 +93,18 @@
           (despliegueChange)="alCambiarDespliegueSelector()">
         </app-reporte-selector>
 
+        <app-reporte-selector *ngIf="requiereFiltro('BODEGA')" etiqueta="Bodega" icono="fa-warehouse"
+          [opciones]="opcionesBodega" [(valor)]="idBodega" [permitirVacio]="false" [requerido]="true"
+          textoVacio="Selecciona una bodega" placeholderBusqueda="Buscar bodega"
+          (despliegueChange)="alCambiarDespliegueSelector()">
+        </app-reporte-selector>
+
+        <app-reporte-selector *ngIf="requiereFiltro('BODEGA_OPCIONAL')" etiqueta="Bodega" icono="fa-warehouse"
+          [opciones]="opcionesBodega" [(valor)]="idBodega" textoVacio="Todas las bodegas"
+          detalleVacio="Sin filtro de bodega" placeholderBusqueda="Buscar bodega"
+          (despliegueChange)="alCambiarDespliegueSelector()">
+        </app-reporte-selector>
+
         <app-reporte-selector *ngIf="requiereFiltro('USUARIO')" etiqueta="Usuario" icono="fa-user"
           [opciones]="opcionesUsuario" [(valor)]="idUsuario" [permitirVacio]="false" [requerido]="true"
           textoVacio="Selecciona un usuario" placeholderBusqueda="Buscar usuario"

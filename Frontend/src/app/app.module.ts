@@ -58,6 +58,17 @@ import { ComprasComponent } from './components/compras/compras.component';
 import { CreateCompraComponent } from './components/compras/create-compra/create-compra.component';
 import { DetailCompraComponent } from './components/compras/detail-compra/detail-compra.component';
 import { ModalCrearProductoComponent } from './components/compras/create-compra/modal-crear-producto/modal-crear-producto.component';
+import { BodegasComponent } from './components/bodegas/bodegas.component';
+import { CreateBodegaComponent } from './components/bodegas/create-bodega/create-bodega.component';
+import { DetailBodegaComponent } from './components/bodegas/detail-bodega/detail-bodega.component';
+import { OrigenInventarioBodegaComponent } from './components/bodegas/origen-inventario-bodega/origen-inventario-bodega.component';
+import { InventarioBodegaComponent } from './components/bodegas/inventario-bodega/inventario-bodega.component';
+import { ModalMovimientoBodegaComponent } from './components/bodegas/modal-movimiento-bodega/modal-movimiento-bodega.component';
+import { ModalImportarInventarioComponent } from './components/bodegas/modal-importar-inventario/modal-importar-inventario.component';
+import { DespachosBodegaComponent } from './components/despachos-bodega/despachos-bodega.component';
+import { CreateDespachoBodegaComponent } from './components/despachos-bodega/create-despacho-bodega/create-despacho-bodega.component';
+import { DetailDespachoBodegaComponent } from './components/despachos-bodega/detail-despacho-bodega/detail-despacho-bodega.component';
+import { ModalBuscarProductoBodegaComponent } from './components/despachos-bodega/modal-buscar-producto-bodega/modal-buscar-producto-bodega.component';
 import { TooltipDirective } from './directives/tooltip.directive';
 import { DateRangePickerComponent } from './components/shared/date-range-picker/date-range-picker.component';
 import { ReportesComponent } from './components/reportes/reportes.component';
@@ -116,6 +127,17 @@ import { ReporteSelectorComponent } from './components/reportes/reporte-selector
     CreateCompraComponent,
     DetailCompraComponent,
     ModalCrearProductoComponent,
+    BodegasComponent,
+    CreateBodegaComponent,
+    DetailBodegaComponent,
+    OrigenInventarioBodegaComponent,
+    InventarioBodegaComponent,
+    ModalMovimientoBodegaComponent,
+    ModalImportarInventarioComponent,
+    DespachosBodegaComponent,
+    CreateDespachoBodegaComponent,
+    DetailDespachoBodegaComponent,
+    ModalBuscarProductoBodegaComponent,
     TooltipDirective,
     DateRangePickerComponent,
     ReportesComponent,

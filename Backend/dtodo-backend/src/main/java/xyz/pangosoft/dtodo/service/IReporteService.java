@@ -82,4 +82,19 @@ public interface IReporteService {
             String fechaInicio,
             String fechaFin,
             Integer idProveedor);
+
+    byte[] generarExistenciasBodega(Integer idBodega, String formato);
+
+    byte[] generarMovimientosBodega(
+            Integer idBodega,
+            String fechaInicio,
+            String fechaFin,
+            String formato);
+
+    byte[] generarDespachosBodega(
+            Integer idBodega,
+            String fechaInicio,
+            String fechaFin,
+            String estado,
+            String formato);
 }

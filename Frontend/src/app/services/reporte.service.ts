@@ -35,6 +35,10 @@ export class ReporteService {
     return this.http.get<ReporteSelectorOpcionDto[]>(`${this.url}/filtros/usuarios/proformas`, { params });
   }
 
+  listarBodegasSelector(): Observable<ReporteSelectorOpcionDto[]> {
+    return this.http.get<ReporteSelectorOpcionDto[]>(`${this.url}/filtros/bodegas`);
+  }
+
   listarCategoriasSelector(): Observable<ReporteSelectorOpcionDto[]> {
     return this.http.get<ReporteSelectorOpcionDto[]>(`${this.url}/filtros/categorias`);
   }
@@ -92,6 +96,12 @@ export class ReporteService {
         return { ruta: 'compras', incluirUsuario: false, incluirOpciones: true };
       case 'COMPRAS_PROVEEDOR':
         return { ruta: 'compras/proveedores-productos', incluirUsuario: false, incluirOpciones: true };
+      case 'BODEGA_EXISTENCIAS':
+        return { ruta: 'bodegas/existencias', incluirUsuario: false, incluirOpciones: true };
+      case 'BODEGA_MOVIMIENTOS':
+        return { ruta: 'bodegas/movimientos', incluirUsuario: false, incluirOpciones: true };
+      case 'BODEGA_DESPACHOS':
+        return { ruta: 'bodegas/despachos', incluirUsuario: false, incluirOpciones: true };
       default:
         throw new Error(`El reporte ${codigo} todavía no tiene un endpoint habilitado.`);
     }
@@ -114,6 +124,9 @@ export class ReporteService {
     }
     if (filtros.idSucursal) {
       params = params.set('idSucursal', filtros.idSucursal.toString());
+    }
+    if (filtros.idBodega) {
+      params = params.set('idBodega', filtros.idBodega.toString());
     }
     if (incluirUsuario && filtros.idUsuario) {
       params = params.set('idUsuario', filtros.idUsuario.toString());

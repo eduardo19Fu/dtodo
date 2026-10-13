@@ -1,0 +1,33 @@
+/* Complementa los estilos de listado compartidos en ../bodegas/bodegas.component.css */
+
+.dispatch-table { min-width: 1160px; }
+.dispatch-table .col-id { width: 80px; }
+.dispatch-table .col-fecha { width: 105px; }
+.dispatch-table .col-bodega { width: 170px; }
+.dispatch-table .col-sucursal { width: 140px; }
+.dispatch-table .col-recibe { width: 125px; }
+.dispatch-table .col-lineas { text-align: center; width: 80px; }
+.dispatch-table .col-total { text-align: right; width: 100px; }
+.dispatch-table .col-estado { width: 160px; }
+.dispatch-table .col-opciones { text-align: center; width: 190px; }
+
+.table-controls,
+.listing-empty-state { min-width: 0; }
+
+.filters-inline {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.filters-inline .search-control { float: none; }
+.filters-inline .search-control .form-control { min-width: 200px; }
+
+@media (max-width: 767.98px) {
+  .table-controls { min-width: 0; }
+  .filters-inline { justify-content: flex-start; }
+  .filters-inline select.filter-select,
+  .filters-inline .search-control { width: 100%; }
+}

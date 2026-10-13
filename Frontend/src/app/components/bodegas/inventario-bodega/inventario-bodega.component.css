@@ -1,0 +1,183 @@
+/* Complementa los estilos de listado compartidos en ../bodegas.component.css */
+
+.back-link {
+  color: var(--warehouse-dark);
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+.back-link:hover { color: var(--warehouse-accent); text-decoration: none; }
+
+.bodega-subtitle { color: #52647a; margin: 0.25rem 0 0; }
+.bodega-subtitle i { color: var(--warehouse-accent); margin-right: 0.2rem; }
+.subtitle-separator { margin: 0 0.4rem; opacity: 0.6; }
+
+.btn.listing-page-action.disabled,
+.btn.listing-page-action:disabled { opacity: 0.55; pointer-events: none; }
+
+.inactive-banner {
+  align-items: center;
+  background: #fef3f2;
+  border: 1px solid #fecdca;
+  border-radius: 10px;
+  color: #b42318;
+  display: flex;
+  gap: 10px;
+  margin: 0 0.5rem 1rem;
+  padding: 10px 16px;
+}
+
+.summary-strip {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0 0.5rem 1.1rem;
+}
+
+.strip-card {
+  align-items: center;
+  background: #fff;
+  border: 1px solid #e5eaf0;
+  border-radius: 12px;
+  box-shadow: 0 3px 12px rgba(33, 48, 68, 0.06);
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.strip-icon {
+  align-items: center;
+  background: var(--warehouse-tint);
+  border-radius: 10px;
+  color: var(--warehouse-dark);
+  display: flex;
+  flex: 0 0 40px;
+  height: 40px;
+  justify-content: center;
+}
+
+.strip-label {
+  color: #6d7b8f;
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+  text-transform: uppercase;
+}
+
+.strip-card strong { color: #243247; font-size: 1.1rem; }
+
+.view-tabs {
+  display: flex;
+  gap: 4px;
+  margin: 0 0.5rem 0.9rem;
+}
+
+.view-tabs button {
+  background: #fff;
+  border: 1px solid #e1e8f1;
+  border-radius: 10px;
+  color: #52647a;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 9px 18px;
+  transition: all 0.15s ease;
+}
+
+.view-tabs button i { margin-right: 6px; }
+.view-tabs button:hover { border-color: #dcbf9a; color: var(--warehouse-dark); }
+
+.view-tabs button.active {
+  background: linear-gradient(135deg, var(--warehouse-accent), var(--warehouse-dark));
+  border-color: var(--warehouse-accent);
+  box-shadow: 0 6px 14px rgba(143, 85, 24, 0.25);
+  color: #fff;
+}
+
+.table-controls,
+.listing-empty-state { min-width: 0; }
+
+.inventory-table { min-width: 980px; }
+.inventory-table .col-codigo { width: 140px; }
+.inventory-table .col-producto { width: auto; }
+.inventory-table .col-moneda { text-align: right; width: 130px; }
+.inventory-table .col-opciones-corta { text-align: center; width: 110px; }
+
+.movements-table { min-width: 1150px; }
+.movements-table .col-tipo { width: 190px; }
+.movements-table .col-codigo { width: 130px; }
+.movements-table .col-producto { width: auto; }
+.movements-table .col-saldo { text-align: center; width: 120px; }
+.movements-table .col-usuario { width: 130px; }
+.movements-table .col-detalle { width: 230px; }
+
+.stock-badge {
+  align-items: center;
+  background: #e9f7ef;
+  border-radius: 999px;
+  color: #087453;
+  display: inline-flex;
+  font-weight: 700;
+  gap: 6px;
+  padding: 3px 10px;
+}
+
+.stock-badge i { font-size: 6px; }
+.stock-badge.low { background: #fef0c7; color: #b54708; }
+.stock-badge.empty { background: #fde8e7; color: #b42318; }
+
+.movement-pill {
+  align-items: center;
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 0.78rem;
+  font-weight: 700;
+  gap: 6px;
+  padding: 3px 10px;
+  white-space: nowrap;
+}
+
+.movement-pill.entrada { background: #e9f7ef; color: #087453; }
+.movement-pill.salida { background: #fde8e7; color: #b42318; }
+.text-entrada { color: #087453; }
+.text-salida { color: #b42318; }
+.saldo i { color: #adb5bd; font-size: 0.8em; margin: 0 2px; }
+
+.movement-filters {
+  align-items: flex-end;
+  background: #f8fafe;
+  border: 1px solid #e1e8f1;
+  border-radius: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 14px;
+  min-width: 1050px;
+  padding: 12px;
+}
+
+.filter-field { min-width: 200px; }
+.filter-field label { color: #495057; display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem; }
+.filter-dates {
+  flex: 1 1 440px;
+  margin: 0;
+  min-width: 300px;
+}
+
+/* El selector de fechas reparte sus dos columnas dentro de la fila que lo contiene */
+:host ::ng-deep .filter-dates .date-picker-column {
+  flex: 1 1 200px;
+  margin-bottom: 0 !important;
+  max-width: none;
+}
+
+
+.clear-filters { margin-bottom: 2px; }
+
+@media (max-width: 767.98px) {
+  .summary-strip { grid-template-columns: 1fr; }
+  .movement-filters { min-width: 0; }
+}
