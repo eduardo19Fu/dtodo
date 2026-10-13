@@ -51,6 +51,15 @@ describe('SidebarComponent', () => {
     expect(component.mostrarGrupo('productos')).toBeFalse();
   });
 
+  it('encuentra el tutorial de bodegas al buscar tutorial, manual o ayuda', () => {
+    ['tutorial', 'manual', 'ayuda'].forEach(termino => {
+      component.filtro = termino;
+
+      expect(component.mostrarGrupo('bodegas')).toBeTrue();
+      expect(component.mostrarGrupo('facturas')).toBeFalse();
+    });
+  });
+
   it('cierra la sesión mediante el servicio y navega al login', () => {
     component.cerrarSesion();
 

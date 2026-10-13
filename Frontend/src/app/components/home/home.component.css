@@ -98,6 +98,8 @@
 .summary-card-credit-notes { --card-accent: #b04486; --card-accent-dark: #843164; --card-tint: #f7e8f1; }
 .summary-card-purchases { --card-accent: #7654b5; --card-accent-dark: #5b3e91; --card-tint: #f0ebf8; }
 .summary-card-branches { --card-accent: #52728a; --card-accent-dark: #3d576b; --card-tint: #eaf0f4; }
+.summary-card-warehouses { --card-accent: #b8732b; --card-accent-dark: #8f5518; --card-tint: #f8eee2; }
+.summary-card-dispatches { --card-accent: #c2891f; --card-accent-dark: #946614; --card-tint: #fbf2dc; }
 .summary-card-users { --card-accent: #b95765; --card-accent-dark: #95434f; --card-tint: #faeaec; }
 
 .summary-card-body {

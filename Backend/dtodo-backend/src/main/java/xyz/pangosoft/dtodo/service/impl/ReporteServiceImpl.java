@@ -8,8 +8,10 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
 import xyz.pangosoft.dtodo.model.enums.EstadoCompraEnum;
+import xyz.pangosoft.dtodo.model.enums.EstadoDespachoBodegaEnum;
 import xyz.pangosoft.dtodo.model.enums.EstadoNotaCreditoEnum;
 import xyz.pangosoft.dtodo.service.IBajoStockReporteService;
+import xyz.pangosoft.dtodo.service.IBodegaReporteService;
 import xyz.pangosoft.dtodo.service.IComprasPeriodoReporteService;
 import xyz.pangosoft.dtodo.service.IComprasProveedorProductoReporteService;
 import xyz.pangosoft.dtodo.service.IConversionProformasReporteService;
@@ -45,6 +47,7 @@ public class ReporteServiceImpl implements IReporteService {
     private final IConversionProformasReporteService conversionProformasReporteService;
     private final IPendientesDespachoReporteService pendientesDespachoReporteService;
     private final IComprasProveedorProductoReporteService comprasProveedorProductoReporteService;
+    private final IBodegaReporteService bodegaReporteService;
 
     @Override
     public byte[] generarPolizaIndividual(
@@ -264,6 +267,39 @@ public class ReporteServiceImpl implements IReporteService {
                 idSucursal, rango[0], rango[1], idProveedor);
     }
 
+    @Override
+    public byte[] generarExistenciasBodega(Integer idBodega, String formato) {
+        validarId(idBodega, "La bodega seleccionada no es válida.");
+        return bodegaReporteService.generarExistencias(idBodega, validarFormato(formato));
+    }
+
+    @Override
+    public byte[] generarMovimientosBodega(
+            Integer idBodega,
+            String fechaInicio,
+            String fechaFin,
+            String formato) {
+        validarId(idBodega, "La bodega seleccionada no es válida.");
+        LocalDate[] rango = validarRango(fechaInicio, fechaFin);
+        return bodegaReporteService.generarMovimientos(idBodega, rango[0], rango[1], validarFormato(formato));
+    }
+
+    @Override
+    public byte[] generarDespachosBodega(
+            Integer idBodega,
+            String fechaInicio,
+            String fechaFin,
+            String estado,
+            String formato) {
+        if (idBodega != null) {
+            validarId(idBodega, "La bodega seleccionada no es válida.");
+        }
+        LocalDate[] rango = validarRango(fechaInicio, fechaFin);
+        EstadoDespachoBodegaEnum estadoValido = validarEstadoDespachoBodega(estado);
+        return bodegaReporteService.generarDespachos(
+                idBodega, rango[0], rango[1], estadoValido, validarFormato(formato));
+    }
+
     private EstadoNotaCreditoEnum validarEstadoNotaCredito(String estado) {
         if (estado == null || estado.isBlank()) {
             return null;
@@ -283,6 +319,17 @@ public class ReporteServiceImpl implements IReporteService {
             return EstadoCompraEnum.valueOf(estado.toUpperCase());
         } catch (IllegalArgumentException exception) {
             throw new BadRequestException("El estado de compra no es válido.", exception);
+        }
+    }
+
+    private EstadoDespachoBodegaEnum validarEstadoDespachoBodega(String estado) {
+        if (estado == null || estado.isBlank()) {
+            return null;
+        }
+        try {
+            return EstadoDespachoBodegaEnum.valueOf(estado.toUpperCase());
+        } catch (IllegalArgumentException exception) {
+            throw new BadRequestException("El estado de despacho no es válido.", exception);
         }
     }
 

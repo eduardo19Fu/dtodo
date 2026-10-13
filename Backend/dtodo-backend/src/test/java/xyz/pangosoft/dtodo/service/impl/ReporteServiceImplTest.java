@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
 import xyz.pangosoft.dtodo.service.IBajoStockReporteService;
+import xyz.pangosoft.dtodo.service.IBodegaReporteService;
 import xyz.pangosoft.dtodo.service.IComprasPeriodoReporteService;
 import xyz.pangosoft.dtodo.service.IComprasProveedorProductoReporteService;
 import xyz.pangosoft.dtodo.service.IConversionProformasReporteService;
@@ -44,6 +45,7 @@ class ReporteServiceImplTest {
     private IConversionProformasReporteService conversionProformasReporteService;
     private IPendientesDespachoReporteService pendientesDespachoReporteService;
     private IComprasProveedorProductoReporteService comprasProveedorProductoReporteService;
+    private IBodegaReporteService bodegaReporteService;
     private ReporteServiceImpl service;
 
     @BeforeEach
@@ -63,12 +65,13 @@ class ReporteServiceImplTest {
         conversionProformasReporteService = mock(IConversionProformasReporteService.class);
         pendientesDespachoReporteService = mock(IPendientesDespachoReporteService.class);
         comprasProveedorProductoReporteService = mock(IComprasProveedorProductoReporteService.class);
+        bodegaReporteService = mock(IBodegaReporteService.class);
         service = new ReporteServiceImpl(
                 facturaService, inventarioMovimientosReporteService, productoService, proformaService,
                 resumenNotasCreditoReporteService, comprasPeriodoReporteService, ventasProductoReporteService,
                 ventasClienteReporteService, rentabilidadProductoReporteService, bajoStockReporteService,
                 kardexProductoReporteService, valorizacionInventarioReporteService, conversionProformasReporteService,
-                pendientesDespachoReporteService, comprasProveedorProductoReporteService);
+                pendientesDespachoReporteService, comprasProveedorProductoReporteService, bodegaReporteService);
     }
 
     @Test
@@ -384,5 +387,54 @@ class ReporteServiceImplTest {
                 1, "2026-09-01", "2026-09-30", 0));
 
         verifyNoInteractions(comprasProveedorProductoReporteService);
+    }
+
+    @Test
+    void existenciasDeBodegaValidaLaBodegaYDelegaConElFormatoNormalizado() {
+        byte[] esperado = new byte[] { 4 };
+        when(bodegaReporteService.generarExistencias(3, "XLSX")).thenReturn(esperado);
+
+        assertArrayEquals(esperado, service.generarExistenciasBodega(3, "xlsx"));
+
+        assertThrows(BadRequestException.class, () -> service.generarExistenciasBodega(0, "PDF"));
+        assertThrows(BadRequestException.class, () -> service.generarExistenciasBodega(null, "PDF"));
+        assertThrows(BadRequestException.class, () -> service.generarExistenciasBodega(3, "DOC"));
+    }
+
+    @Test
+    void movimientosDeBodegaRechazaRangosInvalidosAntesDeGenerar() {
+        assertThrows(BadRequestException.class, () -> service.generarMovimientosBodega(
+                3, "2026-10-05", "2026-10-01", "PDF"));
+        assertThrows(BadRequestException.class, () -> service.generarMovimientosBodega(3, null, "2026-10-01", "PDF"));
+
+        verifyNoInteractions(bodegaReporteService);
+    }
+
+    @Test
+    void movimientosDeBodegaDelegaConElRangoConvertido() {
+        byte[] esperado = new byte[] { 5 };
+        when(bodegaReporteService.generarMovimientos(
+                3, java.time.LocalDate.of(2026, 10, 1), java.time.LocalDate.of(2026, 10, 2), "PDF"))
+                .thenReturn(esperado);
+
+        assertArrayEquals(esperado, service.generarMovimientosBodega(3, "2026-10-01", "2026-10-02", null));
+    }
+
+    @Test
+    void despachosDeBodegaPermiteBodegaYEstadoOpcionalesYRechazaEstadosDesconocidos() {
+        byte[] esperado = new byte[] { 6 };
+        when(bodegaReporteService.generarDespachos(null, java.time.LocalDate.of(2026, 10, 1),
+                java.time.LocalDate.of(2026, 10, 2), null, "PDF")).thenReturn(esperado);
+        when(bodegaReporteService.generarDespachos(2, java.time.LocalDate.of(2026, 10, 1),
+                java.time.LocalDate.of(2026, 10, 2), xyz.pangosoft.dtodo.model.enums.EstadoDespachoBodegaEnum.CANCELADO,
+                "XLSX")).thenReturn(esperado);
+
+        assertArrayEquals(esperado, service.generarDespachosBodega(null, "2026-10-01", "2026-10-02", "", "PDF"));
+        assertArrayEquals(esperado, service.generarDespachosBodega(2, "2026-10-01", "2026-10-02", "cancelado", "XLSX"));
+
+        assertThrows(BadRequestException.class,
+                () -> service.generarDespachosBodega(2, "2026-10-01", "2026-10-02", "EN_CAMINO", "PDF"));
+        assertThrows(BadRequestException.class,
+                () -> service.generarDespachosBodega(-1, "2026-10-01", "2026-10-02", null, "PDF"));
     }
 }

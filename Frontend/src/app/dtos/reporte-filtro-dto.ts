@@ -3,6 +3,7 @@ export interface ReporteFiltroDto {
   fechaFin?: string;
   fechaCorte?: string;
   idSucursal?: number;
+  idBodega?: number;
   idUsuario?: number;
   idProveedor?: number;
   idCategoria?: number;

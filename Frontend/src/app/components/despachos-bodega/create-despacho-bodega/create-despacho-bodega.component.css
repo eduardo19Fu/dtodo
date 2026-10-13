@@ -1,0 +1,326 @@
+.despacho-page {
+  --blue-950: #4a2c08;
+  --blue-900: #6e410f;
+  --blue-800: #8f5518;
+  --blue-700: #a8651f;
+  --blue-600: #b8732b;
+  --blue-500: #cd8b46;
+  --blue-100: #f8eee2;
+  --blue-50: #fcf7f1;
+  --border: #e8e0d6;
+  max-width: 1500px;
+}
+
+.despacho-page .product-card {
+  border-color: rgba(143, 85, 24, 0.11);
+  box-shadow: 0 18px 50px rgba(143, 85, 24, 0.13);
+  overflow: visible;
+}
+
+.despacho-page .card-hero {
+  border-radius: 17px 17px 0 0;
+}
+
+.despacho-page .heading-icon {
+  border-color: #ecd7bd;
+}
+
+.despacho-page .card-hero p span,
+.despacho-page .status-pill i {
+  color: #f3d9b4;
+}
+
+.despacho-page .field-group .form-control:focus,
+.despacho-page .detail-edit-input-wrap .form-control:focus {
+  box-shadow: 0 0 0 3px rgba(184, 115, 43, 0.15);
+}
+
+.despacho-page .control-with-icon > i,
+.despacho-page .select-control > i {
+  color: #a7794a;
+}
+
+.despacho-page .select-control::after {
+  border-top-color: #a7794a;
+}
+
+.despacho-page .inline-search-button,
+.despacho-page .add-line-button {
+  box-shadow: 0 6px 14px rgba(143, 85, 24, 0.25);
+}
+
+.despacho-page .inline-search-button:hover,
+.despacho-page .inline-search-button:focus,
+.despacho-page .add-line-button:hover,
+.despacho-page .add-line-button:focus {
+  box-shadow: 0 9px 18px rgba(143, 85, 24, 0.34);
+}
+
+.despacho-page .detail-edit-eyebrow {
+  color: #f3d9b4;
+}
+
+.despacho-page .form-content {
+  background: #fff;
+  border-radius: 0 0 18px 18px;
+}
+
+.despacho-actions {
+  backdrop-filter: blur(10px);
+  background: rgba(253, 250, 246, 0.97);
+  border: 1px solid #eadfd0;
+  border-radius: 12px;
+  box-shadow: 0 10px 28px rgba(143, 85, 24, 0.14);
+  gap: 24px;
+  margin: 12px 18px 0;
+  padding: 14px 16px;
+}
+
+.despacho-actions .primary-action {
+  box-shadow: 0 7px 16px rgba(143, 85, 24, 0.27);
+}
+
+.despacho-actions .primary-action:hover,
+.despacho-actions .primary-action:focus {
+  box-shadow: 0 10px 22px rgba(143, 85, 24, 0.36);
+}
+
+.despacho-add-grid {
+  grid-template-columns: minmax(280px, 0.95fr) minmax(260px, 0.85fr) minmax(300px, 0.9fr);
+}
+
+.despacho-search-control {
+  grid-template-columns: minmax(0, 1fr) 46px;
+}
+
+.despacho-edit-input-wrap .form-control {
+  padding: 9px 12px 9px 30px;
+}
+
+.despacho-edit-input-wrap > span {
+  left: 12px;
+  right: auto;
+}
+
+@media (max-width: 1199px) {
+  .despacho-add-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .despacho-add-grid .quantity-field {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 767px) {
+  .despacho-page,
+  .despacho-page .product-card,
+  .despacho-page .form-content,
+  .despacho-page .form-section {
+    box-sizing: border-box;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .despacho-add-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .despacho-add-grid .quantity-field {
+    grid-column: auto;
+  }
+
+  .despacho-search-control {
+    grid-template-columns: minmax(0, 1fr) 46px;
+  }
+
+  .despacho-quantity-control {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .despacho-quantity-control .add-line-button {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .despacho-actions {
+    align-items: center;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    margin: 8px 10px 0;
+    padding: 9px 10px;
+    position: sticky;
+    top: calc(var(--shell-header-height, 70px) + 8px);
+    z-index: 35;
+  }
+
+  .despacho-actions .save-note {
+    display: none;
+  }
+
+  .despacho-actions .total-summary {
+    border-left: 0;
+    margin-left: 0;
+    padding-left: 0;
+    padding-top: 0;
+    text-align: left;
+  }
+
+  .despacho-actions .total-summary strong {
+    font-size: 18px;
+  }
+
+  .despacho-actions .primary-action {
+    min-height: 40px;
+    padding: 9px 12px;
+    width: auto;
+  }
+
+  .despacho-detail-table {
+    display: block;
+    min-width: 0;
+  }
+
+  .despacho-detail-table thead {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+  }
+
+  .despacho-detail-table tbody {
+    display: block;
+  }
+
+  .despacho-detail-table tbody tr {
+    background: #fff;
+    border-bottom: 1px solid #e3e8f0;
+    display: grid;
+    gap: 10px 8px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding: 11px;
+  }
+
+  .despacho-detail-table tbody tr:last-child {
+    border-bottom: 0;
+  }
+
+  .despacho-detail-table tbody tr:hover {
+    box-shadow: none;
+  }
+
+  .despacho-detail-table td {
+    border: 0;
+    display: block;
+    min-width: 0;
+    padding: 0;
+  }
+
+  .despacho-detail-table td::before {
+    color: #7d899d;
+    content: attr(data-label);
+    display: block;
+    font-size: 7px;
+    font-weight: 800;
+    letter-spacing: 0.45px;
+    margin-bottom: 3px;
+    text-transform: uppercase;
+  }
+
+  .despacho-detail-table td:nth-child(1) {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  .despacho-detail-table td:nth-child(2) {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .despacho-detail-table td:nth-child(3) {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .despacho-detail-table td:nth-child(4) {
+    grid-column: 3;
+    grid-row: 2;
+  }
+
+  .despacho-detail-table td:nth-child(5) {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+
+  .despacho-detail-table td.detail-action-cell {
+    grid-column: 1 / -1;
+    grid-row: 4;
+  }
+
+  .despacho-detail-table .detail-readonly-value {
+    font-size: 9px;
+    min-height: 27px;
+    min-width: 56px;
+    padding: 5px 7px;
+  }
+
+  .despacho-detail-table .edit-detail-button {
+    flex-basis: 27px;
+    height: 27px;
+  }
+
+  .despacho-detail-table .remove-line-button {
+    gap: 7px;
+    height: 38px;
+    width: 100%;
+  }
+
+  .despacho-detail-table .remove-line-label {
+    display: inline;
+    font-size: 9px;
+    font-weight: 700;
+  }
+}
+
+.despacho-page .description-field textarea { resize: vertical; }
+
+.despacho-page .stock-hint {
+  color: #8f5518;
+  display: block;
+  margin-top: 5px;
+}
+
+.despacho-page .product-code {
+  color: #6c7890;
+  display: block;
+  font-size: 11px;
+  font-weight: 400;
+  margin-top: 1px;
+}
+
+.despacho-page .stock-after {
+  display: inline-block;
+  font-weight: 700;
+}
+
+.despacho-page .stock-after small {
+  color: #6c7890;
+  display: block;
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.despacho-page .add-line-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* La tabla de despacho tiene menos columnas que la de proformas: no necesita su ancho mínimo */
+.despacho-page .despacho-detail-table {
+  min-width: 860px;
+}

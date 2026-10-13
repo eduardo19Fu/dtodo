@@ -33,6 +33,11 @@ import { ProveedoresComponent } from './components/proveedores/proveedores.compo
 import { CreateProveedorComponent } from './components/proveedores/create-proveedor/create-proveedor.component';
 import { ComprasComponent } from './components/compras/compras.component';
 import { CreateCompraComponent } from './components/compras/create-compra/create-compra.component';
+import { BodegasComponent } from './components/bodegas/bodegas.component';
+import { CreateBodegaComponent } from './components/bodegas/create-bodega/create-bodega.component';
+import { InventarioBodegaComponent } from './components/bodegas/inventario-bodega/inventario-bodega.component';
+import { DespachosBodegaComponent } from './components/despachos-bodega/despachos-bodega.component';
+import { CreateDespachoBodegaComponent } from './components/despachos-bodega/create-despacho-bodega/create-despacho-bodega.component';
 import { ReportesComponent } from './components/reportes/reportes.component';
 
 const appRoutes: Routes = [
@@ -132,12 +137,20 @@ const appRoutes: Routes = [
     { path: 'compras/index', component: ComprasComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN'] } },
     { path: 'compras/create', component: CreateCompraComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN'] } },
 
+    /****** MÓDULO DE BODEGAS ******/
+    { path: 'bodegas/index', component: BodegasComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_BODEGA'] } },
+    { path: 'bodegas/create', component: CreateBodegaComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_BODEGA'] } },
+    { path: 'bodegas/create/:id', component: CreateBodegaComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_BODEGA'] } },
+    { path: 'bodegas/inventario/:id', component: InventarioBodegaComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_BODEGA'] } },
+    { path: 'despachos-bodega/index', component: DespachosBodegaComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_BODEGA'] } },
+    { path: 'despachos-bodega/create', component: CreateDespachoBodegaComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_BODEGA'] } },
+
     /****** MÓDULO DE REPORTES ******/
     {
         path: 'reportes',
         component: ReportesComponent,
         canActivate: [AuthGuard, RoleGuard],
-        data: { role: ['ROLE_ADMIN', 'ROLE_INVENTARIO'] }
+        data: { role: ['ROLE_ADMIN', 'ROLE_INVENTARIO', 'ROLE_BODEGA'] }
     },
 
     { path: '**', component: ErrorComponent }

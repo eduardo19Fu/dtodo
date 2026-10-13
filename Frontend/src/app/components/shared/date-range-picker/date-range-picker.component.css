@@ -31,6 +31,12 @@
   --date-accent-rgb: 118, 84, 181;
   --date-tint: #f0ebf8;
 }
+.date-range-theme-bodegas {
+  --date-accent: #b8732b;
+  --date-accent-dark: #8f5518;
+  --date-accent-rgb: 184, 115, 43;
+  --date-tint: #f8eee2;
+}
 .date-range-theme-usuarios {
   --date-accent: #b95765;
   --date-accent-dark: #95434f;

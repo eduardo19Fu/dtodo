@@ -11,7 +11,7 @@
   </header>
 
   <div class="summary-grid">
-    <article class="summary-card summary-card-products">
+    <article class="summary-card summary-card-products" *ngIf="!auth.esSoloBodega()">
       <div class="summary-card-body">
         <div class="summary-icon" aria-hidden="true"><i class="fas fa-box-open"></i></div>
         <div class="summary-content">
@@ -25,7 +25,7 @@
       </a>
     </article>
 
-    <article class="summary-card summary-card-clients">
+    <article class="summary-card summary-card-clients" *ngIf="!auth.esSoloBodega()">
       <div class="summary-card-body">
         <div class="summary-icon" aria-hidden="true"><i class="fas fa-user-friends"></i></div>
         <div class="summary-content">
@@ -113,6 +113,34 @@
       </div>
       <a [routerLink]="['/sucursales/index']" class="summary-link" aria-label="Ver todas las sucursales">
         <span>Ver sucursales</span><i class="fas fa-arrow-right" aria-hidden="true"></i>
+      </a>
+    </article>
+
+    <article class="summary-card summary-card-warehouses" *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_BODEGA')">
+      <div class="summary-card-body">
+        <div class="summary-icon" aria-hidden="true"><i class="fas fa-warehouse"></i></div>
+        <div class="summary-content">
+          <p class="summary-label">Bodegas</p>
+          <p class="summary-value">{{totalBodegas}}</p>
+          <p class="summary-description">Registradas en el sistema</p>
+        </div>
+      </div>
+      <a [routerLink]="['/bodegas/index']" class="summary-link" aria-label="Ver todas las bodegas">
+        <span>Ver bodegas</span><i class="fas fa-arrow-right" aria-hidden="true"></i>
+      </a>
+    </article>
+
+    <article class="summary-card summary-card-dispatches" *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_BODEGA')">
+      <div class="summary-card-body">
+        <div class="summary-icon" aria-hidden="true"><i class="fas fa-truck-loading"></i></div>
+        <div class="summary-content">
+          <p class="summary-label">Despachos pendientes</p>
+          <p class="summary-value">{{totalDespachosPendientes}}</p>
+          <p class="summary-description">Por aprobar</p>
+        </div>
+      </div>
+      <a [routerLink]="['/despachos-bodega/index']" class="summary-link" aria-label="Ver despachos de bodega">
+        <span>Ver despachos</span><i class="fas fa-arrow-right" aria-hidden="true"></i>
       </a>
     </article>
 
