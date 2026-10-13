@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Propuesta · Fotografías de productos</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f2f4f7; color: #343a40; font: 15px system-ui, sans-serif; }
+    header { padding: 16px 24px; background: #343a40; color: white; }
+    main { max-width: 1280px; margin: 0 auto; padding: 24px; }
+    h1 { font-size: 26px; margin: 0 0 8px; } h2 { font-size: 21px; margin: 0; }
+    p { line-height: 1.5; } .muted { color: #5d7088; }
+    .toolbar { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin: 24px 0 16px; }
+    input, button { font: inherit; } button { cursor: pointer; border: 1px solid #b9cceb; border-radius: 4px; padding: 8px 12px; background: white; color: #155675; }
+    button:hover { background: #e5f3f8; } button:disabled { opacity: .5; cursor: default; }
+    :focus-visible { outline: 3px solid #2783b7; outline-offset: 3px; }
+    .primary { background: #2783b7; color: white; border-color: #2783b7; } .primary:hover { background: #1c688f; }
+    input[type="search"] { border: 1px solid #b9cceb; border-radius: 4px; padding: 8px; width: 260px; max-width: 100%; }
+    .table-wrap { overflow-x: auto; background: white; border: 1px solid #dee2e6; }
+    table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+    th { background: #343a40; color: white; text-align: left; padding: 12px; font-weight: 500; }
+    td { padding: 12px; border-bottom: 1px solid #dee2e6; } tbody tr:hover { background: #f8fafe; }
+    .product { display: flex; gap: 12px; align-items: center; } .thumb { width: 48px; height: 48px; padding: 0; flex-shrink: 0; background: #f8f9fa; }
+    img { object-fit: contain; width: 100%; height: 100%; } .empty { display: grid; place-items: center; font-size: 11px; border: 1px solid #dee2e6; color: #5d7088; border-radius: 4px; }
+    dialog { border: 1px solid #dee2e6; border-radius: 6px; padding: 24px; width: 760px; max-width: calc(100% - 24px); color: #343a40; }
+    dialog::backdrop { background: #0009; } .modal-header { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-bottom: 24px; }
+    .detail { display: grid; grid-template-columns: 260px 1fr; gap: 24px; } .large-photo { height: 260px; background: #f8f9fa; border: 1px solid #dee2e6; display: grid; place-items: center; }
+    .large-photo .empty { border: 0; font-size: 15px; } dl { margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; } dt { color: #5d7088; } dd { margin: 0; }
+    .upload { margin-top: 24px; padding-top: 16px; border-top: 1px solid #dee2e6; } label { display: block; margin-bottom: 8px; } .actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+    #message { min-height: 24px; } #viewer { width: 600px; } #viewer .large-photo { height: 400px; }
+    .pagination { margin-top: 16px; } [hidden] { display: none !important; }
+    @media (max-width: 620px) { main { padding: 16px; } .toolbar { align-items: start; flex-direction: column; } .detail { grid-template-columns: 1fr; } .large-photo { height: 220px; } td, th { padding: 8px; } }
+  </style>
+</head>
+<body>
+  <header>DeTodo · Productos</header>
+  <main>
+    <h1>Productos</h1>
+    <p class="muted">Propuesta de UI con datos de ejemplo. Selecciona una miniatura para ampliarla o abre el detalle para probar una foto local.</p>
+    <div class="toolbar"><span>Inventario · Sucursal principal</span><label>Búsqueda <input id="search" type="search" placeholder="Código o nombre"></label></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Código</th><th>Nombre</th><th>Precio compra</th><th>Precio venta</th><th>Stock</th><th>Tipo</th><th>Marca</th><th>Estado</th><th>Opciones</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <p id="count" class="pagination muted"></p>
+  </main>
+  <dialog id="detailDialog" aria-labelledby="detailTitle">
+    <div class="modal-header"><h2 id="detailTitle"></h2><button type="button" data-close="detailDialog">Cerrar</button></div>
+    <div class="detail">
+      <div><div id="detailPhoto" class="large-photo"></div><button id="enlarge" type="button" style="margin-top:12px">Ampliar foto</button></div>
+      <div><dl id="fields"></dl><div class="upload">
+        <label for="photo">Fotografía del producto</label>
+        <p class="muted">JPEG o PNG · Hasta 5 MB</p>
+        <input id="photo" type="file" accept="image/jpeg,image/png">
+        <div class="actions"><button id="save" class="primary" type="button" disabled>Guardar foto</button><button id="discard" type="button" disabled>Cancelar selección</button></div>
+        <p id="message" role="status" aria-live="polite"></p>
+        <p class="muted">En esta maqueta, la selección y el guardado solo actualizan la vista local.</p>
+      </div></div>
+    </div>
+  </dialog>
+  <dialog id="viewer" aria-labelledby="viewerTitle"><div class="modal-header"><h2 id="viewerTitle"></h2><button type="button" data-close="viewer">Cerrar</button></div><div id="viewerPhoto" class="large-photo"></div></dialog>
+  <script>
+    // Ilustraciones SVG de ejemplo; no representan fotografías almacenadas.
+    const sample = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180"><rect width="180" height="180" fill="#f8f9fa"/><path d="M78 130V67h24v63z" fill="#ba8558"/><path d="M38 42h80l24 18-13 16-19-13H38z" fill="#69757c"/><path d="M79 67h22v12H79z" fill="#454d55"/></svg>');
+    const products = [
+      { code: 'FER-001', name: 'Martillo de uña 16 oz', cost: 'Q 35.00', price: 'Q 55.00', stock: 24, type: 'Herramienta', brand: 'Ejemplo', photo: sample },
+      { code: 'FER-002', name: 'Cinta métrica 5 metros', cost: 'Q 20.00', price: 'Q 32.00', stock: 18, type: 'Herramienta', brand: 'Ejemplo', photo: '' },
+      { code: 'FER-003', name: 'Tornillo para madera', cost: 'Q 0.25', price: 'Q 0.50', stock: 250, type: 'Ferretería', brand: 'Genérica', photo: '' }
+    ];
+    let selected; let preview = ''; const blobUrls = new Set();
+    const el = id => document.getElementById(id);
+    function photoNode(url, name) {
+      const node = document.createElement(url ? 'img' : 'span');
+      if (url) { node.src = url; node.alt = 'Foto de ' + name; node.loading = 'lazy'; }
+      else { node.className = 'empty'; node.textContent = 'Sin foto'; }
+      return node;
+    }
+    function showViewer(product) {
+      el('viewerTitle').textContent = product.name;
+      el('viewerPhoto').replaceChildren(photoNode(product.photo, product.name));
+      el('viewer').showModal();
+    }
+    function render() {
+      el('rows').replaceChildren();
+      let count = 0;
+      products.forEach(product => {
+        if (!(product.code + ' ' + product.name).toLowerCase().includes(el('search').value.toLowerCase())) { return; }
+        count++;
+        const row = document.createElement('tr');
+        const code = row.insertCell(); code.textContent = product.code;
+        const cell = row.insertCell(); const item = document.createElement('div'); item.className = 'product';
+        const thumb = document.createElement(product.photo ? 'button' : 'span'); thumb.className = 'thumb' + (product.photo ? '' : ' empty');
+        if (product.photo) { thumb.type = 'button'; thumb.setAttribute('aria-label', 'Ampliar foto de ' + product.name); thumb.onclick = () => showViewer(product); }
+        thumb.append(photoNode(product.photo, product.name));
+        const name = document.createElement('span'); name.textContent = product.name; item.append(thumb, name); cell.append(item);
+        [product.cost, product.price, product.stock, product.type, product.brand, 'Activo'].forEach(value => { row.insertCell().textContent = value; });
+        const button = document.createElement('button'); button.type = 'button'; button.textContent = 'Detalle'; button.onclick = () => showDetail(product); row.insertCell().append(button);
+        el('rows').append(row);
+      });
+      el('count').textContent = count ? count + ' productos · Página 1 de 1' : 'No se encontraron productos';
+    }
+    function resetSelection() {
+      if (preview) { URL.revokeObjectURL(preview); blobUrls.delete(preview); preview = ''; }
+      el('photo').value = ''; el('save').disabled = true; el('discard').disabled = true;
+      if (selected) { el('detailPhoto').replaceChildren(photoNode(selected.photo, selected.name)); }
+    }
+    function showDetail(product) {
+      resetSelection(); selected = product; el('detailTitle').textContent = product.name; el('message').textContent = '';
+      el('detailPhoto').replaceChildren(photoNode(product.photo, product.name)); el('enlarge').disabled = !product.photo;
+      el('fields').replaceChildren();
+      [['Código', product.code], ['Stock disponible', product.stock], ['Precio de compra', product.cost], ['Precio de venta', product.price], ['Tipo', product.type], ['Marca', product.brand]].forEach(([label, value]) => {
+        const term = document.createElement('dt'); term.textContent = label; const description = document.createElement('dd'); description.textContent = value; el('fields').append(term, description);
+      });
+      el('detailDialog').showModal();
+    }
+    el('search').addEventListener('input', render);
+    el('photo').addEventListener('change', () => {
+      const file = el('photo').files[0]; resetSelection(); el('message').textContent = '';
+      if (!file) { return; }
+      if (!['image/jpeg', 'image/png'].includes(file.type) || file.size > 5 * 1024 * 1024) { el('message').textContent = 'Selecciona un JPEG o PNG de hasta 5 MB.'; return; }
+      preview = URL.createObjectURL(file); blobUrls.add(preview); const image = photoNode(preview, selected.name);
+      image.onerror = () => { resetSelection(); el('message').textContent = 'No se pudo leer la imagen.'; };
+      image.onload = () => { el('save').disabled = false; el('discard').disabled = false; };
+      el('detailPhoto').replaceChildren(image); el('message').textContent = 'Vista previa de ' + file.name;
+    });
+    el('save').onclick = () => {
+      if (!preview) { return; }
+      if (selected.photo.startsWith('blob:')) { URL.revokeObjectURL(selected.photo); blobUrls.delete(selected.photo); }
+      selected.photo = preview; preview = ''; resetSelection(); render(); el('enlarge').disabled = false; el('message').textContent = 'Foto actualizada en esta maqueta.';
+    };
+    el('discard').onclick = () => { resetSelection(); el('message').textContent = ''; };
+    el('enlarge').onclick = () => showViewer(selected);
+    document.querySelectorAll('[data-close]').forEach(button => { button.onclick = () => el(button.dataset.close).close(); });
+    el('detailDialog').addEventListener('close', resetSelection);
+    window.addEventListener('pagehide', () => blobUrls.forEach(url => URL.revokeObjectURL(url)));
+    render();
+  </script>
+</body>
+</html>

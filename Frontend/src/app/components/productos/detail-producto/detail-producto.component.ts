@@ -3,6 +3,7 @@ import { Component, EventEmitter, HostListener, Input, OnDestroy, Output } from 
 import { Producto } from 'src/app/models/producto';
 import { AuthService } from 'src/app/services/auth.service';
 import { ProductoService } from 'src/app/services/producto.service';
+import { global } from 'src/app/services/global';
 
 import swal from 'sweetalert2';
 
@@ -24,6 +25,21 @@ export class DetailProductoComponent implements OnDestroy {
   cerrando = false;
 
   private cierreTimer: ReturnType<typeof setTimeout>;
+  imagenFallida: string = null;
+
+  get imagenUrl(): string {
+    return this.producto?.imagen ? `${global.url}/uploads/img/${encodeURIComponent(this.producto.imagen)}` : null;
+  }
+
+  get tipoProductoNombre(): string {
+    const tipo = this.producto?.tipoProducto;
+    return typeof tipo === 'string' ? tipo : tipo?.tipoProducto;
+  }
+
+  get marcaProductoNombre(): string {
+    const marca = this.producto?.marcaProducto;
+    return typeof marca === 'string' ? marca : marca?.marca;
+  }
 
   constructor(
     private serviceProducto: ProductoService,
@@ -69,6 +85,7 @@ export class DetailProductoComponent implements OnDestroy {
             let response: any = event.body;
 
             this.producto = response.producto as Producto;
+            this.imagenFallida = null;
 
             this.productoActualizado.emit(this.producto);
             swal.fire('Imagen ha sido subida con éxito', response.mensaje, 'success');

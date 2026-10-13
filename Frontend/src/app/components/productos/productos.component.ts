@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
@@ -11,8 +11,14 @@ import { ProductoService } from '../../services/producto.service';
 import { InventarioSucursalService } from '../../services/inventario-sucursal.service';
 import { SucursalService } from '../../services/sucursal.service';
 import { ExportacionProductos } from './exportar-productos/exportar-productos.component';
+import { global } from '../../services/global';
 
 import Swal from 'sweetalert2';
+
+interface VisorFotografia extends HTMLDialogElement {
+  showModal(): void;
+  close(): void;
+}
 
 @Component({
   selector: 'app-productos',
@@ -25,6 +31,21 @@ export class ProductosComponent implements OnInit, OnDestroy {
   productosDto: ProductoDto[];
 
   public productoSeleccionado: Producto;
+  vista: 'lista' | 'galeria' = 'lista';
+  productoFoto: ProductoDto = null;
+  private imagenesFallidas = new Set<string>();
+  @ViewChild('visorFoto') visorFoto: ElementRef<VisorFotografia>;
+
+  readonly opcionesOrden = [
+    { campo: 'nombre', etiqueta: 'Nombre' },
+    { campo: 'codigo', etiqueta: 'Código' },
+    { campo: 'precioCompra', etiqueta: 'Precio compra' },
+    { campo: 'precioVenta', etiqueta: 'Precio venta' },
+    { campo: 'stock', etiqueta: 'Stock' },
+    { campo: 'tipo', etiqueta: 'Categoría' },
+    { campo: 'marca', etiqueta: 'Marca' },
+    { campo: 'estado', etiqueta: 'Estado' }
+  ];
 
   // Paginación
   paginaActual: number = 0;
@@ -120,9 +141,54 @@ export class ProductosComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.visorFoto?.nativeElement.close();
     if (this.busquedaSubscription) {
       this.busquedaSubscription.unsubscribe();
     }
+  }
+
+  imagenUrl(producto: ProductoDto): string {
+    return producto?.imagen ? `${global.url}/uploads/img/${encodeURIComponent(producto.imagen)}` : null;
+  }
+
+  tieneFoto(producto: ProductoDto): boolean {
+    const url = this.imagenUrl(producto);
+    return !!url && !this.imagenesFallidas.has(url);
+  }
+
+  imagenNoDisponible(producto: ProductoDto): void {
+    this.imagenesFallidas.add(this.imagenUrl(producto));
+  }
+
+  abrirFoto(producto: ProductoDto): void {
+    if (!this.tieneFoto(producto)) {
+      return;
+    }
+    this.productoFoto = producto;
+    this.visorFoto.nativeElement.showModal();
+  }
+
+  cerrarFoto(): void {
+    this.visorFoto.nativeElement.close();
+    this.productoFoto = null;
+  }
+
+  cambiarVista(vista: 'lista' | 'galeria'): void {
+    this.vista = vista;
+  }
+
+  cambiarOrden(campo: string): void {
+    this.orden = campo;
+    this.cargarProductos(0);
+  }
+
+  invertirOrden(): void {
+    this.direccion = this.direccion === 'asc' ? 'desc' : 'asc';
+    this.cargarProductos(0);
+  }
+
+  identificarProducto(index: number, producto: ProductoDto): number {
+    return producto.idProducto;
   }
 
   onBuscar(valor: string): void {
