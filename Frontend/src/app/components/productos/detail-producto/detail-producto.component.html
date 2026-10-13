@@ -20,8 +20,8 @@
           <div class="product-layout">
             <aside class="product-summary">
               <div class="product-image-frame">
-                <img *ngIf="producto.imagen; else imagePlaceholder"
-                  src="http://localhost:8281/api/uploads/img/{{producto.imagen}}"
+                <img *ngIf="imagenUrl && imagenFallida !== imagenUrl; else imagePlaceholder"
+                  [src]="imagenUrl" (error)="imagenFallida = imagenUrl"
                   [alt]="'Fotografía de ' + (producto.nombre || 'producto')">
                 <ng-template #imagePlaceholder>
                   <div class="image-placeholder">
@@ -38,8 +38,8 @@
                 </span>
                 <h6>{{producto.nombre || 'Producto sin nombre'}}</h6>
                 <div class="identity-tags">
-                  <span><i class="fas fa-tag" aria-hidden="true"></i>{{producto.tipoProducto || 'Sin categoría'}}</span>
-                  <span><i class="fas fa-copyright" aria-hidden="true"></i>{{producto.marcaProducto || 'Sin marca'}}</span>
+                  <span><i class="fas fa-tag" aria-hidden="true"></i>{{tipoProductoNombre || 'Sin categoría'}}</span>
+                  <span><i class="fas fa-copyright" aria-hidden="true"></i>{{marcaProductoNombre || 'Sin marca'}}</span>
                 </div>
               </div>
 
