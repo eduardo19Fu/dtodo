@@ -79,13 +79,15 @@ export class ReportesComponent implements OnInit, OnDestroy {
       'Detalle de abastecimiento agrupado por proveedor y producto.', 'fa-dolly-flatbed', ['XLSX'],
       ['FECHAS', 'SUCURSAL', 'PROVEEDOR'], ['ROLE_ADMIN'], true),
     this.reporte('BODEGA_EXISTENCIAS', 'BODEGAS', 'Existencias de bodega',
-      'Productos, existencias y valor al costo del inventario de una bodega.', 'fa-boxes', ['PDF', 'XLSX'],
+      'Productos y existencias del inventario de una bodega. El valor al costo solo lo incluye para administradores.',
+      'fa-boxes', ['PDF', 'XLSX'],
       ['BODEGA'], ['ROLE_ADMIN', 'ROLE_BODEGA'], true),
     this.reporte('BODEGA_MOVIMIENTOS', 'BODEGAS', 'Movimientos de bodega',
       'Ingresos, importaciones, reducciones, eliminaciones y despachos de una bodega.', 'fa-exchange-alt', ['PDF', 'XLSX'],
       ['FECHAS', 'BODEGA'], ['ROLE_ADMIN', 'ROLE_BODEGA'], true),
     this.reporte('BODEGA_DESPACHOS', 'BODEGAS', 'Despachos de bodega',
-      'Despachos a sucursales por período, bodega y estado, con su valor al costo.', 'fa-truck-loading', ['PDF', 'XLSX'],
+      'Despachos a sucursales y traslados por período, bodega y estado. El valor al costo solo lo incluye para administradores.',
+      'fa-truck-loading', ['PDF', 'XLSX'],
       ['FECHAS', 'BODEGA_OPCIONAL', 'ESTADO'], ['ROLE_ADMIN', 'ROLE_BODEGA'], true)
   ];
 

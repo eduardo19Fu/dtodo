@@ -79,6 +79,11 @@ export class InventarioBodegaComponent implements OnInit, OnDestroy {
     this.suscripciones.unsubscribe();
   }
 
+  /** El costo y el valor de lo despachado solo los ve un administrador. */
+  get verCostos(): boolean {
+    return this.auth.hasRole('ROLE_ADMIN');
+  }
+
   /** Reducir existencias y eliminar productos es una decisión del administrador: el rol Bodega solo suma y despacha. */
   get puedeAjustar(): boolean {
     return this.auth.hasRole('ROLE_ADMIN');

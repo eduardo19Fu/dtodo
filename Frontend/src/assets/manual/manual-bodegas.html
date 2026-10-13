@@ -428,6 +428,7 @@
             <tr><td>Imprimir el comprobante de un despacho</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
             <tr><td>Cancelar un despacho <strong>pendiente</strong></td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
             <tr><td>Consultar los reportes de bodega</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
+            <tr><td>Ver <strong>costos</strong>: costo unitario, subtotales, total al costo y valor de los despachos</td><td class="c ok-mark">Sí</td><td class="c no-mark">No</td></tr>
             <tr><td><strong>Aprobar</strong> un despacho</td><td class="c ok-mark">Sí</td><td class="c no-mark">No</td></tr>
             <tr><td><strong>Revertir</strong> un despacho ya aprobado</td><td class="c ok-mark">Sí</td><td class="c no-mark">No</td></tr>
           </tbody>
@@ -437,6 +438,10 @@
       <div class="callout warn">
         <span class="callout-title">Tenlo presente</span>
         <p>Los usuarios con rol <strong>Bodega</strong> pueden trabajar con <strong>todas</strong> las bodegas, no solo con una. Si necesitas que alguien vea únicamente una bodega, avisa al equipo de sistemas antes de asignarle el rol.</p>
+      </div>
+      <div class="callout note">
+        <span class="callout-title">El costo es solo del administrador</span>
+        <p>Todo lo que revela el precio de compra (costo unitario, subtotales, total al costo, valor de los despachos y el margen de ganancia) lo ve únicamente el <strong>Administrador</strong>. Para el rol Bodega esos datos no aparecen en pantalla, en los reportes ni en el comprobante: puede trabajar con productos, cantidades y existencias sin conocer cuánto cuestan.</p>
       </div>
       <div class="callout note">
         <span class="callout-title">¿Por qué Bodega no puede reducir ni eliminar?</span>
@@ -538,12 +543,12 @@
       <p>Desde el listado pulsa el botón <strong>Inventario y movimientos</strong> de la bodega. La pantalla tiene tres tarjetas de resumen (productos en bodega, sucursal destino y estado) y dos pestañas: <strong>Existencias</strong> y <strong>Movimientos</strong>.</p>
 
       <h3>5.1 Pestaña Existencias</h3>
-      <p>Lista cada producto de la bodega con su código, nombre, <strong>existencia</strong>, <strong>stock mínimo</strong>, <strong>costo unitario</strong> y la fecha de la última actualización. Puedes buscar por código o por nombre.</p>
+      <p>Lista cada producto de la bodega con su código, nombre, <strong>existencia</strong>, <strong>stock mínimo</strong>, el <strong>costo unitario</strong> (solo si eres administrador) y la fecha de la última actualización. Puedes buscar por código o por nombre.</p>
       <ul>
         <li>El rol <strong>Bodega</strong> no ve la columna <em>Opciones</em>: reducir y eliminar son exclusivos del administrador (ver <a href="#roles">Roles y permisos</a>).</li>
         <li>La existencia aparece con un indicador de color. Si llega al <strong>stock mínimo</strong> o por debajo, se resalta como alerta; si es <strong>cero</strong>, se marca como agotado.</li>
         <li>Los productos con existencia cero <strong>siguen apareciendo</strong>: así sabes qué productos maneja la bodega aunque hoy no tenga unidades.</li>
-        <li>El <strong>costo unitario</strong> es el precio de compra del producto en el catálogo. Lo asigna el sistema; no se escribe a mano.</li>
+        <li>El <strong>costo unitario</strong> es el precio de compra del producto en el catálogo y <strong>solo lo ve el administrador</strong>. Lo asigna el sistema; no se escribe a mano.</li>
       </ul>
 
       <h3>5.2 Agregar un producto</h3>
@@ -749,10 +754,10 @@
         <li>En <strong>Enviar a</strong> elige <em>Una sucursal</em> y confirma o cambia la <strong>Sucursal destino</strong> (solo aparecen sucursales activas). Para mover mercadería a otra bodega elige <em>Otra bodega (traslado)</em>: ver <a href="#traslado">8.3</a>.</li>
         <li>Escribe quién <strong>Recibe</strong> la mercadería (obligatorio). Lo anota la persona que despacha. Las <strong>Observaciones</strong> son opcionales.</li>
         <li>En <strong>Detalle de productos</strong>, escanea o escribe el <strong>código</strong> y presiona <kbd>Enter</kbd>, o pulsa la lupa para ver los productos de esa bodega.</li>
-        <li>Debajo del producto verás <em>Disponible en bodega</em> y su costo. Escribe la <strong>cantidad</strong> y pulsa <span class="btn">+ Agregar</span>.</li>
+        <li>Debajo del producto verás <em>Disponible en bodega</em> (y su costo, si eres administrador). Escribe la <strong>cantidad</strong> y pulsa <span class="btn">+ Agregar</span>.</li>
         <li>Repite para cada producto. Si agregas dos veces el mismo, las cantidades se acumulan en una sola línea.</li>
         <li>Revisa la tabla: para cada línea ves la existencia actual y <em>cuántas quedarán</em>. Con el lápiz cambias la cantidad; con el bote de basura quitas la línea.</li>
-        <li>La barra superior muestra el <strong>total de productos, unidades y el total al costo</strong>. Cuando todo esté bien pulsa <span class="btn">Registrar despacho</span>.</li>
+        <li>La barra superior muestra el <strong>total de productos y unidades</strong> y, solo para el administrador, el <strong>total al costo</strong>. Cuando todo esté bien pulsa <span class="btn">Registrar despacho</span>.</li>
       </ol>
 
       <div class="callout note">
@@ -760,7 +765,7 @@
         <ul>
           <li>Solo puedes despachar productos que la bodega tiene, y <strong>hasta su existencia actual</strong>.</li>
           <li>La bodega de origen se bloquea mientras haya productos en el detalle. Para cambiarla, quita primero las líneas.</li>
-          <li>El <strong>costo</strong> lo toma el sistema del catálogo; nadie lo escribe. Así el total al costo es confiable.</li>
+          <li>El <strong>costo</strong> lo toma el sistema del catálogo; nadie lo escribe, y solo lo ve el administrador. Así el total al costo es confiable.</li>
           <li>Tú no eliges &laquo;quién despacha&raquo;: se registra automáticamente con tu usuario.</li>
         </ul>
       </div>
@@ -803,11 +808,11 @@
       </div>
 
       <h3>8.5 El detalle de un despacho</h3>
-      <p>La ventana de detalle reúne: total al costo, estado, unidades despachadas, bodega de origen, sucursal o bodega destino, <strong>recibido por</strong>, <strong>despachado por</strong>, fecha de registro, las observaciones y, si aplica, quién y cuándo lo aprobó o canceló junto con el <strong>motivo de la cancelación</strong>. Abajo aparece cada producto con la <strong>existencia que tenía la bodega al momento del despacho</strong>, la cantidad, el costo unitario y el subtotal.</p>
+      <p>La ventana de detalle reúne: estado, unidades despachadas, bodega de origen, sucursal o bodega destino, <strong>recibido por</strong>, <strong>despachado por</strong>, fecha de registro, las observaciones y, si aplica, quién y cuándo lo aprobó o canceló junto con el <strong>motivo de la cancelación</strong>. Abajo aparece cada producto con la <strong>existencia que tenía la bodega al momento del despacho</strong>, la cantidad y, solo para el administrador, el costo unitario y el subtotal (junto con el total al costo del despacho).</p>
       <p>Desde allí también puedes imprimir el comprobante y, según tu rol y el estado, aprobar, cancelar o revertir.</p>
 
       <h3>8.6 Imprimir el comprobante</h3>
-      <p>El comprobante es el documento que acompaña la mercadería. Incluye el número, las fechas, la bodega, la sucursal, quién despacha y quién recibe, el detalle con costos y el total, y espacios para firmas. Se puede imprimir en cualquier estado.</p>
+      <p>El comprobante es el documento que acompaña la mercadería. Incluye el número, las fechas, la bodega, la sucursal, quién despacha y quién recibe, el detalle de productos y cantidades (con costos y total solo cuando lo imprime un administrador), y espacios para firmas. Se puede imprimir en cualquier estado.</p>
 
       <h3>8.7 Aprobar un despacho <small style="font-weight:400;color:var(--muted)">(administrador)</small></h3>
       <ol class="steps">
@@ -887,7 +892,7 @@
           <tbody>
             <tr>
               <td><strong>Existencias de bodega</strong></td>
-              <td>Productos, existencias y valor al costo del inventario de una bodega.</td>
+              <td>Productos y existencias del inventario de una bodega. El costo unitario y el valor total solo aparecen para el administrador.</td>
               <td>Bodega (obligatorio)</td>
             </tr>
             <tr>
@@ -897,7 +902,7 @@
             </tr>
             <tr>
               <td><strong>Despachos de bodega</strong></td>
-              <td>Despachos a sucursales y traslados entre bodegas por período, con su valor al costo.</td>
+              <td>Despachos a sucursales y traslados entre bodegas por período. El valor al costo solo aparece para el administrador.</td>
               <td>Rango de fechas; bodega y estado (opcionales)</td>
             </tr>
           </tbody>

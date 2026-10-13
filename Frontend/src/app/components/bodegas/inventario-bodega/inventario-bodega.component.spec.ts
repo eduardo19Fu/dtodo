@@ -180,4 +180,12 @@ describe('InventarioBodegaComponent', () => {
 
     expect(component.puedeAjustar).toBeFalse();
   });
+
+  it('solo un administrador ve el costo unitario de los productos', () => {
+    expect(component.verCostos).toBeTrue();
+
+    auth.hasRole = () => false;
+
+    expect(component.verCostos).toBeFalse();
+  });
 });

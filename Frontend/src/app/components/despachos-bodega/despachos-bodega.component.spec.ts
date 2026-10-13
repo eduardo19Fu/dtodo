@@ -220,4 +220,12 @@ describe('DespachosBodegaComponent', () => {
     expect(dialogo.html).toContain('destino');
     expect(dialogo.html).toContain('regresarán a la bodega de origen');
   });
+
+  it('solo un administrador ve el total valorizado de los despachos', () => {
+    expect(component.verCostos).toBeTrue();
+
+    auth.hasRole = () => false;
+
+    expect(component.verCostos).toBeFalse();
+  });
 });

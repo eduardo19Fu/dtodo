@@ -17,6 +17,8 @@ export class DetailDespachoBodegaComponent implements AfterViewInit, OnDestroy {
 
   @Input() despacho: DespachoBodega;
   @Input() puedeAprobar = false;
+  /** El costo y el valor del despacho solo los ve un administrador. */
+  @Input() verCostos = false;
   @Input() procesando = false;
 
   @Output() cerrar = new EventEmitter<void>();

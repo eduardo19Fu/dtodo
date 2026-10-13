@@ -69,7 +69,7 @@
               <tr>
                 <th>Código</th>
                 <th>Producto</th>
-                <th>Costo</th>
+                <th *ngIf="verCostos">Costo</th>
                 <th>Existencia</th>
                 <th class="action-column"><span class="sr-only">Acción</span></th>
               </tr>
@@ -83,7 +83,7 @@
                     <strong>{{ item.nombreProducto }}</strong>
                   </div>
                 </td>
-                <td data-label="Costo"><span class="price-value">{{ item.precioCompra | currency: "Q" : "symbol" }}</span></td>
+                <td data-label="Costo" *ngIf="verCostos"><span class="price-value">{{ item.precioCompra | currency: "Q" : "symbol" }}</span></td>
                 <td data-label="Existencia">
                   <span class="stock-badge" [ngClass]="{
                     'low-stock': item.stock <= 3,

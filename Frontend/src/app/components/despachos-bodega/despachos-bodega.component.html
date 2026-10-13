@@ -1,5 +1,5 @@
 <app-detail-despacho-bodega *ngIf="despachoSeleccionado" [despacho]="despachoSeleccionado" [puedeAprobar]="puedeAprobar"
-  [procesando]="procesandoId !== null" (cerrar)="cerrarDetalle()" (imprimir)="imprimir($event)"
+  [verCostos]="verCostos" [procesando]="procesandoId !== null" (cerrar)="cerrarDetalle()" (imprimir)="imprimir($event)"
   (aprobar)="aprobar($event.idDespacho, $event.destino)" (cancelar)="cancelar($event.idDespacho, $event.estado)"></app-detail-despacho-bodega>
 
 <section class="content-header">
@@ -87,7 +87,7 @@
           <th class="col-sucursal">Destino</th>
           <th class="col-recibe">Recibe</th>
           <th class="col-lineas">Productos</th>
-          <th class="col-total">Total</th>
+          <th class="col-total" *ngIf="verCostos">Total</th>
           <th class="col-estado">Estado</th>
           <th class="col-opciones">Opciones</th>
         </tr>
@@ -109,7 +109,7 @@
           </td>
           <td class="col-recibe" data-label="Recibe"><span class="cell-ellipsis" [title]="despacho.recibidoPor">{{despacho.recibidoPor}}</span></td>
           <td class="col-lineas" data-label="Productos">{{despacho.totalLineas}}</td>
-          <td class="col-total" data-label="Total">{{despacho.total | currency: "Q" : "symbol"}}</td>
+          <td class="col-total" data-label="Total" *ngIf="verCostos">{{despacho.total | currency: "Q" : "symbol"}}</td>
           <td class="col-estado" data-label="Estado">
             <span class="listing-status-pill" [ngClass]="claseEstado(despacho.estado)">{{etiquetaEstado(despacho.estado)}}</span>
           </td>

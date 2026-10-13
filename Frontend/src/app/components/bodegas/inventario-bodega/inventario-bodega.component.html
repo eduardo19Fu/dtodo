@@ -124,7 +124,7 @@
           <th class="col-producto">Producto</th>
           <th class="col-cantidad">Existencia</th>
           <th class="col-cantidad">Stock m&iacute;nimo</th>
-          <th class="col-moneda">Costo unitario</th>
+          <th class="col-moneda" *ngIf="verCostos">Costo unitario</th>
           <th class="col-fecha">Actualizado</th>
           <th class="col-opciones-corta" *ngIf="puedeAjustar">Opciones</th>
         </tr>
@@ -142,7 +142,7 @@
             </span>
           </td>
           <td class="col-cantidad" data-label="Stock m&iacute;nimo">{{item.stockMinimo !== null && item.stockMinimo !== undefined ? (item.stockMinimo | number) : '—'}}</td>
-          <td class="col-moneda" data-label="Costo unitario">{{item.precioCompra | currency: "Q" : "symbol"}}</td>
+          <td class="col-moneda" data-label="Costo unitario" *ngIf="verCostos">{{item.precioCompra | currency: "Q" : "symbol"}}</td>
           <td class="col-fecha" data-label="Actualizado">
             <span class="fecha-principal">{{item.fechaActualizacion | date: 'dd/MM/yyyy'}}</span>
             <small class="fecha-hora">{{item.fechaActualizacion | date: 'HH:mm'}}</small>

@@ -64,6 +64,11 @@ export class DespachosBodegaComponent implements OnInit, OnDestroy {
     this.suscripciones.unsubscribe();
   }
 
+  /** El costo y el valor de lo despachado solo los ve un administrador. */
+  get verCostos(): boolean {
+    return this.auth.hasRole('ROLE_ADMIN');
+  }
+
   get puedeAprobar(): boolean {
     return this.auth.hasRole('ROLE_ADMIN');
   }

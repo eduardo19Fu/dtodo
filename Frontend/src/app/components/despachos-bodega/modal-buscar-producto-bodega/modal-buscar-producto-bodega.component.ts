@@ -20,6 +20,8 @@ export class ModalBuscarProductoBodegaComponent implements OnInit, OnDestroy {
 
   @Input() idBodega: number;
   @Input() nombreBodega: string;
+  /** El costo solo lo ve un administrador. */
+  @Input() verCostos = false;
   @Output() producto = new EventEmitter<InventarioBodegaDto>();
   @Output() cerrar = new EventEmitter<void>();
 

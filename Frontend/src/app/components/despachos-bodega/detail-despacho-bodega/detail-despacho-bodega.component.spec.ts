@@ -103,4 +103,12 @@ describe('DetailDespachoBodegaComponent', () => {
     expect(component.nombreDestino).toBe('Secundaria');
     expect(solicitud).toEqual({ idDespacho: 12, destino: 'Secundaria' });
   });
+
+  it('por defecto no muestra costos: solo se ven cuando quien lo abre es administrador', () => {
+    expect(component.verCostos).toBeFalse();
+
+    component.verCostos = true;
+
+    expect(component.verCostos).toBeTrue();
+  });
 });

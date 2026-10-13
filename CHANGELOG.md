@@ -6,6 +6,16 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Corregido — El costo (precio de compra) solo lo ve el administrador
+
+Una auditoría con un usuario de cada rol mostró que la interfaz ya ocultaba el costo en Productos, pero la API lo entregaba igual: `precioCompra` y `porcentajeGanancia` salían en `/api/productos`, `/productos-dto`, `/productos-activos`, `/productos/{id}` y `/productos/codigo/{codigo}` para `ROLE_COBRADOR`, `ROLE_INVENTARIO` e incluso `ROLE_BODEGA`; el módulo de Bodegas mostraba costos, totales al costo y subtotales a `ROLE_BODEGA`; y los reportes **Productos bajo stock mínimo** y **Existencias actuales** (`ROLE_INVENTARIO`) y los de bodega (`ROLE_BODEGA`) incluían columnas de costo. El margen de ganancia también cuenta porque permite calcular el costo a partir del precio de venta.
+
+- **API**: nuevo `SoloAdministradorSerializer` (Jackson) aplicado a `Producto`, `ProductoDto` y `ProductoDtoMejorado` (`precioCompra`, `porcentajeGanancia`), `InventarioBodegaDto.precioCompra`, `DespachoBodega.total`, `DespachoBodegaDetalle.precioUnitario/subTotal` y `DespachoBodegaDto.total`. Para cualquier rol distinto de administrador (o sin sesión) esos campos salen `null`; el resto de la respuesta no cambia. Al ser a nivel de serialización cubre también el producto anidado en proformas, facturas y despachos. Las entidades no se alteran (las relaciones de producto no tienen cascada), así que ocultar el valor no puede sobrescribirlo en la base.
+- **Reportes**: parámetro `VER_COSTOS` (por defecto `false`) en `bodega_existencias`, `bodega_despachos`, `despacho_bodega` (comprobante), `bajo_stock` y `productos_excel`; los servicios lo llenan con `Utils.esAdministrador()`. Sin él desaparecen las columnas y totales de costo, y en el Excel de existencias no quedan columnas vacías.
+- **Frontend**: en Bodegas y Despachos el costo unitario, los subtotales, el total al costo y la columna Total del listado solo se muestran con `ROLE_ADMIN`; las descripciones de los reportes de bodega lo aclaran.
+- **Pruebas**: `SoloAdministradorSerializerTest`, `UtilsEsAdministradorTest` y casos de visibilidad en las pruebas de plantillas (bodega, bajo stock y existencias). Se volvió a correr la auditoría con un usuario de cada rol: solo el administrador recibe costos.
+- **Pendiente de decidir**: el formulario de producto (`/productos/create`) sigue accesible por URL a `ROLE_INVENTARIO`; la API ya le entrega el costo vacío y no puede guardar (`POST/PUT /productos` son de administrador).
+
 ### Agregado — Módulo de Bodegas y Despachos de bodega
 
 Mantenimiento de bodegas con inventario propio, movimientos manuales, importación de inventario, despachos hacia sucursales con comprobante imprimible y reportes. El módulo está disponible para `ROLE_ADMIN` y para el nuevo rol `ROLE_BODEGA`.

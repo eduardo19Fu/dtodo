@@ -26,7 +26,7 @@
           </div>
 
           <div class="summary-grid">
-            <article class="summary-card total-card">
+            <article class="summary-card total-card" *ngIf="verCostos">
               <span class="card-icon"><i class="fas fa-coins" aria-hidden="true"></i></span>
               <div>
                 <span class="summary-label">Total al costo</span>
@@ -129,8 +129,8 @@
                   <th>Producto</th>
                   <th class="quantity-column">Existencia en bodega</th>
                   <th class="quantity-column">Cantidad</th>
-                  <th class="money-column">Costo unitario</th>
-                  <th class="money-column">Subtotal</th>
+                  <th class="money-column" *ngIf="verCostos">Costo unitario</th>
+                  <th class="money-column" *ngIf="verCostos">Subtotal</th>
                 </tr>
               </thead>
               <tbody>
@@ -139,8 +139,8 @@
                   <td class="mobile-primary-cell" data-label="Producto"><strong class="product-name">{{item.producto?.nombre}}</strong></td>
                   <td class="quantity-cell" data-label="Existencia en bodega">{{item.existenciaBodega | number}}</td>
                   <td class="quantity-cell" data-label="Cantidad"><strong>{{item.cantidad | number}}</strong></td>
-                  <td class="money-cell" data-label="Costo unitario">{{item.precioUnitario | currency: "Q" : "symbol"}}</td>
-                  <td class="money-cell final-amount" data-label="Subtotal">{{item.subTotal | currency: "Q" : "symbol"}}</td>
+                  <td class="money-cell" data-label="Costo unitario" *ngIf="verCostos">{{item.precioUnitario | currency: "Q" : "symbol"}}</td>
+                  <td class="money-cell final-amount" data-label="Subtotal" *ngIf="verCostos">{{item.subTotal | currency: "Q" : "symbol"}}</td>
                 </tr>
               </tbody>
             </table>

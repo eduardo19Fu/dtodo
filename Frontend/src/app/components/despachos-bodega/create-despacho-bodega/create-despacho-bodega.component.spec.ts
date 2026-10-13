@@ -11,6 +11,7 @@ describe('CreateDespachoBodegaComponent', () => {
   let despachoService: any;
   let sucursalService: any;
   let router: any;
+  let auth: any;
 
   const bodega: any = { idBodega: 1, nombre: 'Principal', ubicacion: 'Zona 1', sucursal: { idSucursal: 2, nombre: 'Norte' } };
   const item = (idProducto: number, stock: number, precio = 10): any => ({
@@ -43,8 +44,9 @@ describe('CreateDespachoBodegaComponent', () => {
       ]))
     };
     router = { navigate: jasmine.createSpy('navigate') };
+    auth = { hasRole: (rol: string) => rol === 'ROLE_ADMIN' };
     const ruta: any = { snapshot: { queryParamMap: { get: () => null } } };
-    component = new CreateDespachoBodegaComponent(bodegaService, despachoService, sucursalService, ruta, router);
+    component = new CreateDespachoBodegaComponent(bodegaService, despachoService, sucursalService, ruta, router, auth);
     spyOn(swal, 'fire').and.returnValue(Promise.resolve({ isConfirmed: false } as any));
   });
 
@@ -58,7 +60,7 @@ describe('CreateDespachoBodegaComponent', () => {
 
     it('preselecciona la bodega recibida por parámetro y su sucursal por defecto', () => {
       const ruta: any = { snapshot: { queryParamMap: { get: () => '1' } } };
-      component = new CreateDespachoBodegaComponent(bodegaService, despachoService, sucursalService, ruta, router);
+      component = new CreateDespachoBodegaComponent(bodegaService, despachoService, sucursalService, ruta, router, auth);
 
       component.ngOnInit();
 
@@ -68,7 +70,7 @@ describe('CreateDespachoBodegaComponent', () => {
 
     it('ignora una bodega por parámetro que no está activa', () => {
       const ruta: any = { snapshot: { queryParamMap: { get: () => '99' } } };
-      component = new CreateDespachoBodegaComponent(bodegaService, despachoService, sucursalService, ruta, router);
+      component = new CreateDespachoBodegaComponent(bodegaService, despachoService, sucursalService, ruta, router, auth);
 
       component.ngOnInit();
 
@@ -455,6 +457,28 @@ describe('CreateDespachoBodegaComponent', () => {
       component.crear();
 
       expect(despachoService.create).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('visibilidad del costo', () => {
+    it('solo un administrador ve el costo, los subtotales y el total al costo', () => {
+      expect(component.verCostos).toBeTrue();
+
+      auth.hasRole = () => false;
+
+      expect(component.verCostos).toBeFalse();
+    });
+
+    it('quien no es administrador igual puede armar y registrar el despacho', () => {
+      auth.hasRole = () => false;
+      component.despacho.idBodega = 1;
+      component.despacho.idSucursalDestino = 2;
+      component.despacho.recibidoPor = 'Maria';
+      component.lineas = [detalle(4, 10, 20, 7)];
+
+      component.crear();
+
+      expect(despachoService.create).toHaveBeenCalled();
     });
   });
 });

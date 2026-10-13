@@ -9,6 +9,7 @@ import { DespachoBodegaRequest } from 'src/app/dtos/despacho-bodega-request';
 import { InventarioBodegaDto } from 'src/app/dtos/inventario-bodega-dto';
 import { BodegaService } from 'src/app/services/bodega.service';
 import { DespachoBodegaService } from 'src/app/services/despacho-bodega.service';
+import { AuthService } from 'src/app/services/auth.service';
 import { SucursalService } from 'src/app/services/sucursal.service';
 
 import swal from 'sweetalert2';
@@ -55,7 +56,8 @@ export class CreateDespachoBodegaComponent implements OnInit {
     private despachoService: DespachoBodegaService,
     private sucursalService: SucursalService,
     private activatedRoute: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private auth: AuthService
   ) {
     this.despacho.recibidoPor = '';
     this.despacho.observaciones = '';
@@ -78,6 +80,11 @@ export class CreateDespachoBodegaComponent implements OnInit {
 
   get bodegaSeleccionada(): Bodega {
     return this.bodegas.find(bodega => bodega.idBodega === this.despacho.idBodega);
+  }
+
+  /** El costo y el valor de lo despachado solo los ve un administrador. */
+  get verCostos(): boolean {
+    return this.auth.hasRole('ROLE_ADMIN');
   }
 
   get esTraslado(): boolean {

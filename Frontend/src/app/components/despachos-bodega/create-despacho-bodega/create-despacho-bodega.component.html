@@ -1,5 +1,5 @@
 <app-modal-buscar-producto-bodega *ngIf="modalProductoVisible" [idBodega]="despacho.idBodega"
-  [nombreBodega]="bodegaSeleccionada?.nombre" (producto)="elegirDelModal($event)" (cerrar)="cerrarModalProducto()"></app-modal-buscar-producto-bodega>
+  [nombreBodega]="bodegaSeleccionada?.nombre" [verCostos]="verCostos" (producto)="elegirDelModal($event)" (cerrar)="cerrarModalProducto()"></app-modal-buscar-producto-bodega>
 
 <div class="product-form-page despacho-page">
   <header class="page-heading">
@@ -33,7 +33,7 @@
         </span>
       </div>
 
-      <div class="total-summary">
+      <div class="total-summary" *ngIf="verCostos">
         <span>Total al costo</span>
         <strong>{{ totalDespacho | currency: "Q" : "symbol" }}</strong>
       </div>
@@ -170,7 +170,7 @@
             </div>
             <small class="stock-hint" *ngIf="itemActual">
               Disponible en bodega: <strong>{{ disponibleItemActual | number }}</strong> de {{ itemActual.stock | number }}
-              &middot; Costo {{ itemActual.precioCompra | currency: "Q" : "symbol" }}
+              <ng-container *ngIf="verCostos">&middot; Costo {{ itemActual.precioCompra | currency: "Q" : "symbol" }}</ng-container>
             </small>
           </div>
 
@@ -207,8 +207,8 @@
                 <th>Producto</th>
                 <th>Existencia actual</th>
                 <th>Cantidad</th>
-                <th>Costo unitario</th>
-                <th>Subtotal</th>
+                <th *ngIf="verCostos">Costo unitario</th>
+                <th *ngIf="verCostos">Subtotal</th>
                 <th><span class="sr-only">Acciones</span></th>
               </tr>
             </thead>
@@ -239,8 +239,8 @@
                     </button>
                   </div>
                 </td>
-                <td data-label="Costo unitario"><span class="detail-readonly-value">Q{{ item.precioUnitario | number: '1.2-2' }}</span></td>
-                <td data-label="Subtotal"><strong class="line-total">{{ item.calcularSubTotal() | currency: "Q" : "symbol" }}</strong></td>
+                <td data-label="Costo unitario" *ngIf="verCostos"><span class="detail-readonly-value">Q{{ item.precioUnitario | number: '1.2-2' }}</span></td>
+                <td data-label="Subtotal" *ngIf="verCostos"><strong class="line-total">{{ item.calcularSubTotal() | currency: "Q" : "symbol" }}</strong></td>
                 <td data-label="Acciones" class="detail-action-cell">
                   <button type="button" class="remove-line-button" (click)="eliminarLinea(item)"
                     aria-label="Quitar producto" title="Quitar producto">
