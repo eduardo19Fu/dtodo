@@ -1,4 +1,4 @@
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 
 import { DevolucionesBodegaComponent } from './devoluciones-bodega.component';
 import swal from 'sweetalert2';
@@ -102,9 +102,53 @@ describe('DevolucionesBodegaComponent', () => {
   });
 
   it('imprime el comprobante de la devolución', () => {
+    spyOn(swal, 'fire');
+    spyOn(swal, 'close');
+
     component.imprimir(12);
 
     expect(devolucionService.imprimirComprobante).toHaveBeenCalledWith(12);
+  });
+
+  it('muestra un aviso de carga mientras se genera el comprobante y lo quita al terminar', () => {
+    const aviso = spyOn(swal, 'fire');
+    const cerrar = spyOn(swal, 'close');
+    const generando = new Subject<void>();
+    devolucionService.imprimirComprobante.and.returnValue(generando);
+
+    component.imprimir(12);
+
+    expect(component.imprimiendoId).toBe(12);
+    expect(aviso).toHaveBeenCalledWith(jasmine.objectContaining({ toast: true, title: 'Generando comprobante' }));
+    expect(cerrar).not.toHaveBeenCalled();
+
+    generando.next();
+
+    expect(component.imprimiendoId).toBeNull();
+    expect(cerrar).toHaveBeenCalled();
+  });
+
+  it('no genera otro comprobante mientras hay uno en curso', () => {
+    spyOn(swal, 'fire');
+    spyOn(swal, 'close');
+    devolucionService.imprimirComprobante.and.returnValue(new Subject<void>());
+
+    component.imprimir(12);
+    component.imprimir(13);
+
+    expect(devolucionService.imprimirComprobante).toHaveBeenCalledTimes(1);
+    expect(component.imprimiendoId).toBe(12);
+  });
+
+  it('quita el aviso de carga y libera el botón si falla la generación', () => {
+    spyOn(swal, 'fire');
+    const cerrar = spyOn(swal, 'close');
+    devolucionService.imprimirComprobante.and.returnValue(throwError({ error: {} }));
+
+    component.imprimir(12);
+
+    expect(component.imprimiendoId).toBeNull();
+    expect(cerrar).toHaveBeenCalled();
   });
 
   it('aprueba la devolución solo después de que el usuario confirme', async () => {

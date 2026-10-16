@@ -167,8 +167,9 @@
       <footer class="sucursal-detail-footer">
         <span><i class="fas fa-shield-alt" aria-hidden="true"></i>Documento de control interno de inventario</span>
         <div class="footer-actions">
-          <button type="button" class="close-action" (click)="imprimir.emit(devolucion.idDevolucion)">
-            <i class="fas fa-print" aria-hidden="true"></i> Imprimir comprobante
+          <button type="button" class="close-action" [disabled]="imprimiendo" (click)="imprimir.emit(devolucion.idDevolucion)">
+            <i class="fas" [ngClass]="imprimiendo ? 'fa-spinner fa-spin' : 'fa-print'" aria-hidden="true"></i>
+            {{ imprimiendo ? 'Generando...' : 'Imprimir comprobante' }}
           </button>
           <button type="button" class="close-action approve-action" *ngIf="pendiente && puedeAprobar" [disabled]="procesando"
             (click)="solicitarAprobacion()">

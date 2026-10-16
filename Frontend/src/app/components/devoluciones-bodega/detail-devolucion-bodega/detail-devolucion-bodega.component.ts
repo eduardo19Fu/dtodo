@@ -23,6 +23,8 @@ export class DetailDevolucionBodegaComponent implements AfterViewInit, OnDestroy
   /** El costo y el valor de la devolución solo los ve un administrador. */
   @Input() verCostos = false;
   @Input() procesando = false;
+  /** Se está generando un comprobante: el botón de imprimir queda bloqueado con un indicador de carga. */
+  @Input() imprimiendo = false;
 
   @Output() cerrar = new EventEmitter<void>();
   @Output() imprimir = new EventEmitter<number>();

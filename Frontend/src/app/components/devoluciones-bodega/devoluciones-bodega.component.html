@@ -1,5 +1,5 @@
 <app-detail-devolucion-bodega *ngIf="devolucionSeleccionada" [devolucion]="devolucionSeleccionada" [puedeAprobar]="puedeAprobar"
-  [verCostos]="verCostos" [procesando]="procesandoId !== null" (cerrar)="cerrarDetalle()" (imprimir)="imprimir($event)"
+  [verCostos]="verCostos" [procesando]="procesandoId !== null" (cerrar)="cerrarDetalle()" [imprimiendo]="imprimiendoId !== null" (imprimir)="imprimir($event)"
   (aprobar)="aprobar($event.idDevolucion, $event.bodega)"
   (rechazar)="rechazar($event.idDevolucion, $event.sucursal)"></app-detail-devolucion-bodega>
 
@@ -133,8 +133,8 @@
               </button>
               <button class="btn btn-sm listing-table-action listing-action-edit" type="button"
                       appTooltip="Imprimir comprobante" aria-label="Imprimir comprobante de la devolución"
-                      (click)="imprimir(devolucion.idDevolucion)">
-                <i class="fas fa-print"></i>
+                      [disabled]="imprimiendoId !== null" (click)="imprimir(devolucion.idDevolucion)">
+                <i class="fas" [ngClass]="imprimiendoId === devolucion.idDevolucion ? 'fa-spinner fa-spin' : 'fa-print'"></i>
               </button>
               <button class="btn btn-sm listing-table-action listing-action-approve" type="button"
                       *ngIf="devolucion.estado === 'PENDIENTE' && puedeAprobar"

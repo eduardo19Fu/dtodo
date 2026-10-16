@@ -173,6 +173,12 @@ export class CreateDevolucionBodegaComponent implements OnInit {
     this.itemActual = item;
     this.codigoBusqueda = item.codProducto;
     this.cantidadActual = null;
+    this.enfocarCantidad();
+  }
+
+  /** El campo de cantidad está deshabilitado hasta que hay producto: se espera a que se habilite para darle el foco. */
+  private enfocarCantidad(): void {
+    setTimeout(() => (document.getElementById('cantidadActual') as HTMLInputElement)?.focus());
   }
 
   /** Existencia de la tienda que todavía no está comprometida en otras líneas de la misma devolución. */

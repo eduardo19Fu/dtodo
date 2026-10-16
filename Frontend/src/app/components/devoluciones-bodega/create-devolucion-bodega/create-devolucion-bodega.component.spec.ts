@@ -56,6 +56,20 @@ describe('CreateDevolucionBodegaComponent', () => {
     expect(component.devolucion.idBodega).toBe(5);
   });
 
+  it('al elegir un producto el campo de cantidad recibe el foco', (hecho) => {
+    const cantidad = document.createElement('input');
+    cantidad.id = 'cantidadActual';
+    document.body.appendChild(cantidad);
+    component.devolucion.idSucursalOrigen = 2;
+    component.elegirDelModal(item as any);
+
+    setTimeout(() => {
+      expect(document.activeElement).toBe(cantidad);
+      document.body.removeChild(cantidad);
+      hecho();
+    });
+  });
+
   it('pide elegir la tienda antes de buscar productos', () => {
     component.codigoBusqueda = 'C-10';
 

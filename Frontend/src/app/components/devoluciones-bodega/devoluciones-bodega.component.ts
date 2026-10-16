@@ -36,6 +36,8 @@ export class DevolucionesBodegaComponent implements OnInit, OnDestroy {
   devolucionSeleccionada: DevolucionBodega;
   detalleCargandoId: number = null;
   procesandoId: number = null;
+  /** Devolución cuyo comprobante se está generando: mientras tanto no se pide otro. */
+  imprimiendoId: number = null;
 
   readonly estados: Array<{ codigo: EstadoDevolucionBodega; etiqueta: string }> = [
     { codigo: 'PENDIENTE', etiqueta: ETIQUETAS_ESTADO_DEVOLUCION.PENDIENTE },
@@ -154,7 +156,30 @@ export class DevolucionesBodegaComponent implements OnInit, OnDestroy {
   }
 
   imprimir(idDevolucion: number): void {
-    this.devolucionService.imprimirComprobante(idDevolucion).subscribe();
+    if (this.imprimiendoId !== null) {
+      return;
+    }
+    this.imprimiendoId = idDevolucion;
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'info',
+      title: 'Generando comprobante',
+      text: `Preparando la devolución ${this.numeroDevolucion(idDevolucion)}...`,
+      showConfirmButton: false,
+      customClass: { popup: 'app-loading-toast' },
+      didOpen: () => Swal.showLoading()
+    });
+    this.devolucionService.imprimirComprobante(idDevolucion).subscribe(
+      () => this.terminarImpresion(),
+      // El servicio ya muestra el motivo del error: aquí solo se quita el aviso de carga
+      () => this.terminarImpresion()
+    );
+  }
+
+  private terminarImpresion(): void {
+    this.imprimiendoId = null;
+    Swal.close();
   }
 
   /*********** APROBAR / RECHAZAR ***********/
