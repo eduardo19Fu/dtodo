@@ -338,6 +338,64 @@ class BodegaTemplatesTest {
         }
     }
 
+    @Test
+    void laGuiaDeDespachoMuestraDestinoUnidadesAvanceYRecepcion() throws Exception {
+        JasperReport report = compilar("despacho_bodega");
+        Map<String, Object> parametros = new HashMap<>();
+        parametros.put("ID_DESPACHO", 12L);
+
+        TextosImpresos pendiente = new TextosImpresos(JasperFillManager.fillReport(
+                report, parametros, new JRMapCollectionDataSource(filasComprobante("PENDIENTE"))));
+        TextosImpresos realizado = new TextosImpresos(JasperFillManager.fillReport(
+                report, parametros, new JRMapCollectionDataSource(filasComprobante("REALIZADO"))));
+        TextosImpresos cancelado = new TextosImpresos(JasperFillManager.fillReport(
+                report, parametros, new JRMapCollectionDataSource(filasComprobante("CANCELADO"))));
+
+        // Etiqueta de envío: total de unidades (4 + 20) y destino
+        assertTrue(pendiente.contiene("TOTAL A ENVIAR"));
+        assertTrue(pendiente.contiene("24"));
+        assertTrue(pendiente.contiene("UNIDADES"));
+        assertTrue(pendiente.contiene("SUCURSAL DESTINO"));
+        assertTrue(pendiente.contiene("Norte"));
+        // Columnas propias de la guía y bloque de recepción
+        assertTrue(pendiente.contiene("Quedan"));
+        assertTrue(pendiente.contiene("Conforme"));
+        assertTrue(pendiente.contiene("RECEPCIÓN EN"));
+        assertTrue(pendiente.contiene("Recibido conforme"));
+        // Avance en pasos según el estado
+        assertTrue(pendiente.contiene("PENDIENTE DE APROBACIÓN"));
+        assertTrue(pendiente.contiene("2 · EN ESPERA"));
+        assertTrue(pendiente.contiene("3 · INGRESO AL DESTINO"));
+        assertTrue(realizado.contiene("DESPACHO REALIZADO"));
+        assertTrue(realizado.contiene("2 · APROBADO"));
+        assertTrue(realizado.contiene("3 · INGRESÓ AL DESTINO"));
+        assertTrue(realizado.contiene("APROBADO POR"));
+        assertTrue(cancelado.contiene("DESPACHO CANCELADO"));
+        assertTrue(cancelado.contiene("3 · REGRESÓ A LA BODEGA"));
+        assertTrue(cancelado.contiene("MOTIVO DE LA CANCELACIÓN"));
+        assertTrue(cancelado.contiene("Error de captura"));
+        assertFalse(realizado.contiene("MOTIVO DE LA CANCELACIÓN"));
+    }
+
+    @Test
+    void laGuiaDeDespachoIndicaCuandoElDestinoEsOtraBodega() throws Exception {
+        JasperReport report = compilar("despacho_bodega");
+        Map<String, Object> parametros = new HashMap<>();
+        parametros.put("ID_DESPACHO", 12L);
+        List<Map<String, ?>> filas = new ArrayList<>();
+        Map<String, Object> fila = filaComprobante("A-1", "Cuaderno universitario", 4, "12.50", 50, "PENDIENTE");
+        fila.put("es_traslado", 1);
+        fila.put("sucursal_destino", "Bodega Secundaria");
+        filas.add(fila);
+
+        TextosImpresos textos = new TextosImpresos(JasperFillManager.fillReport(
+                report, parametros, new JRMapCollectionDataSource(filas)));
+
+        assertTrue(textos.contiene("BODEGA DESTINO · TRASLADO"));
+        assertTrue(textos.contiene("Bodega Secundaria"));
+        assertFalse(textos.contiene("SUCURSAL DESTINO"));
+    }
+
     // ---------- el costo solo lo imprime el administrador ----------
 
     @Test

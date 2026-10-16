@@ -6,6 +6,10 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Cambiado — Rediseño del comprobante de despacho (guía de despacho)
+
+`despacho_bodega.jrxml` se rediseñó para que se lea como una guía de envío y se distinga a simple vista del comprobante de devolución: azul marino con franja dorada y chevrones «»», una **etiqueta de envío** con el total de unidades y el destino en grande, el avance en **tres pasos** (registrado, resolución, ingreso al destino) con color según el estado, una ficha de datos con celdas de formulario, y en la tabla las columnas **«Quedan»** (existencia de la bodega tras el despacho; en rojo si queda en cero) y **«Conforme»** (casilla para que quien recibe marque cada línea) con filas alternadas y pie de totales. Se agregó un bloque de **recepción en el destino** (conforme o con diferencias, fecha y hora, observaciones) y las firmas sin recuadros. La consulta suma `es_traslado` para rotular «Sucursal destino» o «Bodega destino · traslado». Los costos siguen visibles solo para el administrador. Pruebas nuevas en `BodegaTemplatesTest`; manual (8.6) actualizado.
+
 ### Agregado — Devoluciones de tienda a bodega
 
 El módulo de Bodegas admite devolver producto de una sucursal (tienda) a una bodega. Es el flujo inverso del despacho y **requiere la aprobación de un administrador**. Disponible para `ROLE_ADMIN` y `ROLE_BODEGA` en **Bodegas › Devoluciones**.

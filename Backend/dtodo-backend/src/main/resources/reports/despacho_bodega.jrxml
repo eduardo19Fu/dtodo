@@ -6,14 +6,92 @@
               columnWidth="556" leftMargin="28" rightMargin="28" topMargin="24" bottomMargin="24"
               isSummaryWithPageHeaderAndFooter="true" uuid="b3f1c6a4-7d0e-4f68-9a52-2c8e5d7b1a90">
 
+    <!-- Guía de despacho. Se lee como una guía de envío: azul marino con franja dorada y chevrones, una etiqueta con
+         el total de unidades y el destino en grande, el avance en tres pasos, una ficha de datos con celdas de
+         formulario, columnas "Quedan" (existencia tras el despacho) y "Conforme" para que quien recibe marque cada
+         línea, y un bloque de recepción en el destino. Es el par del comprobante de devolución, pero con identidad
+         propia para distinguirlos a simple vista. -->
+
     <style name="Base" isDefault="true" fontName="DejaVu Sans" fontSize="8" forecolor="#23344D"/>
-    <style name="Header" style="Base" mode="Opaque" backcolor="#1769D2" forecolor="#FFFFFF"
-           fontSize="8" isBold="true" vTextAlign="Middle"/>
-    <style name="Cell" style="Base" mode="Opaque" backcolor="#FFFFFF" vTextAlign="Middle">
+    <style name="Header" style="Base" mode="Opaque" backcolor="#14325C" forecolor="#FFFFFF"
+           fontSize="7.5" isBold="true" vTextAlign="Middle"/>
+    <style name="Cell" style="Base" mode="Opaque" backcolor="#FFFFFF" fontSize="7.5" vTextAlign="Middle">
         <box leftPadding="3" rightPadding="3"><pen lineWidth="0.35" lineColor="#D9E3EF"/></box>
+        <conditionalStyle>
+            <conditionExpression><![CDATA[$V{REPORT_COUNT} != null && $V{REPORT_COUNT} % 2 == 0]]></conditionExpression>
+            <style backcolor="#F8FAFD"/>
+        </conditionalStyle>
     </style>
-    <style name="Label" style="Base" forecolor="#66758A" fontSize="7" isBold="true"/>
-    <style name="Value" style="Base" fontSize="9"/>
+    <!-- "Quedan": gris; rojo y en negrita cuando el despacho deja la bodega sin existencias de ese producto -->
+    <style name="CellQuedan" style="Cell" forecolor="#66758A">
+        <conditionalStyle>
+            <conditionExpression><![CDATA[$F{existencia_bodega} != null && $F{existencia_bodega} - $F{cantidad} <= 0]]></conditionExpression>
+            <style forecolor="#B42318" isBold="true"/>
+        </conditionalStyle>
+    </style>
+    <style name="Label" style="Base" forecolor="#66758A" fontSize="6.5" isBold="true"/>
+    <style name="Value" style="Base" fontSize="8.5"/>
+    <!-- Celdas de la ficha de datos, estilo formulario -->
+    <style name="CeldaEtiqueta" style="Base" mode="Opaque" backcolor="#EEF4FC" forecolor="#66758A" fontSize="6" isBold="true" vTextAlign="Middle">
+        <box leftPadding="5" rightPadding="4"><pen lineWidth="0.6" lineColor="#C5D2E2"/></box>
+    </style>
+    <style name="CeldaValor" style="Base" mode="Opaque" backcolor="#FFFFFF" fontSize="8.5" vTextAlign="Middle">
+        <box leftPadding="5" rightPadding="4"><pen lineWidth="0.6" lineColor="#C5D2E2"/></box>
+    </style>
+
+    <!-- Colores según el estado: PENDIENTE (ámbar), REALIZADO (verde), CANCELADO (rojo) -->
+    <style name="ColorEstado" style="Base" forecolor="#B54708">
+        <conditionalStyle>
+            <conditionExpression><![CDATA["REALIZADO".equals($F{estado})]]></conditionExpression>
+            <style forecolor="#067647"/>
+        </conditionalStyle>
+        <conditionalStyle>
+            <conditionExpression><![CDATA["CANCELADO".equals($F{estado})]]></conditionExpression>
+            <style forecolor="#B42318"/>
+        </conditionalStyle>
+    </style>
+    <style name="RellenoEstado" style="Base" mode="Opaque" forecolor="#FFFFFF" backcolor="#B54708">
+        <conditionalStyle>
+            <conditionExpression><![CDATA["REALIZADO".equals($F{estado})]]></conditionExpression>
+            <style backcolor="#067647"/>
+        </conditionalStyle>
+        <conditionalStyle>
+            <conditionExpression><![CDATA["CANCELADO".equals($F{estado})]]></conditionExpression>
+            <style backcolor="#B42318"/>
+        </conditionalStyle>
+    </style>
+    <style name="FondoEstado" style="Base" mode="Opaque" backcolor="#FEF0C7">
+        <conditionalStyle>
+            <conditionExpression><![CDATA["REALIZADO".equals($F{estado})]]></conditionExpression>
+            <style backcolor="#D1FADF"/>
+        </conditionalStyle>
+        <conditionalStyle>
+            <conditionExpression><![CDATA["CANCELADO".equals($F{estado})]]></conditionExpression>
+            <style backcolor="#FEE4E2"/>
+        </conditionalStyle>
+    </style>
+    <!-- Segundo paso del avance: ámbar claro mientras espera, verde o rojo al resolverse -->
+    <style name="PasoResolucion" style="Base" mode="Opaque" backcolor="#FEF0C7" forecolor="#B54708">
+        <conditionalStyle>
+            <conditionExpression><![CDATA["REALIZADO".equals($F{estado})]]></conditionExpression>
+            <style backcolor="#067647" forecolor="#FFFFFF"/>
+        </conditionalStyle>
+        <conditionalStyle>
+            <conditionExpression><![CDATA["CANCELADO".equals($F{estado})]]></conditionExpression>
+            <style backcolor="#B42318" forecolor="#FFFFFF"/>
+        </conditionalStyle>
+    </style>
+    <!-- Tercer paso: gris hasta que las unidades ingresan (verde) o regresan a la bodega (rojo) -->
+    <style name="PasoIngreso" style="Base" mode="Opaque" backcolor="#EAEFF5" forecolor="#8A99AD">
+        <conditionalStyle>
+            <conditionExpression><![CDATA["REALIZADO".equals($F{estado})]]></conditionExpression>
+            <style backcolor="#067647" forecolor="#FFFFFF"/>
+        </conditionalStyle>
+        <conditionalStyle>
+            <conditionExpression><![CDATA["CANCELADO".equals($F{estado})]]></conditionExpression>
+            <style backcolor="#B42318" forecolor="#FFFFFF"/>
+        </conditionalStyle>
+    </style>
 
     <parameter name="ID_DESPACHO" class="java.lang.Long"/>
 
@@ -32,6 +110,7 @@
                b.ubicacion AS bodega_ubicacion,
                COALESCE(s.nombre, CONCAT('Bodega ', bd.nombre)) AS sucursal_destino,
                COALESCE(s.direccion, bd.ubicacion) AS sucursal_direccion,
+               CASE WHEN d.id_bodega_destino IS NULL THEN 0 ELSE 1 END AS es_traslado,
                TRIM(CONCAT(COALESCE(ud.primer_nombre, ''), ' ', COALESCE(ud.apellido, ''))) AS despachado_por,
                TRIM(CONCAT(COALESCE(ur.primer_nombre, ''), ' ', COALESCE(ur.apellido, ''))) AS resuelto_por,
                p.cod_producto AS codigo,
@@ -64,6 +143,7 @@
     <field name="bodega_ubicacion" class="java.lang.String"/>
     <field name="sucursal_destino" class="java.lang.String"/>
     <field name="sucursal_direccion" class="java.lang.String"/>
+    <field name="es_traslado" class="java.lang.Integer"/>
     <field name="despachado_por" class="java.lang.String"/>
     <field name="resuelto_por" class="java.lang.String"/>
     <field name="codigo" class="java.lang.String"/>
@@ -75,6 +155,7 @@
 
     <variable name="CANTIDAD_LINEAS" class="java.lang.Integer" calculation="Count">
         <variableExpression><![CDATA[$F{codigo}]]></variableExpression>
+        <initialValueExpression><![CDATA[Integer.valueOf(0)]]></initialValueExpression>
     </variable>
     <variable name="TOTAL_UNIDADES" class="java.lang.Integer" calculation="Sum">
         <variableExpression><![CDATA[$F{cantidad}]]></variableExpression>
@@ -82,188 +163,365 @@
     </variable>
 
     <title>
-        <band height="214">
-            <rectangle radius="8">
-                <reportElement x="90" y="0" width="466" height="56" forecolor="#1769D2" backcolor="#1769D2"/>
+        <band height="244">
+            <!-- ===== Encabezado: azul marino con franja dorada y chevrones de envío ===== -->
+            <rectangle radius="7">
+                <reportElement x="76" y="0" width="480" height="46" forecolor="#14325C" backcolor="#14325C"/>
+                <graphicElement><pen lineWidth="0"/></graphicElement>
+            </rectangle>
+            <rectangle radius="1">
+                <reportElement x="76" y="49" width="480" height="2" forecolor="#E0A526" backcolor="#E0A526"/>
+                <graphicElement><pen lineWidth="0"/></graphicElement>
             </rectangle>
             <image scaleImage="RetainShape" hAlign="Center">
-                <reportElement x="0" y="0" width="80" height="56"/>
+                <reportElement x="0" y="0" width="68" height="46"/>
                 <imageExpression><![CDATA[this.getClass().getResourceAsStream("/static/images/reports-image/logo-dtodo.jpg")]]></imageExpression>
             </image>
+            <staticText><reportElement style="Base" x="338" y="5" width="16" height="34" forecolor="#F4D58A"/><textElement verticalAlignment="Top"><font size="26" isBold="true"/></textElement><text><![CDATA[»]]></text></staticText>
+            <staticText><reportElement style="Base" x="351" y="5" width="16" height="34" forecolor="#E8B84A"/><textElement verticalAlignment="Top"><font size="26" isBold="true"/></textElement><text><![CDATA[»]]></text></staticText>
+            <staticText><reportElement style="Base" x="364" y="5" width="16" height="34" forecolor="#E0A526"/><textElement verticalAlignment="Top"><font size="26" isBold="true"/></textElement><text><![CDATA[»]]></text></staticText>
             <staticText>
-                <reportElement x="90" y="0" width="300" height="32" forecolor="#FFFFFF" backcolor="#1769D2" mode="Opaque"/>
-                <textElement verticalAlignment="Middle"><font size="16" isBold="true"/><paragraph leftIndent="16"/></textElement>
+                <reportElement style="Base" x="76" y="3" width="262" height="24" forecolor="#FFFFFF"/>
+                <textElement verticalAlignment="Middle"><font size="14" isBold="true"/><paragraph leftIndent="14"/></textElement>
                 <text><![CDATA[Comprobante de despacho]]></text>
             </staticText>
             <staticText>
-                <reportElement x="90" y="32" width="300" height="24" forecolor="#DCEBFF" backcolor="#1769D2" mode="Opaque"/>
-                <textElement verticalAlignment="Middle"><font size="8"/><paragraph leftIndent="16"/></textElement>
-                <text><![CDATA[Traslado de existencias de bodega a sucursal u otra bodega]]></text>
+                <reportElement style="Base" x="76" y="28" width="262" height="12" forecolor="#F4D58A"/>
+                <textElement verticalAlignment="Middle"><font size="7.5"/><paragraph leftIndent="14"/></textElement>
+                <text><![CDATA[GUÍA DE TRASLADO DE EXISTENCIAS]]></text>
             </staticText>
             <textField>
-                <reportElement x="390" y="0" width="166" height="32" forecolor="#FFFFFF" backcolor="#1769D2" mode="Opaque"/>
-                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="15" isBold="true"/><paragraph rightIndent="16"/></textElement>
+                <reportElement style="Base" x="396" y="3" width="160" height="24" forecolor="#FFFFFF"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="14" isBold="true"/><paragraph rightIndent="14"/></textElement>
                 <textFieldExpression><![CDATA["No. " + String.format("%06d", $F{id_despacho})]]></textFieldExpression>
             </textField>
-            <textField pattern="dd/MM/yyyy HH:mm">
-                <reportElement x="390" y="32" width="166" height="24" forecolor="#DCEBFF" backcolor="#1769D2" mode="Opaque"/>
-                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="7"/><paragraph rightIndent="16"/></textElement>
+            <textField>
+                <reportElement style="Base" x="396" y="28" width="160" height="12" forecolor="#C9D8EE"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="6.5"/><paragraph rightIndent="14"/></textElement>
                 <textFieldExpression><![CDATA["Generado: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date())]]></textFieldExpression>
             </textField>
 
-            <!-- Estado del despacho -->
+            <!-- ===== Franja de estado ===== -->
+            <rectangle radius="8">
+                <reportElement style="FondoEstado" x="0" y="59" width="556" height="16"/>
+                <graphicElement><pen lineWidth="0"/></graphicElement>
+            </rectangle>
+            <ellipse>
+                <reportElement style="RellenoEstado" x="3" y="62" width="10" height="10"/>
+                <graphicElement><pen lineWidth="0"/></graphicElement>
+            </ellipse>
+            <textField>
+                <reportElement style="Base" x="3" y="62" width="10" height="10" forecolor="#FFFFFF"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle"><font size="7" isBold="true"/></textElement>
+                <textFieldExpression><![CDATA["PENDIENTE".equals($F{estado}) ? "…" : "REALIZADO".equals($F{estado}) ? "✓" : "✗"]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement style="ColorEstado" x="18" y="59" width="524" height="16"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement>
+                <textFieldExpression><![CDATA["PENDIENTE".equals($F{estado})
+    ? "PENDIENTE DE APROBACIÓN · Las unidades salieron de la bodega y aún no ingresan al destino"
+    : "REALIZADO".equals($F{estado})
+        ? "DESPACHO REALIZADO · Las unidades ya forman parte del inventario del destino"
+        : "DESPACHO CANCELADO · Las unidades regresaron al inventario de la bodega de origen"]]></textFieldExpression>
+            </textField>
+
+            <!-- ===== Etiqueta de envío: el destino es el protagonista ===== -->
+            <rectangle radius="8">
+                <reportElement mode="Opaque" x="0" y="83" width="556" height="60" forecolor="#14325C" backcolor="#FFFFFF"/>
+                <graphicElement><pen lineWidth="1.2" lineColor="#14325C"/></graphicElement>
+            </rectangle>
+            <rectangle radius="8">
+                <reportElement x="0" y="83" width="92" height="60" forecolor="#14325C" backcolor="#14325C"/>
+                <graphicElement><pen lineWidth="0"/></graphicElement>
+            </rectangle>
+            <rectangle>
+                <reportElement x="80" y="83" width="12" height="60" forecolor="#14325C" backcolor="#14325C"/>
+                <graphicElement><pen lineWidth="0"/></graphicElement>
+            </rectangle>
             <staticText>
-                <reportElement x="0" y="66" width="556" height="20" forecolor="#B54708" backcolor="#FEF0C7" mode="Opaque">
-                    <printWhenExpression><![CDATA["PENDIENTE".equals($F{estado})]]></printWhenExpression>
-                </reportElement>
-                <textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
-                <text><![CDATA[PENDIENTE DE APROBACIÓN · Las existencias aún no ingresan al destino]]></text>
+                <reportElement style="Base" x="0" y="90" width="92" height="8" forecolor="#E0A526"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle"><font size="6" isBold="true"/></textElement>
+                <text><![CDATA[TOTAL A ENVIAR]]></text>
+            </staticText>
+            <textField evaluationTime="Report">
+                <reportElement style="Base" x="0" y="98" width="92" height="26" forecolor="#FFFFFF"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle"><font size="22" isBold="true"/></textElement>
+                <textFieldExpression><![CDATA[String.format("%,d", $V{TOTAL_UNIDADES})]]></textFieldExpression>
+            </textField>
+            <textField evaluationTime="Report">
+                <reportElement style="Base" x="0" y="124" width="92" height="10" forecolor="#FFFFFF"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle"><font size="7" isBold="true"/></textElement>
+                <textFieldExpression><![CDATA[$V{TOTAL_UNIDADES} == 1 ? "UNIDAD" : "UNIDADES"]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement style="Base" x="104" y="90" width="236" height="9" forecolor="#E0A526"/>
+                <textElement verticalAlignment="Middle"><font size="6.5" isBold="true"/></textElement>
+                <textFieldExpression><![CDATA[Integer.valueOf(1).equals($F{es_traslado}) ? "▤ BODEGA DESTINO · TRASLADO" : "▣ SUCURSAL DESTINO"]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true" textAdjust="ScaleFont">
+                <reportElement style="Base" x="104" y="100" width="236" height="21" forecolor="#14325C"/>
+                <textElement verticalAlignment="Middle"><font size="15" isBold="true"/></textElement>
+                <textFieldExpression><![CDATA[$F{sucursal_destino}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement style="Base" x="104" y="122" width="236" height="12" forecolor="#66758A"/>
+                <textElement verticalAlignment="Middle"><font size="7.5"/></textElement>
+                <textFieldExpression><![CDATA[$F{sucursal_direccion}]]></textFieldExpression>
+            </textField>
+
+            <line direction="TopDown">
+                <reportElement x="348" y="92" width="1" height="42" forecolor="#D9E3EF"/>
+                <graphicElement><pen lineWidth="1" lineColor="#D9E3EF"/></graphicElement>
+            </line>
+            <staticText>
+                <reportElement style="Base" x="330" y="102" width="16" height="22" forecolor="#E0A526"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle"><font size="17" isBold="true"/></textElement>
+                <text><![CDATA[«]]></text>
             </staticText>
             <staticText>
-                <reportElement x="0" y="66" width="556" height="20" forecolor="#067647" backcolor="#D1FADF" mode="Opaque">
-                    <printWhenExpression><![CDATA["REALIZADO".equals($F{estado})]]></printWhenExpression>
-                </reportElement>
-                <textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
-                <text><![CDATA[DESPACHO REALIZADO]]></text>
+                <reportElement style="Label" x="360" y="92" width="188" height="8"/>
+                <textElement verticalAlignment="Middle"><font size="6"/></textElement>
+                <text><![CDATA[▤ SALE DE]]></text>
             </staticText>
+            <textField isBlankWhenNull="true" textAdjust="ScaleFont">
+                <reportElement style="Base" x="360" y="101" width="188" height="14"/>
+                <textElement verticalAlignment="Middle"><font size="9.5" isBold="true"/></textElement>
+                <textFieldExpression><![CDATA[$F{bodega}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement style="Base" x="360" y="116" width="188" height="10" forecolor="#66758A"/>
+                <textElement verticalAlignment="Middle"><font size="7"/></textElement>
+                <textFieldExpression><![CDATA[$F{bodega_ubicacion}]]></textFieldExpression>
+            </textField>
+
+            <!-- ===== Avance en tres pasos ===== -->
+            <rectangle radius="4">
+                <reportElement x="0" y="151" width="182" height="19" forecolor="#14325C" backcolor="#14325C"/>
+                <graphicElement><pen lineWidth="0"/></graphicElement>
+            </rectangle>
+            <textField isBlankWhenNull="true">
+                <reportElement style="Base" mode="Transparent" x="0" y="151" width="182" height="19" forecolor="#FFFFFF"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle" markup="styled"><font size="7" isBold="true"/></textElement>
+                <textFieldExpression><![CDATA["1 · REGISTRADO <style forecolor='#F4D58A'>" + ($F{fecha_registro} == null ? "" : new java.text.SimpleDateFormat("dd/MM HH:mm").format($F{fecha_registro})) + "</style>"]]></textFieldExpression>
+            </textField>
+            <rectangle radius="4">
+                <reportElement style="PasoResolucion" x="187" y="151" width="182" height="19"/>
+                <graphicElement><pen lineWidth="0"/></graphicElement>
+            </rectangle>
+            <textField isBlankWhenNull="true">
+                <reportElement style="PasoResolucion" mode="Transparent" x="187" y="151" width="182" height="19"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle"><font size="7" isBold="true"/></textElement>
+                <textFieldExpression><![CDATA["PENDIENTE".equals($F{estado}) ? "2 · EN ESPERA · revisión del administrador"
+    : ("REALIZADO".equals($F{estado}) ? "2 · APROBADO" : "2 · CANCELADO")
+        + ($F{fecha_resolucion} == null ? "" : " · " + new java.text.SimpleDateFormat("dd/MM HH:mm").format($F{fecha_resolucion}))]]></textFieldExpression>
+            </textField>
+            <rectangle radius="4">
+                <reportElement style="PasoIngreso" x="374" y="151" width="182" height="19"/>
+                <graphicElement><pen lineWidth="0"/></graphicElement>
+            </rectangle>
+            <textField>
+                <reportElement style="PasoIngreso" mode="Transparent" x="374" y="151" width="182" height="19"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle"><font size="7" isBold="true"/></textElement>
+                <textFieldExpression><![CDATA["PENDIENTE".equals($F{estado}) ? "3 · INGRESO AL DESTINO"
+    : "REALIZADO".equals($F{estado}) ? "3 · INGRESÓ AL DESTINO" : "3 · REGRESÓ A LA BODEGA"]]></textFieldExpression>
+            </textField>
+            <staticText><reportElement style="Base" x="175" y="153" width="14" height="14" forecolor="#E0A526"/><textElement textAlignment="Center" verticalAlignment="Middle"><font size="12" isBold="true"/></textElement><text><![CDATA[▶]]></text></staticText>
+            <staticText><reportElement style="Base" x="362" y="153" width="14" height="14" forecolor="#E0A526"/><textElement textAlignment="Center" verticalAlignment="Middle"><font size="12" isBold="true"/></textElement><text><![CDATA[▶]]></text></staticText>
+
+            <!-- ===== Ficha de datos, celdas de formulario ===== -->
+            <staticText><reportElement style="CeldaEtiqueta" x="0" y="178" width="139" height="11"/><text><![CDATA[DESPACHÓ]]></text></staticText>
+            <staticText><reportElement style="CeldaEtiqueta" x="139" y="178" width="139" height="11"/><text><![CDATA[RECIBE EN DESTINO]]></text></staticText>
+            <staticText><reportElement style="CeldaEtiqueta" x="278" y="178" width="139" height="11"/><text><![CDATA[FECHA DE REGISTRO]]></text></staticText>
+            <textField>
+                <reportElement style="CeldaEtiqueta" x="417" y="178" width="139" height="11"/>
+                <textFieldExpression><![CDATA["PENDIENTE".equals($F{estado}) ? "RESOLUCIÓN" : "REALIZADO".equals($F{estado}) ? "APROBADO POR" : "CANCELADO POR"]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true" textAdjust="ScaleFont"><reportElement style="CeldaValor" x="0" y="189" width="139" height="19"/><textElement><font isBold="true"/></textElement><textFieldExpression><![CDATA[$F{despachado_por}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true" textAdjust="ScaleFont"><reportElement style="CeldaValor" x="139" y="189" width="139" height="19"/><textFieldExpression><![CDATA[$F{recibido_por}]]></textFieldExpression></textField>
+            <textField pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true"><reportElement style="CeldaValor" x="278" y="189" width="139" height="19"/><textFieldExpression><![CDATA[$F{fecha_registro}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true" textAdjust="ScaleFont">
+                <reportElement style="CeldaValor" x="417" y="189" width="139" height="19"/>
+                <textFieldExpression><![CDATA["PENDIENTE".equals($F{estado}) ? "Pendiente"
+    : $F{resuelto_por} + ($F{fecha_resolucion} == null ? "" : " · " + new java.text.SimpleDateFormat("dd/MM HH:mm").format($F{fecha_resolucion}))]]></textFieldExpression>
+            </textField>
+
+            <staticText><reportElement style="CeldaEtiqueta" x="0" y="208" width="556" height="11"/><text><![CDATA[OBSERVACIONES]]></text></staticText>
             <staticText>
-                <reportElement x="0" y="66" width="556" height="20" forecolor="#B42318" backcolor="#FEE4E2" mode="Opaque">
+                <reportElement style="CeldaEtiqueta" mode="Transparent" forecolor="#B42318" x="300" y="208" width="250" height="11">
                     <printWhenExpression><![CDATA["CANCELADO".equals($F{estado})]]></printWhenExpression>
                 </reportElement>
-                <textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement>
-                <text><![CDATA[DESPACHO CANCELADO]]></text>
+                <box><pen lineWidth="0"/></box>
+                <text><![CDATA[MOTIVO DE LA CANCELACIÓN]]></text>
             </staticText>
-
-            <!-- Datos generales: columna izquierda -->
-            <staticText><reportElement style="Label" x="0" y="96" width="270" height="10"/><text><![CDATA[BODEGA DE ORIGEN]]></text></staticText>
-            <textField isBlankWhenNull="true"><reportElement style="Value" x="0" y="106" width="270" height="14"/><textElement><font isBold="true"/></textElement><textFieldExpression><![CDATA[$F{bodega}]]></textFieldExpression></textField>
-            <textField isBlankWhenNull="true"><reportElement style="Base" x="0" y="120" width="270" height="12" forecolor="#66758A"/><textFieldExpression><![CDATA[$F{bodega_ubicacion}]]></textFieldExpression></textField>
-
-            <staticText><reportElement style="Label" x="0" y="140" width="270" height="10"/><text><![CDATA[DESPACHADO POR]]></text></staticText>
-            <textField isBlankWhenNull="true"><reportElement style="Value" x="0" y="150" width="270" height="14"/><textFieldExpression><![CDATA[$F{despachado_por}]]></textFieldExpression></textField>
-
-            <staticText><reportElement style="Label" x="0" y="172" width="270" height="10"/><text><![CDATA[RECIBIDO POR]]></text></staticText>
-            <textField isBlankWhenNull="true"><reportElement style="Value" x="0" y="182" width="270" height="14"/><textFieldExpression><![CDATA[$F{recibido_por}]]></textFieldExpression></textField>
-
-            <!-- Datos generales: columna derecha -->
-            <staticText><reportElement style="Label" x="286" y="96" width="270" height="10"/><text><![CDATA[DESTINO]]></text></staticText>
-            <textField isBlankWhenNull="true"><reportElement style="Value" x="286" y="106" width="270" height="14"/><textElement><font isBold="true"/></textElement><textFieldExpression><![CDATA[$F{sucursal_destino}]]></textFieldExpression></textField>
-            <textField isBlankWhenNull="true"><reportElement style="Base" x="286" y="120" width="270" height="12" forecolor="#66758A"/><textFieldExpression><![CDATA[$F{sucursal_direccion}]]></textFieldExpression></textField>
-
-            <staticText><reportElement style="Label" x="286" y="140" width="270" height="10"/><text><![CDATA[FECHA DE REGISTRO]]></text></staticText>
-            <textField pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true"><reportElement style="Value" x="286" y="150" width="270" height="14"/><textFieldExpression><![CDATA[$F{fecha_registro}]]></textFieldExpression></textField>
-
-            <staticText>
-                <reportElement style="Label" x="286" y="172" width="270" height="10">
-                    <printWhenExpression><![CDATA[$F{fecha_resolucion} != null]]></printWhenExpression>
+            <staticText><reportElement style="CeldaValor" x="0" y="219" width="556" height="19"/><text><![CDATA[]]></text></staticText>
+            <textField isBlankWhenNull="true">
+                <reportElement style="Base" x="5" y="219" width="546" height="19">
+                    <printWhenExpression><![CDATA[!"CANCELADO".equals($F{estado})]]></printWhenExpression>
                 </reportElement>
-                <text><![CDATA[RESUELTO EL]]></text>
-            </staticText>
-            <textField pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true">
-                <reportElement style="Value" x="286" y="182" width="270" height="14">
-                    <printWhenExpression><![CDATA[$F{fecha_resolucion} != null]]></printWhenExpression>
-                </reportElement>
-                <textFieldExpression><![CDATA[$F{fecha_resolucion}]]></textFieldExpression>
+                <textElement verticalAlignment="Middle"><font size="7.5"/></textElement>
+                <textFieldExpression><![CDATA[$F{observaciones}]]></textFieldExpression>
             </textField>
-            <line><reportElement x="0" y="205" width="556" height="1" forecolor="#B9C9DC"/></line>
+            <textField isBlankWhenNull="true">
+                <reportElement style="Base" x="5" y="219" width="285" height="19">
+                    <printWhenExpression><![CDATA["CANCELADO".equals($F{estado})]]></printWhenExpression>
+                </reportElement>
+                <textElement verticalAlignment="Middle"><font size="7.5"/></textElement>
+                <textFieldExpression><![CDATA[$F{observaciones}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement style="Base" x="300" y="219" width="250" height="19" forecolor="#B42318">
+                    <printWhenExpression><![CDATA["CANCELADO".equals($F{estado})]]></printWhenExpression>
+                </reportElement>
+                <textElement verticalAlignment="Middle"><font size="7.5"/></textElement>
+                <textFieldExpression><![CDATA[$F{motivo_cancelacion}]]></textFieldExpression>
+            </textField>
         </band>
     </title>
 
     <columnHeader>
-        <band height="26">
-            <staticText><reportElement style="Header" x="0" y="0" width="80" height="26"/><textElement textAlignment="Center"/><text><![CDATA[Código]]></text></staticText>
-            <staticText><reportElement style="Header" x="80" y="0" width="216" height="26"/><text><![CDATA[Producto]]></text></staticText>
-            <staticText><reportElement style="Header" x="296" y="0" width="70" height="26"/><textElement textAlignment="Center"/><text><![CDATA[Existencia en bodega]]></text></staticText>
-            <staticText><reportElement style="Header" x="366" y="0" width="60" height="26"/><textElement textAlignment="Center"/><text><![CDATA[Cantidad]]></text></staticText>
-            <staticText><reportElement style="Header" x="426" y="0" width="62" height="26"><printWhenExpression><![CDATA[$P{VER_COSTOS}]]></printWhenExpression></reportElement><textElement textAlignment="Center"/><text><![CDATA[Costo unit.]]></text></staticText>
-            <staticText><reportElement style="Header" x="488" y="0" width="68" height="26"><printWhenExpression><![CDATA[$P{VER_COSTOS}]]></printWhenExpression></reportElement><textElement textAlignment="Center"/><text><![CDATA[Subtotal]]></text></staticText>
+        <band height="22">
+            <staticText><reportElement style="Header" x="0" y="0" width="56" height="20"/><textElement textAlignment="Center"/><text><![CDATA[Código]]></text></staticText>
+            <staticText><reportElement style="Header" x="56" y="0" width="168" height="20"/><textElement><paragraph leftIndent="6"/></textElement><text><![CDATA[Producto]]></text></staticText>
+            <staticText><reportElement style="Header" x="224" y="0" width="54" height="20"/><textElement textAlignment="Center"/><text><![CDATA[Existencia]]></text></staticText>
+            <staticText><reportElement style="Header" x="278" y="0" width="46" height="20"/><textElement textAlignment="Center"/><text><![CDATA[Cantidad]]></text></staticText>
+            <staticText><reportElement style="Header" x="324" y="0" width="58" height="20"/><textElement textAlignment="Center"/><text><![CDATA[Quedan]]></text></staticText>
+            <staticText><reportElement style="Header" x="382" y="0" width="50" height="20"/><textElement textAlignment="Center"/><text><![CDATA[Conforme]]></text></staticText>
+            <staticText><reportElement style="Header" x="432" y="0" width="62" height="20"><printWhenExpression><![CDATA[$P{VER_COSTOS}]]></printWhenExpression></reportElement><textElement textAlignment="Center"/><text><![CDATA[Costo unit.]]></text></staticText>
+            <staticText><reportElement style="Header" x="494" y="0" width="62" height="20"><printWhenExpression><![CDATA[$P{VER_COSTOS}]]></printWhenExpression></reportElement><textElement textAlignment="Center"/><text><![CDATA[Subtotal]]></text></staticText>
+            <rectangle>
+                <reportElement x="0" y="20" width="556" height="2" forecolor="#E0A526" backcolor="#E0A526"/>
+                <graphicElement><pen lineWidth="0"/></graphicElement>
+            </rectangle>
         </band>
     </columnHeader>
 
     <detail>
-        <band height="22">
-            <textField isBlankWhenNull="true"><reportElement style="Cell" x="0" y="0" width="80" height="22"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA[$F{codigo}]]></textFieldExpression></textField>
-            <textField isBlankWhenNull="true"><reportElement style="Cell" x="80" y="0" width="216" height="22"/><textFieldExpression><![CDATA[$F{producto}]]></textFieldExpression></textField>
-            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="296" y="0" width="70" height="22"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{existencia_bodega}]]></textFieldExpression></textField>
-            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="366" y="0" width="60" height="22"/><textElement textAlignment="Right"><font isBold="true"/></textElement><textFieldExpression><![CDATA[$F{cantidad}]]></textFieldExpression></textField>
-            <textField pattern="Q #,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="426" y="0" width="62" height="22"><printWhenExpression><![CDATA[$P{VER_COSTOS}]]></printWhenExpression></reportElement><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{precio_unitario}]]></textFieldExpression></textField>
-            <textField pattern="Q #,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="488" y="0" width="68" height="22"><printWhenExpression><![CDATA[$P{VER_COSTOS}]]></printWhenExpression></reportElement><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{sub_total}]]></textFieldExpression></textField>
+        <band height="18">
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="0" y="0" width="56" height="18"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA[$F{codigo}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="56" y="0" width="168" height="18"/><textElement><paragraph leftIndent="3"/></textElement><textFieldExpression><![CDATA[$F{producto}]]></textFieldExpression></textField>
+            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="224" y="0" width="54" height="18"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{existencia_bodega}]]></textFieldExpression></textField>
+            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="278" y="0" width="46" height="18"/><textElement textAlignment="Right"><font isBold="true"/></textElement><textFieldExpression><![CDATA[$F{cantidad}]]></textFieldExpression></textField>
+            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="CellQuedan" x="324" y="0" width="58" height="18"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{existencia_bodega} == null || $F{cantidad} == null ? null : Integer.valueOf($F{existencia_bodega} - $F{cantidad})]]></textFieldExpression></textField>
+            <!-- Casilla para que quien recibe marque cada línea -->
+            <staticText><reportElement style="Cell" forecolor="#8A99AD" x="382" y="0" width="50" height="18"/><textElement textAlignment="Center"><font size="11"/></textElement><text><![CDATA[☐]]></text></staticText>
+            <textField pattern="Q #,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="432" y="0" width="62" height="18"><printWhenExpression><![CDATA[$P{VER_COSTOS}]]></printWhenExpression></reportElement><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{precio_unitario}]]></textFieldExpression></textField>
+            <textField pattern="Q #,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="494" y="0" width="62" height="18"><printWhenExpression><![CDATA[$P{VER_COSTOS}]]></printWhenExpression></reportElement><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{sub_total}]]></textFieldExpression></textField>
         </band>
     </detail>
 
     <pageFooter>
-        <band height="22">
+        <band height="20">
             <staticText>
-                <reportElement x="0" y="4" width="360" height="14" forecolor="#7B8798"/>
-                <textElement><font size="7" isItalic="true"/></textElement>
+                <reportElement x="0" y="4" width="360" height="12" forecolor="#7B8798"/>
+                <textElement><font size="6.5" isItalic="true"/></textElement>
                 <text><![CDATA[Documento de control interno de inventario. No tiene validez fiscal.]]></text>
             </staticText>
             <textField>
-                <reportElement x="436" y="4" width="85" height="14" forecolor="#7B8798"/>
-                <textElement textAlignment="Right"><font size="8"/></textElement>
+                <reportElement x="436" y="4" width="85" height="12" forecolor="#7B8798"/>
+                <textElement textAlignment="Right"><font size="7"/></textElement>
                 <textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER}]]></textFieldExpression>
             </textField>
             <textField evaluationTime="Report">
-                <reportElement x="521" y="4" width="35" height="14" forecolor="#7B8798"/>
-                <textElement textAlignment="Left"><font size="8"/></textElement>
+                <reportElement x="521" y="4" width="35" height="12" forecolor="#7B8798"/>
+                <textElement textAlignment="Left"><font size="7"/></textElement>
                 <textFieldExpression><![CDATA[" de " + $V{PAGE_NUMBER}]]></textFieldExpression>
             </textField>
         </band>
     </pageFooter>
 
     <summary>
-        <band height="260">
-            <line><reportElement x="0" y="6" width="556" height="1" forecolor="#B9C9DC"/></line>
-            <staticText><reportElement x="250" y="14" width="75" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Productos:]]></text></staticText>
-            <textField><reportElement x="325" y="14" width="35" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{CANTIDAD_LINEAS} == null ? 0 : $V{CANTIDAD_LINEAS}]]></textFieldExpression></textField>
-            <staticText><reportElement x="370" y="14" width="55" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Unidades:]]></text></staticText>
-            <textField pattern="#,##0"><reportElement x="425" y="14" width="40" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_UNIDADES} == null ? 0 : $V{TOTAL_UNIDADES}]]></textFieldExpression></textField>
-            <staticText><reportElement x="470" y="14" width="30" height="20" forecolor="#53647A"><printWhenExpression><![CDATA[$P{VER_COSTOS}]]></printWhenExpression></reportElement><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Total:]]></text></staticText>
-            <textField pattern="Q #,##0.00" isBlankWhenNull="true"><reportElement x="500" y="14" width="56" height="20" forecolor="#1769D2"><printWhenExpression><![CDATA[$P{VER_COSTOS}]]></printWhenExpression></reportElement><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$F{total}]]></textFieldExpression></textField>
+        <band height="152">
+            <!-- Pie de tabla con los totales -->
+            <rectangle radius="5">
+                <reportElement x="0" y="0" width="556" height="20" forecolor="#14325C" backcolor="#14325C"/>
+                <graphicElement><pen lineWidth="0"/></graphicElement>
+            </rectangle>
+            <rectangle>
+                <reportElement x="0" y="0" width="556" height="8" forecolor="#14325C" backcolor="#14325C"/>
+                <graphicElement><pen lineWidth="0"/></graphicElement>
+            </rectangle>
+            <textField>
+                <reportElement style="Base" x="8" y="0" width="300" height="20" forecolor="#FFFFFF"/>
+                <textElement verticalAlignment="Middle"><font size="7.5" isBold="true"/></textElement>
+                <textFieldExpression><![CDATA[($V{CANTIDAD_LINEAS} == null ? 0 : $V{CANTIDAD_LINEAS}) + ($V{CANTIDAD_LINEAS} != null && $V{CANTIDAD_LINEAS} == 1 ? " producto" : " productos")
+    + "  ·  " + String.format("%,d", $V{TOTAL_UNIDADES} == null ? 0 : $V{TOTAL_UNIDADES}) + ($V{TOTAL_UNIDADES} != null && $V{TOTAL_UNIDADES} == 1 ? " unidad" : " unidades")]]></textFieldExpression>
+            </textField>
+            <staticText>
+                <reportElement style="Base" x="300" y="0" width="150" height="20" forecolor="#F4D58A"><printWhenExpression><![CDATA[$P{VER_COSTOS}]]></printWhenExpression></reportElement>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="7" isBold="true"/></textElement>
+                <text><![CDATA[TOTAL AL COSTO]]></text>
+            </staticText>
+            <textField pattern="Q #,##0.00" isBlankWhenNull="true">
+                <reportElement style="Base" x="446" y="0" width="104" height="20" forecolor="#E0A526"><printWhenExpression><![CDATA[$P{VER_COSTOS}]]></printWhenExpression></reportElement>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="11" isBold="true"/></textElement>
+                <textFieldExpression><![CDATA[$F{total}]]></textFieldExpression>
+            </textField>
 
-            <staticText>
-                <reportElement style="Label" x="0" y="46" width="556" height="10">
-                    <printWhenExpression><![CDATA[$F{observaciones} != null && !$F{observaciones}.trim().isEmpty()]]></printWhenExpression>
-                </reportElement>
-                <text><![CDATA[OBSERVACIONES]]></text>
-            </staticText>
-            <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-                <reportElement style="Value" x="0" y="57" width="556" height="14">
-                    <printWhenExpression><![CDATA[$F{observaciones} != null && !$F{observaciones}.trim().isEmpty()]]></printWhenExpression>
-                </reportElement>
-                <textFieldExpression><![CDATA[$F{observaciones}]]></textFieldExpression>
+            <textField isBlankWhenNull="true">
+                <reportElement style="Base" x="0" y="25" width="420" height="20" forecolor="#66758A"/>
+                <textElement verticalAlignment="Top"><font size="6.5"/></textElement>
+                <textFieldExpression><![CDATA[("PENDIENTE".equals($F{estado}) ? "Unidades reservadas: ya salieron de la bodega y no pueden despacharse otra vez."
+    : "REALIZADO".equals($F{estado}) ? "Registrado en el kardex del destino como «Ingreso por despacho»."
+    : "Las unidades regresaron a la bodega de origen y quedaron en su kardex.")
+    + " «Quedan» es la existencia de la bodega tras este despacho."]]></textFieldExpression>
             </textField>
+
+            <!-- Recepción en el destino -->
+            <rectangle radius="6">
+                <reportElement mode="Opaque" x="0" y="50" width="556" height="40" forecolor="#14325C" backcolor="#FFFFFF"/>
+                <graphicElement><pen lineWidth="0.8" lineColor="#14325C"/></graphicElement>
+            </rectangle>
+            <rectangle radius="6">
+                <reportElement x="1" y="51" width="91" height="38" forecolor="#EEF4FC" backcolor="#EEF4FC"/>
+                <graphicElement><pen lineWidth="0"/></graphicElement>
+            </rectangle>
+            <rectangle>
+                <reportElement x="80" y="51" width="12" height="38" forecolor="#EEF4FC" backcolor="#EEF4FC"/>
+                <graphicElement><pen lineWidth="0"/></graphicElement>
+            </rectangle>
             <staticText>
-                <reportElement style="Label" x="0" y="78" width="556" height="10" forecolor="#B42318">
-                    <printWhenExpression><![CDATA["CANCELADO".equals($F{estado})]]></printWhenExpression>
-                </reportElement>
-                <text><![CDATA[MOTIVO DE LA CANCELACIÓN]]></text>
+                <reportElement style="Label" x="8" y="50" width="80" height="40" forecolor="#14325C"/>
+                <textElement verticalAlignment="Middle"><font size="6.5"/></textElement>
+                <text><![CDATA[RECEPCIÓN EN
+DESTINO]]></text>
             </staticText>
-            <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-                <reportElement style="Value" x="0" y="89" width="556" height="14" forecolor="#B42318">
-                    <printWhenExpression><![CDATA["CANCELADO".equals($F{estado})]]></printWhenExpression>
-                </reportElement>
-                <textFieldExpression><![CDATA[$F{motivo_cancelacion}]]></textFieldExpression>
-            </textField>
+            <staticText>
+                <reportElement style="Base" x="104" y="57" width="120" height="14"/>
+                <textElement verticalAlignment="Middle" markup="styled"><font size="8"/></textElement>
+                <text><![CDATA[<style size='11' forecolor='#8A99AD'>☐</style> Recibido conforme]]></text>
+            </staticText>
+            <staticText>
+                <reportElement style="Base" x="104" y="72" width="120" height="14"/>
+                <textElement verticalAlignment="Middle" markup="styled"><font size="8"/></textElement>
+                <text><![CDATA[<style size='11' forecolor='#8A99AD'>☐</style> Con diferencias]]></text>
+            </staticText>
+            <staticText><reportElement style="Base" x="230" y="58" width="54" height="10" forecolor="#66758A"/><textElement verticalAlignment="Middle"><font size="7"/></textElement><text><![CDATA[Fecha y hora]]></text></staticText>
+            <line><reportElement x="286" y="67" width="110" height="1" forecolor="#23344D"/><graphicElement><pen lineWidth="0.8" lineColor="#23344D"/></graphicElement></line>
+            <staticText><reportElement style="Base" x="230" y="73" width="54" height="10" forecolor="#66758A"/><textElement verticalAlignment="Middle"><font size="7"/></textElement><text><![CDATA[Observaciones]]></text></staticText>
+            <line><reportElement x="286" y="82" width="260" height="1" forecolor="#23344D"/><graphicElement><pen lineWidth="0.8" lineColor="#23344D"/></graphicElement></line>
 
             <!-- Firmas -->
-            <line><reportElement x="0" y="190" width="170" height="1" forecolor="#23344D"/></line>
-            <staticText><reportElement style="Label" x="0" y="194" width="170" height="10"/><textElement textAlignment="Center"/><text><![CDATA[DESPACHÓ]]></text></staticText>
-            <textField isBlankWhenNull="true"><reportElement style="Base" x="0" y="205" width="170" height="24"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA[$F{despachado_por}]]></textFieldExpression></textField>
-
-            <line><reportElement x="193" y="190" width="170" height="1" forecolor="#23344D"/></line>
-            <staticText><reportElement style="Label" x="193" y="194" width="170" height="10"/><textElement textAlignment="Center"/><text><![CDATA[RECIBIÓ]]></text></staticText>
-            <textField isBlankWhenNull="true"><reportElement style="Base" x="193" y="205" width="170" height="24"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA[$F{recibido_por}]]></textFieldExpression></textField>
-
-            <line><reportElement x="386" y="190" width="170" height="1" forecolor="#23344D"/></line>
-            <staticText><reportElement style="Label" x="386" y="194" width="170" height="10"/><textElement textAlignment="Center"/><text><![CDATA[AUTORIZÓ]]></text></staticText>
-            <textField isBlankWhenNull="true">
-                <reportElement style="Base" x="386" y="205" width="170" height="24">
-                    <printWhenExpression><![CDATA["REALIZADO".equals($F{estado})]]></printWhenExpression>
-                </reportElement>
-                <textElement textAlignment="Center"/>
-                <textFieldExpression><![CDATA[$F{resuelto_por}]]></textFieldExpression>
+            <line><reportElement x="0" y="124" width="170" height="1" forecolor="#23344D"/><graphicElement><pen lineWidth="1" lineColor="#23344D"/></graphicElement></line>
+            <line><reportElement x="193" y="124" width="170" height="1" forecolor="#23344D"/><graphicElement><pen lineWidth="1" lineColor="#23344D"/></graphicElement></line>
+            <line><reportElement x="386" y="124" width="170" height="1" forecolor="#23344D"/><graphicElement><pen lineWidth="1" lineColor="#23344D"/></graphicElement></line>
+            <staticText><reportElement style="Label" x="0" y="128" width="170" height="8"/><textElement textAlignment="Center"/><text><![CDATA[DESPACHÓ · BODEGA]]></text></staticText>
+            <staticText><reportElement style="Label" x="193" y="128" width="170" height="8"/><textElement textAlignment="Center"/><text><![CDATA[RECIBIÓ · DESTINO]]></text></staticText>
+            <staticText><reportElement style="Label" x="386" y="128" width="170" height="8"/><textElement textAlignment="Center"/><text><![CDATA[AUTORIZÓ · ADMINISTRADOR]]></text></staticText>
+            <textField isBlankWhenNull="true" textAdjust="ScaleFont"><reportElement style="Base" x="0" y="138" width="170" height="12"/><textElement textAlignment="Center"><font size="7.5"/></textElement><textFieldExpression><![CDATA[$F{despachado_por}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true" textAdjust="ScaleFont"><reportElement style="Base" x="193" y="138" width="170" height="12"/><textElement textAlignment="Center"><font size="7.5"/></textElement><textFieldExpression><![CDATA[$F{recibido_por}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true" textAdjust="ScaleFont">
+                <reportElement style="Base" x="386" y="138" width="170" height="12"/>
+                <textElement textAlignment="Center"><font size="7.5"/></textElement>
+                <textFieldExpression><![CDATA["REALIZADO".equals($F{estado}) ? $F{resuelto_por} : ""]]></textFieldExpression>
             </textField>
+            <staticText>
+                <reportElement style="Base" x="386" y="138" width="170" height="12" forecolor="#66758A">
+                    <printWhenExpression><![CDATA[!"REALIZADO".equals($F{estado})]]></printWhenExpression>
+                </reportElement>
+                <textElement textAlignment="Center"><font size="7.5"/></textElement>
+                <text><![CDATA[Nombre, firma y sello]]></text>
+            </staticText>
         </band>
     </summary>
 </jasperReport>

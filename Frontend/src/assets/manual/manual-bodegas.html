@@ -825,7 +825,14 @@
       <p>Desde allí también puedes imprimir el comprobante y, según tu rol y el estado, aprobar, cancelar o revertir.</p>
 
       <h3>8.6 Imprimir el comprobante</h3>
-      <p>El comprobante es el documento que acompaña la mercadería. Incluye el número, las fechas, la bodega, la sucursal, quién despacha y quién recibe, el detalle de productos y cantidades (con costos y total solo cuando lo imprime un administrador), y espacios para firmas. Se puede imprimir en cualquier estado.</p>
+      <p>El comprobante es la <strong>guía de despacho</strong> que acompaña la mercadería y se puede imprimir en cualquier estado. Tiene:</p>
+      <ul>
+        <li>Una <strong>etiqueta de envío</strong> con el total de unidades, el <strong>destino en grande</strong> (sucursal o, en un traslado, la bodega destino) y la bodega de la que sale.</li>
+        <li>El <strong>avance en tres pasos</strong>: registrado, resolución (en espera, aprobado o cancelado) e ingreso al destino. El color cambia con el estado: ámbar mientras espera, verde si ingresó y rojo si fue cancelado.</li>
+        <li>Una ficha con quién despachó, quién recibe, la fecha de registro, quién aprobó o canceló y las observaciones (y el motivo si fue cancelado).</li>
+        <li>El detalle con la existencia de la bodega, la cantidad, cuántas unidades <strong>quedan</strong> en la bodega después del despacho y una <strong>casilla de conforme</strong> para que quien recibe marque cada línea. El costo, los subtotales y el total solo los imprime un administrador.</li>
+        <li>Un bloque de <strong>recepción en el destino</strong> (recibido conforme o con diferencias, fecha y hora, observaciones) y tres firmas: quien despachó, quien recibió y quien autorizó.</li>
+      </ul>
 
       <h3>8.7 Aprobar un despacho <small style="font-weight:400;color:var(--muted)">(administrador)</small></h3>
       <ol class="steps">
