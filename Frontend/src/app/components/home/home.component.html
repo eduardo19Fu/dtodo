@@ -130,20 +130,6 @@
       </a>
     </article>
 
-    <article class="summary-card summary-card-dispatches" *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_BODEGA')">
-      <div class="summary-card-body">
-        <div class="summary-icon" aria-hidden="true"><i class="fas fa-truck-loading"></i></div>
-        <div class="summary-content">
-          <p class="summary-label">Despachos pendientes</p>
-          <p class="summary-value">{{totalDespachosPendientes}}</p>
-          <p class="summary-description">Por aprobar</p>
-        </div>
-      </div>
-      <a [routerLink]="['/despachos-bodega/index']" class="summary-link" aria-label="Ver despachos de bodega">
-        <span>Ver despachos</span><i class="fas fa-arrow-right" aria-hidden="true"></i>
-      </a>
-    </article>
-
     <article class="summary-card summary-card-users" *ngIf="auth.hasRole('ROLE_ADMIN')">
       <div class="summary-card-body">
         <div class="summary-icon" aria-hidden="true"><i class="fas fa-users-cog"></i></div>

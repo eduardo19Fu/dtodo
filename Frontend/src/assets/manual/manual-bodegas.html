@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Manual de usuario - Bodegas y Despachos - D'Todo</title>
+  <title>Manual de usuario - Bodegas, Despachos y Devoluciones - D'Todo</title>
   <style>
     :root {
       --ink: #1c2b36;
@@ -238,7 +238,8 @@
     .menu-demo .group { align-items: center; color: #fff; display: flex; font-weight: 700; gap: 8px; }
     .menu-demo .sub { border-left: 1px solid #3c5565; margin: 6px 0 0 8px; padding-left: 14px; }
     .menu-demo .sub div { padding: 3px 0; }
-    .menu-demo .badge-new {
+    .badge-new {
+      vertical-align: middle;
       background: #e8a317;
       border-radius: 999px;
       color: #1c1500;
@@ -341,8 +342,8 @@
 <header class="hero">
   <div class="hero-inner">
     <span class="eyebrow">Manual de usuario</span>
-    <h1>Bodegas y Despachos de bodega</h1>
-    <p>Guía paso a paso para administrar bodegas, llevar su inventario y movimientos, y trasladar mercadería a las sucursales con un despacho aprobado.</p>
+    <h1>Bodegas, Despachos y Devoluciones</h1>
+    <p>Guía paso a paso para administrar bodegas, llevar su inventario y movimientos, trasladar mercadería a las sucursales con un despacho aprobado y recibir de vuelta el producto que una tienda devuelve a la bodega.</p>
     <p class="hero-meta">Sistema D'Todo &middot; Dirigido a los roles <strong>Administrador</strong> y <strong>Bodega</strong> &middot; Octubre 2026</p>
     <button type="button" class="print-btn" onclick="window.print()">Imprimir o guardar como PDF</button>
   </div>
@@ -360,6 +361,7 @@
     <a href="#importar">6. Importar inventario</a>
     <a href="#movimientos">7. Movimientos</a>
     <a href="#despachos">8. Despachos</a>
+    <a href="#devoluciones">8.10 Devoluciones de tienda a bodega <span class="badge-new">Nuevo</span></a>
     <a href="#ciclo">9. Qué pasa con las existencias</a>
     <a href="#reportes">10. Reportes</a>
     <a href="#faq">11. Preguntas y problemas frecuentes</a>
@@ -390,6 +392,10 @@
           <h4>Despacho</h4>
           <p>El traslado de productos desde una bodega hacia una sucursal <strong>o hacia otra bodega</strong>. Debe ser <strong>aprobado</strong> por un administrador para sumar al inventario del destino.</p>
         </div>
+        <div class="card">
+          <h4>Devolución <span class="badge-new">Nuevo</span></h4>
+          <p>El camino inverso: una <strong>tienda devuelve</strong> a una bodega producto que no necesita. También requiere la <strong>aprobación de un administrador</strong> para sumar al inventario de la bodega.</p>
+        </div>
       </div>
 
       <h3>La idea general en tres pasos</h3>
@@ -401,16 +407,18 @@
         <div class="node"><strong>3. Aprobarlo</strong><span>Las unidades entran al inventario de la sucursal o de la otra bodega</span></div>
       </div>
 
+      <p>La devolución sigue los mismos tres pasos, pero al revés: <strong>registrar</strong> (las unidades salen de la tienda y quedan reservadas), <strong>aprobar</strong> (entran a la bodega) y, si no procede, <strong>rechazar</strong> (regresan a la tienda). Se explica en <a href="#devoluciones">8.10</a>.</p>
+
       <div class="callout note">
         <span class="callout-title">Importante</span>
-        <p>El inventario de una bodega y el de una sucursal <strong>no se mezclan</strong>. Si copias el inventario de una sucursal a una bodega, solo se toma una &laquo;fotografía&raquo; inicial: después cada uno se administra por separado y lo único que los conecta son los despachos aprobados (a una sucursal o a otra bodega).</p>
+        <p>El inventario de una bodega y el de una sucursal <strong>no se mezclan</strong>. Si copias el inventario de una sucursal a una bodega, solo se toma una &laquo;fotografía&raquo; inicial: después cada uno se administra por separado y lo único que los conecta son los despachos aprobados (a una sucursal o a otra bodega) y las devoluciones aprobadas (de una tienda a una bodega).</p>
       </div>
     </section>
 
     <!-- ===================== 2 ===================== -->
     <section class="chapter" id="roles">
       <h2><span class="num">2</span> Roles y permisos</h2>
-      <p>Hay dos roles que pueden trabajar con este módulo. El rol <strong>Bodega</strong> está pensado para la persona que opera la bodega día a día; el <strong>Administrador</strong> además aprueba y revierte despachos.</p>
+      <p>Hay dos roles que pueden trabajar con este módulo. El rol <strong>Bodega</strong> está pensado para la persona que opera la bodega día a día; el <strong>Administrador</strong> además aprueba y revierte despachos y aprueba las devoluciones.</p>
 
       <div class="table-wrap">
         <table>
@@ -418,7 +426,7 @@
             <tr><th>Acción</th><th class="c">Administrador</th><th class="c">Bodega</th></tr>
           </thead>
           <tbody>
-            <tr><td>Ver bodegas, inventario, movimientos y despachos</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
+            <tr><td>Ver bodegas, inventario, movimientos, despachos y devoluciones</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
             <tr><td>Crear y editar bodegas (incluido activar o desactivar)</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
             <tr><td>Agregar productos al inventario</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
             <tr><td><strong>Reducir existencias</strong> y <strong>eliminar productos</strong> del inventario</td><td class="c ok-mark">Sí</td><td class="c no-mark">No</td></tr>
@@ -428,9 +436,11 @@
             <tr><td>Imprimir el comprobante de un despacho</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
             <tr><td>Cancelar un despacho <strong>pendiente</strong></td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
             <tr><td>Consultar los reportes de bodega</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
-            <tr><td>Ver <strong>costos</strong>: costo unitario, subtotales, total al costo y valor de los despachos</td><td class="c ok-mark">Sí</td><td class="c no-mark">No</td></tr>
+            <tr><td>Ver <strong>costos</strong>: costo unitario, subtotales, total al costo y valor de los despachos y devoluciones</td><td class="c ok-mark">Sí</td><td class="c no-mark">No</td></tr>
             <tr><td><strong>Aprobar</strong> un despacho</td><td class="c ok-mark">Sí</td><td class="c no-mark">No</td></tr>
             <tr><td><strong>Revertir</strong> un despacho ya aprobado</td><td class="c ok-mark">Sí</td><td class="c no-mark">No</td></tr>
+            <tr><td>Registrar una <strong>devolución de tienda a bodega</strong> y cancelarla o rechazarla mientras esté pendiente</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Sí</td></tr>
+            <tr><td><strong>Aprobar</strong> una devolución de tienda a bodega</td><td class="c ok-mark">Sí</td><td class="c no-mark">No</td></tr>
           </tbody>
         </table>
       </div>
@@ -459,21 +469,23 @@
         <div class="sub">
           <div>Listado</div>
           <div>Despachos</div>
-          <div>Tutorial <span class="badge-new">Nuevo</span></div>
+          <div>Devoluciones <span class="badge-new">Nuevo</span></div>
+          <div>Tutorial</div>
         </div>
       </div>
 
       <ul>
         <li><strong>Listado:</strong> las bodegas registradas, con acceso a su inventario y movimientos.</li>
         <li><strong>Despachos:</strong> todos los despachos, con sus estados.</li>
+        <li><strong>Devoluciones:</strong> las devoluciones que las tiendas hacen a las bodegas, con sus estados.</li>
         <li><strong>Tutorial:</strong> este manual, que se abre en una pestaña nueva.</li>
       </ul>
 
-      <p>Si tu rol es <strong>Bodega</strong>, el menú solo muestra Bodegas y Reportes, y la pantalla de inicio presenta dos tarjetas: <strong>Bodegas</strong> (cuántas hay) y <strong>Despachos pendientes</strong> (cuántos esperan aprobación), cada una con un enlace directo.</p>
+      <p>Si tu rol es <strong>Bodega</strong>, el menú solo muestra Bodegas y Reportes, y la pantalla de inicio presenta la tarjeta <strong>Bodegas</strong> (cuántas hay), con un enlace directo al listado. Los despachos y las devoluciones pendientes de aprobación se consultan en sus propios listados, filtrando por el estado <em>Pendiente de aprobación</em>.</p>
 
       <div class="callout tip">
         <span class="callout-title">Consejo</span>
-        <p>El cuadro <strong>Buscar módulo</strong> del menú lateral filtra las opciones. Escribe, por ejemplo, <code>despachos</code> para llegar más rápido.</p>
+        <p>El cuadro <strong>Buscar módulo</strong> del menú lateral filtra las opciones. Escribe, por ejemplo, <code>despachos</code> o <code>devoluciones</code> para llegar más rápido.</p>
       </div>
     </section>
 
@@ -696,6 +708,7 @@
             <tr><td><span class="pill plus">Ingreso</span></td><td>Suma</td><td>Al <strong>agregar un producto</strong> manualmente.</td></tr>
             <tr><td><span class="pill plus">Importación</span></td><td>Suma</td><td>Al importar desde una sucursal, otra bodega o Excel (solo productos con unidades).</td></tr>
             <tr><td><span class="pill plus">Ingreso por despacho</span></td><td>Suma</td><td>Cuando se <strong>aprueba un traslado</strong> desde otra bodega hacia esta.</td></tr>
+            <tr><td><span class="pill plus">Ingreso por devolución</span></td><td>Suma</td><td>Cuando un administrador <strong>aprueba una devolución</strong> que una tienda hace a esta bodega.</td></tr>
             <tr><td><span class="pill plus">Cancelación de despacho</span></td><td>Suma</td><td>Al <strong>cancelar</strong> un despacho pendiente o <strong>revertir</strong> uno aprobado: las unidades regresan a la bodega.</td></tr>
             <tr><td><span class="pill minus">Reducción</span></td><td>Resta</td><td>Al <strong>reducir existencias</strong> por merma, daño o ajuste.</td></tr>
             <tr><td><span class="pill minus">Eliminación</span></td><td>Resta</td><td>Al <strong>eliminar un producto</strong> de la bodega.</td></tr>
@@ -851,6 +864,26 @@
         <span class="callout-title">Sobre el registro de auditoría</span>
         <p>El despacho guarda un único dato de &laquo;resuelto por&raquo;. Al revertir, ese dato pasa a ser <strong>quien hizo la reversión</strong>. La aprobación original sigue visible en los movimientos de la sucursal, con su fecha y usuario.</p>
       </div>
+
+      <h3 id="devoluciones">8.10 Devolver producto de una tienda a la bodega</h3>
+      <p>Cuando una tienda tiene producto que no necesita (sobrestock, empaque dañado, cambio de temporada...), puede devolverlo a una bodega. Es el camino <strong>inverso</strong> al despacho y también requiere la aprobación de un administrador. Se encuentra en <strong>Bodegas &rsaquo; Devoluciones</strong>.</p>
+      <ol class="steps">
+        <li>Pulsa <span class="btn green">Nueva devolución</span>.</li>
+        <li>Elige la <strong>tienda que devuelve</strong> y la <strong>bodega que recibe</strong>. Escribe quién <strong>entrega</strong> la mercadería y el <strong>motivo</strong> (obligatorio).</li>
+        <li>Agrega los productos por código o con el buscador de la tienda. Solo aparecen los que la tienda tiene en su inventario y no puedes devolver más unidades de las que tiene.</li>
+        <li>Pulsa <strong>Registrar devolución</strong>. Queda <span class="pill wait">Pendiente de aprobación</span>.</li>
+      </ol>
+      <p>Al registrarla, las unidades <strong>salen del inventario de la tienda</strong> y quedan reservadas. La bodega todavía no las recibe. Si la tienda ya no tiene alguna de las unidades (por ejemplo, porque se vendieron mientras armabas la devolución), el sistema no la registra y te indica cuál producto falta.</p>
+      <p>En la parte superior del formulario y del detalle verás el <strong>recorrido tienda &rarr; bodega</strong>: de dónde sale el producto y a dónde entrará. Al elegir tu tienda, el sistema propone la bodega que tiene asignada, pero puedes cambiarla.</p>
+      <p>En el listado de devoluciones cada fila ofrece <strong>Ver detalle</strong> (ojo), <strong>Aprobar</strong> (visto, solo administrador) y <strong>Rechazar o cancelar</strong> (prohibido), estos dos últimos solo mientras la devolución está pendiente. Se puede filtrar por estado, por bodega y por texto (número, tienda, bodega o quien entrega). Igual que en los despachos, el costo y el total solo los ve el administrador.</p>
+      <ul>
+        <li><strong>Aprobar</strong> <small style="font-weight:400;color:var(--muted)">(solo administrador)</small>: las unidades ingresan al inventario de la bodega (movimiento <em>Ingreso por devolución</em>) y la devolución pasa a <span class="pill ok">Aprobada</span>.</li>
+        <li><strong>Rechazar o cancelar</strong> (administrador y bodega, mientras esté pendiente): se escribe el motivo, las unidades <strong>regresan a la tienda</strong> y la devolución pasa a <span class="pill bad">Rechazada</span>.</li>
+      </ul>
+      <div class="callout note">
+        <span class="callout-title">Una devolución resuelta ya no cambia</span>
+        <p>Una devolución aprobada o rechazada no se puede revertir. Si se aprobó por error, registra un despacho de la bodega hacia la tienda con las mismas unidades.</p>
+      </div>
     </section>
 
     <!-- ===================== 9 ===================== -->
@@ -875,9 +908,11 @@
       <p><strong>Alternativa:</strong> si en lugar de aprobarlo se <em>cancela</em> estando pendiente, la bodega vuelve a 100 y la sucursal nunca cambió (siempre 20).</p>
       <p><strong>Traslado entre bodegas:</strong> el recorrido es el mismo, pero el destino es otra bodega. Si la <em>Bodega Central</em> (100) traslada 30 unidades a la <em>Bodega Norte</em> (0): al registrar queda 70 / 0; al aprobar, 70 / 30; y al revertir (si Norte aún tiene las 30), 100 / 0.</p>
 
+      <p><strong>Devolución de tienda a bodega:</strong> el recorrido es el inverso. Si la sucursal <em>Norte</em> (50) devuelve 10 unidades a la <em>Bodega Central</em> (70): al registrar queda 40 / 70 (<span class="pill wait">Pendiente</span>); al aprobar, 40 / 80 (<span class="pill ok">Aprobada</span>); y si en cambio se rechaza, Norte vuelve a 50 y la bodega nunca cambió (<span class="pill bad">Rechazada</span>). Una devolución aprobada no se revierte.</p>
+
       <div class="callout tip">
         <span class="callout-title">¿Por qué la bodega descuenta al registrar y no al aprobar?</span>
-        <p>Para que la mercadería <strong>no pueda despacharse dos veces</strong>. Mientras el despacho espera aprobación, esas unidades ya no están disponibles para otro despacho. Si el despacho no se concreta, regresan a la bodega.</p>
+        <p>Para que la mercadería <strong>no pueda despacharse dos veces</strong>. Mientras el despacho espera aprobación, esas unidades ya no están disponibles para otro despacho. Si el despacho no se concreta, regresan a la bodega. Con las devoluciones ocurre lo mismo, pero con la tienda: sus unidades se descuentan al registrar y no pueden venderse ni devolverse dos veces.</p>
       </div>
     </section>
 
@@ -897,7 +932,7 @@
             </tr>
             <tr>
               <td><strong>Movimientos de bodega</strong></td>
-              <td>Ingresos, importaciones, reducciones, eliminaciones y despachos de una bodega en un período.</td>
+              <td>Ingresos, importaciones, reducciones, eliminaciones, despachos e ingresos por devolución de una bodega en un período.</td>
               <td>Rango de fechas y bodega (obligatorios)</td>
             </tr>
             <tr>
@@ -914,6 +949,10 @@
         <li>Elige el reporte y completa sus filtros.</li>
         <li>Selecciona el formato (PDF o XLSX) y genéralo.</li>
       </ol>
+      <div class="callout note">
+        <span class="callout-title">Devoluciones</span>
+        <p>Por ahora las devoluciones no tienen un reporte ni comprobante propio: se consultan en su listado y su detalle. Lo que ingresa a la bodega al aprobarlas sí aparece en el reporte de <em>Movimientos de bodega</em> como <em>Ingreso por devolución</em>.</p>
+      </div>
     </section>
 
     <!-- ===================== 11 ===================== -->
@@ -991,8 +1030,33 @@
       </details>
 
       <details>
+        <summary>El producto que busco no aparece al registrar una devolución.</summary>
+        <p>Solo se pueden devolver productos que <strong>la tienda tiene en su inventario</strong>, y los que están en cero aparecen sin poder elegirse. Revisa que elegiste la tienda correcta: al buscar por código, este debe coincidir exactamente con el del producto.</p>
+      </details>
+
+      <details>
+        <summary>Me dice &laquo;Existencias insuficientes en la sucursal&raquo; al registrar una devolución.</summary>
+        <p>La tienda tiene menos unidades de las que intentas devolver, o las vendió o movió mientras armabas la devolución. Vuelve a consultar su existencia y ajusta la cantidad. Si repites un producto en el detalle, sus unidades se suman.</p>
+      </details>
+
+      <details>
+        <summary>Aprobé una devolución por error, ¿se puede deshacer?</summary>
+        <p>No. Una devolución aprobada o rechazada ya no cambia. Para regresar las unidades a la tienda, registra un <a href="#despachos">despacho</a> desde esa bodega hacia la sucursal con las mismas cantidades y apruébalo.</p>
+      </details>
+
+      <details>
+        <summary>Me equivoqué en una devolución que ya registré.</summary>
+        <p>Una devolución registrada no se edita. Mientras esté <strong>pendiente</strong>, cancélala (con motivo): las unidades regresan a la tienda. Luego registra una nueva con los datos correctos.</p>
+      </details>
+
+      <details>
+        <summary>No veo el botón Aprobar en una devolución.</summary>
+        <p>Aprobar devoluciones es exclusivo del rol <strong>Administrador</strong>, y solo aparece mientras la devolución está pendiente. Si eres de Bodega, avisa a un administrador; tú sí puedes cancelarla mientras esté pendiente.</p>
+      </details>
+
+      <details>
         <summary>¿Puedo ver quién hizo cada cosa?</summary>
-        <p>Sí. Los movimientos registran el usuario, y los despachos muestran quién despachó, quién aprobó o canceló, y quién recibió (este último lo escribe quien despacha).</p>
+        <p>Sí. Los movimientos registran el usuario; los despachos muestran quién despachó, quién aprobó o canceló, y quién recibió (este último lo escribe quien despacha); y las devoluciones muestran quién las registró, quién las aprobó o rechazó y quién entregó la mercadería en la tienda.</p>
       </details>
     </section>
 
@@ -1014,6 +1078,10 @@
           <p>Nuevo despacho &rarr; sucursal u otra bodega &rarr; productos y cantidades &rarr; <em>Registrar</em>. Queda pendiente y reserva el stock.</p>
         </div>
         <div class="card">
+          <h4>Recibir una devolución <span class="badge-new">Nuevo</span></h4>
+          <p>Devoluciones &rarr; <em>Nueva devolución</em> &rarr; tienda, bodega, quién entrega, motivo y productos &rarr; <em>Registrar</em>. El administrador la <em>aprueba</em> o la <em>rechaza</em>.</p>
+        </div>
+        <div class="card">
           <h4>Cerrar el ciclo</h4>
           <p>El administrador <em>aprueba</em> cuando llega la mercadería. Si hay un error: <em>cancelar</em> (pendiente) o <em>revertir</em> (aprobado).</p>
         </div>
@@ -1025,12 +1093,13 @@
           <li>Toda reducción, eliminación, cancelación o reversión lleva un <strong>motivo</strong>, y reducir o eliminar solo lo hace el administrador.</li>
           <li>El inventario de una bodega es <strong>independiente</strong> del de las sucursales.</li>
           <li>Las unidades salen de la bodega <strong>al registrar</strong> y entran a la sucursal (o a la otra bodega) <strong>al aprobar</strong>.</li>
+          <li>En una devolución es al revés: salen de la <strong>tienda</strong> al registrar y entran a la <strong>bodega</strong> al aprobar. Una devolución resuelta no se revierte.</li>
           <li>Una importación de Excel es <strong>todo o nada</strong>.</li>
           <li>Una bodega inactiva conserva su historial pero ya no admite cambios.</li>
         </ul>
       </div>
 
-      <footer class="page-footer">Manual de usuario &middot; Bodegas y Despachos de bodega &middot; D'Todo</footer>
+      <footer class="page-footer">Manual de usuario &middot; Bodegas, Despachos y Devoluciones &middot; D'Todo</footer>
     </section>
 
   </main>

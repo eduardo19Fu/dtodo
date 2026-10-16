@@ -1,6 +1,6 @@
 export type TipoMovimientoBodega =
   'INGRESO' | 'IMPORTACION' | 'ANULACION_DESPACHO' | 'INGRESO_DESPACHO' | 'REDUCCION' | 'ELIMINACION' | 'DESPACHO' |
-  'REVERSION_DESPACHO';
+  'REVERSION_DESPACHO' | 'INGRESO_DEVOLUCION';
 
 export interface TipoMovimientoBodegaInfo {
   codigo: TipoMovimientoBodega;
@@ -15,6 +15,7 @@ export const TIPOS_MOVIMIENTO_BODEGA: TipoMovimientoBodegaInfo[] = [
   { codigo: 'IMPORTACION', etiqueta: 'Importación', icono: 'fa-file-import', entrada: true },
   { codigo: 'ANULACION_DESPACHO', etiqueta: 'Cancelación de despacho', icono: 'fa-undo', entrada: true },
   { codigo: 'INGRESO_DESPACHO', etiqueta: 'Ingreso por despacho', icono: 'fa-dolly', entrada: true },
+  { codigo: 'INGRESO_DEVOLUCION', etiqueta: 'Ingreso por devolución', icono: 'fa-box-open', entrada: true },
   { codigo: 'REDUCCION', etiqueta: 'Reducción', icono: 'fa-minus-circle', entrada: false },
   { codigo: 'ELIMINACION', etiqueta: 'Eliminación', icono: 'fa-trash-alt', entrada: false },
   { codigo: 'DESPACHO', etiqueta: 'Despacho', icono: 'fa-truck-loading', entrada: false },

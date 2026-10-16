@@ -1,0 +1,160 @@
+/* Complementa los estilos del detalle compartidos en ../../bodegas/detail-bodega/detail-bodega.component.css.
+   El recorrido tienda -> bodega es lo único propio de la devolución: el resto del detalle es el de un despacho. */
+
+.route-ribbon {
+  align-items: center;
+  background: linear-gradient(135deg, #fcf7f1 0%, #fffdfa 100%);
+  border: 1px solid #ecd7bd;
+  border-radius: 12px;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) minmax(90px, 0.6fr) minmax(0, 1fr);
+  margin-bottom: 16px;
+  padding: 14px 18px;
+}
+
+.route-point {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  min-width: 0;
+}
+
+.route-point-end {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.route-point-end .route-point-icon {
+  order: 2;
+}
+
+.route-point strong {
+  color: #4a2c08;
+  display: block;
+  font-size: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.route-point-kind {
+  color: #a7794a;
+  display: block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.route-point-icon {
+  align-items: center;
+  background: #fff;
+  border: 2px solid #8f5518;
+  border-radius: 12px;
+  color: #8f5518;
+  display: inline-flex;
+  flex: 0 0 40px;
+  height: 40px;
+  justify-content: center;
+  width: 40px;
+}
+
+.route-point-end.is-reached .route-point-icon {
+  background: #8f5518;
+  color: #fff;
+}
+
+/* Línea de ruta: punteada mientras la devolución espera la aprobación, continua cuando ya ingresó */
+.route-line {
+  height: 26px;
+  position: relative;
+}
+
+.route-line-track {
+  border-top: 3px dashed #dcb98f;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.route-line.is-done .route-line-track {
+  border-top: 3px solid #8f5518;
+}
+
+.route-line.is-stopped .route-line-track {
+  border-top-color: #d6a3a3;
+}
+
+.route-line-truck {
+  align-items: center;
+  background: #fff;
+  border: 2px solid #8f5518;
+  border-radius: 50%;
+  color: #8f5518;
+  display: inline-flex;
+  font-size: 11px;
+  height: 26px;
+  justify-content: center;
+  left: 50%;
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  width: 26px;
+}
+
+.route-line.is-stopped .route-line-truck {
+  border-color: #b04a4a;
+  color: #b04a4a;
+}
+
+@media (max-width: 767.98px) {
+  .route-ribbon {
+    gap: 8px;
+    grid-template-columns: 1fr;
+    padding: 12px;
+  }
+
+  .route-point-end {
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .route-point-end .route-point-icon {
+    order: 0;
+  }
+
+  .route-line {
+    height: 34px;
+    margin-left: 19px;
+    width: 26px;
+  }
+
+  .route-line-track {
+    border-left: 3px dashed #dcb98f;
+    border-top: 0;
+    bottom: 0;
+    left: 50%;
+    right: auto;
+    top: 0;
+    transform: translateX(-50%);
+  }
+
+  .route-line.is-done .route-line-track {
+    border-left: 3px solid #8f5518;
+    border-top: 0;
+  }
+
+  .route-line.is-stopped .route-line-track {
+    border-left-color: #d6a3a3;
+    border-top: 0;
+  }
+
+  .route-line-truck {
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+}
