@@ -1,5 +1,6 @@
 package xyz.pangosoft.dtodo.controller;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import lombok.RequiredArgsConstructor;
@@ -8,7 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,6 +30,7 @@ import xyz.pangosoft.dtodo.dto.DevolucionBodegaDto;
 import xyz.pangosoft.dtodo.dto.DevolucionBodegaRequest;
 import xyz.pangosoft.dtodo.dto.InventarioSucursalDto;
 import xyz.pangosoft.dtodo.model.DevolucionBodega;
+import xyz.pangosoft.dtodo.service.IBodegaReporteService;
 import xyz.pangosoft.dtodo.service.IDevolucionBodegaService;
 import xyz.pangosoft.dtodo.util.Utils;
 
@@ -38,6 +42,8 @@ import xyz.pangosoft.dtodo.util.Utils;
 public class DevolucionBodegaApiController {
 
 	private final IDevolucionBodegaService serviceDevolucion;
+
+	private final IBodegaReporteService serviceReporte;
 
 	@Secured(value = { "ROLE_ADMIN", "ROLE_BODEGA" })
 	@GetMapping(value = "/devoluciones-bodega/listado")
@@ -94,6 +100,21 @@ public class DevolucionBodegaApiController {
 			@RequestBody Map<String, String> body, @AuthenticationPrincipal Jwt jwt) {
 		log.info("Rechazando devolución a bodega: {}", id);
 		return ResponseEntity.ok(serviceDevolucion.cancelar(id, body.get("motivo"), Utils.obtenerIdUsuario(jwt)));
+	}
+
+	@Secured(value = { "ROLE_ADMIN", "ROLE_BODEGA" })
+	@GetMapping(value = "/devoluciones-bodega/{id}/comprobante")
+	public ResponseEntity<byte[]> comprobante(@PathVariable("id") Long id) {
+		log.info("Generando comprobante de la devolución a bodega: {}", id);
+		byte[] pdf = serviceReporte.generarComprobanteDevolucion(id);
+		String disposition = "inline; filename=\"devolucion_bodega_" + id + ".pdf\"";
+		return ResponseEntity.ok()
+				.contentType(MediaType.APPLICATION_PDF)
+				.header(HttpHeaders.CONTENT_DISPOSITION,
+						new String(disposition.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1))
+				.header(HttpHeaders.CACHE_CONTROL, "no-store")
+				.contentLength(pdf.length)
+				.body(pdf);
 	}
 
 }

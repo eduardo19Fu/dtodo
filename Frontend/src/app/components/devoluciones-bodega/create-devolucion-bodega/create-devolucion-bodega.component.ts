@@ -354,7 +354,14 @@ export class CreateDevolucionBodegaComponent implements OnInit {
           html: `La devolución <strong>${String(creada.idDevolucion).padStart(6, '0')}</strong> quedó ` +
             '<strong>pendiente de aprobación</strong>. ' +
             'Las existencias ya salieron de la tienda y ingresarán a la bodega cuando un administrador la apruebe.',
-          icon: 'success'
+          icon: 'success',
+          showCancelButton: true,
+          confirmButtonText: '<i class="fas fa-print"></i> Imprimir comprobante',
+          cancelButtonText: 'Cerrar'
+        }).then(resultado => {
+          if (resultado.isConfirmed) {
+            this.devolucionService.imprimirComprobante(creada.idDevolucion).subscribe();
+          }
         });
       },
       () => this.guardando = false

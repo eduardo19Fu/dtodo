@@ -9,7 +9,7 @@
 .return-table .col-lineas { text-align: center; width: 80px; }
 .return-table .col-total { text-align: right; width: 100px; }
 .return-table .col-estado { width: 160px; }
-.return-table .col-opciones { text-align: center; width: 150px; }
+.return-table .col-opciones { text-align: center; width: 190px; }
 
 /* Origen y destino de la devolución: el producto viaja de la tienda a la bodega */
 .route-cell {

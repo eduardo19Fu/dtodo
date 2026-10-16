@@ -23,7 +23,8 @@ describe('DevolucionesBodegaComponent', () => {
       getListado: jasmine.createSpy('getListado').and.returnValue(of(pagina([{ idDevolucion: 12, estado: 'PENDIENTE' }]))),
       getDevolucion: jasmine.createSpy('getDevolucion'),
       aprobar: jasmine.createSpy('aprobar').and.returnValue(of({})),
-      cancelar: jasmine.createSpy('cancelar').and.returnValue(of({}))
+      cancelar: jasmine.createSpy('cancelar').and.returnValue(of({})),
+      imprimirComprobante: jasmine.createSpy('imprimirComprobante').and.returnValue(of(undefined))
     };
     bodegaService = { getBodegas: jasmine.createSpy('getBodegas').and.returnValue(of([{ idBodega: 1 }])) };
     auth = { usuario: {}, hasRole: (rol: string) => rol === 'ROLE_ADMIN' };
@@ -98,6 +99,12 @@ describe('DevolucionesBodegaComponent', () => {
     expect(devolucionService.getDevolucion).toHaveBeenCalledWith(12);
     expect(component.devolucionSeleccionada.idDevolucion).toBe(12);
     expect(component.detalleCargandoId).toBeNull();
+  });
+
+  it('imprime el comprobante de la devolución', () => {
+    component.imprimir(12);
+
+    expect(devolucionService.imprimirComprobante).toHaveBeenCalledWith(12);
   });
 
   it('aprueba la devolución solo después de que el usuario confirme', async () => {

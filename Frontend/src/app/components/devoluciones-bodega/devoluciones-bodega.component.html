@@ -1,5 +1,5 @@
 <app-detail-devolucion-bodega *ngIf="devolucionSeleccionada" [devolucion]="devolucionSeleccionada" [puedeAprobar]="puedeAprobar"
-  [verCostos]="verCostos" [procesando]="procesandoId !== null" (cerrar)="cerrarDetalle()"
+  [verCostos]="verCostos" [procesando]="procesandoId !== null" (cerrar)="cerrarDetalle()" (imprimir)="imprimir($event)"
   (aprobar)="aprobar($event.idDevolucion, $event.bodega)"
   (rechazar)="rechazar($event.idDevolucion, $event.sucursal)"></app-detail-devolucion-bodega>
 
@@ -130,6 +130,11 @@
                       appTooltip="Ver detalle de la devolución" aria-label="Ver detalle de la devolución"
                       [disabled]="detalleCargandoId !== null" (click)="abrirDetalle(devolucion)">
                 <i class="fas fa-eye"></i>
+              </button>
+              <button class="btn btn-sm listing-table-action listing-action-edit" type="button"
+                      appTooltip="Imprimir comprobante" aria-label="Imprimir comprobante de la devolución"
+                      (click)="imprimir(devolucion.idDevolucion)">
+                <i class="fas fa-print"></i>
               </button>
               <button class="btn btn-sm listing-table-action listing-action-approve" type="button"
                       *ngIf="devolucion.estado === 'PENDIENTE' && puedeAprobar"

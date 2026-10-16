@@ -13,6 +13,7 @@ import xyz.pangosoft.dtodo.error.exceptions.ReportGenerationException;
 import xyz.pangosoft.dtodo.model.Bodega;
 import xyz.pangosoft.dtodo.model.enums.EstadoDespachoBodegaEnum;
 import xyz.pangosoft.dtodo.repository.IBodegaRepository;
+import xyz.pangosoft.dtodo.repository.IDevolucionBodegaRepository;
 import xyz.pangosoft.dtodo.repository.IDespachoBodegaRepository;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -26,9 +27,10 @@ class BodegaReporteServiceImplTest {
     private final DataSource dataSource = mock(DataSource.class);
     private final IBodegaRepository bodegaRepository = mock(IBodegaRepository.class);
     private final IDespachoBodegaRepository despachoRepository = mock(IDespachoBodegaRepository.class);
+    private final IDevolucionBodegaRepository devolucionRepository = mock(IDevolucionBodegaRepository.class);
 
     private final BodegaReporteServiceImpl service =
-            new BodegaReporteServiceImpl(dataSource, bodegaRepository, despachoRepository);
+            new BodegaReporteServiceImpl(dataSource, bodegaRepository, despachoRepository, devolucionRepository);
 
     private static final LocalDate INICIO = LocalDate.of(2026, 10, 1);
     private static final LocalDate FIN = LocalDate.of(2026, 10, 2);
@@ -38,6 +40,15 @@ class BodegaReporteServiceImplTest {
         when(despachoRepository.existsById(404L)).thenReturn(false);
 
         assertThrows(NotFoundException.class, () -> service.generarComprobanteDespacho(404L));
+
+        verify(dataSource, never()).getConnection();
+    }
+
+    @Test
+    void elComprobanteDeUnaDevolucionInexistenteLanzaNotFoundSinAbrirConexion() throws Exception {
+        when(devolucionRepository.existsById(404L)).thenReturn(false);
+
+        assertThrows(NotFoundException.class, () -> service.generarComprobanteDevolucion(404L));
 
         verify(dataSource, never()).getConnection();
     }

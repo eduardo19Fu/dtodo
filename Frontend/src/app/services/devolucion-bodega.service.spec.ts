@@ -81,6 +81,31 @@ describe('DevolucionBodegaService', () => {
     cancelar.flush({});
   });
 
+  it('descarga el comprobante como PDF y lo abre en una pestaña nueva', () => {
+    const abrir = spyOn(window, 'open');
+    spyOn(window.URL, 'createObjectURL').and.returnValue('blob:comprobante');
+    spyOn(window.URL, 'revokeObjectURL');
+    service.imprimirComprobante(7).subscribe();
+
+    const req = http.expectOne(`${global.url}/devoluciones-bodega/7/comprobante`);
+    expect(req.request.method).toBe('GET');
+    expect(req.request.responseType).toBe('blob');
+    req.flush(new Blob(['%PDF'], { type: 'application/pdf' }));
+
+    expect(abrir).toHaveBeenCalledWith('blob:comprobante', '_blank');
+  });
+
+  it('avisa si no se pudo generar el comprobante', () => {
+    const alerta = spyOn(swal, 'fire');
+    let fallo = false;
+    service.imprimirComprobante(7).subscribe(() => {}, () => fallo = true);
+
+    http.expectOne(`${global.url}/devoluciones-bodega/7/comprobante`).flush(new Blob(['x']), { status: 500, statusText: 'Error' });
+
+    expect(fallo).toBeTrue();
+    expect(alerta).toHaveBeenCalledWith('No se pudo generar el comprobante', jasmine.any(String), 'error');
+  });
+
   it('muestra el mensaje del servidor cuando falla una operación', () => {
     const alerta = spyOn(swal, 'fire');
     let fallo = false;

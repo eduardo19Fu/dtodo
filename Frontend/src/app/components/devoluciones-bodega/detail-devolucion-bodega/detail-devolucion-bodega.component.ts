@@ -25,6 +25,7 @@ export class DetailDevolucionBodegaComponent implements AfterViewInit, OnDestroy
   @Input() procesando = false;
 
   @Output() cerrar = new EventEmitter<void>();
+  @Output() imprimir = new EventEmitter<number>();
   @Output() aprobar = new EventEmitter<{ idDevolucion: number; bodega: string }>();
   @Output() rechazar = new EventEmitter<{ idDevolucion: number; sucursal: string }>();
 

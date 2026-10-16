@@ -880,6 +880,15 @@
         <li><strong>Aprobar</strong> <small style="font-weight:400;color:var(--muted)">(solo administrador)</small>: las unidades ingresan al inventario de la bodega (movimiento <em>Ingreso por devolución</em>) y la devolución pasa a <span class="pill ok">Aprobada</span>.</li>
         <li><strong>Rechazar o cancelar</strong> (administrador y bodega, mientras esté pendiente): se escribe el motivo, las unidades <strong>regresan a la tienda</strong> y la devolución pasa a <span class="pill bad">Rechazada</span>.</li>
       </ul>
+      <h4 id="comprobante-devolucion">Comprobante de la devolución</h4>
+      <p>Al registrar la devolución el sistema ofrece <strong>Imprimir comprobante</strong>; también puedes imprimirlo después con el botón de la impresora del listado o desde el detalle, en cualquier estado. Es el documento que acompaña la mercadería y contiene:</p>
+      <ul>
+        <li>El <strong>recorrido tienda &rarr; bodega</strong> con las unidades y productos devueltos. El trayecto es discontinuo mientras espera la aprobación, continuo si ingresó y rojo si fue rechazada.</li>
+        <li>Una <strong>línea de tiempo</strong> (registrada, resolución, ingreso a la bodega) con sus fechas.</li>
+        <li>Quién entregó, quién registró, quién aprobó o rechazó, y el motivo de la devolución.</li>
+        <li>El detalle con la existencia de la tienda y una <strong>barra que muestra qué parte de esa existencia se devuelve</strong>. El costo, los subtotales y el total solo los imprime un administrador.</li>
+        <li>Recuadros para la firma de quien entrega, de quien recibe en la bodega y de quien autoriza, con espacio para el sello.</li>
+      </ul>
       <div class="callout note">
         <span class="callout-title">Una devolución resuelta ya no cambia</span>
         <p>Una devolución aprobada o rechazada no se puede revertir. Si se aprobó por error, registra un despacho de la bodega hacia la tienda con las mismas unidades.</p>
@@ -951,7 +960,7 @@
       </ol>
       <div class="callout note">
         <span class="callout-title">Devoluciones</span>
-        <p>Por ahora las devoluciones no tienen un reporte ni comprobante propio: se consultan en su listado y su detalle. Lo que ingresa a la bodega al aprobarlas sí aparece en el reporte de <em>Movimientos de bodega</em> como <em>Ingreso por devolución</em>.</p>
+        <p>Las devoluciones no tienen un reporte por período, pero sí su <a href="#comprobante-devolucion">comprobante imprimible</a>. Lo que ingresa a la bodega al aprobarlas aparece en el reporte de <em>Movimientos de bodega</em> como <em>Ingreso por devolución</em>.</p>
       </div>
     </section>
 

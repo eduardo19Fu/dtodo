@@ -10,6 +10,9 @@ public interface IBodegaReporteService {
     /** Comprobante del despacho en PDF. */
     byte[] generarComprobanteDespacho(Long idDespacho);
 
+    /** Comprobante de la devolución de una tienda a una bodega, en PDF. */
+    byte[] generarComprobanteDevolucion(Long idDevolucion);
+
     /** Existencias actuales de una bodega, valorizadas al costo de compra. */
     byte[] generarExistencias(Integer idBodega, String formato);
 

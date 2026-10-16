@@ -153,6 +153,10 @@ export class DevolucionesBodegaComponent implements OnInit, OnDestroy {
     this.devolucionSeleccionada = null;
   }
 
+  imprimir(idDevolucion: number): void {
+    this.devolucionService.imprimirComprobante(idDevolucion).subscribe();
+  }
+
   /*********** APROBAR / RECHAZAR ***********/
 
   aprobar(idDevolucion: number, bodega: string): void {

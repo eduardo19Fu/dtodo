@@ -65,6 +65,15 @@ describe('DetailDevolucionBodegaComponent', () => {
     expect(solicitud).toEqual({ idDevolucion: 12, sucursal: 'Norte' });
   });
 
+  it('permite imprimir el comprobante en cualquier estado', () => {
+    let impresa: number;
+    component.imprimir.subscribe(valor => impresa = valor);
+
+    component.imprimir.emit(component.devolucion.idDevolucion);
+
+    expect(impresa).toBe(12);
+  });
+
   it('cierra al hacer clic en el fondo pero no en el contenido', () => {
     let cierres = 0;
     component.cerrar.subscribe(() => cierres++);

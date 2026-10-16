@@ -30,7 +30,8 @@ describe('CreateDevolucionBodegaComponent', () => {
     bodegaService = { getBodegas: jasmine.createSpy('getBodegas').and.returnValue(of(bodegas)) };
     devolucionService = {
       getProductosSucursal: jasmine.createSpy('getProductosSucursal').and.returnValue(of({ content: [item] })),
-      create: jasmine.createSpy('create').and.returnValue(of({ idDevolucion: 9 }))
+      create: jasmine.createSpy('create').and.returnValue(of({ idDevolucion: 9 })),
+      imprimirComprobante: jasmine.createSpy('imprimirComprobante').and.returnValue(of(undefined))
     };
     sucursalService = { getSucursales: jasmine.createSpy('getSucursales').and.returnValue(of(sucursales)) };
     router = { navigate: jasmine.createSpy('navigate') };
@@ -181,6 +182,21 @@ describe('CreateDevolucionBodegaComponent', () => {
     });
     expect(router.navigate).toHaveBeenCalledWith(['/devoluciones-bodega/index']);
     expect(component.guardando).toBeFalse();
+  });
+
+  it('al registrar ofrece imprimir el comprobante y lo imprime si el usuario acepta', async () => {
+    component.devolucion.idSucursalOrigen = 2;
+    component.devolucion.idBodega = 1;
+    component.devolucion.entregadoPor = 'Maria';
+    component.devolucion.motivo = 'Sobrestock';
+    component.itemActual = item as any;
+    component.cantidadActual = 4;
+    component.agregarLinea();
+
+    component.crear();
+    await Promise.resolve();
+
+    expect(devolucionService.imprimirComprobante).toHaveBeenCalledWith(9);
   });
 
   it('libera el botón de guardar si el servidor rechaza la devolución', () => {

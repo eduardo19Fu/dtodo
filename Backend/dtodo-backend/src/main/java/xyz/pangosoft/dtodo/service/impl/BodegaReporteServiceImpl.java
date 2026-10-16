@@ -33,6 +33,7 @@ import xyz.pangosoft.dtodo.error.exceptions.ReportGenerationException;
 import xyz.pangosoft.dtodo.model.Bodega;
 import xyz.pangosoft.dtodo.model.enums.EstadoDespachoBodegaEnum;
 import xyz.pangosoft.dtodo.repository.IBodegaRepository;
+import xyz.pangosoft.dtodo.repository.IDevolucionBodegaRepository;
 import xyz.pangosoft.dtodo.repository.IDespachoBodegaRepository;
 import xyz.pangosoft.dtodo.service.IBodegaReporteService;
 import xyz.pangosoft.dtodo.util.Utils;
@@ -43,6 +44,7 @@ import xyz.pangosoft.dtodo.util.Utils;
 public class BodegaReporteServiceImpl implements IBodegaReporteService {
 
     static final String PLANTILLA_COMPROBANTE = "/reports/despacho_bodega.jrxml";
+    static final String PLANTILLA_COMPROBANTE_DEVOLUCION = "/reports/devolucion_bodega.jrxml";
     static final String PLANTILLA_EXISTENCIAS = "/reports/bodega_existencias.jrxml";
     static final String PLANTILLA_MOVIMIENTOS = "/reports/bodega_movimientos.jrxml";
     static final String PLANTILLA_DESPACHOS = "/reports/bodega_despachos.jrxml";
@@ -52,6 +54,7 @@ public class BodegaReporteServiceImpl implements IBodegaReporteService {
     private final DataSource dataSource;
     private final IBodegaRepository bodegaRepository;
     private final IDespachoBodegaRepository despachoRepository;
+    private final IDevolucionBodegaRepository devolucionRepository;
 
     @Override
     public byte[] generarComprobanteDespacho(Long idDespacho) {
@@ -61,6 +64,17 @@ public class BodegaReporteServiceImpl implements IBodegaReporteService {
         Map<String, Object> parametros = new HashMap<>();
         parametros.put("ID_DESPACHO", idDespacho);
         return generar(PLANTILLA_COMPROBANTE, parametros, "PDF", null, "el comprobante del despacho " + idDespacho);
+    }
+
+    @Override
+    public byte[] generarComprobanteDevolucion(Long idDevolucion) {
+        if (!devolucionRepository.existsById(idDevolucion)) {
+            throw new NotFoundException("La devolución " + idDevolucion + " no se encuentra registrada en la base de datos");
+        }
+        Map<String, Object> parametros = new HashMap<>();
+        parametros.put("ID_DEVOLUCION", idDevolucion);
+        return generar(PLANTILLA_COMPROBANTE_DEVOLUCION, parametros, "PDF", null,
+                "el comprobante de la devolución " + idDevolucion);
     }
 
     @Override

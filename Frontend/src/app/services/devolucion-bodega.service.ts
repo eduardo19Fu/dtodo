@@ -73,6 +73,18 @@ export class DevolucionBodegaService {
     );
   }
 
+  /** Descarga el comprobante en PDF y lo abre en una pestaña nueva para imprimirlo. */
+  imprimirComprobante(idDevolucion: number): Observable<void> {
+    return this.http.get(`${this.url}/devoluciones-bodega/${idDevolucion}/comprobante`, { responseType: 'blob' }).pipe(
+      map(pdf => {
+        const urlPdf = window.URL.createObjectURL(pdf);
+        window.open(urlPdf, '_blank');
+        window.setTimeout(() => window.URL.revokeObjectURL(urlPdf), 60000);
+      }),
+      catchError(e => this.mostrarError('No se pudo generar el comprobante', e))
+    );
+  }
+
   private mostrarError(titulo: string, e: any): Observable<never> {
     const mensaje = (e && e.error && (e.error.message || e.error.detail)) || 'Ha ocurrido un error inesperado';
     swal.fire(titulo, mensaje, 'error');

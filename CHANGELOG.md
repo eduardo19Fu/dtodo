@@ -17,7 +17,8 @@ El módulo de Bodegas admite devolver producto de una sucursal (tienda) a una bo
 - **Frontend**: listado, formulario, detalle y buscador de productos de la tienda, con el mismo esqueleto y la misma paleta ocre del despacho (identidad del módulo de Bodegas) y un recorrido *tienda → bodega* en el formulario y el detalle que distingue el flujo inverso. Menú **Devoluciones** (con la etiqueta «Nuevo», que sale de Tutorial), manual actualizado (portada, roles, acceso, sección 8.10, ciclo de existencias, reportes, preguntas frecuentes y resumen).
 - **Corregido de paso**: la cabecera de *Registrar nueva bodega* salía gris azulada (heredaba la paleta de Sucursales por la clase `branch-form-page`) en lugar de ocre como su tarjeta del inicio.
 - **Pruebas**: `DevolucionBodegaServiceImplTest` (14 casos), `BodegaControllersSecurityTest` ampliada y specs de servicio, listado, formulario y detalle.
-- **No incluido**: comprobante PDF de la devolución y reversión de una devolución ya aprobada.
+- **Comprobante PDF** (`GET /api/devoluciones-bodega/{id}/comprobante`, plantilla `devolucion_bodega.jrxml`): mismo lenguaje que el comprobante de despacho (banner azul con logo, franja de estado, tabla, firmas) con elementos propios: recorrido *tienda → bodega* con ficha de unidades, línea de tiempo de la devolución, barra de «% de la existencia» por línea, fichas de totales y recuadros de firma con sello. Cambia de color y de trazado según el estado (pendiente, aprobada, rechazada). El costo, los subtotales y el total solo salen con `VER_COSTOS` (administrador). Botón de imprimir en el listado y el detalle, y oferta de imprimir al registrar. Pruebas en `BodegaTemplatesTest` (compilación, los tres estados con y sin costos, textos y visibilidad del costo).
+- **No incluido**: reversión de una devolución ya aprobada.
 
 ### Corregido — El costo (precio de compra) solo lo ve el administrador
 
