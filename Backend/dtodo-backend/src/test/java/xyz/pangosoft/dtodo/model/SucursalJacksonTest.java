@@ -49,4 +49,27 @@ class SucursalJacksonTest {
 
         assertDoesNotThrow(() -> objectMapper.writeValueAsString(sucursal));
     }
+
+    @Test
+    void deserializaSucursalConElUsuarioCompletoQueEnviaElFormulario() {
+        String json = "{\"nombre\":\"N\",\"direccion\":\"D\",\"telefono\":\"1\",\"encargado\":\"E\",\"codigoEstablecimientoSat\":\"3\","
+                + "\"usuario\":{\"idUsuario\":3,\"usuario\":\"DAVID\",\"password\":\"$2a$10$h\",\"primerNombre\":\"J\","
+                + "\"segundoNombre\":null,\"apellido\":\"A\",\"enabled\":true,\"fechaRegistro\":\"2022-04-30T09:49:21\","
+                + "\"roles\":[{\"idRole\":1,\"role\":\"ROLE_ADMIN\"}],"
+                + "\"sucursal\":{\"idSucursal\":1,\"nombre\":\"C\",\"direccion\":\"d\",\"codigoEstablecimientoSat\":1,"
+                + "\"esPrincipal\":true,\"fechaRegistro\":\"2026-09-09T22:04:18\",\"estado\":{\"idEstado\":1,\"estado\":\"ACTIVO\"}}}}";
+
+        Sucursal sucursal = assertDoesNotThrow(() -> objectMapper.readValue(json, Sucursal.class));
+
+        assertEquals(3, sucursal.getUsuario().getIdUsuario());
+    }
+
+    @Test
+    void deserializaElCuerpoExactoReportadoEnDev() {
+        String json = "{\"nombre\":\"Sucursal de prueba\",\"direccion\":\"Jalapa\",\"codigoEstablecimientoSat\":2,\"usuario\":{\"idUsuario\":1,\"usuario\":\"efuentes\",\"password\":\"******\",\"primerNombre\":\"Ramiro\",\"segundoNombre\":\"Eduardo\",\"apellido\":\"Fuentes\",\"enabled\":true,\"fechaRegistro\":\"2022-03-19T00:00:00\",\"roles\":[{\"idRole\":1,\"role\":\"ROLE_ADMIN\"},{\"idRole\":2,\"role\":\"ROLE_COBRADOR\"}],\"sucursal\":{\"idSucursal\":1,\"nombre\":\"Sucursal Central\",\"direccion\":\"1 CALLE 4-95 ZONA 2\",\"telefono\":null,\"encargado\":null,\"codigoEstablecimientoSat\":1,\"esPrincipal\":true,\"fechaRegistro\":\"2026-09-09T22:04:18\",\"estado\":{\"idEstado\":1,\"estado\":\"ACTIVO\"}}}}";
+
+        Sucursal sucursal = assertDoesNotThrow(() -> objectMapper.readValue(json, Sucursal.class));
+
+        assertEquals(1, sucursal.getUsuario().getIdUsuario());
+    }
 }
