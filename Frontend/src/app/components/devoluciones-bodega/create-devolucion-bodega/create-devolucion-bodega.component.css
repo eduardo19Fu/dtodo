@@ -1,0 +1,186 @@
+/* La devolución reutiliza el formulario del despacho (estructura, tabla de detalle, modal de edición) y su paleta
+   ocre: es parte del módulo de Bodegas y debe cuadrar con su identidad. Aquí solo van las piezas propias. */
+
+/* El modal de edición de cantidad vive fuera de .despacho-page: se le da la misma paleta ocre */
+.detail-edit-dialog.devolucion-page {
+  --blue-950: #4a2c08;
+  --blue-900: #6e410f;
+  --blue-800: #8f5518;
+  --blue-700: #b8732b;
+  --blue-600: #b8732b;
+  --blue-500: #cd8b46;
+  --blue-100: #f8eee2;
+  --blue-50: #fcf7f1;
+  --border: #e8e0d6;
+}
+
+/* Recorrido tienda -> bodega, arriba del formulario */
+.return-route {
+  align-items: center;
+  background: linear-gradient(135deg, #fcf7f1 0%, #fffdfa 100%);
+  border: 1px solid #ecd7bd;
+  border-radius: 12px;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) minmax(70px, 0.4fr) minmax(0, 1fr);
+  margin: 18px 18px 4px;
+  padding: 14px 18px;
+}
+
+.return-stop {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  min-width: 0;
+}
+
+.return-stop-end {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.return-stop-end .return-stop-icon {
+  order: 2;
+}
+
+.return-stop strong {
+  color: #4a2c08;
+  display: block;
+  font-size: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.return-stop.is-empty strong {
+  color: #b79a78;
+  font-weight: 600;
+}
+
+.return-stop-kind {
+  color: #a7794a;
+  display: block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.return-stop-icon {
+  align-items: center;
+  background: #fff;
+  border: 2px solid #8f5518;
+  border-radius: 12px;
+  color: #8f5518;
+  display: inline-flex;
+  flex: 0 0 40px;
+  height: 40px;
+  justify-content: center;
+  width: 40px;
+}
+
+.return-stop.is-empty .return-stop-icon {
+  border-color: #d9c3a6;
+  border-style: dashed;
+  color: #b79a78;
+}
+
+.return-track {
+  height: 26px;
+  position: relative;
+}
+
+.return-track-line {
+  border-top: 3px dashed #dcb98f;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.return-track-badge {
+  align-items: center;
+  background: #8f5518;
+  border-radius: 50%;
+  color: #fff;
+  display: inline-flex;
+  font-size: 12px;
+  height: 26px;
+  justify-content: center;
+  left: 50%;
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  width: 26px;
+}
+
+.devolucion-page .wide-field {
+  grid-column: span 2;
+}
+
+.devolucion-page .description-field {
+  grid-column: 1 / -1;
+}
+
+/* La tabla de devolución tiene menos columnas que la de despacho */
+.devolucion-page .devolucion-detail-table {
+  min-width: 620px;
+}
+
+@media (max-width: 991px) {
+  .devolucion-page .wide-field {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 767px) {
+  .return-route {
+    gap: 8px;
+    grid-template-columns: 1fr;
+    margin: 12px 10px 0;
+    padding: 12px;
+  }
+
+  .return-stop-end {
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .return-stop-end .return-stop-icon {
+    order: 0;
+  }
+
+  .return-track {
+    height: 30px;
+    margin-left: 19px;
+    width: 26px;
+  }
+
+  .return-track-line {
+    border-left: 3px dashed #dcb98f;
+    border-top: 0;
+    bottom: 0;
+    left: 50%;
+    right: auto;
+    top: 0;
+    transform: translateX(-50%);
+  }
+
+  .return-track-badge {
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%) rotate(90deg);
+  }
+
+  /* El detalle móvil del despacho tiene 5 columnas; aquí son 4 (producto, existencia, cantidad, acciones) */
+  .devolucion-page .despacho-detail-table td:nth-child(4) {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+
+  .devolucion-page .despacho-detail-table td.detail-action-cell {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+}

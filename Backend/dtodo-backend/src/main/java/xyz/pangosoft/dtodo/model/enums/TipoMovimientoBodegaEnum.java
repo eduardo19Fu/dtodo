@@ -23,7 +23,9 @@ public enum TipoMovimientoBodegaEnum {
     /** Ingreso de producto desde otra bodega cuando se aprueba un despacho cuyo destino es esta bodega. */
     INGRESO_DESPACHO(true),
     /** Salida del producto que ingresó por un despacho entre bodegas que luego se revirtió. */
-    REVERSION_DESPACHO(false);
+    REVERSION_DESPACHO(false),
+    /** Ingreso de producto devuelto por una sucursal cuando un administrador aprueba la devolución. */
+    INGRESO_DEVOLUCION(true);
 
     private final boolean incrementaStock;
 

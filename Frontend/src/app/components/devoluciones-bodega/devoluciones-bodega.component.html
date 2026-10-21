@@ -1,0 +1,168 @@
+<app-detail-devolucion-bodega *ngIf="devolucionSeleccionada" [devolucion]="devolucionSeleccionada" [puedeAprobar]="puedeAprobar"
+  [verCostos]="verCostos" [procesando]="procesandoId !== null" (cerrar)="cerrarDetalle()" [imprimiendo]="imprimiendoId !== null" (imprimir)="imprimir($event)"
+  (aprobar)="aprobar($event.idDevolucion, $event.bodega)"
+  (rechazar)="rechazar($event.idDevolucion, $event.sucursal)"></app-detail-devolucion-bodega>
+
+<section class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-8">
+        <h1>{{title}}</h1>
+        <p class="sucursal-subtitle" *ngIf="auth.usuario?.sucursal">
+          <i class="fas fa-store"></i> {{ auth.usuario.sucursal.nombre }}
+        </p>
+        <br>
+        <div class="header-actions">
+          <a [routerLink]="['/devoluciones-bodega/create']" class="btn listing-page-action listing-primary-action">
+            <i class="fas fa-plus"></i> Nueva devoluci&oacute;n
+          </a>
+          <a [routerLink]="['/despachos-bodega/index']" class="btn listing-page-action listing-secondary-action">
+            <i class="fas fa-truck-loading"></i> Despachos
+          </a>
+          <a [routerLink]="['/bodegas/index']" class="btn listing-page-action listing-secondary-action">
+            <i class="fas fa-warehouse"></i> Bodegas
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="card listing-card">
+  <div class="card-header listing-card-header">Listado de Devoluciones</div>
+  <div class="card-body table-responsive">
+    <div class="row mb-2 align-items-center table-controls">
+      <div class="col-sm-3">
+        <div class="d-inline-flex align-items-center">
+          <label class="mb-0 mr-2">Mostrar</label>
+          <select class="form-control form-control-sm page-size-select"
+                  [ngModel]="paginacion.pageSize" (ngModelChange)="cambiarPageSize($event)">
+            <option *ngFor="let opt of paginacion.pageSizeOptions" [ngValue]="opt">{{opt}}</option>
+          </select>
+          <label class="mb-0 ml-2">registros</label>
+        </div>
+      </div>
+      <div class="col-sm-3 text-center">
+        <span *ngIf="devoluciones.length > 0" class="info-paginacion">
+          Mostrando <strong>{{paginacion.desde()}}</strong>
+          al <strong>{{paginacion.hasta(devoluciones.length)}}</strong>
+          de <strong>{{paginacion.totalElementos}}</strong>
+        </span>
+      </div>
+      <div class="col-sm-6">
+        <div class="filters-inline">
+          <select class="form-control form-control-sm page-size-select filter-select" [(ngModel)]="estadoFiltro" (ngModelChange)="aplicarFiltros()"
+            aria-label="Filtrar por estado">
+            <option value="">Todos los estados</option>
+            <option *ngFor="let estado of estados" [value]="estado.codigo">{{estado.etiqueta}}</option>
+          </select>
+          <select class="form-control form-control-sm page-size-select filter-select" [(ngModel)]="idBodegaFiltro" (ngModelChange)="aplicarFiltros()"
+            aria-label="Filtrar por bodega">
+            <option [ngValue]="null">Todas las bodegas</option>
+            <option *ngFor="let bodega of bodegas" [ngValue]="bodega.idBodega">{{bodega.nombre}}</option>
+          </select>
+          <div class="listing-search-control search-control">
+            <input type="text" class="form-control form-control-sm" [value]="filtro"
+                   (input)="onBuscar($event.target.value)" placeholder="No., tienda, bodega o entrega">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="cargando" class="text-center p-4">
+      <div class="spinner-border" role="status"><span class="sr-only">Cargando...</span></div>
+    </div>
+
+    <div *ngIf="!cargando && devoluciones.length === 0" class="listing-empty-state">
+      <span class="listing-empty-icon" aria-hidden="true"><i class="fas fa-undo-alt"></i></span>
+      <div class="listing-empty-state-body">
+        <h5>{{ hayFiltros ? 'No se encontraron devoluciones' : 'Aún no hay devoluciones registradas' }}</h5>
+        <p>{{ hayFiltros ? 'No hay resultados para los filtros indicados.' : 'Registra la primera devolución con el botón "Nueva devolución".' }}</p>
+      </div>
+    </div>
+
+    <table class="table table-hover table-striped table-bordered table-sm mt-0 catalog-table return-table mobile-data-table"
+           *ngIf="!cargando && devoluciones.length > 0">
+      <thead>
+        <tr>
+          <th class="col-id">No.</th>
+          <th class="col-fecha">Fecha</th>
+          <th class="col-ruta">Tienda &rarr; Bodega</th>
+          <th class="col-entrega">Entrega</th>
+          <th class="col-motivo">Motivo</th>
+          <th class="col-lineas">Productos</th>
+          <th class="col-total" *ngIf="verCostos">Total</th>
+          <th class="col-estado">Estado</th>
+          <th class="col-opciones">Opciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let devolucion of devoluciones">
+          <td class="col-id" data-label="No."><span class="listing-id-pill">{{numeroDevolucion(devolucion.idDevolucion)}}</span></td>
+          <td class="col-fecha" data-label="Fecha">
+            <span class="fecha-principal">{{devolucion.fechaRegistro | date: 'dd/MM/yyyy'}}</span>
+            <small class="fecha-hora">{{devolucion.fechaRegistro | date: 'HH:mm'}}</small>
+          </td>
+          <td class="col-ruta mobile-primary-cell" data-label="Tienda → Bodega">
+            <div class="route-cell">
+              <div class="route-stop">
+                <span class="route-kind">Tienda</span>
+                <span class="route-name" [title]="devolucion.sucursalOrigen">{{devolucion.sucursalOrigen}}</span>
+              </div>
+              <span class="route-arrow" aria-hidden="true"><i class="fas fa-long-arrow-alt-right"></i></span>
+              <div class="route-stop">
+                <span class="route-kind">Bodega</span>
+                <span class="route-name" [title]="devolucion.bodega">{{devolucion.bodega}}</span>
+              </div>
+            </div>
+            <span class="cell-secondary cell-ellipsis">Registró: {{devolucion.usuarioRegistra}}</span>
+          </td>
+          <td class="col-entrega" data-label="Entrega"><span class="cell-ellipsis" [title]="devolucion.entregadoPor">{{devolucion.entregadoPor}}</span></td>
+          <td class="col-motivo" data-label="Motivo"><span class="cell-ellipsis" [title]="devolucion.motivo">{{devolucion.motivo}}</span></td>
+          <td class="col-lineas" data-label="Productos">{{devolucion.totalLineas}}</td>
+          <td class="col-total" data-label="Total" *ngIf="verCostos">{{devolucion.total | currency: "Q" : "symbol"}}</td>
+          <td class="col-estado" data-label="Estado">
+            <span class="listing-status-pill" [ngClass]="claseEstado(devolucion.estado)">{{etiquetaEstado(devolucion.estado)}}</span>
+          </td>
+          <td class="col-opciones mobile-actions-cell" data-label="Opciones">
+            <div class="action-buttons">
+              <button class="btn btn-sm listing-table-action listing-action-view" type="button"
+                      appTooltip="Ver detalle de la devolución" aria-label="Ver detalle de la devolución"
+                      [disabled]="detalleCargandoId !== null" (click)="abrirDetalle(devolucion)">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button class="btn btn-sm listing-table-action listing-action-edit" type="button"
+                      appTooltip="Imprimir comprobante" aria-label="Imprimir comprobante de la devolución"
+                      [disabled]="imprimiendoId !== null" (click)="imprimir(devolucion.idDevolucion)">
+                <i class="fas" [ngClass]="imprimiendoId === devolucion.idDevolucion ? 'fa-spinner fa-spin' : 'fa-print'"></i>
+              </button>
+              <button class="btn btn-sm listing-table-action listing-action-approve" type="button"
+                      *ngIf="devolucion.estado === 'PENDIENTE' && puedeAprobar"
+                      appTooltip="Aprobar devolución" aria-label="Aprobar devolución"
+                      [disabled]="procesandoId !== null" (click)="aprobar(devolucion.idDevolucion, devolucion.bodega)">
+                <i class="fas fa-check"></i>
+              </button>
+              <button class="btn btn-sm listing-table-action listing-action-cancel" type="button"
+                      *ngIf="devolucion.estado === 'PENDIENTE'"
+                      [appTooltip]="puedeAprobar ? 'Rechazar devolución' : 'Cancelar devolución'"
+                      [attr.aria-label]="puedeAprobar ? 'Rechazar devolución' : 'Cancelar devolución'"
+                      [disabled]="procesandoId !== null" (click)="rechazar(devolucion.idDevolucion, devolucion.sucursalOrigen)">
+                <i class="fas fa-ban"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <nav class="listing-pagination" *ngIf="!cargando && devoluciones.length > 0" aria-label="Paginación de devoluciones">
+      <ul class="pagination justify-content-center mt-3 mb-0">
+        <li class="page-item" [ngClass]="{'disabled': paginacion.isFirst}"><a class="page-link" href="javascript:void(0)" (click)="cargarDevoluciones(0)"><i class="fas fa-angle-double-left"></i></a></li>
+        <li class="page-item" [ngClass]="{'disabled': paginacion.isFirst}"><a class="page-link" href="javascript:void(0)" (click)="!paginacion.isFirst && cargarDevoluciones(paginacion.paginaActual - 1)"><i class="fas fa-angle-left"></i></a></li>
+        <li class="page-item" *ngFor="let pagina of paginacion.paginasVisibles" [ngClass]="{'active': pagina === paginacion.paginaActual}"><a class="page-link" href="javascript:void(0)" (click)="cargarDevoluciones(pagina)">{{pagina + 1}}</a></li>
+        <li class="page-item" [ngClass]="{'disabled': paginacion.isLast}"><a class="page-link" href="javascript:void(0)" (click)="!paginacion.isLast && cargarDevoluciones(paginacion.paginaActual + 1)"><i class="fas fa-angle-right"></i></a></li>
+        <li class="page-item" [ngClass]="{'disabled': paginacion.isLast}"><a class="page-link" href="javascript:void(0)" (click)="cargarDevoluciones(paginacion.totalPaginas - 1)"><i class="fas fa-angle-double-right"></i></a></li>
+      </ul>
+    </nav>
+  </div>
+</div>

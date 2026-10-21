@@ -1,5 +1,7 @@
 -- Revierte el módulo de Bodegas. DESTRUCTIVO: borra todos los datos de bodegas, despachos y movimientos.
 -- Antes de correrlo hay que quitar el rol ROLE_BODEGA a los usuarios que lo tengan (usuarios_roles).
+DROP TABLE IF EXISTS devoluciones_bodega_detalle;
+DROP TABLE IF EXISTS devoluciones_bodega;
 DROP TABLE IF EXISTS despachos_bodega_detalle;
 DROP TABLE IF EXISTS despachos_bodega;
 DROP TABLE IF EXISTS movimientos_bodega;

@@ -32,6 +32,8 @@ export class DespachosBodegaComponent implements OnInit, OnDestroy {
   despachoSeleccionado: DespachoBodega;
   detalleCargandoId: number = null;
   procesandoId: number = null;
+  /** Despacho cuyo comprobante se está generando: mientras tanto no se pide otro. */
+  imprimiendoId: number = null;
 
   readonly estados: Array<{ codigo: EstadoDespachoBodega; etiqueta: string }> = [
     { codigo: 'PENDIENTE', etiqueta: ETIQUETAS_ESTADO_DESPACHO.PENDIENTE },
@@ -159,7 +161,30 @@ export class DespachosBodegaComponent implements OnInit, OnDestroy {
   }
 
   imprimir(idDespacho: number): void {
-    this.despachoService.imprimirComprobante(idDespacho).subscribe();
+    if (this.imprimiendoId !== null) {
+      return;
+    }
+    this.imprimiendoId = idDespacho;
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'info',
+      title: 'Generando comprobante',
+      text: `Preparando el despacho ${this.numeroDespacho(idDespacho)}...`,
+      showConfirmButton: false,
+      customClass: { popup: 'app-loading-toast' },
+      didOpen: () => Swal.showLoading()
+    });
+    this.despachoService.imprimirComprobante(idDespacho).subscribe(
+      () => this.terminarImpresion(),
+      // El servicio ya muestra el motivo del error: aquí solo se quita el aviso de carga
+      () => this.terminarImpresion()
+    );
+  }
+
+  private terminarImpresion(): void {
+    this.imprimiendoId = null;
+    Swal.close();
   }
 
   /*********** APROBAR / CANCELAR ***********/

@@ -87,7 +87,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
       return this.coincide('facturas', 'facturas emitidas', 'correlativos');
     }
     if (menu === 'bodegas') {
-      return this.coincide('bodegas', 'inventario', 'despachos', 'despachos de bodega', 'tutorial', 'manual', 'ayuda');
+      return this.coincide('bodegas', 'inventario', 'despachos', 'despachos de bodega', 'devoluciones', 'tienda',
+        'tutorial', 'manual', 'ayuda');
     }
     return this.coincide('compras', 'registrar compra', 'proveedores');
   }
@@ -120,7 +121,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       this.productosAbierto = url.startsWith('/productos') && !url.includes('/inventario');
       this.facturasAbierto = url.startsWith('/facturas');
       this.comprasAbierto = url.startsWith('/compras') || url.startsWith('/proveedores');
-      this.bodegasAbierto = url.startsWith('/bodegas') || url.startsWith('/despachos-bodega');
+      this.bodegasAbierto = url.startsWith('/bodegas') || url.startsWith('/despachos-bodega') || url.startsWith('/devoluciones-bodega');
     }
   }
 }

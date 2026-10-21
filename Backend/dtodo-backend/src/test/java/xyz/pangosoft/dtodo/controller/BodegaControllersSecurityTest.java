@@ -44,7 +44,8 @@ class BodegaControllersSecurityTest {
 
     @Test
     void todosLosEndpointsDeBodegasDeclaranSeguridadYSoloPermitenRolesDelModulo() {
-        for (Class<?> controlador : new Class<?>[] { BodegaApiController.class, DespachoBodegaApiController.class }) {
+        for (Class<?> controlador : new Class<?>[] {
+                BodegaApiController.class, DespachoBodegaApiController.class, DevolucionBodegaApiController.class }) {
             List<Method> metodos = endpoints(controlador);
             assertFalse(metodos.isEmpty());
             for (Method metodo : metodos) {
@@ -61,6 +62,15 @@ class BodegaControllersSecurityTest {
                 .filter(metodo -> metodo.getName().equals("aprobar")).findFirst().orElseThrow();
 
         assertEquals(Set.of("ROLE_ADMIN"), roles(aprobar));
+    }
+
+    @Test
+    void aprobarUnaDevolucionEsExclusivoDeAdminYElRestoAdmiteAAdminYBodega() {
+        for (Method metodo : endpoints(DevolucionBodegaApiController.class)) {
+            Set<String> esperado = metodo.getName().equals("aprobar") ? Set.of("ROLE_ADMIN") : ROLES_DEL_MODULO;
+
+            assertEquals(esperado, roles(metodo), metodo.getName());
+        }
     }
 
     @Test
