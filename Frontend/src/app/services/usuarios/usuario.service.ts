@@ -61,7 +61,7 @@ export class UsuarioService {
   getUsuario(id: number): Observable<UsuarioAuxiliar> {
     return this.http.get<UsuarioAuxiliar>(`${this.url}/usuarios/${id}`).pipe(
       catchError(e => {
-        swal.fire(e.error.mensaje, e.error.error, 'error');
+        swal.fire('Error', (e.error && (e.error.message || e.error.detail || e.error.mensaje)) || 'No se pudo completar la operación', 'error');
         return throwError(e);
       })
     );
@@ -70,7 +70,7 @@ export class UsuarioService {
   getTotalUsuarios(): Observable<any> {
     return this.http.get<any>(`${this.url}/usuarios/cantidad-usuarios`).pipe(
       catchError(e => {
-        swal.fire(e.error.mensaje, e.error.error, 'error');
+        swal.fire('Error', (e.error && (e.error.message || e.error.detail || e.error.mensaje)) || 'No se pudo completar la operación', 'error');
         return throwError(e);
       })
     );
@@ -79,7 +79,7 @@ export class UsuarioService {
   create(usuario: UsuarioAuxiliar): Observable<any> {
     return this.http.post<any>(`${this.url}/usuarios`, usuario).pipe(
       catchError(e => {
-        swal.fire(e.error.mensaje, e.error.error, 'error');
+        swal.fire('Error', (e.error && (e.error.message || e.error.detail || e.error.mensaje)) || 'No se pudo completar la operación', 'error');
         return throwError(e);
       })
     );
@@ -88,7 +88,7 @@ export class UsuarioService {
   update(usuario: UsuarioAuxiliar): Observable<any> {
     return this.http.put<any>(`${this.url}/usuarios/${usuario.idUsuario}`, usuario).pipe(
       catchError(e => {
-        swal.fire(e.error.mensaje, e.error.error, 'error');
+        swal.fire('Error', (e.error && (e.error.message || e.error.detail || e.error.mensaje)) || 'No se pudo completar la operación', 'error');
         return throwError(e);
       })
     );
@@ -97,7 +97,7 @@ export class UsuarioService {
   delete(id: number): Observable<any> {
     return this.http.delete<any>(`${this.url}/usuarios/${id}`).pipe(
       catchError(e => {
-        swal.fire(e.error.mensaje, e.error.error, 'error');
+        swal.fire('Error', (e.error && (e.error.message || e.error.detail || e.error.mensaje)) || 'No se pudo completar la operación', 'error');
         return throwError(e);
       })
     );
