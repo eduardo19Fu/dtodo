@@ -34,6 +34,21 @@ import java.time.Instant;
 @Slf4j
 public class ExceptionControllerHandler extends ResponseEntityExceptionHandler {
 
+    /**
+     * Los rechazos de Spring MVC (JSON ilegible, tipo de contenido, etc.) se registran en WARN con el motivo:
+     * en producción el nivel root es ERROR y de otro modo no dejarían ningún rastro en el log.
+     */
+    @Override
+    protected ResponseEntity<Object> handleExceptionInternal(
+            Exception exception,
+            Object body,
+            HttpHeaders headers,
+            HttpStatusCode statusCode,
+            WebRequest request) {
+        log.warn("Solicitud rechazada ({}): {}", statusCode.value(), exception.getMessage());
+        return super.handleExceptionInternal(exception, body, headers, statusCode, request);
+    }
+
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             MethodArgumentNotValidException exception,
@@ -44,6 +59,7 @@ public class ExceptionControllerHandler extends ResponseEntityExceptionHandler {
                 .findFirst()
                 .map(fieldError -> fieldError.getDefaultMessage())
                 .orElse("Los datos enviados no son válidos.");
+        log.warn("Validación fallida en {}: {}", request.getDescription(false), message);
         ErrorDTO errorDTO = new ErrorDTO();
         errorDTO.setMessage(message);
         errorDTO.setCode(HttpStatus.BAD_REQUEST.value());
