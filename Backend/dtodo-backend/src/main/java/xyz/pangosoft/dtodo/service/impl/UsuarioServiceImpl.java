@@ -194,8 +194,8 @@ public class UsuarioServiceImpl implements UserDetailsService, IUsuarioService {
 			usuarioActual.setRoles(usuario.getRoles());
 			usuarioActual.setSucursal(usuario.getSucursal());
 
-			// Solo se recodifica la contraseña si cambió respecto a la almacenada
-			if (!usuarioActual.getPassword().equals(usuario.getPassword())) {
+			// El hash nunca viaja al cliente: sin contraseña nueva se conserva la almacenada
+			if (usuario.getPassword() != null && !usuario.getPassword().trim().isEmpty()) {
 				usuarioActual.setPassword(passwordEncoder.encode(usuario.getPassword()));
 			}
 
