@@ -94,11 +94,12 @@
           </div>
 
           <div class="field-group">
-            <label for="password">Contraseña <span class="required-mark">*</span></label>
+            <label for="password">Contraseña <span class="required-mark" *ngIf="!usuarioAuxiliar.idUsuario">*</span></label>
             <div class="control-with-icon">
               <i class="fas fa-lock" aria-hidden="true"></i>
               <input type="password" name="password" id="password" [(ngModel)]="usuarioAuxiliar.password"
-                class="form-control" required #password="ngModel" placeholder="Contraseña segura">
+                class="form-control" [required]="!usuarioAuxiliar.idUsuario" #password="ngModel" autocomplete="new-password"
+                [placeholder]="usuarioAuxiliar.idUsuario ? 'Dejar vacía para conservar la actual' : 'Contraseña segura'">
             </div>
             <div class="validation-message" *ngIf="password.invalid && (password.touched || password.dirty)">
               <i class="fas fa-exclamation-circle"></i> La contraseña es obligatoria.
