@@ -1,5 +1,5 @@
 <app-detail-despacho-bodega *ngIf="despachoSeleccionado" [despacho]="despachoSeleccionado" [puedeAprobar]="puedeAprobar"
-  [verCostos]="verCostos" [procesando]="procesandoId !== null" (cerrar)="cerrarDetalle()" (imprimir)="imprimir($event)"
+  [verCostos]="verCostos" [procesando]="procesandoId !== null" (cerrar)="cerrarDetalle()" [imprimiendo]="imprimiendoId !== null" (imprimir)="imprimir($event)"
   (aprobar)="aprobar($event.idDespacho, $event.destino)" (cancelar)="cancelar($event.idDespacho, $event.estado)"></app-detail-despacho-bodega>
 
 <section class="content-header">
@@ -122,8 +122,8 @@
               </button>
               <button class="btn btn-sm listing-table-action listing-action-edit" type="button"
                       appTooltip="Imprimir comprobante" aria-label="Imprimir comprobante del despacho"
-                      (click)="imprimir(despacho.idDespacho)">
-                <i class="fas fa-print"></i>
+                      [disabled]="imprimiendoId !== null" (click)="imprimir(despacho.idDespacho)">
+                <i class="fas" [ngClass]="imprimiendoId === despacho.idDespacho ? 'fa-spinner fa-spin' : 'fa-print'"></i>
               </button>
               <button class="btn btn-sm listing-table-action listing-action-approve" type="button"
                       *ngIf="despacho.estado === 'PENDIENTE' && puedeAprobar"

@@ -338,6 +338,64 @@ class BodegaTemplatesTest {
         }
     }
 
+    @Test
+    void laGuiaDeDespachoMuestraDestinoUnidadesAvanceYRecepcion() throws Exception {
+        JasperReport report = compilar("despacho_bodega");
+        Map<String, Object> parametros = new HashMap<>();
+        parametros.put("ID_DESPACHO", 12L);
+
+        TextosImpresos pendiente = new TextosImpresos(JasperFillManager.fillReport(
+                report, parametros, new JRMapCollectionDataSource(filasComprobante("PENDIENTE"))));
+        TextosImpresos realizado = new TextosImpresos(JasperFillManager.fillReport(
+                report, parametros, new JRMapCollectionDataSource(filasComprobante("REALIZADO"))));
+        TextosImpresos cancelado = new TextosImpresos(JasperFillManager.fillReport(
+                report, parametros, new JRMapCollectionDataSource(filasComprobante("CANCELADO"))));
+
+        // Etiqueta de envío: total de unidades (4 + 20) y destino
+        assertTrue(pendiente.contiene("TOTAL A ENVIAR"));
+        assertTrue(pendiente.contiene("24"));
+        assertTrue(pendiente.contiene("UNIDADES"));
+        assertTrue(pendiente.contiene("SUCURSAL DESTINO"));
+        assertTrue(pendiente.contiene("Norte"));
+        // Columnas propias de la guía y bloque de recepción
+        assertTrue(pendiente.contiene("Quedan"));
+        assertTrue(pendiente.contiene("Conforme"));
+        assertTrue(pendiente.contiene("RECEPCIÓN EN"));
+        assertTrue(pendiente.contiene("Recibido conforme"));
+        // Avance en pasos según el estado
+        assertTrue(pendiente.contiene("PENDIENTE DE APROBACIÓN"));
+        assertTrue(pendiente.contiene("2 · EN ESPERA"));
+        assertTrue(pendiente.contiene("3 · INGRESO AL DESTINO"));
+        assertTrue(realizado.contiene("DESPACHO REALIZADO"));
+        assertTrue(realizado.contiene("2 · APROBADO"));
+        assertTrue(realizado.contiene("3 · INGRESÓ AL DESTINO"));
+        assertTrue(realizado.contiene("APROBADO POR"));
+        assertTrue(cancelado.contiene("DESPACHO CANCELADO"));
+        assertTrue(cancelado.contiene("3 · REGRESÓ A LA BODEGA"));
+        assertTrue(cancelado.contiene("MOTIVO DE LA CANCELACIÓN"));
+        assertTrue(cancelado.contiene("Error de captura"));
+        assertFalse(realizado.contiene("MOTIVO DE LA CANCELACIÓN"));
+    }
+
+    @Test
+    void laGuiaDeDespachoIndicaCuandoElDestinoEsOtraBodega() throws Exception {
+        JasperReport report = compilar("despacho_bodega");
+        Map<String, Object> parametros = new HashMap<>();
+        parametros.put("ID_DESPACHO", 12L);
+        List<Map<String, ?>> filas = new ArrayList<>();
+        Map<String, Object> fila = filaComprobante("A-1", "Cuaderno universitario", 4, "12.50", 50, "PENDIENTE");
+        fila.put("es_traslado", 1);
+        fila.put("sucursal_destino", "Bodega Secundaria");
+        filas.add(fila);
+
+        TextosImpresos textos = new TextosImpresos(JasperFillManager.fillReport(
+                report, parametros, new JRMapCollectionDataSource(filas)));
+
+        assertTrue(textos.contiene("BODEGA DESTINO · TRASLADO"));
+        assertTrue(textos.contiene("Bodega Secundaria"));
+        assertFalse(textos.contiene("SUCURSAL DESTINO"));
+    }
+
     // ---------- el costo solo lo imprime el administrador ----------
 
     @Test
@@ -400,5 +458,137 @@ class BodegaTemplatesTest {
         assertTrue(conCostos.contiene("Subtotal"));
         assertTrue(conCostos.contiene("12.50"));
         assertTrue(conCostos.contiene("75.00"));
+    }
+
+    // ---------- comprobante de devolución ----------
+
+    private Map<String, Object> filaDevolucion(String codigo, String producto, int cantidad, String precio, int existencia,
+            String estado) {
+        Map<String, Object> fila = new HashMap<>();
+        fila.put("id_devolucion", 3L);
+        fila.put("fecha_registro", Timestamp.valueOf(LocalDateTime.of(2026, 10, 16, 9, 15)));
+        fila.put("fecha_resolucion", "PENDIENTE".equals(estado) ? null : Timestamp.valueOf(LocalDateTime.of(2026, 10, 16, 11, 20)));
+        fila.put("estado", estado);
+        fila.put("total", new BigDecimal("312.50"));
+        fila.put("entregado_por", "María López");
+        fila.put("motivo", "Producto con sobrestock en la tienda");
+        fila.put("observaciones", "Se entrega en cajas selladas.");
+        fila.put("motivo_cancelacion", "CANCELADO".equals(estado) ? "No cumple las condiciones" : null);
+        fila.put("sucursal", "Mataquescuintla");
+        fila.put("sucursal_direccion", "Barrio El Centro, Mataquescuintla");
+        fila.put("bodega", "Bodega Jalapa 1");
+        fila.put("bodega_ubicacion", "Zona 2, Jalapa");
+        fila.put("registrado_por", "Carlos Demo");
+        fila.put("resuelto_por", "PENDIENTE".equals(estado) ? null : "Ana Gómez");
+        fila.put("codigo", codigo);
+        fila.put("producto", producto);
+        fila.put("cantidad", cantidad);
+        fila.put("precio_unitario", new BigDecimal(precio));
+        fila.put("sub_total", new BigDecimal(precio).multiply(BigDecimal.valueOf(cantidad)));
+        fila.put("existencia_sucursal", existencia);
+        return fila;
+    }
+
+    private List<Map<String, ?>> filasDevolucion(String estado) {
+        List<Map<String, ?>> filas = new ArrayList<>();
+        filas.add(filaDevolucion("7501", "Cuaderno profesional", 10, "12.50", 24, estado));
+        filas.add(filaDevolucion("7504", "Regla plástica", 4, "37.50", 48, estado));
+        filas.add(filaDevolucion("7502", "Lápiz grafito", 1, "37.50", 1, estado));
+        return filas;
+    }
+
+    @Test
+    void comprobanteDeDevolucionCompilaYSeLlenaSinDatos() throws Exception {
+        JasperReport report = compilar("devolucion_bodega");
+        assertTrue(tieneParametro(report, "ID_DEVOLUCION"));
+        assertTrue(tieneParametro(report, "VER_COSTOS"));
+
+        Map<String, Object> parametros = new HashMap<>();
+        parametros.put("ID_DEVOLUCION", 3L);
+        assertDoesNotThrow(() -> JasperFillManager.fillReport(report, parametros, new JREmptyDataSource(0)));
+    }
+
+    @Test
+    void comprobanteDeDevolucionGeneraPdfParaCadaEstadoYVista() throws Exception {
+        JasperReport report = compilar("devolucion_bodega");
+
+        for (String estado : new String[] { "PENDIENTE", "REALIZADO", "CANCELADO" }) {
+            for (boolean administrador : new boolean[] { false, true }) {
+                Map<String, Object> parametros = new HashMap<>();
+                parametros.put("ID_DEVOLUCION", 3L);
+                if (administrador) {
+                    conCostos(parametros);
+                }
+                JasperPrint print = JasperFillManager.fillReport(
+                        report, parametros, new JRMapCollectionDataSource(filasDevolucion(estado)));
+                assertPdf(JasperExportManager.exportReportToPdf(print));
+            }
+        }
+    }
+
+    @Test
+    void comprobanteDeDevolucionResumeUnidadesYProductosEnLaRuta() throws Exception {
+        JasperReport report = compilar("devolucion_bodega");
+        Map<String, Object> parametros = new HashMap<>();
+        parametros.put("ID_DEVOLUCION", 3L);
+
+        TextosImpresos textos = new TextosImpresos(JasperFillManager.fillReport(
+                report, parametros, new JRMapCollectionDataSource(filasDevolucion("PENDIENTE"))));
+
+        assertTrue(textos.contiene("15 unidades"));
+        assertTrue(textos.contiene("en 3 productos"));
+        assertTrue(textos.contiene("Mataquescuintla"));
+        assertTrue(textos.contiene("Bodega Jalapa 1"));
+        assertTrue(textos.contiene("PENDIENTE DE APROBACIÓN"));
+        // 10 de 24 unidades -> 42 %; 1 de 1 -> 100 %
+        assertTrue(textos.contiene("42%"));
+        assertTrue(textos.contiene("100%"));
+    }
+
+    @Test
+    void comprobanteDeDevolucionMuestraElEstadoYElRecorridoSegunLaResolucion() throws Exception {
+        JasperReport report = compilar("devolucion_bodega");
+        Map<String, Object> parametros = new HashMap<>();
+        parametros.put("ID_DEVOLUCION", 3L);
+
+        TextosImpresos aprobada = new TextosImpresos(JasperFillManager.fillReport(
+                report, parametros, new JRMapCollectionDataSource(filasDevolucion("REALIZADO"))));
+        TextosImpresos rechazada = new TextosImpresos(JasperFillManager.fillReport(
+                report, parametros, new JRMapCollectionDataSource(filasDevolucion("CANCELADO"))));
+
+        assertTrue(aprobada.contiene("DEVOLUCIÓN APROBADA"));
+        assertTrue(aprobada.contiene("INGRESÓ A BODEGA"));
+        assertTrue(aprobada.contiene("APROBADA POR"));
+        assertTrue(aprobada.contiene("Ana Gómez"));
+        assertFalse(aprobada.contiene("Motivo del rechazo"));
+        assertTrue(rechazada.contiene("DEVOLUCIÓN RECHAZADA"));
+        assertTrue(rechazada.contiene("SIN INGRESO"));
+        assertTrue(rechazada.contiene("RECHAZADA POR"));
+        assertTrue(rechazada.contiene("Motivo del rechazo: No cumple las condiciones"));
+    }
+
+    @Test
+    void comprobanteDeDevolucionSoloMuestraCostosSubtotalesYTotalAlAdministrador() throws Exception {
+        JasperReport report = compilar("devolucion_bodega");
+        Map<String, Object> parametros = new HashMap<>();
+        parametros.put("ID_DEVOLUCION", 3L);
+
+        TextosImpresos sinCostos = new TextosImpresos(JasperFillManager.fillReport(
+                report, parametros, new JRMapCollectionDataSource(filasDevolucion("REALIZADO"))));
+        TextosImpresos conCostos = new TextosImpresos(JasperFillManager.fillReport(
+                report, conCostos(new HashMap<>(parametros)), new JRMapCollectionDataSource(filasDevolucion("REALIZADO"))));
+
+        assertTrue(sinCostos.contiene("Cuaderno profesional"));
+        assertTrue(sinCostos.contiene("Cantidad"));
+        assertFalse(sinCostos.contiene("Costo unit."));
+        assertFalse(sinCostos.contiene("Subtotal"));
+        assertFalse(sinCostos.contiene("TOTAL AL COSTO"));
+        assertFalse(sinCostos.contiene("12.50"));
+        assertFalse(sinCostos.contiene("312.50"));
+        assertTrue(conCostos.contiene("Costo unit."));
+        assertTrue(conCostos.contiene("Subtotal"));
+        assertTrue(conCostos.contiene("TOTAL AL COSTO"));
+        assertTrue(conCostos.contiene("12.50"));
+        assertTrue(conCostos.contiene("312.50"));
     }
 }

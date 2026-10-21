@@ -14,6 +14,7 @@ import jakarta.persistence.LockModeType;
 
 import xyz.pangosoft.dtodo.dto.InventarioBodegaDto;
 import xyz.pangosoft.dtodo.model.InventarioBodega;
+import xyz.pangosoft.dtodo.util.TerminosBusqueda;
 
 public interface IInventarioBodegaRepository extends JpaRepository<InventarioBodega, Long> {
 
@@ -33,14 +34,32 @@ public interface IInventarioBodegaRepository extends JpaRepository<InventarioBod
 			"i.stock, i.stockMinimo, p.precioCompra, i.fechaActualizacion) " +
 			"FROM InventarioBodega i JOIN i.producto p " +
 			"WHERE i.bodega.idBodega = :idBodega " +
-			"AND (:filtro = '' OR LOWER(p.nombre) LIKE LOWER(CONCAT('%', :filtro, '%')) " +
-			"OR LOWER(p.codProducto) LIKE LOWER(CONCAT('%', :filtro, '%')))",
+			"AND (:t1 = '' OR CONCAT(LOWER(p.nombre), ' ', LOWER(COALESCE(p.codProducto, ''))) LIKE CONCAT('%', :t1, '%')) " +
+			"AND (:t2 = '' OR CONCAT(LOWER(p.nombre), ' ', LOWER(COALESCE(p.codProducto, ''))) LIKE CONCAT('%', :t2, '%')) " +
+			"AND (:t3 = '' OR CONCAT(LOWER(p.nombre), ' ', LOWER(COALESCE(p.codProducto, ''))) LIKE CONCAT('%', :t3, '%')) " +
+			"AND (:t4 = '' OR CONCAT(LOWER(p.nombre), ' ', LOWER(COALESCE(p.codProducto, ''))) LIKE CONCAT('%', :t4, '%')) " +
+			"AND (:t5 = '' OR CONCAT(LOWER(p.nombre), ' ', LOWER(COALESCE(p.codProducto, ''))) LIKE CONCAT('%', :t5, '%')) " +
+			"AND (:t6 = '' OR CONCAT(LOWER(p.nombre), ' ', LOWER(COALESCE(p.codProducto, ''))) LIKE CONCAT('%', :t6, '%')) ",
 			countQuery = "SELECT COUNT(i) FROM InventarioBodega i JOIN i.producto p " +
 					"WHERE i.bodega.idBodega = :idBodega " +
-					"AND (:filtro = '' OR LOWER(p.nombre) LIKE LOWER(CONCAT('%', :filtro, '%')) " +
-					"OR LOWER(p.codProducto) LIKE LOWER(CONCAT('%', :filtro, '%')))")
-	Page<InventarioBodegaDto> findListado(
-			@Param("idBodega") Integer idBodega, @Param("filtro") String filtro, Pageable pageable);
+					"AND (:t1 = '' OR CONCAT(LOWER(p.nombre), ' ', LOWER(COALESCE(p.codProducto, ''))) LIKE CONCAT('%', :t1, '%')) " +
+					"AND (:t2 = '' OR CONCAT(LOWER(p.nombre), ' ', LOWER(COALESCE(p.codProducto, ''))) LIKE CONCAT('%', :t2, '%')) " +
+					"AND (:t3 = '' OR CONCAT(LOWER(p.nombre), ' ', LOWER(COALESCE(p.codProducto, ''))) LIKE CONCAT('%', :t3, '%')) " +
+					"AND (:t4 = '' OR CONCAT(LOWER(p.nombre), ' ', LOWER(COALESCE(p.codProducto, ''))) LIKE CONCAT('%', :t4, '%')) " +
+					"AND (:t5 = '' OR CONCAT(LOWER(p.nombre), ' ', LOWER(COALESCE(p.codProducto, ''))) LIKE CONCAT('%', :t5, '%')) " +
+					"AND (:t6 = '' OR CONCAT(LOWER(p.nombre), ' ', LOWER(COALESCE(p.codProducto, ''))) LIKE CONCAT('%', :t6, '%')) ")
+	Page<InventarioBodegaDto> buscarPorTerminos(
+			@Param("idBodega") Integer idBodega,
+			@Param("t1") String t1, @Param("t2") String t2, @Param("t3") String t3, @Param("t4") String t4, @Param("t5") String t5, @Param("t6") String t6, Pageable pageable);
+
+	/**
+	 * Existencias de la bodega filtradas por nombre o código: el texto se divide en palabras y el producto debe
+	 * contenerlas todas, en cualquier orden.
+	 */
+	default Page<InventarioBodegaDto> findListado(Integer idBodega, String filtro, Pageable pageable) {
+		String[] t = TerminosBusqueda.dividir(filtro);
+		return buscarPorTerminos(idBodega, t[0], t[1], t[2], t[3], t[4], t[5], pageable);
+	}
 
 	@Query("SELECT new xyz.pangosoft.dtodo.dto.InventarioBodegaDto(" +
 			"i.idInventarioBodega, p.idProducto, p.codProducto, p.nombre, " +

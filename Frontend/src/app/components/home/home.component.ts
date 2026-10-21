@@ -3,7 +3,6 @@ import { Component, OnInit } from '@angular/core';
 import { BodegaService } from 'src/app/services/bodega.service';
 import { ClienteService } from 'src/app/services/cliente.service';
 import { CompraService } from 'src/app/services/compra.service';
-import { DespachoBodegaService } from 'src/app/services/despacho-bodega.service';
 import { FacturaService } from 'src/app/services/facturas/factura.service';
 import { MarcaProductoService } from 'src/app/services/marca-producto.service';
 import { NotasCreditoService } from 'src/app/services/notas-credito.service';
@@ -36,7 +35,6 @@ export class HomeComponent implements OnInit {
   public totalNotasCredito: number;
   public totalSucursales: number;
   public totalBodegas: number;
-  public totalDespachosPendientes: number;
 
   productos: Producto[];
   clientes: Cliente[];
@@ -54,7 +52,6 @@ export class HomeComponent implements OnInit {
     private serviceNotasCredito: NotasCreditoService,
     private serviceSucursal: SucursalService,
     private serviceBodega: BodegaService,
-    private serviceDespachoBodega: DespachoBodegaService,
     public auth: AuthService
   ) {
     this.title = 'Inicio';
@@ -75,7 +72,6 @@ export class HomeComponent implements OnInit {
 
     if (this.auth.hasRole('ROLE_ADMIN') || this.auth.hasRole('ROLE_BODEGA')) {
       this.getBodegas();
-      this.getDespachosPendientes();
     }
 
     if (this.auth.hasRole('ROLE_ADMIN') || this.auth.hasRole('ROLE_COBRADOR')) {
@@ -139,12 +135,6 @@ export class HomeComponent implements OnInit {
   getBodegas(): void {
     this.serviceBodega.getTotalBodegas().subscribe(
       total => this.totalBodegas = total
-    );
-  }
-
-  getDespachosPendientes(): void {
-    this.serviceDespachoBodega.getTotalPendientes().subscribe(
-      total => this.totalDespachosPendientes = total
     );
   }
 }

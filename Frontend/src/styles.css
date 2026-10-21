@@ -330,6 +330,17 @@ form label,
     justify-content: flex-end;
   }
 
+  /* Estados largos (p. ej. "Pendiente de aprobación") no caben en una sola columna de la tarjeta: la celda ocupa
+     dos y, si aun así no alcanza, la etiqueta baja de línea en vez de salirse de la cápsula. */
+  .mobile-data-table td.col-estado {
+    grid-column: span 2;
+  }
+
+  .mobile-data-table .listing-status-pill {
+    border-radius: 14px;
+    white-space: normal;
+  }
+
   .mobile-data-table .cell-ellipsis {
     overflow: visible;
     text-overflow: clip;

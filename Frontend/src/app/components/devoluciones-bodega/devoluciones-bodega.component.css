@@ -1,0 +1,59 @@
+/* Complementa los estilos de listado compartidos en ../bodegas/bodegas.component.css y ../despachos-bodega */
+
+.return-table { min-width: 1160px; }
+.return-table .col-id { width: 80px; }
+.return-table .col-fecha { width: 105px; }
+.return-table .col-ruta { width: 270px; }
+.return-table .col-entrega { width: 125px; }
+.return-table .col-motivo { width: 170px; }
+.return-table .col-lineas { text-align: center; width: 80px; }
+.return-table .col-total { text-align: right; width: 100px; }
+.return-table .col-estado { width: 160px; }
+.return-table .col-opciones { text-align: center; width: 190px; }
+
+/* Origen y destino de la devolución: el producto viaja de la tienda a la bodega */
+.route-cell {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.route-stop {
+  min-width: 0;
+}
+
+.route-stop .route-kind {
+  color: #6c7890;
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.route-stop .route-name {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.route-arrow {
+  align-items: center;
+  background: #f8eee2;
+  border-radius: 50%;
+  color: #8f5518;
+  display: inline-flex;
+  flex: 0 0 24px;
+  font-size: 11px;
+  height: 24px;
+  justify-content: center;
+  width: 24px;
+}
+
+@media (max-width: 767.98px) {
+  .route-cell { flex-wrap: wrap; }
+
+  /* Cada extremo ya se rotula como "Tienda" y "Bodega": la etiqueta de la tarjeta móvil sería redundante */
+  .return-table .col-ruta::before { display: none; }
+}

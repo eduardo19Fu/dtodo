@@ -22,6 +22,9 @@ export class DetailDespachoBodegaComponent implements AfterViewInit, OnDestroy {
   @Input() procesando = false;
 
   @Output() cerrar = new EventEmitter<void>();
+  /** Se está generando un comprobante: el botón de imprimir queda bloqueado con un indicador de carga. */
+  @Input() imprimiendo = false;
+
   @Output() imprimir = new EventEmitter<number>();
   @Output() aprobar = new EventEmitter<{ idDespacho: number; destino: string }>();
   @Output() cancelar = new EventEmitter<{ idDespacho: number; estado: EstadoDespachoBodega }>();

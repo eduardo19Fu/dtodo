@@ -1,0 +1,189 @@
+<div class="sucursal-detail-overlay animacion fadeIn" (click)="cerrarDesdeBackdrop($event)">
+  <section class="sucursal-detail-dialog bodega-detail-dialog" tabindex="-1" role="dialog" aria-modal="true"
+    aria-labelledby="devolucion-detail-title" (click)="$event.stopPropagation()">
+    <div class="sucursal-detail-content">
+      <header class="sucursal-detail-header">
+        <div class="header-copy">
+          <span class="header-icon" aria-hidden="true"><i class="fas fa-undo-alt"></i></span>
+          <div>
+            <span class="header-eyebrow">Devoluciones a bodega</span>
+            <h5 id="devolucion-detail-title">{{title}} {{numero}}</h5>
+          </div>
+        </div>
+        <button (click)="cerrarModal()" type="button" class="close-button" aria-label="Cerrar detalle de la devolución">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+      </header>
+
+      <div *ngIf="devolucion" class="sucursal-detail-body">
+        <section class="route-ribbon" aria-label="Recorrido de la devolución">
+          <div class="route-point">
+            <span class="route-point-icon" aria-hidden="true"><i class="fas fa-store"></i></span>
+            <div>
+              <span class="route-point-kind">Sale de la tienda</span>
+              <strong>{{devolucion.sucursalOrigen?.nombre}}</strong>
+            </div>
+          </div>
+          <div class="route-line" [ngClass]="{'is-done': devolucion.estado === 'REALIZADO', 'is-stopped': rechazada}" aria-hidden="true">
+            <span class="route-line-track"></span>
+            <span class="route-line-truck"><i class="fas" [ngClass]="rechazada ? 'fa-undo-alt' : 'fa-dolly'"></i></span>
+          </div>
+          <div class="route-point route-point-end" [ngClass]="{'is-reached': devolucion.estado === 'REALIZADO'}">
+            <span class="route-point-icon" aria-hidden="true"><i class="fas fa-warehouse"></i></span>
+            <div>
+              <span class="route-point-kind">
+                {{ devolucion.estado === 'REALIZADO' ? 'Ingresó a la bodega' : rechazada ? 'No ingresó a la bodega' : 'Ingresa a la bodega al aprobar' }}
+              </span>
+              <strong>{{devolucion.bodega?.nombre}}</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="summary-section">
+          <div class="section-heading">
+            <span class="section-icon"><i class="fas fa-info-circle" aria-hidden="true"></i></span>
+            <div>
+              <strong>Resumen de la devolución</strong>
+              <small>Motivo, responsables y estado</small>
+            </div>
+          </div>
+
+          <div class="summary-grid">
+            <article class="summary-card total-card" *ngIf="verCostos">
+              <span class="card-icon"><i class="fas fa-coins" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Total al costo</span>
+                <strong>{{devolucion.total | currency: "Q" : "symbol"}}</strong>
+              </div>
+            </article>
+            <article class="summary-card">
+              <span class="card-icon"><i class="fas fa-tasks" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Estado</span>
+                <span class="status-pill" [ngClass]="claseEstado">
+                  <i class="fas" [ngClass]="iconoEstado" aria-hidden="true"></i>
+                  {{etiquetaEstado}}
+                </span>
+              </div>
+            </article>
+            <article class="summary-card">
+              <span class="card-icon"><i class="fas fa-cubes" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Unidades devueltas</span>
+                <strong>{{totalUnidades | number}} en {{devolucion.items.length}} {{devolucion.items.length === 1 ? 'producto' : 'productos'}}</strong>
+              </div>
+            </article>
+            <article class="summary-card">
+              <span class="card-icon"><i class="fas fa-user-check" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Entregado por</span>
+                <strong>{{devolucion.entregadoPor}}</strong>
+              </div>
+            </article>
+            <article class="summary-card">
+              <span class="card-icon"><i class="fas fa-user-tie" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Registrado por</span>
+                <strong>{{nombreCompleto(devolucion.usuarioRegistra)}}</strong>
+              </div>
+            </article>
+            <article class="summary-card">
+              <span class="card-icon"><i class="far fa-clock" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Fecha de registro</span>
+                <strong>{{devolucion.fechaRegistro | date: 'dd/MM/yyyy - HH:mm'}}</strong>
+              </div>
+            </article>
+            <article class="summary-card" *ngIf="devolucion.usuarioResuelve">
+              <span class="card-icon"><i class="fas fa-user-shield" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">{{devolucion.estado === 'REALIZADO' ? 'Aprobada por' : 'Rechazada por'}}</span>
+                <strong>{{nombreCompleto(devolucion.usuarioResuelve)}}</strong>
+                <small class="resolved-at">{{devolucion.fechaResolucion | date: 'dd/MM/yyyy - HH:mm'}}</small>
+              </div>
+            </article>
+            <article class="summary-card wide-card">
+              <span class="card-icon"><i class="fas fa-question-circle" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Motivo de la devolución</span>
+                <strong>{{devolucion.motivo}}</strong>
+              </div>
+            </article>
+            <article *ngIf="devolucion.observaciones" class="summary-card wide-card">
+              <span class="card-icon"><i class="fas fa-comment-alt" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Observaciones</span>
+                <strong>{{devolucion.observaciones}}</strong>
+              </div>
+            </article>
+            <article *ngIf="devolucion.motivoCancelacion" class="summary-card wide-card cancel-reason-card">
+              <span class="card-icon"><i class="fas fa-ban" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Motivo del rechazo</span>
+                <strong>{{devolucion.motivoCancelacion}}</strong>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="lines-section">
+          <div class="lines-toolbar">
+            <div class="section-heading">
+              <span class="section-icon"><i class="fas fa-list-ul" aria-hidden="true"></i></span>
+              <div>
+                <strong>Detalle de productos</strong>
+                <small>Con la existencia de la tienda al momento de registrar la devolución</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-shell">
+            <table class="document-lines-table mobile-data-table">
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Producto</th>
+                  <th class="quantity-column">Existencia en tienda</th>
+                  <th class="quantity-column">Cantidad</th>
+                  <th class="money-column" *ngIf="verCostos">Costo unitario</th>
+                  <th class="money-column" *ngIf="verCostos">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of devolucion.items">
+                  <td data-label="Código"><span class="line-badge">{{item.producto?.codProducto}}</span></td>
+                  <td class="mobile-primary-cell" data-label="Producto"><strong class="product-name">{{item.producto?.nombre}}</strong></td>
+                  <td class="quantity-cell" data-label="Existencia en tienda">{{item.existenciaSucursal | number}}</td>
+                  <td class="quantity-cell" data-label="Cantidad"><strong>{{item.cantidad | number}}</strong></td>
+                  <td class="money-cell" data-label="Costo unitario" *ngIf="verCostos">{{item.precioUnitario | currency: "Q" : "symbol"}}</td>
+                  <td class="money-cell final-amount" data-label="Subtotal" *ngIf="verCostos">{{item.subTotal | currency: "Q" : "symbol"}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <footer class="sucursal-detail-footer">
+        <span><i class="fas fa-shield-alt" aria-hidden="true"></i>Documento de control interno de inventario</span>
+        <div class="footer-actions">
+          <button type="button" class="close-action" [disabled]="imprimiendo" (click)="imprimir.emit(devolucion.idDevolucion)">
+            <i class="fas" [ngClass]="imprimiendo ? 'fa-spinner fa-spin' : 'fa-print'" aria-hidden="true"></i>
+            {{ imprimiendo ? 'Generando...' : 'Imprimir comprobante' }}
+          </button>
+          <button type="button" class="close-action approve-action" *ngIf="pendiente && puedeAprobar" [disabled]="procesando"
+            (click)="solicitarAprobacion()">
+            <i class="fas fa-check" aria-hidden="true"></i> Aprobar
+          </button>
+          <button type="button" class="close-action cancel-action" *ngIf="pendiente" [disabled]="procesando"
+            (click)="solicitarRechazo()">
+            <i class="fas fa-ban" aria-hidden="true"></i> {{ puedeAprobar ? 'Rechazar devolución' : 'Cancelar devolución' }}
+          </button>
+          <button (click)="cerrarModal()" type="button" class="close-action">
+            <i class="fas fa-times" aria-hidden="true"></i> Cerrar
+          </button>
+        </div>
+      </footer>
+    </div>
+  </section>
+</div>
