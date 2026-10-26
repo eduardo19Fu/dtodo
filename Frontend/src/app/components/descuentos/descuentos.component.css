@@ -1,0 +1,68 @@
+:host {
+  --desc-accent: #b4651f;
+  --desc-dark: #7d4410;
+  --desc-tint: #fbefe3;
+}
+
+.descuentos-subtitle { color: #6c757d; margin: 0.25rem 0 0; max-width: 760px; }
+
+.categoria-card {
+  background: var(--desc-tint);
+  border: 1px solid #efd5bb;
+  border-radius: 10px;
+  height: 100%;
+  padding: 1rem 1.1rem;
+}
+
+.categoria-card h5 { color: var(--desc-dark); font-weight: 700; margin: 0; }
+.categoria-descripcion { color: #7a6552; font-size: 0.85rem; margin: 0.2rem 0 0.8rem; min-height: 2.4em; }
+
+.niveles { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.8rem; min-height: 2rem; }
+
+.nivel-chip {
+  align-items: center;
+  background: #fff;
+  border: 1px solid #e3c5a5;
+  border-radius: 999px;
+  color: var(--desc-dark);
+  display: inline-flex;
+  font-weight: 600;
+  gap: 0.35rem;
+  padding: 0.15rem 0.35rem 0.15rem 0.7rem;
+}
+
+.nivel-chip button {
+  background: transparent;
+  border: 0;
+  color: #a77b52;
+  cursor: pointer;
+  padding: 0 0.3rem;
+}
+
+.nivel-chip button:hover { color: #b02a1c; }
+
+.nivel-nuevo { display: flex; gap: 0.5rem; }
+.nivel-nuevo input { max-width: 140px; }
+
+.btn-descuentos {
+  background: linear-gradient(135deg, var(--desc-accent), var(--desc-dark));
+  border: 0;
+  color: #fff;
+}
+
+.btn-descuentos:hover:not(:disabled) { color: #fff; filter: brightness(1.08); }
+
+.especial-row { align-items: center; }
+
+.filtros-productos { margin-left: 0; margin-right: 0; }
+.productos-descuentos-table { min-width: 880px; }
+.productos-descuentos-table th {
+  background: #343a40;
+  border-color: #454d55;
+  color: #fff;
+  font-size: 0.83rem;
+  font-weight: 600;
+}
+.productos-descuentos-table td { font-size: 0.88rem; vertical-align: middle; }
+
+.spinner-border { color: var(--desc-accent); }

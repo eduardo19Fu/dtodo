@@ -1,11 +1,16 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 
 import { Producto } from '../../../models/producto';
 import { Cliente } from '../../../models/cliente';
 import { Proforma } from '../../../models/proforma';
 import { UsuarioAuxiliar } from '../../../models/auxiliar/usuario-auxiliar';
 import { DetalleProforma } from '../../../models/detalle-proforma';
+import {
+  ETIQUETAS_TIPO_DESCUENTO, OpcionDescuento, OpcionesDescuento, TipoDescuento
+} from '../../../dtos/descuento-dto';
 
 import { AuthService } from '../../../services/auth.service';
 import { ProductoService } from '../../../services/producto.service';
@@ -13,6 +18,7 @@ import { ClienteService } from '../../../services/cliente.service';
 import { ClienteCreateService } from '../../../services/facturas/cliente-create.service';
 import { UsuarioService } from '../../../services/usuarios/usuario.service';
 import { ProformaService } from '../../../services/proformas/proforma.service';
+import { DescuentoService } from '../../../services/descuento.service';
 import swal from 'sweetalert2';
 
 type CampoDetalleEditable = 'cantidad' | 'descuento';
@@ -25,7 +31,7 @@ type CampoDetalleEditable = 'cantidad' | 'descuento';
     './create-proforma.component.css'
   ]
 })
-export class CreateProformaComponent implements OnInit {
+export class CreateProformaComponent implements OnInit, OnDestroy {
 
   title: string;
   nitIngresado: string;
@@ -46,6 +52,16 @@ export class CreateProformaComponent implements OnInit {
 
   private elementoOrigenEdicion: HTMLElement;
 
+  /** Descuentos que ofrece el sistema para el producto elegido y el cliente mayorista; nulo si no aplican. */
+  opciones: OpcionesDescuento = null;
+  tipoDescuento: TipoDescuento = 'MANUAL';
+  nivelSeleccionado: number = null;
+  readonly etiquetasTipoDescuento = ETIQUETAS_TIPO_DESCUENTO;
+  private tipoElegidoPorUsuario = false;
+  private idClienteDescuentos: number = null;
+  private cantidadCambio$ = new Subject<void>();
+  private cantidadSubscription: Subscription;
+
   producto: Producto;
   cliente: Cliente;
   usuario: UsuarioAuxiliar;
@@ -60,7 +76,8 @@ export class CreateProformaComponent implements OnInit {
     private usuarioService: UsuarioService,
     public authService: AuthService,
     private activatedRoute: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private descuentoService: DescuentoService
   ) {
     this.title = 'Crear Proforma';
     this.producto = new Producto();
@@ -73,6 +90,130 @@ export class CreateProformaComponent implements OnInit {
   ngOnInit(): void {
     this.loadUsuario();
     this.cargarProforma();
+    // Al cambiar la cantidad pueden aplicar o dejar de aplicar el ciento o el fardo.
+    this.cantidadSubscription = this.cantidadCambio$.pipe(debounceTime(300)).subscribe(() => this.cargarOpciones());
+  }
+
+  ngOnDestroy(): void {
+    if (this.cantidadSubscription) {
+      this.cantidadSubscription.unsubscribe();
+    }
+  }
+
+  // ------------------------------------------------------------ descuentos del cliente mayorista
+
+  get esClienteMayorista(): boolean {
+    return !!this.cliente && this.cliente.tipoCliente === 'MAYORISTA';
+  }
+
+  get opcionActual(): OpcionDescuento {
+    return this.opciones ? this.opciones.opciones.find(opcion => opcion.tipo === this.tipoDescuento) || null : null;
+  }
+
+  /** Niveles entre los que elegir cuando la categoría del cliente tiene varios (Volumen). */
+  get nivelesDisponibles(): number[] {
+    const opcion = this.opcionActual;
+    return opcion && opcion.tipo === 'CATEGORIA' && opcion.niveles ? opcion.niveles : [];
+  }
+
+  /** El porcentaje solo se escribe a mano en el descuento manual; en los demás lo fija la regla elegida. */
+  get descuentoEditable(): boolean {
+    return !this.esClienteMayorista || !this.opciones || this.tipoDescuento === 'MANUAL';
+  }
+
+  /** Aviso (no bloqueo) cuando la cantidad no llega al mínimo del descuento elegido. */
+  get avisoMinimo(): string {
+    const opcion = this.opcionActual;
+    if (opcion && opcion.cantidadMinima && !opcion.alcanzaMinimo) {
+      return `Este descuento aplica desde ${opcion.cantidadMinima} unidades y llevas ${Number(this.cantidadProducto) || 0}. `
+        + 'Puedes agregarlo de todos modos.';
+    }
+    return '';
+  }
+
+  etiquetaTipo(tipo: TipoDescuento): string {
+    return ETIQUETAS_TIPO_DESCUENTO[tipo] || '';
+  }
+
+  alCambiarCantidad(): void {
+    if (this.esClienteMayorista && this.producto && this.producto.idProducto) {
+      this.cantidadCambio$.next();
+    }
+  }
+
+  cambiarTipoDescuento(tipo: TipoDescuento): void {
+    this.tipoElegidoPorUsuario = true;
+    this.tipoDescuento = tipo;
+    this.nivelSeleccionado = null;
+    const opcion = this.opcionActual;
+    if (tipo !== 'MANUAL') {
+      this.descuentoProducto = opcion && opcion.porcentaje !== null ? opcion.porcentaje : 0;
+    }
+  }
+
+  elegirNivel(nivel: number): void {
+    this.nivelSeleccionado = nivel;
+    this.descuentoProducto = nivel;
+  }
+
+  /** Pide al servidor las opciones del producto elegido para este cliente y cantidad. */
+  cargarOpciones(): void {
+    if (!this.esClienteMayorista || !this.producto || !this.producto.idProducto) {
+      this.opciones = null;
+      this.tipoDescuento = 'MANUAL';
+      return;
+    }
+    const cantidad = Math.max(Number(this.cantidadProducto) || 1, 1);
+    this.descuentoService.getOpciones(this.producto.idProducto, this.cliente.idCliente, cantidad).subscribe(
+      opciones => {
+        this.opciones = opciones;
+        if (!this.tipoElegidoPorUsuario) {
+          this.aplicarSugerida();
+        }
+      },
+      () => {
+        this.opciones = null;
+        this.tipoDescuento = 'MANUAL';
+      }
+    );
+  }
+
+  private aplicarSugerida(): void {
+    const sugerida = this.opciones ? this.opciones.sugerida : null;
+    this.nivelSeleccionado = null;
+    if (sugerida) {
+      this.tipoDescuento = sugerida.tipo;
+      this.descuentoProducto = sugerida.porcentaje !== null ? sugerida.porcentaje : 0;
+    } else {
+      this.tipoDescuento = 'MANUAL';
+      this.descuentoProducto = 0;
+    }
+  }
+
+  private restablecerDescuento(): void {
+    this.opciones = null;
+    this.tipoDescuento = 'MANUAL';
+    this.nivelSeleccionado = null;
+    this.descuentoProducto = 0;
+    this.tipoElegidoPorUsuario = false;
+  }
+
+  /**
+   * Al cambiar de cliente las líneas ya agregadas pueden quedar con un descuento que ya no le corresponde
+   * (otra categoría, o un cliente que no es mayorista): se conservan los porcentajes, pero como descuento manual.
+   */
+  private alCambiarCliente(): void {
+    const cambio = this.idClienteDescuentos !== null && this.idClienteDescuentos !== this.cliente.idCliente;
+    this.idClienteDescuentos = this.cliente.idCliente;
+    if (cambio) {
+      const conTipo = this.proforma.itemsProforma.filter(item => item.tipoDescuento && item.tipoDescuento !== 'MANUAL');
+      if (conTipo.length > 0) {
+        conTipo.forEach(item => item.tipoDescuento = 'MANUAL');
+        swal.fire('Descuentos revisados', 'Cambió el cliente: los descuentos de las líneas ya agregadas se conservan '
+          + 'como descuentos manuales.', 'info');
+      }
+    }
+    this.cargarOpciones();
   }
 
   loadUsuario(): void {
@@ -120,6 +261,7 @@ export class CreateProformaComponent implements OnInit {
     this.cliente = cliente;
     this.nitBusqueda = cliente.nit;
     this.nitIngresado = null;
+    this.alCambiarCliente();
   }
 
   buscarProducto(): void {
@@ -132,6 +274,8 @@ export class CreateProformaComponent implements OnInit {
     this.productoService.getProductoByCode(codigo).subscribe(
       producto => {
         this.producto = producto;
+        this.tipoElegidoPorUsuario = false;
+        this.cargarOpciones();
         this.enfocarCantidad();
       },
       error => {
@@ -184,6 +328,7 @@ export class CreateProformaComponent implements OnInit {
   private seleccionarCliente(cliente: Cliente): void {
     this.cliente = cliente;
     this.nitBusqueda = cliente.nit || cliente.codigoCliente || '';
+    this.alCambiarCliente();
     (document.getElementById('codigo') as HTMLInputElement)?.focus();
   }
 
@@ -196,6 +341,7 @@ export class CreateProformaComponent implements OnInit {
 
         itemProforma.cantidad = Number(this.cantidadProducto);
         itemProforma.descuento = Number(this.descuentoProducto || 0);
+        itemProforma.tipoDescuento = this.esClienteMayorista && this.opciones ? this.tipoDescuento : 'MANUAL';
 
         if (!Number.isInteger(itemProforma.cantidad) || itemProforma.cantidad <= 0) {
           swal.fire('Cantidad Inválida', 'La cantidad debe ser un número entero mayor a 0.', 'warning');
@@ -208,16 +354,22 @@ export class CreateProformaComponent implements OnInit {
           return;
         }
 
+        if (itemProforma.tipoDescuento === 'CATEGORIA' && this.nivelesDisponibles.length > 0 && this.nivelSeleccionado === null) {
+          swal.fire('Elija el nivel', 'La categoría del cliente tiene varios niveles de descuento; elija cuál aplicar.', 'warning');
+          return;
+        }
+
         if (itemProforma.cantidad > this.producto.stock) {
           swal.fire('Stock Insuficiente', 'No existen las suficientes existencias de este producto.', 'warning');
           return;
         } else {
           if (itemProforma.cantidad && itemProforma.cantidad !== 0) {
             if (this.existeItem(this.producto.idProducto)) {
-              this.incrementaCantidad(this.producto.idProducto, itemProforma.cantidad, itemProforma.descuento);
+              this.incrementaCantidad(this.producto.idProducto, itemProforma.cantidad, itemProforma.descuento,
+                itemProforma.tipoDescuento);
               this.producto = new Producto();
               this.cantidadProducto = null;
-              this.descuentoProducto = 0;
+              this.restablecerDescuento();
             } else {
                 itemProforma.producto = this.producto;
                 itemProforma.subTotalDescuento = itemProforma.calcularImporteDescuento();
@@ -228,7 +380,7 @@ export class CreateProformaComponent implements OnInit {
                 this.recalcularTotal();
                 this.producto = new Producto();
                 this.cantidadProducto = null;
-                this.descuentoProducto = 0;
+                this.restablecerDescuento();
             }
 
           } else if (itemProforma.cantidad === 0) {
@@ -325,6 +477,7 @@ export class CreateProformaComponent implements OnInit {
         return;
       }
       item.descuento = nuevoValor;
+      item.tipoDescuento = 'MANUAL';
     }
 
     item.subTotal = item.calcularImporte();
@@ -364,11 +517,12 @@ export class CreateProformaComponent implements OnInit {
     setTimeout(() => elementoOrigen?.focus());
   }
 
-  incrementaCantidad(idProducto: number, cantidad: number, descuento: number): void {
+  incrementaCantidad(idProducto: number, cantidad: number, descuento: number, tipoDescuento: TipoDescuento = 'MANUAL'): void {
     this.proforma.itemsProforma = this.proforma.itemsProforma.map((item: DetalleProforma) => {
       if (idProducto === item.producto.idProducto) {
         item.cantidad = item.cantidad + cantidad;
         item.descuento = descuento;
+        item.tipoDescuento = tipoDescuento;
         item.subTotal = item.calcularImporte();
         item.subTotalDescuento = item.calcularImporteDescuento();
         item.nuevoPrecioVenta = item.calcularNuevoPrecioVenta();
@@ -431,6 +585,7 @@ export class CreateProformaComponent implements OnInit {
           this.proformaCargada = response;
 
           this.cliente = response.cliente;
+          this.idClienteDescuentos = this.cliente.idCliente;
           this.nitBusqueda = this.cliente.nit || '';
 
           this.proforma.idProforma = response.idProforma;
@@ -451,6 +606,9 @@ export class CreateProformaComponent implements OnInit {
             item.producto = itemProforma.producto;
             item.descuento = itemProforma.descuento;
             item.nuevoPrecioVenta = itemProforma.nuevoPrecioVenta;
+            item.precioUnitario = itemProforma.precioUnitario;
+            item.tipoDescuento = itemProforma.tipoDescuento;
+            item.porcentajeSugerido = itemProforma.porcentajeSugerido;
 
             return item;
           });

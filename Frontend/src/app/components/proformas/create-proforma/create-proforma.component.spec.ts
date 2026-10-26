@@ -2,6 +2,7 @@ import { fakeAsync, tick } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 
 import { Cliente } from '../../../models/cliente';
+import { OpcionesDescuento } from '../../../dtos/descuento-dto';
 import { DetalleProforma } from '../../../models/detalle-proforma';
 import { Producto } from '../../../models/producto';
 import { CreateProformaComponent } from './create-proforma.component';
@@ -12,7 +13,7 @@ describe('CreateProformaComponent - edición de detalle', () => {
   let item: DetalleProforma;
 
   beforeEach(() => {
-    component = new CreateProformaComponent(null, null, null, null, null, null, null, null);
+    component = new CreateProformaComponent(null, null, null, null, null, null, null, null, null);
     const producto = new Producto();
     producto.nombre = 'Producto de prueba';
     producto.precioVenta = 100;
@@ -159,7 +160,7 @@ describe('CreateProformaComponent - edición de detalle', () => {
         getClienteByCodigo: jasmine.createSpy('getClienteByCodigo')
       };
       clienteCreateService = { abrirModal: jasmine.createSpy('abrirModal') };
-      component = new CreateProformaComponent(null, null, clienteService, clienteCreateService, null, null, null, null);
+      component = new CreateProformaComponent(null, null, clienteService, clienteCreateService, null, null, null, null, null);
     });
 
     it('elige del directorio al cliente completo por su id aunque no tenga NIT', () => {
@@ -206,5 +207,173 @@ describe('CreateProformaComponent - edición de detalle', () => {
       expect(clienteCreateService.abrirModal).toHaveBeenCalled();
       expect(component.nitIngresado).toBe('999');
     });
+  });
+});
+
+describe('CreateProformaComponent - descuentos del cliente mayorista', () => {
+  let component: CreateProformaComponent;
+  let descuentoService: any;
+
+  function opciones(extra: Partial<OpcionesDescuento> = {}): OpcionesDescuento {
+    return Object.assign(new OpcionesDescuento(), {
+      idProducto: 1, precioVenta: 50, precioMayorista: null, categoria: 'VOLUMEN', cantidad: 1,
+      opciones: [
+        { tipo: 'CATEGORIA', etiqueta: 'Categoría VOLUMEN: elegir nivel', porcentaje: null, niveles: [12, 15, 20],
+          cantidadMinima: null, alcanzaMinimo: true, precio: null },
+        { tipo: 'CIENTO', etiqueta: 'Por ciento: 12 % desde 100 unidades', porcentaje: 12, niveles: [],
+          cantidadMinima: 100, alcanzaMinimo: false, precio: null },
+        { tipo: 'MANUAL', etiqueta: 'Descuento manual', porcentaje: null, niveles: [], cantidadMinima: null,
+          alcanzaMinimo: true, precio: null }
+      ],
+      sugerida: null
+    }, extra);
+  }
+
+  function mayorista(): Cliente {
+    const cliente = new Cliente();
+    cliente.idCliente = 5;
+    cliente.tipoCliente = 'MAYORISTA';
+    return cliente;
+  }
+
+  beforeEach(() => {
+    descuentoService = { getOpciones: jasmine.createSpy('getOpciones').and.returnValue(of(opciones())) };
+    component = new CreateProformaComponent(null, null, null, null, null, null, null, null, descuentoService);
+    component.producto = Object.assign(new Producto(), { idProducto: 1, nombre: 'RESMA', precioVenta: 50, stock: 500 });
+    component.cantidadProducto = 10;
+    spyOn(swal, 'fire').and.returnValue(Promise.resolve({ isConfirmed: true } as any));
+  });
+
+  it('con un cliente minorista no consulta descuentos y la línea queda como descuento manual', () => {
+    component.cliente = new Cliente();
+    component.descuentoProducto = 5;
+
+    component.cargarOpciones();
+    component.agregarLinea();
+
+    expect(descuentoService.getOpciones).not.toHaveBeenCalled();
+    expect(component.proforma.itemsProforma[0].tipoDescuento).toBe('MANUAL');
+    expect(component.proforma.itemsProforma[0].descuento).toBe(5);
+    expect(component.descuentoEditable).toBeTrue();
+  });
+
+  it('con un cliente mayorista pide al servidor las opciones del producto, cliente y cantidad', () => {
+    component.cliente = mayorista();
+
+    component.cargarOpciones();
+
+    expect(descuentoService.getOpciones).toHaveBeenCalledWith(1, 5, 10);
+    expect(component.opciones.opciones.length).toBe(3);
+    expect(component.tipoDescuento).toBe('MANUAL');
+  });
+
+  it('aplica la sugerencia del servidor mientras el usuario no elija otro tipo', () => {
+    component.cliente = mayorista();
+    descuentoService.getOpciones.and.returnValue(of(opciones({
+      sugerida: { tipo: 'CIENTO', etiqueta: 'x', porcentaje: 12, niveles: [], cantidadMinima: 100, alcanzaMinimo: true, precio: null }
+    })));
+
+    component.cargarOpciones();
+
+    expect(component.tipoDescuento).toBe('CIENTO');
+    expect(component.descuentoProducto).toBe(12);
+    expect(component.descuentoEditable).toBeFalse();
+  });
+
+  it('respeta el tipo que el usuario eligió aunque cambie la cantidad', () => {
+    component.cliente = mayorista();
+    component.cargarOpciones();
+
+    component.cambiarTipoDescuento('CIENTO');
+    descuentoService.getOpciones.and.returnValue(of(opciones({
+      sugerida: { tipo: 'CATEGORIA', etiqueta: 'x', porcentaje: 8, niveles: [], cantidadMinima: null, alcanzaMinimo: true, precio: null }
+    })));
+    component.cargarOpciones();
+
+    expect(component.tipoDescuento).toBe('CIENTO');
+    expect(component.descuentoProducto).toBe(12);
+  });
+
+  it('la categoría con varios niveles exige elegir uno antes de agregar la línea', () => {
+    component.cliente = mayorista();
+    component.cargarOpciones();
+    component.cambiarTipoDescuento('CATEGORIA');
+
+    expect(component.nivelesDisponibles).toEqual([12, 15, 20]);
+
+    component.agregarLinea();
+    expect(component.proforma.itemsProforma.length).toBe(0);
+
+    component.elegirNivel(15);
+    component.agregarLinea();
+
+    expect(component.proforma.itemsProforma.length).toBe(1);
+    expect(component.proforma.itemsProforma[0].descuento).toBe(15);
+    expect(component.proforma.itemsProforma[0].tipoDescuento).toBe('CATEGORIA');
+  });
+
+  it('avisa, sin bloquear, cuando la cantidad no llega al mínimo del descuento elegido', () => {
+    component.cliente = mayorista();
+    component.cargarOpciones();
+
+    component.cambiarTipoDescuento('CIENTO');
+
+    expect(component.avisoMinimo).toContain('100 unidades');
+    component.agregarLinea();
+    expect(component.proforma.itemsProforma.length).toBe(1);
+    expect(component.proforma.itemsProforma[0].tipoDescuento).toBe('CIENTO');
+  });
+
+  it('al agregar una línea se restablece el selector de descuento', () => {
+    component.cliente = mayorista();
+    component.cargarOpciones();
+    component.cambiarTipoDescuento('CIENTO');
+
+    component.agregarLinea();
+
+    expect(component.opciones).toBeNull();
+    expect(component.tipoDescuento).toBe('MANUAL');
+    expect(component.descuentoProducto).toBe(0);
+  });
+
+  it('corregir el porcentaje de una línea a mano la deja como descuento manual', () => {
+    component.cliente = mayorista();
+    component.cargarOpciones();
+    component.cambiarTipoDescuento('CIENTO');
+    component.agregarLinea();
+
+    component.abrirEdicionDetalle(0, 'descuento', document.createElement('button'));
+    component.valorDetalleNuevo = 7;
+    component.confirmarEdicionDetalle();
+
+    expect(component.proforma.itemsProforma[0].descuento).toBe(7);
+    expect(component.proforma.itemsProforma[0].tipoDescuento).toBe('MANUAL');
+  });
+
+  it('al cambiar de cliente las líneas con descuento tipado pasan a manual', () => {
+    component.cliente = mayorista();
+    component.cargarCliente(component.cliente);
+    component.cargarOpciones();
+    component.cambiarTipoDescuento('CIENTO');
+    component.agregarLinea();
+    expect(component.proforma.itemsProforma[0].tipoDescuento).toBe('CIENTO');
+
+    const otro = new Cliente();
+    otro.idCliente = 9;
+    component.cargarCliente(otro);
+
+    expect(component.proforma.itemsProforma[0].tipoDescuento).toBe('MANUAL');
+    expect(component.proforma.itemsProforma[0].descuento).toBe(12);
+  });
+
+  it('si el servidor no responde las opciones, se sigue con descuento manual', () => {
+    component.cliente = mayorista();
+    descuentoService.getOpciones.and.returnValue(throwError({ status: 500 }));
+
+    component.cargarOpciones();
+
+    expect(component.opciones).toBeNull();
+    expect(component.tipoDescuento).toBe('MANUAL');
+    expect(component.descuentoEditable).toBeTrue();
   });
 });

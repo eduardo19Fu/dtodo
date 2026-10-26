@@ -183,7 +183,28 @@
                   <i class="fas fa-sort-numeric-up" aria-hidden="true"></i>
                   <input type="number" name="cantidad" id="cantidad" class="form-control"
                     min="1" step="1" [(ngModel)]="cantidadProducto" autocomplete="off"
-                    (keyup.enter)="agregarLinea()" placeholder="0">
+                    (ngModelChange)="alCambiarCantidad()" (keyup.enter)="agregarLinea()" placeholder="0">
+                </div>
+              </div>
+              <div class="line-entry-field tipo-descuento-field" *ngIf="esClienteMayorista && opciones">
+                <label for="tipo-descuento">Tipo de descuento</label>
+                <div class="control-with-icon">
+                  <i class="fas fa-tags" aria-hidden="true"></i>
+                  <select id="tipo-descuento" name="tipo-descuento" class="form-control"
+                    [ngModel]="tipoDescuento" (ngModelChange)="cambiarTipoDescuento($event)">
+                    <option *ngFor="let opcion of opciones.opciones" [ngValue]="opcion.tipo">{{opcion.etiqueta}}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="line-entry-field" *ngIf="nivelesDisponibles.length > 0">
+                <label for="nivel-descuento">Nivel</label>
+                <div class="control-with-icon">
+                  <i class="fas fa-layer-group" aria-hidden="true"></i>
+                  <select id="nivel-descuento" name="nivel-descuento" class="form-control"
+                    [ngModel]="nivelSeleccionado" (ngModelChange)="elegirNivel($event)">
+                    <option [ngValue]="null" disabled>Elija un nivel</option>
+                    <option *ngFor="let nivel of nivelesDisponibles" [ngValue]="nivel">{{nivel}} %</option>
+                  </select>
                 </div>
               </div>
               <div class="line-entry-field">
@@ -191,7 +212,8 @@
                 <div class="control-with-icon discount-entry-control">
                   <i class="fas fa-percent" aria-hidden="true"></i>
                   <input type="number" name="descuento-producto" id="descuento-producto" class="form-control"
-                    min="0" max="100" step="0.01" [(ngModel)]="descuentoProducto" autocomplete="off"
+                    min="0" max="100" step="0.0001" [(ngModel)]="descuentoProducto" autocomplete="off"
+                    [disabled]="!descuentoEditable"
                     (keyup.enter)="agregarLinea()" placeholder="0">
                 </div>
               </div>
@@ -201,6 +223,14 @@
                 <span>Agregar</span>
               </button>
             </div>
+            <p class="discount-hint discount-hint-warning" *ngIf="avisoMinimo">
+              <i class="fas fa-exclamation-triangle" aria-hidden="true"></i> {{ avisoMinimo }}
+            </p>
+            <p class="discount-hint" *ngIf="opciones && opciones.precioMayorista">
+              <i class="fas fa-info-circle" aria-hidden="true"></i>
+              Precio de venta Q{{ opciones.precioVenta | number: '1.2-2' }} · precio mayorista
+              Q{{ opciones.precioMayorista | number: '1.2-2' }}
+            </p>
           </div>
         </div>
       </section>
@@ -261,6 +291,7 @@
                 <td data-label="Descuento">
                   <div class="detail-value-with-action">
                     <span class="detail-readonly-value">{{ item.descuento || 0 }} <small>%</small></span>
+                    <small class="tipo-descuento-linea" *ngIf="item.tipoDescuento && item.tipoDescuento !== 'MANUAL'">{{ etiquetaTipo(item.tipoDescuento) }}</small>
                     <button type="button" class="edit-detail-button"
                       (click)="abrirEdicionDetalle(i, 'descuento', $event.currentTarget)"
                       [attr.aria-label]="'Editar descuento de ' + item.producto.nombre" title="Editar descuento">

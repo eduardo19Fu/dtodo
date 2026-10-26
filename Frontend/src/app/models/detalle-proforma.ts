@@ -1,3 +1,4 @@
+import { TipoDescuento } from '../dtos/descuento-dto';
 import { Producto } from './producto';
 
 export class DetalleProforma {
@@ -8,6 +9,13 @@ export class DetalleProforma {
     descuento: number;
     subTotalDescuento: number;
     nuevoPrecioVenta: number;
+
+    /** Precio unitario al registrar la línea; lo completa el servidor (nulo en líneas anteriores). */
+    precioUnitario?: number | null;
+    /** De dónde sale el descuento: lo elige el usuario y el servidor verifica que coincida con el porcentaje. */
+    tipoDescuento?: TipoDescuento | null;
+    /** Porcentaje que sugería el sistema; lo completa el servidor. */
+    porcentajeSugerido?: number | null;
 
     producto: Producto;
 

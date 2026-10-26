@@ -30,6 +30,7 @@ import { CreateNotaComponent } from './components/notas-credito/create-nota/crea
 import { SucursalesComponent } from './components/sucursales/sucursales.component';
 import { CreateSucursalComponent } from './components/sucursales/create-sucursal/create-sucursal.component';
 import { RutasComponent } from './components/rutas/rutas.component';
+import { DescuentosComponent } from './components/descuentos/descuentos.component';
 import { CreateRutaComponent } from './components/rutas/create-ruta/create-ruta.component';
 import { ProveedoresComponent } from './components/proveedores/proveedores.component';
 import { CreateProveedorComponent } from './components/proveedores/create-proveedor/create-proveedor.component';
@@ -126,6 +127,9 @@ const appRoutes: Routes = [
     { path: 'rutas/index', component: RutasComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN'] } },
     { path: 'rutas/create', component: CreateRutaComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN'] } },
     { path: 'rutas/create/:id', component: CreateRutaComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN'] } },
+
+    /****** MENU DE DESCUENTOS MAYORISTAS ******/
+    { path: 'descuentos/index', component: DescuentosComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN'] } },
 
     /****** MENUS DE PROVEEDORES ******/
     { path: 'proveedores/index', component: ProveedoresComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN'] } },

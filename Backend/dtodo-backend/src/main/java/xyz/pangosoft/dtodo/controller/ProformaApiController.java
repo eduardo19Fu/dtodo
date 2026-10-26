@@ -1,6 +1,7 @@
 package xyz.pangosoft.dtodo.controller;
 
 import xyz.pangosoft.dtodo.service.IAmbitoVendedorService;
+import xyz.pangosoft.dtodo.service.IDescuentoService;
 import xyz.pangosoft.dtodo.dto.ProformaFechaDto;
 import xyz.pangosoft.dtodo.dto.ProformaDto;
 import xyz.pangosoft.dtodo.dto.UsuarioDto;
@@ -51,6 +52,8 @@ public class ProformaApiController {
     private final IEstadoService estadoService;
 
     private final IAmbitoVendedorService ambito;
+
+    private final IDescuentoService descuentoService;
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @GetMapping("/proformas")
@@ -169,6 +172,7 @@ public class ProformaApiController {
     public ResponseEntity<Proforma> create(@Valid @RequestBody Proforma proforma) {
         log.info("Registrando nueva proforma: {}", proforma.toString());
         ambito.prepararProforma(proforma);
+        descuentoService.prepararLineas(proforma);
         Proforma newProforma = proformaService.save(proforma, null);
         return ResponseEntity.status(HttpStatus.CREATED).body(newProforma);
     }
@@ -183,6 +187,7 @@ public class ProformaApiController {
             ambito.exigirProformaSinFactura(existente);
         }
         ambito.prepararProforma(proforma);
+        descuentoService.prepararLineas(proforma);
         Proforma proformaUpdated = proformaService.save(proforma, id);
         return ResponseEntity.status(HttpStatus.CREATED).body(proformaUpdated);
     }

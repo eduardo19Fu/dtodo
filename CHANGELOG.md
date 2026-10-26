@@ -6,6 +6,23 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Descuentos y precio mayorista (Fase 1, paso 3)
+
+El usuario elige, línea por línea, de dónde sale el descuento de un cliente mayorista; el sistema calcula las opciones, sugiere una y verifica que lo elegido sea coherente.
+
+- **Tipos de descuento** (`TipoDescuentoEnum`): categoría del cliente, ciento, fardo cerrado, precio mayorista fijo y manual. Cada línea de proforma guarda el tipo, el precio unitario de ese momento (el precio histórico no se guardaba) y el porcentaje que sugería el sistema.
+- **Categorías**: A (10 %), B (8 %) y Volumen (12, 15 y 20 %) son niveles configurables por el administrador; en Volumen el vendedor elige el nivel y ninguno se aplica solo.
+- **Precio mayorista fijo**: opcional por producto, lo asignan los usuarios solo a los productos que quieran. Se guarda como el porcentaje equivalente sobre el precio de venta (4 decimales), de modo que factura, reportes e impresión no cambian.
+- **Descuentos especiales por producto**: por ciento y por fardo cerrado, con su cantidad mínima y porcentaje. Si la cantidad no llega al mínimo se avisa, pero no se bloquea.
+- **Sugerencia**: el precio mayorista fijo si el producto lo tiene; si no, el mayor porcentaje entre las opciones cuya cantidad mínima se alcanza (en un empate, fardo, luego ciento, luego categoría).
+- **Validación en el servidor**: `DescuentoServiceImpl.prepararLineas` rechaza (422) una línea cuyo tipo no coincide con su porcentaje (un nivel que no es de la categoría del cliente, un descuento que el producto no tiene, un descuento mayorista para un cliente minorista...). Una línea sin tipo se toma como manual.
+- **API**: `GET /api/descuentos/opciones` (administrador, cobrador, inventario y vendedor, este último solo para clientes de sus rutas); la configuración (`/categorias`, `/productos`) es solo del administrador.
+- **Base de datos** (`sql/mayoristas/05_create_descuentos.sql`, **requerido antes del jar**; `99_rollback_mayoristas.sql` lo revierte): `categorias_descuento_niveles` (con los porcentajes iniciales), `precios_mayorista`, `descuentos_producto` y tres columnas en `proformas_detalle`. El precio mayorista va en una tabla aparte porque `sp_consultar_productos` se mapea directo a la entidad `Producto` y una columna nueva rompería el listado de productos.
+- **Impresión**: `proforma.jrxml` imprime `precio_unitario` cuando la línea no tiene descuento y existe, en lugar del precio de venta actual del producto.
+- **Frontend**: en la proforma de un cliente mayorista aparecen el tipo de descuento, el nivel (Volumen) y los avisos; el porcentaje solo se escribe a mano en el descuento manual; corregir el porcentaje de una línea la vuelve manual y cambiar de cliente pasa a manual las líneas ya tipadas. Nueva pantalla *Descuentos* (administrador) para los niveles, el precio mayorista y los descuentos por producto.
+- **Pruebas**: `DescuentoServiceImplTest` (32 casos), `DescuentoRepositoryTest` (contra H2), la matriz de roles y specs de `CreateProformaComponent` y `DescuentosComponent`.
+- **No incluido**: exigir autorización a partir de 15 % (paso 5; hoy el tipo y el porcentaje quedan registrados, pero no hay bloqueo) y el precio mayorista en el listado de productos.
+
 ### Agregado — Rol de vendedor y alcance por ruta (Fase 1, paso 2)
 
 El vendedor (`ROLE_VENDEDOR`, creado en `sql/mayoristas/03`) trabaja solo con los clientes de sus rutas y con sus propias proformas. Las reglas viven en el servidor (`IAmbitoVendedorService`): el usuario sale del token, no de la petición. Un usuario que combina `ROLE_VENDEDOR` con administrador, cobrador o inventario conserva el alcance del otro rol.

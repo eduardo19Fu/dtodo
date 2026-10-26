@@ -82,4 +82,13 @@ class VendedorSeguridadTest {
         niegaAlVendedor(RutaApiController.class, "create", "update", "listado", "getById", "clientes", "activas");
         assertTrue(roles(RutaApiController.class, "mias").size() == 1, "mias es solo del vendedor");
     }
+
+    @Test
+    void elVendedorConsultaLasOpcionesDeDescuentoPeroSoloElAdministradorLasConfigura() {
+        permiteAlVendedor(DescuentoApiController.class, "opciones");
+        niegaAlVendedor(DescuentoApiController.class, "categorias", "guardarCategoria", "productos", "producto",
+                "guardarProducto");
+        assertTrue(roles(DescuentoApiController.class, "guardarProducto").equals(Arrays.asList("ROLE_ADMIN")),
+                "guardarProducto es solo del administrador");
+    }
 }
