@@ -17,6 +17,9 @@ export class DetalleProforma {
     /** Porcentaje que sugería el sistema; lo completa el servidor. */
     porcentajeSugerido?: number | null;
 
+    /** Nota de la línea (hasta 255 caracteres); sale impresa bajo el producto en la proforma mayorista. */
+    observacion?: string | null;
+
     producto: Producto;
 
     public calcularImporte(): number{

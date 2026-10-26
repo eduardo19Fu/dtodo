@@ -134,8 +134,35 @@ export class ProformasComponent implements OnInit, OnDestroy {
     return proforma.facturadoPor ? `${numero} · ${proforma.facturadoPor}` : numero;
   }
 
-  printProforma(proforma: ProformaDto): void {
-    this.proformaService.getProformaPdf(proforma.idProforma).subscribe(response => {
+  esMayorista(proforma: ProformaDto): boolean {
+    return proforma.tipoProforma === 'MAYORISTA';
+  }
+
+  /** La mayorista tiene dos copias; se pregunta cuál imprimir. La minorista se imprime directo. */
+  imprimir(proforma: ProformaDto): void {
+    if (!this.esMayorista(proforma)) {
+      this.printProforma(proforma);
+      return;
+    }
+    Swal.fire({
+      title: 'Imprimir proforma mayorista',
+      text: 'La copia de la tienda incluye la observación general del pedido.',
+      showDenyButton: true,
+      showCancelButton: true,
+      confirmButtonText: 'Copia cliente',
+      denyButtonText: 'Copia tienda',
+      cancelButtonText: 'Cancelar'
+    }).then(resultado => {
+      if (resultado.isConfirmed) {
+        this.printProforma(proforma, 'CLIENTE');
+      } else if (resultado.isDenied) {
+        this.printProforma(proforma, 'TIENDA');
+      }
+    });
+  }
+
+  printProforma(proforma: ProformaDto, copia: 'CLIENTE' | 'TIENDA' = 'CLIENTE'): void {
+    this.proformaService.getProformaPdf(proforma.idProforma, copia).subscribe(response => {
       const url = window.URL.createObjectURL(response.data);
       window.open(url, '_blank');
       window.URL.revokeObjectURL(url);

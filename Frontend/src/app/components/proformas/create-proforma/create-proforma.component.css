@@ -1077,3 +1077,26 @@
   margin-left: 0.4rem;
   padding: 0.1rem 0.5rem;
 }
+
+/* Proforma mayorista: entrega estimada, observación general y nota por línea. */
+.mayorista-extra {
+  display: grid;
+  grid-template-columns: minmax(180px, 240px) 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.mayorista-extra textarea {
+  resize: vertical;
+}
+
+.linea-observacion {
+  margin-top: 6px;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 640px) {
+  .mayorista-extra {
+    grid-template-columns: 1fr;
+  }
+}

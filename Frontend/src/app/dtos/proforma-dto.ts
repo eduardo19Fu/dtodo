@@ -8,6 +8,8 @@ export class ProformaDto {
   usuario: string;
   vendedor: string;
   cliente: string;
+  tipoProforma?: 'MINORISTA' | 'MAYORISTA';
+  ruta?: string | null;
   nitCliente: string;
   /** Factura generada desde la proforma; null/undefined si todavía no se factura. */
   idFactura?: number | null;

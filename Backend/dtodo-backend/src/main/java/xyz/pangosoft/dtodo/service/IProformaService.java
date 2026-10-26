@@ -59,6 +59,13 @@ public interface IProformaService {
 
     public byte[] showProforma(Long idfactura);
 
+    /**
+     * Imprime la proforma. La mayorista tiene dos copias: {@code CLIENTE} (la que se entrega) y {@code TIENDA}
+     * (incluye la observación general); cualquier otro valor se toma como la del cliente. La minorista tiene un
+     * solo formato.
+     */
+    public byte[] showProforma(Long idproforma, String copia);
+
     byte[] proformasExcel(String fechaIni, String fechaFin, boolean todas, Integer idUsuario);
 
 }

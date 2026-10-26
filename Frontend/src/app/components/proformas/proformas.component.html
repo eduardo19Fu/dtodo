@@ -130,6 +130,7 @@
           <td class="col-cliente mobile-primary-cell" data-label="Cliente / NIT">
             <span class="cliente-nombre" [title]="proforma.cliente">{{proforma.cliente}}</span>
             <small class="cliente-nit">NIT: {{proforma.nitCliente || 'C/F'}}</small>
+            <small class="cliente-nit" *ngIf="esMayorista(proforma)"><strong>Mayorista</strong><ng-container *ngIf="proforma.ruta"> · {{proforma.ruta}}</ng-container></small>
           </td>
           <td class="col-vendedor" data-label="Vendedor"><span class="cell-ellipsis" [title]="proforma.vendedor">{{proforma.vendedor}}</span></td>
           <td class="col-usuario" data-label="Usuario"><span class="cell-ellipsis" [title]="proforma.usuario">{{proforma.usuario}}</span></td>
@@ -165,7 +166,7 @@
             </button>
             <button class="btn btn-sm table-action action-print" type="button"
                     appTooltip="Imprimir proforma" aria-label="Imprimir proforma"
-                    (click)="printProforma(proforma)" [disabled]="proforma.idEstado === 4">
+                    (click)="imprimir(proforma)" [disabled]="proforma.idEstado === 4">
               <i class="fas fa-print"></i>
             </button>
             <button class="btn btn-sm table-action action-edit" type="button"

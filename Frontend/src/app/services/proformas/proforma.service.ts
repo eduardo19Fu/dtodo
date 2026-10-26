@@ -172,10 +172,11 @@ export class ProformaService {
     );
   }
 
-  getProformaPdf(id: number): Observable<any> {
+  /** {@code copia}: CLIENTE (la que se entrega) o TIENDA (agrega la observación general); solo cambia la proforma mayorista. */
+  getProformaPdf(id: number, copia: 'CLIENTE' | 'TIENDA' = 'CLIENTE'): Observable<any> {
     const headers = new HttpHeaders();
     headers.append('Accept', 'application/pdf');
-    const requestOptions: any = { headers, responseType: 'blob' };
+    const requestOptions: any = { headers, responseType: 'blob', params: new HttpParams().set('copia', copia) };
 
     return this.httpClient.get<any>(`${this.url}/proformas/generate/${id}`, requestOptions).pipe(
       map((response: any) => {

@@ -6,6 +6,19 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Proforma mayorista (Fase 1, paso 4)
+
+Una proforma a un cliente mayorista con ruta es ahora una proforma mayorista: lleva observaciones, fecha de entrega estimada, vigencia de 15 días y dos copias impresas.
+
+- **Tipo**: `tipo_proforma` (MINORISTA por defecto, MAYORISTA) y `id_ruta`. El servidor (`ProformaMayoristaServiceImpl.preparar`) exige un cliente mayorista con ruta, toma la ruta del cliente y, para el vendedor, siempre fija el tipo en mayorista. Los errores van como 422.
+- **Observaciones**: una general del pedido (hasta 500 caracteres) y una por línea (hasta 255). Se limpian y, si exceden el largo, se rechazan en lugar de cortarse.
+- **Vigencia y entrega**: `fecha_vencimiento` = emisión + 15 días, fijada al crear y que editar no extiende; `fecha_entrega_estimada` la escribe el usuario. Aún no se bloquea la facturación de una proforma vencida (paso 5).
+- **Impresión** (`proforma_mayorista.jrxml`, `GET /api/proformas/generate/{id}?copia=CLIENTE|TIENDA`): encabezado con negocio, encargado, teléfono, ruta, crédito y vendedor; la observación de cada línea sale bajo el producto. La copia del cliente no imprime la observación general; la de la tienda sí. Una proforma minorista sigue usando `proforma.jrxml`. Las etiquetas del encabezado miden 12 pt de alto: con 10 se recortaban a vacío con la tipografía del servidor de pruebas.
+- **Base de datos** (`sql/mayoristas/06_create_proforma_mayorista.sql`, **requerido antes del jar**; `99_rollback_mayoristas.sql` lo revierte): cinco columnas en `proformas`, su llave a `rutas`, un índice por tipo y `observacion` en `proformas_detalle`.
+- **Frontend**: con un cliente mayorista con ruta aparecen la ruta, la fecha de entrega, las observaciones del pedido y un campo de observación bajo cada producto; al guardar se abren las dos copias. En el listado, las mayoristas se marcan con su ruta y al imprimir se elige la copia.
+- **Pruebas**: `ProformaMayoristaPdfTemplateTest` (plantilla con datos de ejemplo: cada copia, etiquetas, observaciones, 60 líneas), `ProformaMayoristaServiceImplTest`, casos nuevos en `ProformaServiceImplTest` y specs de `CreateProformaComponent` y `ProformasComponent`.
+- **No incluido**: el tope de 15 % con autorización y el bloqueo por proforma vencida (paso 5).
+
 ### Agregado — Descuentos y precio mayorista (Fase 1, paso 3)
 
 El usuario elige, línea por línea, de dónde sale el descuento de un cliente mayorista; el sistema calcula las opciones, sugiere una y verifica que lo elegido sea coherente.

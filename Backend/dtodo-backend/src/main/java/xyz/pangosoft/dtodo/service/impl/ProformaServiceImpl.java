@@ -13,6 +13,7 @@ import xyz.pangosoft.dtodo.error.exceptions.ReportGenerationException;
 import xyz.pangosoft.dtodo.model.Estado;
 import xyz.pangosoft.dtodo.model.DetalleProforma;
 import xyz.pangosoft.dtodo.model.Proforma;
+import xyz.pangosoft.dtodo.model.enums.TipoProformaEnum;
 import xyz.pangosoft.dtodo.repository.IProformaRepository;
 import xyz.pangosoft.dtodo.service.IEstadoService;
 import xyz.pangosoft.dtodo.service.IProformaService;
@@ -52,6 +53,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -72,6 +74,11 @@ import java.util.Map;
 public class ProformaServiceImpl implements IProformaService {
 
     private final IProformaRepository proformaRepository;
+    /** Días de vigencia de una proforma mayorista, contados desde su emisión. */
+    static final int VIGENCIA_DIAS_MAYORISTA = 15;
+    static final String COPIA_CLIENTE = "CLIENTE";
+    static final String COPIA_TIENDA = "TIENDA";
+
     private final IEstadoService estadoService;
     private final IUsuarioService usuarioService;
     private final DataSource dataSource;
@@ -270,7 +277,8 @@ public class ProformaServiceImpl implements IProformaService {
                 ((Number) fila[4]).intValue(),
                 toBigDecimal(fila[5]),
                 (Number) fila[6],
-                toBigDecimal(fila[7]));
+                toBigDecimal(fila[7]),
+                fila.length > 8 ? (String) fila[8] : null);
     }
 
     private BigDecimal toBigDecimal(Object valor) {
@@ -353,6 +361,11 @@ public class ProformaServiceImpl implements IProformaService {
             }
 
             if (proformaExist != null) {
+                TipoProformaEnum tipoProforma = proforma.getTipoProforma() == null
+                        ? proformaExist.getTipoProforma() : proforma.getTipoProforma();
+                // La vigencia corre desde la emisión: editar la proforma no la extiende.
+                LocalDate vencimiento = proformaExist.getFechaVencimiento() != null ? proformaExist.getFechaVencimiento()
+                        : (tipoProforma == TipoProformaEnum.MAYORISTA ? LocalDate.now().plusDays(VIGENCIA_DIAS_MAYORISTA) : null);
                 Proforma proformaUpdated = proformaExist.toBuilder()
                         .idProforma(proforma.getIdProforma())
                         .noProforma(proforma.getNoProforma())
@@ -362,6 +375,11 @@ public class ProformaServiceImpl implements IProformaService {
                         .itemsProforma(proforma.getItemsProforma())
                         .estado(proforma.getEstado())
                         .fechaEmision(proforma.getFechaEmision())
+                        .tipoProforma(tipoProforma)
+                        .ruta(proforma.getRuta())
+                        .observaciones(proforma.getObservaciones())
+                        .fechaEntregaEstimada(proforma.getFechaEntregaEstimada())
+                        .fechaVencimiento(vencimiento)
                         .build();
                 return proformaRepository.save(proformaUpdated);
             }
@@ -373,6 +391,12 @@ public class ProformaServiceImpl implements IProformaService {
             Estado estado = estadoService.findById(1);
             proforma.setEstado(estado);
             proforma.setNoProforma(noProforma);
+            if (proforma.getTipoProforma() == null) {
+                proforma.setTipoProforma(TipoProformaEnum.MINORISTA);
+            }
+            if (proforma.getTipoProforma() == TipoProformaEnum.MAYORISTA) {
+                proforma.setFechaVencimiento(LocalDate.now().plusDays(VIGENCIA_DIAS_MAYORISTA));
+            }
             if (proforma.getUsuario() != null) {
                 proforma.setSucursal(usuarioService.findById(proforma.getUsuario().getIdUsuario()).getSucursal());
             }
@@ -504,6 +528,11 @@ public class ProformaServiceImpl implements IProformaService {
 
     @Override
     public byte[] showProforma(Long idproforma) {
+        return showProforma(idproforma, COPIA_CLIENTE);
+    }
+
+    @Override
+    public byte[] showProforma(Long idproforma, String copia) {
         long inicio = System.currentTimeMillis();
         String etapa = "obtener conexión a la base de datos";
         log.info("Iniciando generación del reporte de proforma. idProforma={}", idproforma);
@@ -516,12 +545,17 @@ public class ProformaServiceImpl implements IProformaService {
 
             Map<String, Object> params = new HashMap<>();
             params.put("proformaId", idproforma);
+            params.put("COPIA", COPIA_TIENDA.equalsIgnoreCase(copia) ? COPIA_TIENDA : COPIA_CLIENTE);
 
-            etapa = "cargar plantilla /reports/proforma.jrxml";
-            try (InputStream file = this.getClass().getResourceAsStream("/reports/proforma.jrxml")) {
+            boolean mayorista = proformaRepository.findById(idproforma)
+                    .map(proforma -> proforma.getTipoProforma() == TipoProformaEnum.MAYORISTA).orElse(false);
+            String plantilla = mayorista ? "/reports/proforma_mayorista.jrxml" : "/reports/proforma.jrxml";
+
+            etapa = "cargar plantilla " + plantilla;
+            try (InputStream file = this.getClass().getResourceAsStream(plantilla)) {
                 if (file == null) {
                     throw new ReportGenerationException(
-                            "No se encontró la plantilla /reports/proforma.jrxml", null);
+                            "No se encontró la plantilla " + plantilla, null);
                 }
 
                 etapa = "compilar plantilla Jasper";

@@ -18,4 +18,12 @@ public class DetalleDocumentoDto {
     private BigDecimal subTotal;
     private Number descuento;
     private BigDecimal subTotalDescuento;
+
+    /** Observación de la línea; solo la tienen las proformas. */
+    private String observacion;
+
+    public DetalleDocumentoDto(Long idDetalle, Integer idProducto, String codigoProducto, String producto,
+                               Integer cantidad, BigDecimal subTotal, Number descuento, BigDecimal subTotalDescuento) {
+        this(idDetalle, idProducto, codigoProducto, producto, cantidad, subTotal, descuento, subTotalDescuento, null);
+    }
 }

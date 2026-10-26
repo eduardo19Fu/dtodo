@@ -8,6 +8,8 @@ import lombok.ToString;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -23,6 +25,8 @@ import jakarta.validation.Valid;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import xyz.pangosoft.dtodo.model.enums.TipoProformaEnum;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -61,6 +65,25 @@ public class Proforma implements Serializable {
     @JoinColumn(name = "id_cliente")
     @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
     private Cliente cliente;
+
+    /** MINORISTA (la de siempre) o MAYORISTA; es independiente del tipo del cliente. */
+    @Enumerated(EnumType.STRING)
+    private TipoProformaEnum tipoProforma;
+
+    /** Ruta del cliente al crear la proforma, copiada para que los reportes históricos no cambien. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_ruta")
+    @JsonIgnoreProperties({ "vendedor", "sucursal", "estado", "hibernateLazyInitializer", "handler" })
+    private Ruta ruta;
+
+    /** Observación general, por ejemplo cómo va empacado el pedido; solo se imprime en la copia de la tienda. */
+    private String observaciones;
+
+    /** Vigencia de la proforma mayorista: 15 días desde la emisión. */
+    private LocalDate fechaVencimiento;
+
+    /** Fecha de entrega prometida, opcional. */
+    private LocalDate fechaEntregaEstimada;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_sucursal")

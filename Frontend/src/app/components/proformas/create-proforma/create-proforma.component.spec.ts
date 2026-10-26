@@ -377,3 +377,94 @@ describe('CreateProformaComponent - descuentos del cliente mayorista', () => {
     expect(component.descuentoEditable).toBeTrue();
   });
 });
+
+describe('CreateProformaComponent - proforma mayorista', () => {
+  let component: CreateProformaComponent;
+  let proformaService: any;
+
+  function clienteConRuta(conRuta: boolean): Cliente {
+    const cliente = new Cliente();
+    cliente.idCliente = 5;
+    cliente.tipoCliente = 'MAYORISTA';
+    cliente.ruta = conRuta ? { idRuta: 1, nombre: 'RUTA 1' } : null;
+    return cliente;
+  }
+
+  function conLinea(): DetalleProforma {
+    const item = new DetalleProforma();
+    item.producto = Object.assign(new Producto(), { idProducto: 1, nombre: 'CUADERNO', precioVenta: 10, stock: 50 });
+    item.cantidad = 2;
+    item.observacion = '10 rojos';
+    component.proforma.itemsProforma = [item];
+    return item;
+  }
+
+  beforeEach(() => {
+    proformaService = {
+      create: jasmine.createSpy('create').and.returnValue(of({ idProforma: 9 })),
+      update: jasmine.createSpy('update'),
+      getProformaPdf: jasmine.createSpy('getProformaPdf').and.returnValue(of({ data: new Blob(['x']) }))
+    };
+    component = new CreateProformaComponent(proformaService, null, null, null, null, null, null, null, null);
+    component.usuario = Object.assign(component.usuario, { idUsuario: 1 });
+    spyOn(component, 'generarProformaPdf');
+  });
+
+  it('es mayorista solo con un cliente mayorista que tiene ruta', () => {
+    component.cliente = clienteConRuta(true);
+    expect(component.esProformaMayorista).toBeTrue();
+
+    component.cliente = clienteConRuta(false);
+    expect(component.esProformaMayorista).toBeFalse();
+
+    component.cliente = new Cliente();
+    expect(component.esProformaMayorista).toBeFalse();
+  });
+
+  it('al guardar una mayorista envía tipo, observaciones y notas de línea, y pide las dos copias', () => {
+    component.cliente = clienteConRuta(true);
+    const item = conLinea();
+    component.proforma.observaciones = '  empacar aparte  ';
+    component.proforma.fechaEntregaEstimada = '2026-11-02';
+
+    component.createProforma();
+
+    const enviada = proformaService.create.calls.mostRecent().args[0];
+    expect(enviada.tipoProforma).toBe('MAYORISTA');
+    expect(enviada.observaciones).toBe('empacar aparte');
+    expect(enviada.fechaEntregaEstimada).toBe('2026-11-02');
+    expect(item.observacion).toBe('10 rojos');
+    expect(component.generarProformaPdf).toHaveBeenCalledWith(9, true);
+  });
+
+  it('al guardar una minorista descarta observaciones y fecha de entrega, y pide una sola copia', () => {
+    component.cliente = new Cliente();
+    component.cliente.idCliente = 7;
+    const item = conLinea();
+    component.proforma.observaciones = 'no debe viajar';
+    component.proforma.fechaEntregaEstimada = '2026-11-02';
+
+    component.createProforma();
+
+    const enviada = proformaService.create.calls.mostRecent().args[0];
+    expect(enviada.tipoProforma).toBe('MINORISTA');
+    expect(enviada.observaciones).toBeNull();
+    expect(enviada.fechaEntregaEstimada).toBeNull();
+    expect(item.observacion).toBeNull();
+    expect(component.generarProformaPdf).toHaveBeenCalledWith(9, false);
+  });
+
+  it('una observación general en blanco se envía como nula', () => {
+    component.cliente = clienteConRuta(true);
+    conLinea();
+    component.proforma.observaciones = '   ';
+
+    component.createProforma();
+
+    expect(proformaService.create.calls.mostRecent().args[0].observaciones).toBeNull();
+  });
+
+  it('el mínimo de la entrega estimada es hoy', () => {
+    expect(component.hoy).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+});

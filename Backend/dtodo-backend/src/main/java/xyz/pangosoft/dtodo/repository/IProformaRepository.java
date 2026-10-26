@@ -51,8 +51,9 @@ public interface IProformaRepository extends JpaRepository<Proforma, Long> {
             "p.idProforma, p.noProforma, p.fechaEmision, p.total, e.idEstado, e.estado, " +
             "u.usuario, concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, '')), c.nombre, c.nit, " +
             "f.idFactura, f.serie, f.noFactura, fe.estado, " +
-            "concat(coalesce(fu.primerNombre, ''), ' ', coalesce(fu.apellido, ''))) " +
+            "concat(coalesce(fu.primerNombre, ''), ' ', coalesce(fu.apellido, '')), p.tipoProforma, rt.nombre) " +
             "from Proforma p join p.estado e join p.usuario u join p.cliente c " +
+            "left join p.ruta rt " +
             "left join Factura f on f.idProformaOrigen = p.idProforma " +
             "left join f.estado fe left join f.usuario fu " +
             "where (:idUsuario is null or u.idUsuario = :idUsuario) " +
@@ -63,8 +64,9 @@ public interface IProformaRepository extends JpaRepository<Proforma, Long> {
             "p.idProforma, p.noProforma, p.fechaEmision, p.total, e.idEstado, e.estado, " +
             "u.usuario, concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, '')), c.nombre, c.nit, " +
             "f.idFactura, f.serie, f.noFactura, fe.estado, " +
-            "concat(coalesce(fu.primerNombre, ''), ' ', coalesce(fu.apellido, ''))) " +
+            "concat(coalesce(fu.primerNombre, ''), ' ', coalesce(fu.apellido, '')), p.tipoProforma, rt.nombre) " +
             "from Proforma p join p.estado e join p.usuario u join p.cliente c " +
+            "left join p.ruta rt " +
             "left join Factura f on f.idProformaOrigen = p.idProforma " +
             "left join f.estado fe left join f.usuario fu " +
             "where p.fechaEmision >= :fechaIni and p.fechaEmision < :fechaFin " +
@@ -78,8 +80,9 @@ public interface IProformaRepository extends JpaRepository<Proforma, Long> {
             "p.idProforma, p.noProforma, p.fechaEmision, p.total, e.idEstado, e.estado, " +
             "u.usuario, concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, '')), c.nombre, c.nit, " +
             "f.idFactura, f.serie, f.noFactura, fe.estado, " +
-            "concat(coalesce(fu.primerNombre, ''), ' ', coalesce(fu.apellido, ''))) " +
+            "concat(coalesce(fu.primerNombre, ''), ' ', coalesce(fu.apellido, '')), p.tipoProforma, rt.nombre) " +
             "from Proforma p join p.estado e join p.usuario u join p.cliente c " +
+            "left join p.ruta rt " +
             "left join Factura f on f.idProformaOrigen = p.idProforma " +
             "left join f.estado fe left join f.usuario fu " +
             "where p.fechaEmision >= :fechaIni and p.fechaEmision < :fechaFin " +
@@ -97,7 +100,8 @@ public interface IProformaRepository extends JpaRepository<Proforma, Long> {
 
     @Query(value = "SELECT d.id_detalle AS idDetalle, p.id_producto AS idProducto, " +
             "p.cod_producto AS codigoProducto, p.nombre AS producto, d.cantidad AS cantidad, " +
-            "d.sub_total AS subTotal, d.descuento AS descuento, d.sub_total_descuento AS subTotalDescuento " +
+            "d.sub_total AS subTotal, d.descuento AS descuento, d.sub_total_descuento AS subTotalDescuento, " +
+            "d.observacion AS observacion " +
             "FROM proformas_detalle d INNER JOIN productos p ON p.id_producto = d.id_producto " +
             "WHERE d.id_proforma = :idProforma ORDER BY d.id_detalle",
             countQuery = "SELECT COUNT(*) FROM proformas_detalle WHERE id_proforma = :idProforma",

@@ -57,6 +57,9 @@ public class DetalleProforma implements Serializable {
     /** Porcentaje que sugería el sistema al registrar la línea, para saber cuánto se aparta el usuario. */
     private BigDecimal porcentajeSugerido;
 
+    /** Observación de la línea; se imprime debajo del producto (por ejemplo, el desglose de colores). */
+    private String observacion;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_producto")
     @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })

@@ -2,6 +2,7 @@ package xyz.pangosoft.dtodo.controller;
 
 import xyz.pangosoft.dtodo.service.IAmbitoVendedorService;
 import xyz.pangosoft.dtodo.service.IDescuentoService;
+import xyz.pangosoft.dtodo.service.IProformaMayoristaService;
 import xyz.pangosoft.dtodo.dto.ProformaFechaDto;
 import xyz.pangosoft.dtodo.dto.ProformaDto;
 import xyz.pangosoft.dtodo.dto.UsuarioDto;
@@ -54,6 +55,8 @@ public class ProformaApiController {
     private final IAmbitoVendedorService ambito;
 
     private final IDescuentoService descuentoService;
+
+    private final IProformaMayoristaService proformaMayoristaService;
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @GetMapping("/proformas")
@@ -172,6 +175,7 @@ public class ProformaApiController {
     public ResponseEntity<Proforma> create(@Valid @RequestBody Proforma proforma) {
         log.info("Registrando nueva proforma: {}", proforma.toString());
         ambito.prepararProforma(proforma);
+        proformaMayoristaService.preparar(proforma);
         descuentoService.prepararLineas(proforma);
         Proforma newProforma = proformaService.save(proforma, null);
         return ResponseEntity.status(HttpStatus.CREATED).body(newProforma);
@@ -187,6 +191,7 @@ public class ProformaApiController {
             ambito.exigirProformaSinFactura(existente);
         }
         ambito.prepararProforma(proforma);
+        proformaMayoristaService.preparar(proforma);
         descuentoService.prepararLineas(proforma);
         Proforma proformaUpdated = proformaService.save(proforma, id);
         return ResponseEntity.status(HttpStatus.CREATED).body(proformaUpdated);
@@ -231,7 +236,8 @@ public class ProformaApiController {
      * */
 
     @GetMapping("/proformas/generate/{id}")
-    public ResponseEntity<byte[]> showProforma(@PathVariable("id") Long idproforma) {
+    public ResponseEntity<byte[]> showProforma(@PathVariable("id") Long idproforma,
+            @RequestParam(value = "copia", defaultValue = "CLIENTE") String copia) {
         long inicio = System.currentTimeMillis();
         log.info("Iniciando GET /api/proformas/generate/{}", idproforma);
 
@@ -240,7 +246,7 @@ public class ProformaApiController {
         }
 
         try {
-            byte[] proformaPdf = proformaService.showProforma(idproforma);
+            byte[] proformaPdf = proformaService.showProforma(idproforma, copia);
             log.info("Proforma PDF generada. idProforma={}, bytes={}, duracionMs={}",
                     idproforma, proformaPdf.length, System.currentTimeMillis() - inicio);
             return ResponseEntity.ok().contentType(MediaType.APPLICATION_PDF).body(proformaPdf);

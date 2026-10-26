@@ -135,6 +135,26 @@
               <span>Dirección</span>
               <strong>{{ cliente ? cliente.direccion : '' }}</strong>
             </div>
+            <div *ngIf="esProformaMayorista">
+              <span>Ruta</span>
+              <strong>{{ cliente.ruta?.nombre || '' }}</strong>
+            </div>
+          </div>
+
+          <div class="mayorista-extra" *ngIf="esProformaMayorista">
+            <div class="line-entry-field">
+              <label for="fecha-entrega">Fecha de entrega estimada</label>
+              <input id="fecha-entrega" name="fechaEntregaEstimada" type="date" class="form-control"
+                [min]="hoy" [(ngModel)]="proforma.fechaEntregaEstimada">
+              <small>Vigencia: {{ vigenciaDiasMayorista }} días desde la emisión.</small>
+            </div>
+            <div class="line-entry-field mayorista-observaciones">
+              <label for="observaciones-generales">Observaciones del pedido</label>
+              <textarea id="observaciones-generales" name="observaciones" class="form-control" rows="2"
+                [maxlength]="maxObservacionGeneral" [(ngModel)]="proforma.observaciones"
+                placeholder="Solo se imprime en la copia de la tienda"></textarea>
+              <small>{{ (proforma.observaciones || '').length }}/{{ maxObservacionGeneral }}</small>
+            </div>
           </div>
         </div>
       </section>
@@ -276,6 +296,10 @@
                     <span aria-hidden="true"><i class="fas fa-box"></i></span>
                     <strong>{{ item.producto.nombre }}</strong>
                   </div>
+                  <input *ngIf="esProformaMayorista" type="text" class="form-control form-control-sm linea-observacion"
+                    [name]="'observacion-' + i" [maxlength]="maxObservacionLinea" [(ngModel)]="item.observacion"
+                    placeholder="Observación de la línea (opcional)"
+                    [attr.aria-label]="'Observación de ' + item.producto.nombre">
                 </td>
                 <td data-label="Precio"><span class="price-value">{{ item.producto.precioVenta | currency: "Q" : "symbol" }}</span></td>
                 <td data-label="Cantidad">

@@ -8,6 +8,9 @@ import xyz.pangosoft.dtodo.dto.ProformaDto;
 import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
 import xyz.pangosoft.dtodo.model.DetalleProforma;
 import xyz.pangosoft.dtodo.model.Proforma;
+import xyz.pangosoft.dtodo.model.enums.TipoProformaEnum;
+import java.time.LocalDate;
+import java.util.Optional;
 import xyz.pangosoft.dtodo.repository.IProformaRepository;
 import xyz.pangosoft.dtodo.service.IEstadoService;
 import xyz.pangosoft.dtodo.service.IUsuarioService;
@@ -21,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -118,5 +122,46 @@ class ProformaServiceImplTest {
 
         assertEquals(25L, total);
         verify(proformaRepository).countByUsuario(null);
+    }
+
+    @Test
+    void laProformaMayoristaNuevaVenceALos15Dias() {
+        when(proformaRepository.save(any(Proforma.class))).thenAnswer(inv -> inv.getArgument(0));
+        Proforma proforma = new Proforma();
+        proforma.setTipoProforma(TipoProformaEnum.MAYORISTA);
+
+        Proforma guardada = service.save(proforma, null);
+
+        assertEquals(LocalDate.now().plusDays(15), guardada.getFechaVencimiento());
+    }
+
+    @Test
+    void laProformaMinoristaNuevaNoTieneVencimientoYQuedaComoMinorista() {
+        when(proformaRepository.save(any(Proforma.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Proforma guardada = service.save(new Proforma(), null);
+
+        assertEquals(TipoProformaEnum.MINORISTA, guardada.getTipoProforma());
+        assertNull(guardada.getFechaVencimiento());
+    }
+
+    @Test
+    void editarUnaMayoristaConservaElVencimientoYActualizaObservacionesYEntrega() {
+        Proforma existente = new Proforma();
+        existente.setIdProforma(7L);
+        existente.setTipoProforma(TipoProformaEnum.MAYORISTA);
+        existente.setFechaVencimiento(LocalDate.now().plusDays(3));
+        when(proformaRepository.findById(7L)).thenReturn(Optional.of(existente));
+        when(proformaRepository.save(any(Proforma.class))).thenAnswer(inv -> inv.getArgument(0));
+        Proforma cambios = new Proforma();
+        cambios.setTipoProforma(TipoProformaEnum.MAYORISTA);
+        cambios.setObservaciones("entregar temprano");
+        cambios.setFechaEntregaEstimada(LocalDate.now().plusDays(5));
+
+        Proforma guardada = service.save(cambios, 7L);
+
+        assertEquals(LocalDate.now().plusDays(3), guardada.getFechaVencimiento());
+        assertEquals("entregar temprano", guardada.getObservaciones());
+        assertEquals(LocalDate.now().plusDays(5), guardada.getFechaEntregaEstimada());
     }
 }

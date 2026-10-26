@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, Subscription } from 'rxjs';
+import { forkJoin, Subject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 
 import { Producto } from '../../../models/producto';
@@ -104,6 +104,22 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
 
   get esClienteMayorista(): boolean {
     return !!this.cliente && this.cliente.tipoCliente === 'MAYORISTA';
+  }
+
+  /** Proforma mayorista: cliente mayorista con ruta. Habilita observaciones, entrega estimada y las dos copias. */
+  get esProformaMayorista(): boolean {
+    return this.esClienteMayorista && !!this.cliente.ruta;
+  }
+
+  readonly maxObservacionLinea = 255;
+  readonly maxObservacionGeneral = 500;
+  readonly vigenciaDiasMayorista = 15;
+
+  /** Hoy en formato yyyy-MM-dd (zona del navegador), como mínimo de la entrega estimada. */
+  get hoy(): string {
+    const fecha = new Date();
+    const dos = (n: number) => String(n).padStart(2, '0');
+    return `${fecha.getFullYear()}-${dos(fecha.getMonth() + 1)}-${dos(fecha.getDate())}`;
   }
 
   get opcionActual(): OpcionDescuento {
@@ -556,15 +572,30 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
       this.proforma.cliente = this.cliente;
       this.proforma.usuario = this.usuario;
       this.proforma.total = this.proforma.calcularTotal();
+      this.prepararMayorista();
 
       this.proformaService.create(this.proforma).subscribe(response => {
         if (response) {
-          this.generarProformaPdf(response.idProforma);
+          this.generarProformaPdf(response.idProforma, this.esProformaMayorista);
         }
       }, error => {
         this.isSaving = false;
         swal.fire(`Error: ${error.error.status}`, `${error.error.message}`, 'error');
       });
+    }
+  }
+
+  /** Deja el tipo y las notas coherentes con el cliente: lo que no aplica a una minorista no se envía. */
+  private prepararMayorista(): void {
+    if (this.esProformaMayorista) {
+      this.proforma.tipoProforma = 'MAYORISTA';
+      this.proforma.observaciones = (this.proforma.observaciones || '').trim() || null;
+      this.proforma.fechaEntregaEstimada = this.proforma.fechaEntregaEstimada || null;
+    } else {
+      this.proforma.tipoProforma = 'MINORISTA';
+      this.proforma.observaciones = null;
+      this.proforma.fechaEntregaEstimada = null;
+      this.proforma.itemsProforma.forEach(item => item.observacion = null);
     }
   }
 
@@ -595,6 +626,10 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
           this.proforma.estado = response.estado;
           this.proforma.usuario = response.usuario;
           this.proforma.total = response.total;
+          this.proforma.tipoProforma = response.tipoProforma;
+          this.proforma.observaciones = response.observaciones;
+          this.proforma.fechaEntregaEstimada = response.fechaEntregaEstimada;
+          this.proforma.fechaVencimiento = response.fechaVencimiento;
 
 
           this.proforma.itemsProforma = response.itemsProforma.map((itemProforma: DetalleProforma) => {
@@ -609,6 +644,7 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
             item.precioUnitario = itemProforma.precioUnitario;
             item.tipoDescuento = itemProforma.tipoDescuento;
             item.porcentajeSugerido = itemProforma.porcentajeSugerido;
+            item.observacion = itemProforma.observacion;
 
             return item;
           });
@@ -620,21 +656,25 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
     );
   }
 
-  generarProformaPdf(id: number): void {
-    this.proformaService.getProformaPdf(id).subscribe(response => {
-      const url = window.URL.createObjectURL(response.data);
-      const a = document.createElement('a');
-      document.body.appendChild(a);
-      a.setAttribute('style', 'display: none');
-      a.setAttribute('target', 'blank');
-      a.href = url;
-      /*
-        opcion para pedir descarga de la respuesta obtenida
-        a.download = response.filename;
-      */
-      window.open(a.toString(), '_blank');
-      window.URL.revokeObjectURL(url);
-      a.remove();
+  /** La mayorista abre las dos copias (cliente y tienda); la minorista, el único formato. */
+  generarProformaPdf(id: number, ambasCopias = false): void {
+    const copias: Array<'CLIENTE' | 'TIENDA'> = ambasCopias ? ['CLIENTE', 'TIENDA'] : ['CLIENTE'];
+    forkJoin(copias.map(copia => this.proformaService.getProformaPdf(id, copia))).subscribe(respuestas => {
+      respuestas.forEach(response => {
+        const url = window.URL.createObjectURL(response.data);
+        const a = document.createElement('a');
+        document.body.appendChild(a);
+        a.setAttribute('style', 'display: none');
+        a.setAttribute('target', 'blank');
+        a.href = url;
+        /*
+          opcion para pedir descarga de la respuesta obtenida
+          a.download = response.filename;
+        */
+        window.open(a.toString(), '_blank');
+        window.URL.revokeObjectURL(url);
+        a.remove();
+      });
       location.reload();
     },
       error => {
@@ -676,8 +716,9 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
 
     this.isSaving = true;
     if (this.isSaving) {
+      this.prepararMayorista();
       this.proformaService.update(this.proforma).subscribe(response => {
-        this.generarProformaPdf(response.idProforma);
+        this.generarProformaPdf(response.idProforma, this.esProformaMayorista);
         this.router.navigate(['/proformas/index']);
         swal.fire(response.mensaje, `Proforma ${response.noProforma} ha sido actualizada`, 'info');
       }, error => {
