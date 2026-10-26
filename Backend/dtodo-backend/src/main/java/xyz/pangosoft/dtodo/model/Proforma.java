@@ -27,6 +27,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum;
+import xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoProformaEnum;
 import java.util.ArrayList;
 import java.util.Date;
@@ -92,6 +93,13 @@ public class Proforma implements Serializable {
      */
     @Enumerated(EnumType.STRING)
     private EstadoAutorizacionEnum estadoAutorizacion;
+
+    /**
+     * Etapa del pedido; {@code null} en una proforma minorista. La mayorista queda {@code CONFIRMADA} al crearse y
+     * avanza con bodega. Lo fija el servidor; lo que traiga la petición se ignora.
+     */
+    @Enumerated(EnumType.STRING)
+    private EstadoPedidoEnum estadoPedido;
 
     /** Un administrador autorizó facturarla aunque ya venció. */
     private boolean vencimientoAutorizado;

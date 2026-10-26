@@ -1,0 +1,181 @@
+<section class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-9">
+        <h1>{{title}}</h1>
+        <p class="pedidos-subtitle">
+          Pedidos mayoristas por entregar, por ruta. Bodega avanza cada etapa: picking, empaque y salida a ruta.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="card listing-card">
+  <div class="card-header listing-card-header">Filtros</div>
+  <div class="card-body">
+    <div class="filtros">
+      <label class="filtro">
+        <span>Etapa</span>
+        <select class="form-control form-control-sm" [(ngModel)]="estado" (ngModelChange)="cargar()" name="estado">
+          <option *ngFor="let opcion of estados" [ngValue]="opcion.codigo">{{opcion.nombre}}</option>
+        </select>
+      </label>
+      <label class="filtro">
+        <span>Ruta</span>
+        <select class="form-control form-control-sm" [(ngModel)]="idRuta" name="ruta">
+          <option [ngValue]="''">Todas las rutas</option>
+          <option *ngFor="let ruta of rutas" [ngValue]="ruta.idRuta">{{ruta.nombre}}</option>
+        </select>
+      </label>
+      <label class="filtro">
+        <span>Emitidos desde</span>
+        <input type="date" class="form-control form-control-sm" [(ngModel)]="fechaInicio" (ngModelChange)="cargar()" name="desde">
+      </label>
+      <label class="filtro">
+        <span>Hasta</span>
+        <input type="date" class="form-control form-control-sm" [(ngModel)]="fechaFin" (ngModelChange)="cargar()" name="hasta">
+      </label>
+      <button type="button" class="btn btn-sm btn-outline-secondary filtro-boton" (click)="cargar()">
+        <i class="fas fa-sync-alt" aria-hidden="true"></i> Actualizar
+      </button>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="errorCarga" class="alert alert-warning" role="alert">
+  No fue posible cargar los pedidos.
+  <button type="button" class="btn btn-sm btn-outline-dark ml-2" (click)="cargar()">Reintentar</button>
+</div>
+
+<div *ngIf="cargando" class="estado-vacio">Cargando...</div>
+<div *ngIf="!cargando && !errorCarga && grupos.length === 0" class="estado-vacio">
+  <i class="fas fa-check-circle" aria-hidden="true"></i> No hay pedidos para los filtros seleccionados.
+</div>
+
+<div class="card listing-card" *ngFor="let grupo of grupos">
+  <div class="card-header listing-card-header grupo-encabezado">
+    <span>
+      <i class="fas fa-route" aria-hidden="true"></i> {{grupo.ruta}}
+      <small class="grupo-resumen">{{grupo.pedidos.length}} {{grupo.pedidos.length === 1 ? 'pedido' : 'pedidos'}} ·
+        {{grupo.unidades | number}} unidades</small>
+    </span>
+    <button *ngIf="puedeOperar && grupo.idRuta" type="button" class="btn btn-sm btn-light" (click)="imprimirNotaEnvio(grupo)"
+      [attr.aria-label]="'Imprimir la nota de envío de ' + grupo.ruta">
+      <i class="fas fa-print" aria-hidden="true"></i> Nota de envío
+    </button>
+  </div>
+  <div class="card-body table-responsive">
+    <table class="table table-sm pedidos-table">
+      <thead>
+        <tr>
+          <th>Pedido</th>
+          <th>Cliente</th>
+          <th>Vendedor</th>
+          <th>Entrega est.</th>
+          <th class="text-right">Unidades</th>
+          <th>Etapa</th>
+          <th class="text-center">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let pedido of grupo.pedidos">
+          <td data-label="Pedido"><span class="listing-id-pill">#{{pedido.noProforma}}</span></td>
+          <td data-label="Cliente">
+            <strong>{{pedido.negocio || pedido.cliente}}</strong>
+            <small *ngIf="pedido.negocio" class="d-block text-muted">{{pedido.cliente}}</small>
+          </td>
+          <td data-label="Vendedor">{{pedido.vendedor}}</td>
+          <td data-label="Entrega est.">{{pedido.fechaEntregaEstimada ? (pedido.fechaEntregaEstimada | date: 'dd/MM/yyyy') : '—'}}</td>
+          <td data-label="Unidades" class="text-right">{{pedido.unidades | number}}</td>
+          <td data-label="Etapa">
+            <span class="etapa-pill" [ngClass]="'etapa-' + pedido.estadoPedido">{{etiquetaEstado(pedido.estadoPedido)}}</span>
+            <span *ngIf="bloqueadoPorAutorizacion(pedido)" class="etapa-pill etapa-bloqueada"
+              title="El descuento espera la decisión de un administrador">
+              {{pedido.estadoAutorizacion === 'PENDIENTE' ? 'Por autorizar' : 'Rechazado'}}
+            </span>
+          </td>
+          <td data-label="Acciones" class="text-center">
+            <div class="acciones">
+              <button type="button" class="btn btn-sm btn-outline-secondary" (click)="verDetalle(pedido)"
+                [attr.aria-label]="'Ver el pedido ' + pedido.noProforma" title="Ver detalle">
+                <i class="fas fa-eye" aria-hidden="true"></i>
+              </button>
+              <ng-container *ngIf="puedeOperar">
+                <button type="button" class="btn btn-sm btn-outline-secondary" (click)="imprimirPicking(pedido)"
+                  [attr.aria-label]="'Imprimir la hoja de picking del pedido ' + pedido.noProforma" title="Hoja de picking">
+                  <i class="fas fa-clipboard-list" aria-hidden="true"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" (click)="imprimirEmpaque(pedido)"
+                  [attr.aria-label]="'Imprimir la lista de empaque del pedido ' + pedido.noProforma" title="Lista de empaque">
+                  <i class="fas fa-box-open" aria-hidden="true"></i>
+                </button>
+              </ng-container>
+              <button *ngIf="puedeAvanzar(pedido)" type="button" class="btn btn-sm btn-success" (click)="avanzar(pedido)"
+                [disabled]="procesando === pedido.idProforma">
+                <i class="fas fa-arrow-right" aria-hidden="true"></i> {{textoAvance(pedido)}}
+              </button>
+              <button *ngIf="puedeRetroceder(pedido)" type="button" class="btn btn-sm btn-outline-danger" (click)="retroceder(pedido)"
+                [disabled]="procesando === pedido.idProforma" [attr.aria-label]="'Regresar de etapa el pedido ' + pedido.noProforma"
+                title="Regresar a la etapa anterior">
+                <i class="fas fa-undo" aria-hidden="true"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div *ngIf="cargandoDetalle || detalle" class="detalle-fondo" (click)="cerrarDetalle()" (keydown.escape)="cerrarDetalle()">
+  <section class="detalle-dialogo" role="dialog" aria-modal="true" aria-labelledby="detalle-pedido-titulo"
+    (click)="$event.stopPropagation()">
+    <header class="detalle-encabezado">
+      <h3 id="detalle-pedido-titulo">Pedido {{detalle ? detalle.noProforma : ''}}</h3>
+      <button type="button" class="detalle-cerrar" (click)="cerrarDetalle()" aria-label="Cerrar detalle del pedido">
+        <i class="fas fa-times" aria-hidden="true"></i>
+      </button>
+    </header>
+
+    <div *ngIf="cargandoDetalle" class="estado-vacio">Cargando...</div>
+
+    <div *ngIf="detalle" class="detalle-cuerpo">
+      <div class="detalle-datos">
+        <div><span>Cliente</span><strong>{{detalle.negocio || detalle.cliente}}</strong></div>
+        <div><span>Dirección</span><strong>{{detalle.direccion || '—'}}</strong></div>
+        <div><span>Encargado</span><strong>{{detalle.contacto || '—'}} {{detalle.telefonoContacto}}</strong></div>
+        <div><span>Ruta</span><strong>{{detalle.ruta || '—'}}</strong></div>
+        <div><span>Vendedor</span><strong>{{detalle.vendedor}}</strong></div>
+        <div><span>Etapa</span><strong>{{etiquetaEstado(detalle.estadoPedido)}}</strong></div>
+      </div>
+
+      <p *ngIf="detalle.observaciones" class="detalle-observacion"><strong>Observaciones del pedido:</strong> {{detalle.observaciones}}</p>
+
+      <h4>Productos</h4>
+      <div class="table-responsive">
+        <table class="table table-sm">
+          <thead><tr><th>Código</th><th>Producto</th><th class="text-right">Cant.</th><th>Observación</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let linea of detalle.lineas">
+              <td>{{linea.codigo}}</td>
+              <td>{{linea.producto}}</td>
+              <td class="text-right">{{linea.cantidad | number}}</td>
+              <td>{{linea.observacion}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Etapas</h4>
+      <ol class="etapas-lista">
+        <li *ngFor="let etapa of detalle.etapas">
+          <strong>{{etiquetaEstado(etapa.etapa)}}</strong>
+          <span>{{etapa.usuario}}<ng-container *ngIf="etapa.responsable"> · {{etapa.responsable}}</ng-container>
+            · {{etapa.fecha | date: 'dd/MM/yyyy HH:mm'}}</span>
+          <em *ngIf="etapa.motivo">{{etapa.motivo}}</em>
+        </li>
+      </ol>
+    </div>
+  </section>
+</div>

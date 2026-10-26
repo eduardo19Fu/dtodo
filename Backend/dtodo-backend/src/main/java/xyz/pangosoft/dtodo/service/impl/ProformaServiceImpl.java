@@ -13,6 +13,7 @@ import xyz.pangosoft.dtodo.error.exceptions.ReportGenerationException;
 import xyz.pangosoft.dtodo.model.Estado;
 import xyz.pangosoft.dtodo.model.DetalleProforma;
 import xyz.pangosoft.dtodo.model.Proforma;
+import xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoProformaEnum;
 import xyz.pangosoft.dtodo.repository.IProformaRepository;
 import xyz.pangosoft.dtodo.service.IEstadoService;
@@ -397,6 +398,10 @@ public class ProformaServiceImpl implements IProformaService {
             }
             if (proforma.getTipoProforma() == TipoProformaEnum.MAYORISTA) {
                 proforma.setFechaVencimiento(LocalDate.now().plusDays(VIGENCIA_DIAS_MAYORISTA));
+                // Una proforma mayorista es un pedido desde que se crea.
+                proforma.setEstadoPedido(EstadoPedidoEnum.CONFIRMADA);
+            } else {
+                proforma.setEstadoPedido(null);
             }
             if (proforma.getUsuario() != null) {
                 proforma.setSucursal(usuarioService.findById(proforma.getUsuario().getIdUsuario()).getSucursal());

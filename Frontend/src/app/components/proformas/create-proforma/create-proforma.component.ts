@@ -117,6 +117,12 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
   /** Porcentaje sobre el que el servidor pide autorización (solo para avisar; el servidor decide). */
   readonly topeDescuento = 15;
 
+  /** Editar un pedido que bodega ya empezó a preparar lo devuelve a «Confirmado»: hay que imprimir de nuevo el picking. */
+  get pedidoEnPreparacion(): boolean {
+    const etapa = this.proforma.estadoPedido;
+    return this.esProformaMayorista && (etapa === 'EN_PREPARACION' || etapa === 'EMPACADA' || etapa === 'EN_RUTA');
+  }
+
   /** Una línea mayorista con más del tope, que no sea precio mayorista fijo, deja la proforma pendiente de autorización. */
   get requiereAutorizacion(): boolean {
     return this.esProformaMayorista && this.proforma.itemsProforma.some(item =>
@@ -643,6 +649,7 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
           this.proforma.total = response.total;
           this.proforma.tipoProforma = response.tipoProforma;
           this.proforma.estadoAutorizacion = response.estadoAutorizacion;
+          this.proforma.estadoPedido = response.estadoPedido;
           this.proforma.observaciones = response.observaciones;
           this.proforma.fechaEntregaEstimada = response.fechaEntregaEstimada;
           this.proforma.fechaVencimiento = response.fechaVencimiento;

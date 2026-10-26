@@ -26,6 +26,7 @@ import xyz.pangosoft.dtodo.service.IAmbitoVendedorService;
 import xyz.pangosoft.dtodo.service.IAutorizacionProformaService;
 import xyz.pangosoft.dtodo.service.IDescuentoService;
 import xyz.pangosoft.dtodo.service.IEstadoService;
+import xyz.pangosoft.dtodo.service.IPedidoService;
 import xyz.pangosoft.dtodo.service.IProformaAuditoriaService;
 import xyz.pangosoft.dtodo.service.IProformaMayoristaService;
 import xyz.pangosoft.dtodo.service.IProformaService;
@@ -39,8 +40,9 @@ class ProformaApiControllerAuditoriaTest {
     private final IProformaMayoristaService mayoristaService = mock(IProformaMayoristaService.class);
     private final IProformaAuditoriaService auditoria = mock(IProformaAuditoriaService.class);
     private final IAutorizacionProformaService autorizacion = mock(IAutorizacionProformaService.class);
+    private final IPedidoService pedidoService = mock(IPedidoService.class);
     private final ProformaApiController controller = new ProformaApiController(proformaService,
-            mock(IEstadoService.class), ambito, descuentoService, mayoristaService, auditoria, autorizacion);
+            mock(IEstadoService.class), ambito, descuentoService, mayoristaService, auditoria, autorizacion, pedidoService);
 
     @BeforeEach
     void motivos() {
@@ -79,6 +81,7 @@ class ProformaApiControllerAuditoriaTest {
         orden.verify(mayoristaService).evaluarAutorizacion(nueva);
         orden.verify(proformaService).save(nueva, null);
         verify(auditoria).registrar(eq(7L), eq(AccionAuditoriaEnum.CREACION), isNull(), any());
+        verify(pedidoService).registrarConfirmacion(any(Proforma.class));
     }
 
     @Test
@@ -87,6 +90,18 @@ class ProformaApiControllerAuditoriaTest {
 
         assertThrows(ReglaNegocioException.class,
                 () -> controller.udpate(proforma(7L, TipoProformaEnum.MAYORISTA), 7L, "  "));
+
+        verify(proformaService, never()).save(any(), anyLong());
+    }
+
+    @Test
+    void editarUnPedidoYaEntregadoSeRechaza() {
+        Proforma existente = proforma(7L, TipoProformaEnum.MAYORISTA);
+        when(proformaService.findProforma(7L)).thenReturn(existente);
+        org.mockito.Mockito.doThrow(new ReglaNegocioException("ya se entregó")).when(pedidoService).exigirEditable(existente);
+
+        assertThrows(ReglaNegocioException.class,
+                () -> controller.udpate(proforma(7L, TipoProformaEnum.MAYORISTA), 7L, "corrección"));
 
         verify(proformaService, never()).save(any(), anyLong());
     }
@@ -115,6 +130,8 @@ class ProformaApiControllerAuditoriaTest {
         controller.udpate(cambios, 7L, " cambio de cantidad ");
 
         verify(mayoristaService).evaluarAutorizacion(cambios);
+        verify(pedidoService).exigirEditable(existente);
+        verify(pedidoService).reiniciarSiEditado(guardada, "cambio de cantidad");
         verify(auditoria).registrar(eq(7L), eq(AccionAuditoriaEnum.MODIFICACION), eq("cambio de cantidad"),
                 contains("Antes: resumen"));
     }

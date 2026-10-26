@@ -1,6 +1,7 @@
 package xyz.pangosoft.dtodo.repository;
 
 import xyz.pangosoft.dtodo.dto.AutorizacionProformaDto;
+import xyz.pangosoft.dtodo.dto.PedidoDto;
 import xyz.pangosoft.dtodo.dto.ProformaFechaDto;
 import xyz.pangosoft.dtodo.dto.ProformaDto;
 import xyz.pangosoft.dtodo.dto.DetalleDocumentoDto;
@@ -32,6 +33,25 @@ public interface IProformaRepository extends JpaRepository<Proforma, Long> {
             "p.idProforma, p.noProforma, p.fechaEmision, p.total, c.nombre, rt.nombre, " +
             "trim(concat(coalesce(us.primerNombre, ''), ' ', coalesce(us.apellido, ''))), p.fechaVencimiento, " +
             "(select max(i.descuento) from Proforma p2 join p2.itemsProforma i where p2.idProforma = p.idProforma), ";
+
+    /**
+     * Pedidos mayoristas para la lista de pedidos. Sin importes. Más antiguos primero dentro de cada ruta.
+     * {@code idRuta} e {@code idUsuario} son opcionales (nulos = todos).
+     */
+    @Query("select new xyz.pangosoft.dtodo.dto.PedidoDto(p.idProforma, p.noProforma, p.fechaEmision, p.fechaEntregaEstimada, " +
+            "c.nombre, c.nombreNegocio, rt.idRuta, rt.nombre, " +
+            "trim(concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, ''))), p.estadoPedido, " +
+            "(select coalesce(sum(i.cantidad), 0) from Proforma p2 join p2.itemsProforma i where p2.idProforma = p.idProforma), " +
+            "p.estadoAutorizacion) " +
+            "from Proforma p join p.cliente c join p.usuario u left join p.ruta rt " +
+            "where p.tipoProforma = :tipo and p.estadoPedido in :estados " +
+            "and (:idRuta is null or rt.idRuta = :idRuta) and (:idUsuario is null or u.idUsuario = :idUsuario) " +
+            "and p.fechaEmision >= :desde and p.fechaEmision < :hasta " +
+            "order by rt.nombre, p.fechaEntregaEstimada, p.fechaEmision")
+    List<PedidoDto> findPedidos(@Param("tipo") xyz.pangosoft.dtodo.model.enums.TipoProformaEnum tipo,
+                                @Param("estados") List<xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum> estados,
+                                @Param("idRuta") Integer idRuta, @Param("idUsuario") Integer idUsuario,
+                                @Param("desde") Date desde, @Param("hasta") Date hasta, Pageable pageable);
 
     /** Proformas que esperan que un administrador apruebe o rechace su descuento, las más antiguas primero. */
     @Query(SELECT_AUTORIZACION + "'DESCUENTO') from Proforma p join p.cliente c join p.usuario us left join p.ruta rt " +

@@ -1,5 +1,9 @@
--- Revierte el módulo de Clientes Mayoristas (pasos 01 a 08). Orden inverso a la creación.
+-- Revierte el módulo de Clientes Mayoristas (pasos 01 a 09). Orden inverso a la creación.
 -- ATENCIÓN: borra la información de rutas, los datos mayoristas de los clientes y los descuentos. Respaldar antes.
+DROP TABLE IF EXISTS proformas_etapas;
+DROP INDEX idx_proforma_estado_pedido ON proformas;
+ALTER TABLE proformas DROP COLUMN estado_pedido;
+
 -- Paso 08: falla si ya hay proformas con dos facturas (una anulada y su reemisión); anule o reasigne esas facturas antes.
 CREATE UNIQUE INDEX uq_facturas_proforma_origen ON facturas (id_proforma_origen);
 DROP INDEX idx_facturas_proforma_origen ON facturas;

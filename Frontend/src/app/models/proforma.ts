@@ -28,6 +28,8 @@ export class Proforma {
     fechaEntregaEstimada?: string | null;
     /** Lo calcula el servidor: PENDIENTE si una línea pasa del tope de descuento; nulo si no necesita autorización. */
     estadoAutorizacion?: EstadoAutorizacion | null;
+    /** Etapa del pedido (solo la mayorista): la fija el servidor. */
+    estadoPedido?: 'CONFIRMADA' | 'EN_PREPARACION' | 'EMPACADA' | 'EN_RUTA' | 'ENTREGADA_PARCIAL' | 'ENTREGADA' | null;
     /** Un administrador autorizó facturarla aunque ya venció. */
     vencimientoAutorizado?: boolean;
     /** Vence a los 15 días de la emisión en una proforma mayorista; la fija el servidor. */

@@ -66,6 +66,8 @@ public class ProformaMayoristaServiceImpl implements IProformaMayoristaService {
             proforma.setRuta(null);
         }
         proforma.setTipoProforma(tipo);
+        // La etapa del pedido la fija el servidor; nunca viene en la petición.
+        proforma.setEstadoPedido(null);
         // La autorización del vencimiento la da un administrador; nunca viene en la petición.
         proforma.setVencimientoAutorizado(false);
 

@@ -9,6 +9,7 @@ import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
 import xyz.pangosoft.dtodo.model.DetalleProforma;
 import xyz.pangosoft.dtodo.model.Proforma;
 import xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum;
+import xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoProformaEnum;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -183,5 +184,34 @@ class ProformaServiceImplTest {
 
         assertEquals(EstadoAutorizacionEnum.PENDIENTE, guardada.getEstadoAutorizacion());
         assertTrue(guardada.isVencimientoAutorizado());
+    }
+
+    @Test
+    void laMayoristaNuevaEsUnPedidoConfirmadoYLaMinoristaNo() {
+        when(proformaRepository.save(any(Proforma.class))).thenAnswer(inv -> inv.getArgument(0));
+        Proforma mayorista = new Proforma();
+        mayorista.setTipoProforma(TipoProformaEnum.MAYORISTA);
+        mayorista.setEstadoPedido(EstadoPedidoEnum.ENTREGADA);
+
+        assertEquals(EstadoPedidoEnum.CONFIRMADA, service.save(mayorista, null).getEstadoPedido());
+
+        Proforma minorista = new Proforma();
+        minorista.setEstadoPedido(EstadoPedidoEnum.CONFIRMADA);
+        assertNull(service.save(minorista, null).getEstadoPedido());
+    }
+
+    @Test
+    void editarUnaProformaConservaLaEtapaDelPedido() {
+        Proforma existente = new Proforma();
+        existente.setIdProforma(7L);
+        existente.setTipoProforma(TipoProformaEnum.MAYORISTA);
+        existente.setEstadoPedido(EstadoPedidoEnum.EMPACADA);
+        when(proformaRepository.findById(7L)).thenReturn(Optional.of(existente));
+        when(proformaRepository.save(any(Proforma.class))).thenAnswer(inv -> inv.getArgument(0));
+        Proforma cambios = new Proforma();
+        cambios.setTipoProforma(TipoProformaEnum.MAYORISTA);
+        cambios.setEstadoPedido(EstadoPedidoEnum.CONFIRMADA);
+
+        assertEquals(EstadoPedidoEnum.EMPACADA, service.save(cambios, 7L).getEstadoPedido());
     }
 }

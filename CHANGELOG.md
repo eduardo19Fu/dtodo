@@ -6,6 +6,21 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Etapas del pedido mayorista y documentos de bodega (Fase 2A)
+
+Una proforma mayorista es un pedido desde que se crea: bodega lo prepara, lo empaca y lo carga a ruta, con quién y cuándo de cada paso y los tres documentos impresos. No toca el inventario; la entrega que descuenta existencias llega en la 2B.
+
+- **Etapas**: `CONFIRMADA` (al crearse la proforma, sin botón de confirmar) → `EN_PREPARACION` (picking) → `EMPACADA` → `EN_RUTA`. Las dos siguientes (`ENTREGADA_PARCIAL`, `ENTREGADA`) existen pero se alcanzan en la 2B. Cada paso queda en `proformas_etapas` con el usuario de la sesión, la fecha y, si quien lo hizo no tiene usuario (el personal rota), su nombre escrito.
+- **Reglas** (422 con mensaje claro): no avanza un pedido con el descuento pendiente de autorización o rechazado; después de `EN_RUTA` no avanza en bodega; una proforma minorista no es un pedido. Solo el administrador puede regresar un pedido una etapa, con motivo obligatorio.
+- **Editar un pedido**: si bodega ya empezó (preparación, empacado o en ruta) la edición lo devuelve a `CONFIRMADA` y lo anota en las etapas, porque la hoja de picking impresa quedó desactualizada; la pantalla de la proforma lo avisa antes de guardar. Un pedido ya entregado no se edita.
+- **Documentos** (PDF, sin precios ni firma de recibido): hoja de picking y lista de empaque (`pedido_bodega.jrxml`, una plantilla con el parámetro `DOCUMENTO`; la observación general solo sale en el empaque) y nota de envío por ruta (`nota_envio.jrxml`: los pedidos empacados por cargar y los que salieron a ruta ese día). Plantillas escritas a mano; no abrir con Jaspersoft Studio 7.
+- **API** (`/api/pedidos`): lista (por ruta, etapa y fechas de emisión; sin etapa trae los que faltan por entregar), detalle, `avanzar`, `retroceder`, `picking`, `empaque` y `nota-envio`. El administrador y bodega operan; el vendedor ve solo sus pedidos y no opera.
+- **Pantalla *Pedidos*** (menú para administrador, bodega y vendedor): pedidos por ruta con sus unidades, el botón de la etapa siguiente, los documentos, el detalle con las etapas y la nota de envío por ruta.
+- **Base de datos** (`sql/mayoristas/09_create_etapas_pedido.sql`, **requerido antes del jar**; `99_rollback_mayoristas.sql` lo revierte): `estado_pedido` en `proformas` (las mayoristas existentes quedan confirmadas) y la tabla `proformas_etapas`.
+- **Supuestos por confirmar**: que la proforma mayorista queda confirmada al crearse; que el responsable de cada etapa se escribe como texto opcional además del usuario; y que un pedido con el descuento pendiente no se prepara.
+- **Pruebas**: `PedidoServiceImplTest`, `PedidoRepositoryTest` (H2), `PedidoDocumentosTemplateTest`, `PedidoDocumentoServiceImplTest`, casos nuevos en `ProformaServiceImplTest`, `ProformaApiControllerAuditoriaTest` y `VendedorSeguridadTest`, y specs de `PedidosComponent`, `PedidoService` y `CreateProformaComponent`.
+- **No incluido**: la entrega, el descuento de inventario y el rol repartidor (2B y 2C), y los reportes sobre lo entregado.
+
 ### Agregado — Reportes de mayoristas (Fase 1, paso 7)
 
 Tres reportes de solo lectura para el administrador, en una categoría nueva "Mayoristas" de la pantalla de reportes. No dependen de la entrega del pedido ni agregan tablas: es el último paso de la Fase 1.

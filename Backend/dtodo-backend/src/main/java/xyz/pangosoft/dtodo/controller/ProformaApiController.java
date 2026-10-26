@@ -3,6 +3,7 @@ package xyz.pangosoft.dtodo.controller;
 import xyz.pangosoft.dtodo.service.IAmbitoVendedorService;
 import xyz.pangosoft.dtodo.service.IDescuentoService;
 import xyz.pangosoft.dtodo.service.IAutorizacionProformaService;
+import xyz.pangosoft.dtodo.service.IPedidoService;
 import xyz.pangosoft.dtodo.service.IProformaAuditoriaService;
 import xyz.pangosoft.dtodo.service.IProformaMayoristaService;
 import xyz.pangosoft.dtodo.dto.ProformaAuditoriaDto;
@@ -66,6 +67,8 @@ public class ProformaApiController {
     private final IProformaAuditoriaService auditoriaService;
 
     private final IAutorizacionProformaService autorizacionService;
+
+    private final IPedidoService pedidoService;
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @GetMapping("/proformas")
@@ -200,6 +203,7 @@ public class ProformaApiController {
         Proforma newProforma = proformaService.save(proforma, null);
         auditoriaService.registrar(newProforma.getIdProforma(), AccionAuditoriaEnum.CREACION, null,
                 auditoriaService.resumen(newProforma));
+        pedidoService.registrarConfirmacion(newProforma);
         return ResponseEntity.status(HttpStatus.CREATED).body(newProforma);
     }
 
@@ -222,6 +226,7 @@ public class ProformaApiController {
         String motivoLimpio;
         if (mayorista) {
             autorizacionService.exigirSinFactura(existente);
+            pedidoService.exigirEditable(existente);
             motivoLimpio = auditoriaService.motivoObligatorio(motivo, "editar una proforma mayorista");
         } else {
             motivoLimpio = auditoriaService.motivoOpcional(motivo);
@@ -233,6 +238,7 @@ public class ProformaApiController {
         Proforma proformaUpdated = proformaService.save(proforma, id);
         auditoriaService.registrar(id, AccionAuditoriaEnum.MODIFICACION, motivoLimpio,
                 "Antes: " + antes + "\nDespués: " + auditoriaService.resumen(proformaUpdated));
+        pedidoService.reiniciarSiEditado(proformaUpdated, motivoLimpio);
         return ResponseEntity.status(HttpStatus.CREATED).body(proformaUpdated);
     }
 

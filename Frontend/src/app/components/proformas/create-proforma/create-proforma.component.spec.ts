@@ -575,4 +575,17 @@ describe('CreateProformaComponent - autorización y motivo de cambios', () => {
     expect(fire).toHaveBeenCalledWith('Pendiente de autorización', jasmine.stringMatching('9P'), 'info');
     expect(component.generarProformaPdf).toHaveBeenCalledWith(9, true);
   });
+
+  it('avisa que editar un pedido en preparación lo devuelve a confirmado', () => {
+    component.cliente = mayoristaConRuta();
+    component.proforma.estadoPedido = 'EMPACADA';
+    expect(component.pedidoEnPreparacion).toBeTrue();
+
+    component.proforma.estadoPedido = 'CONFIRMADA';
+    expect(component.pedidoEnPreparacion).toBeFalse();
+
+    component.proforma.estadoPedido = 'EN_RUTA';
+    component.cliente = new Cliente();
+    expect(component.pedidoEnPreparacion).toBeFalse();
+  });
 });

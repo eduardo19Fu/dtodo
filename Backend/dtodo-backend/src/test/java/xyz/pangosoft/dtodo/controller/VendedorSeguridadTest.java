@@ -109,4 +109,17 @@ class VendedorSeguridadTest {
                     metodo + " es solo del administrador");
         }
     }
+
+    @Test
+    void elVendedorSoloVeSusPedidosYBodegaOperaLasEtapas() {
+        permiteAlVendedor(PedidoApiController.class, "listar", "detalle");
+        niegaAlVendedor(PedidoApiController.class, "avanzar", "retroceder", "picking", "empaque", "notaEnvio");
+        assertTrue(roles(PedidoApiController.class, "avanzar").equals(Arrays.asList("ROLE_ADMIN", "ROLE_BODEGA")),
+                "avanzar es de administrador y bodega");
+        assertTrue(roles(PedidoApiController.class, "retroceder").equals(Arrays.asList("ROLE_ADMIN")),
+                "retroceder es solo del administrador");
+        for (String metodo : new String[] { "listar", "detalle", "avanzar", "picking", "empaque", "notaEnvio" }) {
+            assertTrue(roles(PedidoApiController.class, metodo).contains("ROLE_BODEGA"), metodo + " debe permitir a bodega");
+        }
+    }
 }
