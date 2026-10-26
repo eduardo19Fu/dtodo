@@ -1,5 +1,10 @@
--- Revierte el módulo de Clientes Mayoristas (pasos 01 a 06). Orden inverso a la creación.
+-- Revierte el módulo de Clientes Mayoristas (pasos 01 a 07). Orden inverso a la creación.
 -- ATENCIÓN: borra la información de rutas, los datos mayoristas de los clientes y los descuentos. Respaldar antes.
+DROP TABLE IF EXISTS proformas_auditoria;
+DROP INDEX idx_proforma_autorizacion ON proformas;
+ALTER TABLE proformas
+    DROP COLUMN estado_autorizacion,
+    DROP COLUMN vencimiento_autorizado;
 ALTER TABLE proformas_detalle DROP COLUMN observacion;
 ALTER TABLE proformas DROP FOREIGN KEY fk_proforma_ruta;
 DROP INDEX idx_proforma_tipo ON proformas;

@@ -2,7 +2,12 @@ package xyz.pangosoft.dtodo.controller;
 
 import xyz.pangosoft.dtodo.service.IAmbitoVendedorService;
 import xyz.pangosoft.dtodo.service.IDescuentoService;
+import xyz.pangosoft.dtodo.service.IAutorizacionProformaService;
+import xyz.pangosoft.dtodo.service.IProformaAuditoriaService;
 import xyz.pangosoft.dtodo.service.IProformaMayoristaService;
+import xyz.pangosoft.dtodo.dto.ProformaAuditoriaDto;
+import xyz.pangosoft.dtodo.model.enums.AccionAuditoriaEnum;
+import xyz.pangosoft.dtodo.model.enums.TipoProformaEnum;
 import xyz.pangosoft.dtodo.dto.ProformaFechaDto;
 import xyz.pangosoft.dtodo.dto.ProformaDto;
 import xyz.pangosoft.dtodo.dto.UsuarioDto;
@@ -57,6 +62,10 @@ public class ProformaApiController {
     private final IDescuentoService descuentoService;
 
     private final IProformaMayoristaService proformaMayoristaService;
+
+    private final IProformaAuditoriaService auditoriaService;
+
+    private final IAutorizacionProformaService autorizacionService;
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @GetMapping("/proformas")
@@ -163,6 +172,16 @@ public class ProformaApiController {
      * @param noProforma número único asignado a la proforma
      * @return la Proforma encontrada o 404 si no existe
      */
+    /** Historial de la proforma (quién la creó, editó, autorizó...); el vendedor solo el de las suyas. */
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO", "ROLE_VENDEDOR"})
+    @GetMapping("/proformas/{id}/auditoria")
+    public ResponseEntity<List<ProformaAuditoriaDto>> auditoria(@PathVariable("id") Long id) {
+        if (ambito.esVendedor()) {
+            ambito.exigirProformaPropia(proformaService.findProforma(id));
+        }
+        return ResponseEntity.ok(auditoriaService.historial(id));
+    }
+
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @GetMapping("/proformas/by-no-proforma/{noProforma}")
     public ResponseEntity<Proforma> findByNoProforma(@PathVariable("noProforma") String noProforma) {
@@ -177,34 +196,64 @@ public class ProformaApiController {
         ambito.prepararProforma(proforma);
         proformaMayoristaService.preparar(proforma);
         descuentoService.prepararLineas(proforma);
+        proformaMayoristaService.evaluarAutorizacion(proforma);
         Proforma newProforma = proformaService.save(proforma, null);
+        auditoriaService.registrar(newProforma.getIdProforma(), AccionAuditoriaEnum.CREACION, null,
+                auditoriaService.resumen(newProforma));
         return ResponseEntity.status(HttpStatus.CREATED).body(newProforma);
     }
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO", "ROLE_VENDEDOR"})
     @PutMapping(value = "/proformas/{id}")
-    public ResponseEntity<Proforma> udpate(@Valid @RequestBody Proforma proforma, @PathVariable Long id) {
+    public ResponseEntity<Proforma> udpate(@Valid @RequestBody Proforma proforma, @PathVariable Long id,
+            @RequestParam(value = "motivo", required = false) String motivo) {
         log.info("Actualizando proforma: {}", proforma.toString());
+        Proforma existente = proformaService.findProforma(id);
         if (ambito.esVendedor()) {
-            Proforma existente = proformaService.findProforma(id);
             ambito.exigirProformaPropia(existente);
             ambito.exigirProformaSinFactura(existente);
         }
         ambito.prepararProforma(proforma);
         proformaMayoristaService.preparar(proforma);
+
+        // Una proforma mayorista se edita mientras no esté facturada, y siempre con motivo.
+        boolean mayorista = proforma.getTipoProforma() == TipoProformaEnum.MAYORISTA
+                || existente.getTipoProforma() == TipoProformaEnum.MAYORISTA;
+        String motivoLimpio;
+        if (mayorista) {
+            autorizacionService.exigirSinFactura(existente);
+            motivoLimpio = auditoriaService.motivoObligatorio(motivo, "editar una proforma mayorista");
+        } else {
+            motivoLimpio = auditoriaService.motivoOpcional(motivo);
+        }
+        String antes = auditoriaService.resumen(existente);
+
         descuentoService.prepararLineas(proforma);
+        proformaMayoristaService.evaluarAutorizacion(proforma);
         Proforma proformaUpdated = proformaService.save(proforma, id);
+        auditoriaService.registrar(id, AccionAuditoriaEnum.MODIFICACION, motivoLimpio,
+                "Antes: " + antes + "\nDespués: " + auditoriaService.resumen(proformaUpdated));
         return ResponseEntity.status(HttpStatus.CREATED).body(proformaUpdated);
     }
 
     @Secured(value = "ROLE_ADMIN")
     @DeleteMapping(value = "/proformas/{id}")
-    public ResponseEntity<Map<String, Object>> delete(@PathVariable("id") Long id) {
+    public ResponseEntity<Map<String, Object>> delete(@PathVariable("id") Long id,
+            @RequestParam(value = "motivo", required = false) String motivo) {
         log.info("Eliminando proforma con ID: {}", id);
 
         Map<String, Object> response = new HashMap<>();
         Proforma proforma = proformaService.findProforma(id);
+        boolean mayorista = proforma.getTipoProforma() == TipoProformaEnum.MAYORISTA;
+        String motivoLimpio = mayorista ? auditoriaService.motivoObligatorio(motivo, "anular una proforma mayorista")
+                : auditoriaService.motivoOpcional(motivo);
+        if (mayorista) {
+            autorizacionService.exigirSinFactura(proforma);
+        }
+        String resumen = auditoriaService.resumen(proforma);
         proformaService.delete(proforma);
+        auditoriaService.registrar(id, AccionAuditoriaEnum.ANULACION, motivoLimpio,
+                "Proforma " + proforma.getNoProforma() + ". " + resumen);
         response.put("mensaje", "¡Proforma ha sido eliminada con éxito!");
         return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
     }

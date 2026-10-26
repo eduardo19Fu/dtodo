@@ -3,7 +3,13 @@ package xyz.pangosoft.dtodo.controller;
 import xyz.pangosoft.dtodo.service.IAmbitoVendedorService;
 import java.util.List;
 
+import xyz.pangosoft.dtodo.model.Cliente;
 import xyz.pangosoft.dtodo.model.Factura;
+import xyz.pangosoft.dtodo.model.Proforma;
+import xyz.pangosoft.dtodo.model.enums.AccionAuditoriaEnum;
+import xyz.pangosoft.dtodo.service.IAutorizacionProformaService;
+import xyz.pangosoft.dtodo.service.IProformaAuditoriaService;
+import xyz.pangosoft.dtodo.service.IProformaService;
 import xyz.pangosoft.dtodo.dto.FacturaDto;
 import xyz.pangosoft.dtodo.dto.DetalleDocumentoDto;
 import xyz.pangosoft.dtodo.dto.DocumentoOrigenNotaDto;
@@ -37,6 +43,12 @@ public class FacturaApiController {
     private final IFacturaService serviceFactura;
 
     private final IAmbitoVendedorService ambito;
+
+    private final IAutorizacionProformaService autorizacionService;
+
+    private final IProformaAuditoriaService auditoriaService;
+
+    private final IProformaService proformaService;
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
     @GetMapping(value = "/facturas")
@@ -172,13 +184,39 @@ public class FacturaApiController {
         return ResponseEntity.ok(serviceFactura.findFacturaByCorrelativoSatAndSerieSat(correlativo, serie));
     }
 
+    /**
+     * Si la factura se emitió a un cliente distinto del de su proforma, queda en el historial de la proforma.
+     * La factura ya está certificada: un fallo al auditar se registra pero no debe ocultar que se emitió.
+     */
+    private void registrarCambioDeCliente(Factura factura) {
+        try {
+            if (factura.getIdProformaOrigen() == null || factura.getCliente() == null) {
+                return;
+            }
+            Proforma proforma = proformaService.findProforma(factura.getIdProformaOrigen());
+            Cliente deProforma = proforma == null ? null : proforma.getCliente();
+            if (deProforma == null || deProforma.getIdCliente() == null
+                    || deProforma.getIdCliente().equals(factura.getCliente().getIdCliente())) {
+                return;
+            }
+            auditoriaService.registrar(proforma.getIdProforma(), AccionAuditoriaEnum.CAMBIO_CLIENTE_FACTURA, null,
+                    "La proforma es de " + deProforma.getNombre() + " y la factura "
+                            + (factura.getSerie() == null ? "" : factura.getSerie() + "-") + factura.getNoFactura()
+                            + " se emitió a " + factura.getCliente().getNombre() + " (NIT " + factura.getCliente().getNit() + ").");
+        } catch (RuntimeException e) {
+            log.error("No se pudo auditar el cambio de cliente de la factura {}", factura.getNoFactura(), e);
+        }
+    }
+
     /**** Nuevas Implementaciones de creación de factura y anulación *****/
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO", "ROLE_VENDEDOR"})
     @PostMapping(value = "/facturas/createV2")
     public ResponseEntity<Factura> createV2(@RequestBody Factura factura) {
         log.info("********** Registrar Factura Versión 2 **********");
         ambito.prepararFactura(factura);
+        autorizacionService.exigirFacturable(factura.getIdProformaOrigen());
         Factura facturaCreated = serviceFactura.facturaFel(factura);
+        registrarCambioDeCliente(factura);
         return ResponseEntity.status(HttpStatus.CREATED).body(facturaCreated);
     }
 

@@ -52,6 +52,7 @@ import { SucursalesComponent } from './components/sucursales/sucursales.componen
 import { CreateSucursalComponent } from './components/sucursales/create-sucursal/create-sucursal.component';
 import { DetailSucursalComponent } from './components/sucursales/detail-sucursal/detail-sucursal.component';
 import { RutasComponent } from './components/rutas/rutas.component';
+import { AutorizacionesComponent } from './components/autorizaciones/autorizaciones.component';
 import { DescuentosComponent } from './components/descuentos/descuentos.component';
 import { CreateRutaComponent } from './components/rutas/create-ruta/create-ruta.component';
 import { ProveedoresComponent } from './components/proveedores/proveedores.component';
@@ -128,6 +129,7 @@ import { ReporteSelectorComponent } from './components/reportes/reporte-selector
     CreateSucursalComponent,
     DetailSucursalComponent,
     RutasComponent,
+    AutorizacionesComponent,
     DescuentosComponent,
     CreateRutaComponent,
     ProveedoresComponent,

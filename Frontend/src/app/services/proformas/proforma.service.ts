@@ -9,6 +9,7 @@ import { catchError, map } from 'rxjs/operators';
 import { UsuarioDto } from '../../dtos/usuario-dto';
 import { DocumentoOrigenNotaDto } from '../../dtos/documento-origen-nota-dto';
 import { AuthService } from '../auth.service';
+import { ProformaAuditoriaDto } from '../../dtos/autorizacion-dto';
 
 @Injectable({
   providedIn: 'root'
@@ -154,8 +155,10 @@ export class ProformaService {
     );
   }
 
-  update(profroma: Proforma): Observable<any> {
-    return this.httpClient.put<any>(`${this.url}/proformas/${profroma.idProforma}`, profroma).pipe(
+  /** {@code motivo}: obligatorio en una proforma mayorista (el servidor responde 422 si falta). */
+  update(profroma: Proforma, motivo?: string): Observable<any> {
+    const params = motivo ? new HttpParams().set('motivo', motivo) : new HttpParams();
+    return this.httpClient.put<any>(`${this.url}/proformas/${profroma.idProforma}`, profroma, { params }).pipe(
       catchError(e => {
         Swal.fire(e.error.mensaje, e.error.error, 'error');
         return throwError(e);
@@ -163,8 +166,10 @@ export class ProformaService {
     );
   }
 
-  delete(id: number): Observable<any> {
-    return this.httpClient.delete<any>(`${this.url}/proformas/${id}`).pipe(
+  /** {@code motivo}: obligatorio al anular una proforma mayorista. */
+  delete(id: number, motivo?: string): Observable<any> {
+    const params = motivo ? new HttpParams().set('motivo', motivo) : new HttpParams();
+    return this.httpClient.delete<any>(`${this.url}/proformas/${id}`, { params }).pipe(
       catchError(e => {
         Swal.fire(e.error.mensaje, e.error.error, 'error');
         return throwError(e);
@@ -186,6 +191,12 @@ export class ProformaService {
         };
       })
     );
+  }
+
+  /** Historial de la proforma, del más reciente al más antiguo. */
+  getAuditoria(id: number): Observable<ProformaAuditoriaDto[]> {
+    return this.httpClient.get<ProformaAuditoriaDto[]>(`${this.url}/proformas/${id}/auditoria`)
+      .pipe(catchError(e => throwError(e)));
   }
 
   getUsuariosExportacion(): Observable<UsuarioDto[]> {

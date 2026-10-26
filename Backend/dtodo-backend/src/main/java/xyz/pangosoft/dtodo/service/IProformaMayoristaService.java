@@ -14,4 +14,14 @@ public interface IProformaMayoristaService {
      * largo permitido).
      */
     void preparar(Proforma proforma);
+
+    /**
+     * Fija el estado de autorización según los descuentos de las líneas (ya validados y tipados): una proforma
+     * mayorista con una línea sobre el tope, que no sea de precio mayorista fijo, queda {@code PENDIENTE}; en
+     * cualquier otro caso queda sin estado. Una edición vuelve a pedir autorización aunque estuviera aprobada.
+     */
+    void evaluarAutorizacion(Proforma proforma);
+
+    /** Tope de descuento (en %) sobre el que se pide autorización. */
+    double descuentoMaximo();
 }

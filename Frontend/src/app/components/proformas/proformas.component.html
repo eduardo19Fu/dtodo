@@ -143,6 +143,12 @@
                                   && proforma.estado !== 'ANULADO'}">
               {{proforma.estado}}
             </span>
+            <span *ngIf="proforma.estadoAutorizacion === 'PENDIENTE' || proforma.estadoAutorizacion === 'RECHAZADA'"
+                  class="listing-status-pill autorizacion-pill"
+                  [ngClass]="proforma.estadoAutorizacion === 'PENDIENTE' ? 'listing-status-neutral' : 'listing-status-danger'"
+                  [title]="proforma.estadoAutorizacion === 'PENDIENTE' ? 'El descuento espera la autorización de un administrador' : 'El descuento fue rechazado'">
+              {{proforma.estadoAutorizacion === 'PENDIENTE' ? 'Por autorizar' : 'Rechazada'}}
+            </span>
           </td>
           <td class="col-facturacion" data-label="Facturación">
             <ng-container *ngIf="proforma.idFactura; else sinFactura">

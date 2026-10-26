@@ -384,3 +384,8 @@
     width: 100%;
   }
 }
+
+.autorizacion-pill {
+  display: inline-block;
+  margin-top: 0.25rem;
+}

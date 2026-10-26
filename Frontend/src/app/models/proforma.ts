@@ -5,6 +5,7 @@ import { TipoFactura } from './tipo-factura';
 import { DetalleProforma } from './detalle-proforma';
 
 export type TipoProforma = 'MINORISTA' | 'MAYORISTA';
+export type EstadoAutorizacion = 'PENDIENTE' | 'APROBADA' | 'RECHAZADA';
 
 export class Proforma {
 
@@ -25,6 +26,10 @@ export class Proforma {
     observaciones?: string | null;
     /** Fecha de entrega estimada, yyyy-MM-dd. */
     fechaEntregaEstimada?: string | null;
+    /** Lo calcula el servidor: PENDIENTE si una línea pasa del tope de descuento; nulo si no necesita autorización. */
+    estadoAutorizacion?: EstadoAutorizacion | null;
+    /** Un administrador autorizó facturarla aunque ya venció. */
+    vencimientoAutorizado?: boolean;
     /** Vence a los 15 días de la emisión en una proforma mayorista; la fija el servidor. */
     fechaVencimiento?: string | null;
 

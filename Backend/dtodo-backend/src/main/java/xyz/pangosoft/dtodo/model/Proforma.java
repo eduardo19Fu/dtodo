@@ -26,6 +26,7 @@ import jakarta.validation.Valid;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoProformaEnum;
 import java.util.ArrayList;
 import java.util.Date;
@@ -84,6 +85,16 @@ public class Proforma implements Serializable {
 
     /** Fecha de entrega prometida, opcional. */
     private LocalDate fechaEntregaEstimada;
+
+    /**
+     * {@code null} si no necesita autorización. {@code PENDIENTE} (una línea sobre el tope de descuento) o
+     * {@code RECHAZADA} impiden facturarla. Lo calcula el servidor; lo que traiga la petición se ignora.
+     */
+    @Enumerated(EnumType.STRING)
+    private EstadoAutorizacionEnum estadoAutorizacion;
+
+    /** Un administrador autorizó facturarla aunque ya venció. */
+    private boolean vencimientoAutorizado;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_sucursal")

@@ -1100,3 +1100,22 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Aviso de autorización por descuento mayor al tope */
+.autorizacion-aviso {
+  align-items: flex-start;
+  background: #fff7e6;
+  border: 1px solid #f0c36d;
+  border-radius: 8px;
+  color: #6b4a00;
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+  padding: 0.7rem 0.9rem;
+}
+
+.autorizacion-aviso.rechazada {
+  background: #fdecee;
+  border-color: #f1aeb5;
+  color: #842029;
+}

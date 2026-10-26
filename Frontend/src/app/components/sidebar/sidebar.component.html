@@ -146,6 +146,12 @@
         <span class="menu-label">Rutas</span>
       </a>
 
+      <a *ngIf="coincide('autorizaciones', 'descuentos', 'mayoristas', 'proformas por autorizar') && authService.hasRole('ROLE_ADMIN')" [routerLink]="['/autorizaciones/index']"
+        class="menu-link" [class.active]="router.url.startsWith('/autorizaciones')" (click)="notificarNavegacion()" title="Autorizaciones">
+        <span class="menu-icon"><i class="fas fa-user-check" aria-hidden="true"></i></span>
+        <span class="menu-label">Autorizaciones</span>
+      </a>
+
       <a *ngIf="coincide('descuentos', 'mayoristas', 'precio mayorista') && authService.hasRole('ROLE_ADMIN')" [routerLink]="['/descuentos/index']"
         class="menu-link" [class.active]="router.url.startsWith('/descuentos')" (click)="notificarNavegacion()" title="Descuentos">
         <span class="menu-icon"><i class="fas fa-tags" aria-hidden="true"></i></span>

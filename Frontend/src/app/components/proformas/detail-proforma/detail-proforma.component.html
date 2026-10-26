@@ -164,6 +164,29 @@
         </section>
       </div>
 
+      <section *ngIf="proformadto" class="history-section" aria-labelledby="proforma-history-title">
+        <div class="section-heading">
+          <span class="section-icon"><i class="fas fa-history" aria-hidden="true"></i></span>
+          <div>
+            <strong id="proforma-history-title">Historial</strong>
+            <small *ngIf="proformadto.estadoAutorizacion">{{etiquetaAutorizacion(proformadto.estadoAutorizacion)}}</small>
+            <small *ngIf="!proformadto.estadoAutorizacion">Quién creó, modificó o autorizó la proforma</small>
+          </div>
+        </div>
+        <p *ngIf="historialNoDisponible" class="history-empty">No fue posible cargar el historial.</p>
+        <p *ngIf="!historialNoDisponible && historial.length === 0" class="history-empty">Sin movimientos registrados.</p>
+        <ol *ngIf="historial.length > 0" class="history-list">
+          <li *ngFor="let registro of historial">
+            <div class="history-head">
+              <strong>{{etiquetaAccion(registro.accion)}}</strong>
+              <span>{{registro.usuario}} · {{registro.fecha | date: 'dd/MM/yyyy HH:mm'}}</span>
+            </div>
+            <p *ngIf="registro.motivo" class="history-reason"><em>Motivo:</em> {{registro.motivo}}</p>
+            <p *ngIf="registro.detalle" class="history-detail">{{registro.detalle}}</p>
+          </li>
+        </ol>
+      </section>
+
       <footer class="document-detail-footer">
         <span><i class="fas fa-shield-alt" aria-hidden="true"></i> Información de proforma</span>
         <button (click)="cerrarModal()" type="button" class="btn close-action">

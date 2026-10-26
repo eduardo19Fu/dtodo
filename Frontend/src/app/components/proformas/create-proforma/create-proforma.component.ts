@@ -114,6 +114,14 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
   readonly maxObservacionLinea = 255;
   readonly maxObservacionGeneral = 500;
   readonly vigenciaDiasMayorista = 15;
+  /** Porcentaje sobre el que el servidor pide autorización (solo para avisar; el servidor decide). */
+  readonly topeDescuento = 15;
+
+  /** Una línea mayorista con más del tope, que no sea precio mayorista fijo, deja la proforma pendiente de autorización. */
+  get requiereAutorizacion(): boolean {
+    return this.esProformaMayorista && this.proforma.itemsProforma.some(item =>
+      item.tipoDescuento !== 'PRECIO_MAYORISTA' && Number(item.descuento) > this.topeDescuento);
+  }
 
   /** Hoy en formato yyyy-MM-dd (zona del navegador), como mínimo de la entrega estimada. */
   get hoy(): string {
@@ -576,7 +584,14 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
 
       this.proformaService.create(this.proforma).subscribe(response => {
         if (response) {
-          this.generarProformaPdf(response.idProforma, this.esProformaMayorista);
+          const generar = () => this.generarProformaPdf(response.idProforma, this.esProformaMayorista);
+          if (response.estadoAutorizacion === 'PENDIENTE') {
+            swal.fire('Pendiente de autorización',
+              `La proforma ${response.noProforma} tiene un descuento mayor a ${this.topeDescuento} %. `
+              + 'No se podrá facturar hasta que un administrador la apruebe.', 'info').then(generar);
+          } else {
+            generar();
+          }
         }
       }, error => {
         this.isSaving = false;
@@ -627,6 +642,7 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
           this.proforma.usuario = response.usuario;
           this.proforma.total = response.total;
           this.proforma.tipoProforma = response.tipoProforma;
+          this.proforma.estadoAutorizacion = response.estadoAutorizacion;
           this.proforma.observaciones = response.observaciones;
           this.proforma.fechaEntregaEstimada = response.fechaEntregaEstimada;
           this.proforma.fechaVencimiento = response.fechaVencimiento;
@@ -714,18 +730,38 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.isSaving = true;
-    if (this.isSaving) {
-      this.prepararMayorista();
-      this.proformaService.update(this.proforma).subscribe(response => {
-        this.generarProformaPdf(response.idProforma, this.esProformaMayorista);
-        this.router.navigate(['/proformas/index']);
-        swal.fire(response.mensaje, `Proforma ${response.noProforma} ha sido actualizada`, 'info');
-      }, error => {
-        this.isSaving = false;
-        console.log(error);
-        swal.fire('Error', `${error.error.message}`, 'error');
-      });
+    if (!this.esProformaMayorista) {
+      this.guardarCambios();
+      return;
     }
+
+    // Editar una proforma mayorista deja constancia: se pide el motivo y queda en su historial.
+    swal.fire({
+      title: 'Motivo del cambio',
+      input: 'textarea',
+      inputLabel: 'Queda en el historial de la proforma',
+      inputAttributes: { maxlength: '500' },
+      showCancelButton: true,
+      confirmButtonText: 'Guardar cambios',
+      cancelButtonText: 'Cancelar',
+      inputValidator: valor => !valor || !valor.trim() ? 'Indica el motivo del cambio.' : null
+    }).then(resultado => {
+      if (resultado.isConfirmed) {
+        this.guardarCambios(String(resultado.value).trim());
+      }
+    });
+  }
+
+  private guardarCambios(motivo?: string): void {
+    this.isSaving = true;
+    this.prepararMayorista();
+    this.proformaService.update(this.proforma, motivo).subscribe(response => {
+      this.generarProformaPdf(response.idProforma, this.esProformaMayorista);
+      this.router.navigate(['/proformas/index']);
+      swal.fire(response.mensaje, `Proforma ${response.noProforma} ha sido actualizada`, 'info');
+    }, error => {
+      this.isSaving = false;
+      swal.fire('Error', `${error.error.message}`, 'error');
+    });
   }
 }

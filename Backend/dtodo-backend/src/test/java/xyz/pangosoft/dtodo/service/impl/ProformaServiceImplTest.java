@@ -8,6 +8,7 @@ import xyz.pangosoft.dtodo.dto.ProformaDto;
 import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
 import xyz.pangosoft.dtodo.model.DetalleProforma;
 import xyz.pangosoft.dtodo.model.Proforma;
+import xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoProformaEnum;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -163,5 +164,24 @@ class ProformaServiceImplTest {
         assertEquals(LocalDate.now().plusDays(3), guardada.getFechaVencimiento());
         assertEquals("entregar temprano", guardada.getObservaciones());
         assertEquals(LocalDate.now().plusDays(5), guardada.getFechaEntregaEstimada());
+    }
+
+    @Test
+    void editarRecalculaLaAutorizacionPeroConservaElVencimientoAutorizado() {
+        Proforma existente = new Proforma();
+        existente.setIdProforma(7L);
+        existente.setTipoProforma(TipoProformaEnum.MAYORISTA);
+        existente.setEstadoAutorizacion(EstadoAutorizacionEnum.APROBADA);
+        existente.setVencimientoAutorizado(true);
+        when(proformaRepository.findById(7L)).thenReturn(Optional.of(existente));
+        when(proformaRepository.save(any(Proforma.class))).thenAnswer(inv -> inv.getArgument(0));
+        Proforma cambios = new Proforma();
+        cambios.setTipoProforma(TipoProformaEnum.MAYORISTA);
+        cambios.setEstadoAutorizacion(EstadoAutorizacionEnum.PENDIENTE);
+
+        Proforma guardada = service.save(cambios, 7L);
+
+        assertEquals(EstadoAutorizacionEnum.PENDIENTE, guardada.getEstadoAutorizacion());
+        assertTrue(guardada.isVencimientoAutorizado());
     }
 }

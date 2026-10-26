@@ -1,5 +1,6 @@
 package xyz.pangosoft.dtodo.repository;
 
+import xyz.pangosoft.dtodo.dto.AutorizacionProformaDto;
 import xyz.pangosoft.dtodo.dto.ProformaFechaDto;
 import xyz.pangosoft.dtodo.dto.ProformaDto;
 import xyz.pangosoft.dtodo.dto.DetalleDocumentoDto;
@@ -18,6 +19,26 @@ import java.util.List;
 import java.util.Optional;
 
 public interface IProformaRepository extends JpaRepository<Proforma, Long> {
+
+    String SELECT_AUTORIZACION = "select new xyz.pangosoft.dtodo.dto.AutorizacionProformaDto(" +
+            "p.idProforma, p.noProforma, p.fechaEmision, p.total, c.nombre, rt.nombre, " +
+            "trim(concat(coalesce(us.primerNombre, ''), ' ', coalesce(us.apellido, ''))), p.fechaVencimiento, " +
+            "(select max(i.descuento) from Proforma p2 join p2.itemsProforma i where p2.idProforma = p.idProforma), ";
+
+    /** Proformas que esperan que un administrador apruebe o rechace su descuento, las más antiguas primero. */
+    @Query(SELECT_AUTORIZACION + "'DESCUENTO') from Proforma p join p.cliente c join p.usuario us left join p.ruta rt " +
+            "where p.estadoAutorizacion = :estado order by p.fechaEmision")
+    List<AutorizacionProformaDto> findPorAutorizar(
+            @Param("estado") xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum estado);
+
+    /** Proformas mayoristas vencidas que todavía no se facturan ni tienen el vencimiento autorizado. */
+    @Query(SELECT_AUTORIZACION + "'VENCIDA') from Proforma p join p.cliente c join p.usuario us left join p.ruta rt " +
+            "where p.tipoProforma = :tipo and p.fechaVencimiento < :hoy and p.vencimientoAutorizado = false " +
+            "and not exists (select 1 from Factura f where f.idProformaOrigen = p.idProforma) " +
+            "order by p.fechaVencimiento")
+    List<AutorizacionProformaDto> findVencidasSinAutorizar(
+            @Param("tipo") xyz.pangosoft.dtodo.model.enums.TipoProformaEnum tipo,
+            @Param("hoy") java.time.LocalDate hoy);
 
     @Query("select distinct new xyz.pangosoft.dtodo.dto.ReporteSelectorDto(" +
             "u.idUsuario, trim(concat(concat(coalesce(u.primerNombre, ''), ' '), " +
@@ -51,7 +72,7 @@ public interface IProformaRepository extends JpaRepository<Proforma, Long> {
             "p.idProforma, p.noProforma, p.fechaEmision, p.total, e.idEstado, e.estado, " +
             "u.usuario, concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, '')), c.nombre, c.nit, " +
             "f.idFactura, f.serie, f.noFactura, fe.estado, " +
-            "concat(coalesce(fu.primerNombre, ''), ' ', coalesce(fu.apellido, '')), p.tipoProforma, rt.nombre) " +
+            "concat(coalesce(fu.primerNombre, ''), ' ', coalesce(fu.apellido, '')), p.tipoProforma, rt.nombre, p.estadoAutorizacion) " +
             "from Proforma p join p.estado e join p.usuario u join p.cliente c " +
             "left join p.ruta rt " +
             "left join Factura f on f.idProformaOrigen = p.idProforma " +
@@ -64,7 +85,7 @@ public interface IProformaRepository extends JpaRepository<Proforma, Long> {
             "p.idProforma, p.noProforma, p.fechaEmision, p.total, e.idEstado, e.estado, " +
             "u.usuario, concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, '')), c.nombre, c.nit, " +
             "f.idFactura, f.serie, f.noFactura, fe.estado, " +
-            "concat(coalesce(fu.primerNombre, ''), ' ', coalesce(fu.apellido, '')), p.tipoProforma, rt.nombre) " +
+            "concat(coalesce(fu.primerNombre, ''), ' ', coalesce(fu.apellido, '')), p.tipoProforma, rt.nombre, p.estadoAutorizacion) " +
             "from Proforma p join p.estado e join p.usuario u join p.cliente c " +
             "left join p.ruta rt " +
             "left join Factura f on f.idProformaOrigen = p.idProforma " +
@@ -80,7 +101,7 @@ public interface IProformaRepository extends JpaRepository<Proforma, Long> {
             "p.idProforma, p.noProforma, p.fechaEmision, p.total, e.idEstado, e.estado, " +
             "u.usuario, concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, '')), c.nombre, c.nit, " +
             "f.idFactura, f.serie, f.noFactura, fe.estado, " +
-            "concat(coalesce(fu.primerNombre, ''), ' ', coalesce(fu.apellido, '')), p.tipoProforma, rt.nombre) " +
+            "concat(coalesce(fu.primerNombre, ''), ' ', coalesce(fu.apellido, '')), p.tipoProforma, rt.nombre, p.estadoAutorizacion) " +
             "from Proforma p join p.estado e join p.usuario u join p.cliente c " +
             "left join p.ruta rt " +
             "left join Factura f on f.idProformaOrigen = p.idProforma " +

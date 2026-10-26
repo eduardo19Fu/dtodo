@@ -377,6 +377,7 @@ public class ProformaServiceImpl implements IProformaService {
                         .fechaEmision(proforma.getFechaEmision())
                         .tipoProforma(tipoProforma)
                         .ruta(proforma.getRuta())
+                        .estadoAutorizacion(proforma.getEstadoAutorizacion())
                         .observaciones(proforma.getObservaciones())
                         .fechaEntregaEstimada(proforma.getFechaEntregaEstimada())
                         .fechaVencimiento(vencimiento)

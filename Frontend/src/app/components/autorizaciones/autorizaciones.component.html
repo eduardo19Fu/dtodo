@@ -1,0 +1,121 @@
+<section class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-8">
+        <h1>{{title}}</h1>
+        <p class="autorizaciones-subtitle">
+          Descuentos de proformas mayoristas que pasan del tope y proformas vencidas que esperan una decisión.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div *ngIf="errorCarga" class="alert alert-warning" role="alert">
+  No fue posible cargar toda la bandeja.
+  <button type="button" class="btn btn-sm btn-outline-dark ml-2" (click)="cargar()">Reintentar</button>
+</div>
+
+<div class="card listing-card">
+  <div class="card-header listing-card-header">
+    Descuentos por autorizar <span class="contador">{{pendientes.length}}</span>
+  </div>
+  <div class="card-body">
+    <div *ngIf="cargando" class="estado-vacio">Cargando...</div>
+    <div *ngIf="!cargando && pendientes.length === 0" class="estado-vacio">
+      <i class="fas fa-check-circle" aria-hidden="true"></i> No hay descuentos pendientes.
+    </div>
+
+    <div *ngIf="pendientes.length > 0" class="table-responsive">
+      <table class="table table-sm autorizaciones-table">
+        <thead>
+          <tr>
+            <th>No. proforma</th>
+            <th>Fecha</th>
+            <th>Cliente / ruta</th>
+            <th>Vendedor</th>
+            <th class="text-right">Total</th>
+            <th class="text-right">Descuento máx.</th>
+            <th class="text-center">Decisión</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let proforma of pendientes">
+            <td data-label="No. proforma"><span class="listing-id-pill">#{{proforma.noProforma}}</span></td>
+            <td data-label="Fecha">{{proforma.fechaEmision | date: 'dd/MM/yyyy HH:mm'}}</td>
+            <td data-label="Cliente / ruta">
+              <strong>{{proforma.cliente}}</strong>
+              <small *ngIf="proforma.ruta" class="d-block text-muted">{{proforma.ruta}}</small>
+            </td>
+            <td data-label="Vendedor">{{proforma.vendedor}}</td>
+            <td data-label="Total" class="text-right">{{proforma.total | currency: 'Q' : 'symbol'}}</td>
+            <td data-label="Descuento máx." class="text-right"><span class="descuento-alto">{{proforma.descuentoMaximo}} %</span></td>
+            <td data-label="Decisión" class="text-center">
+              <div class="acciones">
+                <button type="button" class="btn btn-sm btn-success" (click)="aprobar(proforma)"
+                  [disabled]="resolviendo === proforma.idProforma"
+                  [attr.aria-label]="'Aprobar el descuento de la proforma ' + proforma.noProforma">
+                  <i class="fas fa-check" aria-hidden="true"></i> Aprobar
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger" (click)="rechazar(proforma)"
+                  [disabled]="resolviendo === proforma.idProforma"
+                  [attr.aria-label]="'Rechazar el descuento de la proforma ' + proforma.noProforma">
+                  <i class="fas fa-times" aria-hidden="true"></i> Rechazar
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="card listing-card">
+  <div class="card-header listing-card-header">
+    Proformas vencidas sin facturar <span class="contador">{{vencidas.length}}</span>
+  </div>
+  <div class="card-body">
+    <p class="nota">Una proforma mayorista vence a los 15 días. Para facturarla hace falta que un administrador lo autorice.</p>
+    <div *ngIf="!cargando && vencidas.length === 0" class="estado-vacio">
+      <i class="fas fa-check-circle" aria-hidden="true"></i> No hay proformas vencidas por autorizar.
+    </div>
+
+    <div *ngIf="vencidas.length > 0" class="table-responsive">
+      <table class="table table-sm autorizaciones-table">
+        <thead>
+          <tr>
+            <th>No. proforma</th>
+            <th>Cliente / ruta</th>
+            <th>Vendedor</th>
+            <th>Venció</th>
+            <th class="text-right">Total</th>
+            <th class="text-center">Decisión</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let proforma of vencidas">
+            <td data-label="No. proforma"><span class="listing-id-pill">#{{proforma.noProforma}}</span></td>
+            <td data-label="Cliente / ruta">
+              <strong>{{proforma.cliente}}</strong>
+              <small *ngIf="proforma.ruta" class="d-block text-muted">{{proforma.ruta}}</small>
+            </td>
+            <td data-label="Vendedor">{{proforma.vendedor}}</td>
+            <td data-label="Venció">
+              {{proforma.fechaVencimiento | date: 'dd/MM/yyyy'}}
+              <small class="d-block text-muted">hace {{diasVencida(proforma)}} {{diasVencida(proforma) === 1 ? 'día' : 'días'}}</small>
+            </td>
+            <td data-label="Total" class="text-right">{{proforma.total | currency: 'Q' : 'symbol'}}</td>
+            <td data-label="Decisión" class="text-center">
+              <button type="button" class="btn btn-sm btn-primary" (click)="autorizarVencida(proforma)"
+                [disabled]="resolviendo === proforma.idProforma"
+                [attr.aria-label]="'Autorizar facturar la proforma vencida ' + proforma.noProforma">
+                <i class="fas fa-unlock" aria-hidden="true"></i> Autorizar facturar
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

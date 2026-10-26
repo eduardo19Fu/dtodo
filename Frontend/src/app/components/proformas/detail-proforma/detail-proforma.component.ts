@@ -4,6 +4,7 @@ import {
 } from '@angular/core';
 
 import { DetalleDocumentoDto } from '../../../dtos/detalleDocumentoDto';
+import { ETIQUETAS_ACCION_AUDITORIA, ProformaAuditoriaDto } from '../../../dtos/autorizacion-dto';
 import { ProformaDto } from '../../../dtos/proforma-dto';
 import { DetailService } from '../../../services/facturas/detail.service';
 import { ProformaService } from '../../../services/proformas/proforma.service';
@@ -30,6 +31,8 @@ export class DetailProformaComponent implements OnChanges, AfterViewInit, OnDest
   isFirst = true;
   isLast = false;
   cargando = false;
+  historial: ProformaAuditoriaDto[] = [];
+  historialNoDisponible = false;
   private cargaInicialPendiente = false;
   constructor(
     public detailService: DetailService,
@@ -55,7 +58,27 @@ export class DetailProformaComponent implements OnChanges, AfterViewInit, OnDest
     if (this.proformadto) {
       this.cargaInicialPendiente = true;
       this.cargarDetalle(0);
+      this.cargarHistorial();
     }
+  }
+
+  /** El historial no es imprescindible: si falla se avisa en su sección y el detalle sigue funcionando. */
+  cargarHistorial(): void {
+    this.historial = [];
+    this.historialNoDisponible = false;
+    this.proformaService.getAuditoria(this.proformadto.idProforma).subscribe(
+      historial => this.historial = historial,
+      () => this.historialNoDisponible = true
+    );
+  }
+
+  etiquetaAccion(accion: string): string {
+    return ETIQUETAS_ACCION_AUDITORIA[accion] || accion;
+  }
+
+  etiquetaAutorizacion(estado: string): string {
+    return estado === 'PENDIENTE' ? 'Pendiente de autorización' : estado === 'APROBADA' ? 'Descuento aprobado'
+      : estado === 'RECHAZADA' ? 'Descuento rechazado' : '';
   }
 
   cargarDetalle(page: number): void {

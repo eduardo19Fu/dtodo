@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoProformaEnum;
 import java.util.Date;
 
@@ -34,11 +35,14 @@ public class ProformaDto {
     private TipoProformaEnum tipoProforma;
     /** Nombre de la ruta de la proforma mayorista. */
     private String ruta;
+    /** PENDIENTE, APROBADA, RECHAZADA o nulo si no necesita autorización. */
+    private EstadoAutorizacionEnum estadoAutorizacion;
 
     public ProformaDto(Long idProforma, String noProforma, Date fechaEmision, BigDecimal total, Integer idEstado,
                        String estado, String usuario, String vendedor, String cliente, String nitCliente,
                        Long idFactura, String serieFactura, Long noFactura, String estadoFactura,
-                       String facturadoPor, TipoProformaEnum tipoProforma, String ruta) {
+                       String facturadoPor, TipoProformaEnum tipoProforma, String ruta,
+                       EstadoAutorizacionEnum estadoAutorizacion) {
         this.idProforma = idProforma;
         this.noProforma = noProforma;
         this.fechaEmision = fechaEmision;
@@ -57,5 +61,6 @@ public class ProformaDto {
                 ? null : facturadoPor.trim();
         this.tipoProforma = tipoProforma == null ? TipoProformaEnum.MINORISTA : tipoProforma;
         this.ruta = ruta;
+        this.estadoAutorizacion = estadoAutorizacion;
     }
 }

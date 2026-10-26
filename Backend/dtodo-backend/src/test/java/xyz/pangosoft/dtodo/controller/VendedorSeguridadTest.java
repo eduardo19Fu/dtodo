@@ -91,4 +91,13 @@ class VendedorSeguridadTest {
         assertTrue(roles(DescuentoApiController.class, "guardarProducto").equals(Arrays.asList("ROLE_ADMIN")),
                 "guardarProducto es solo del administrador");
     }
+
+    @Test
+    void elVendedorVeElHistorialDeSusProformasPeroLasAutorizacionesSonDelAdministrador() {
+        permiteAlVendedor(ProformaApiController.class, "auditoria");
+        niegaAlVendedor(AutorizacionProformaApiController.class, "pendientes", "vencidas", "aprobar", "rechazar",
+                "autorizarVencida");
+        assertTrue(roles(AutorizacionProformaApiController.class, "aprobar").equals(Arrays.asList("ROLE_ADMIN")),
+                "aprobar es solo del administrador");
+    }
 }

@@ -17,7 +17,9 @@ import xyz.pangosoft.dtodo.model.DetalleProforma;
 import xyz.pangosoft.dtodo.model.Producto;
 import xyz.pangosoft.dtodo.model.Proforma;
 import xyz.pangosoft.dtodo.model.Ruta;
+import xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoClienteEnum;
+import xyz.pangosoft.dtodo.model.enums.TipoDescuentoEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoProformaEnum;
 import xyz.pangosoft.dtodo.repository.IClienteRepository;
 import xyz.pangosoft.dtodo.service.IAmbitoVendedorService;
@@ -111,5 +113,77 @@ class ProformaMayoristaServiceImplTest {
         conLinea.getItemsProforma().add(linea);
         ReglaNegocioException error = assertThrows(ReglaNegocioException.class, () -> service.preparar(conLinea));
         assertEquals(true, error.getMessage().contains("CUADERNO"));
+    }
+
+    private Proforma conLinea(TipoProformaEnum tipo, TipoDescuentoEnum tipoDescuento, float descuento) {
+        Proforma proforma = proforma(tipo);
+        DetalleProforma linea = new DetalleProforma();
+        linea.setTipoDescuento(tipoDescuento);
+        linea.setDescuento(descuento);
+        proforma.getItemsProforma().add(linea);
+        return proforma;
+    }
+
+    @Test
+    void sobreElTopeDeDescuentoLaMayoristaQuedaPendiente() {
+        Proforma proforma = conLinea(TipoProformaEnum.MAYORISTA, TipoDescuentoEnum.CATEGORIA, 20f);
+
+        service.evaluarAutorizacion(proforma);
+
+        assertEquals(EstadoAutorizacionEnum.PENDIENTE, proforma.getEstadoAutorizacion());
+    }
+
+    @Test
+    void enElTopeOPorDebajoNoNecesitaAutorizacionYSeLimpiaLaAnterior() {
+        Proforma proforma = conLinea(TipoProformaEnum.MAYORISTA, TipoDescuentoEnum.MANUAL, 15f);
+        proforma.setEstadoAutorizacion(EstadoAutorizacionEnum.APROBADA);
+
+        service.evaluarAutorizacion(proforma);
+
+        assertNull(proforma.getEstadoAutorizacion());
+    }
+
+    @Test
+    void elPrecioMayoristaFijoNuncaPideAutorizacion() {
+        Proforma proforma = conLinea(TipoProformaEnum.MAYORISTA, TipoDescuentoEnum.PRECIO_MAYORISTA, 30f);
+
+        service.evaluarAutorizacion(proforma);
+
+        assertNull(proforma.getEstadoAutorizacion());
+    }
+
+    @Test
+    void unaMinoristaNoPideAutorizacionAunqueSuDescuentoSeaAlto() {
+        Proforma proforma = conLinea(TipoProformaEnum.MINORISTA, TipoDescuentoEnum.MANUAL, 50f);
+        proforma.setEstadoAutorizacion(EstadoAutorizacionEnum.RECHAZADA);
+
+        service.evaluarAutorizacion(proforma);
+
+        assertNull(proforma.getEstadoAutorizacion());
+    }
+
+    @Test
+    void unaLineaSobreElTopeBastaAunqueLasDemasEstenBien() {
+        Proforma proforma = conLinea(TipoProformaEnum.MAYORISTA, TipoDescuentoEnum.MANUAL, 5f);
+        DetalleProforma otra = new DetalleProforma();
+        otra.setTipoDescuento(TipoDescuentoEnum.MANUAL);
+        otra.setDescuento(15.5f);
+        proforma.getItemsProforma().add(otra);
+
+        service.evaluarAutorizacion(proforma);
+
+        assertEquals(EstadoAutorizacionEnum.PENDIENTE, proforma.getEstadoAutorizacion());
+        assertEquals(15d, service.descuentoMaximo());
+    }
+
+    @Test
+    void laPeticionNoPuedeTraerElVencimientoYaAutorizado() {
+        cliente(TipoClienteEnum.MAYORISTA, new Ruta());
+        Proforma proforma = proforma(TipoProformaEnum.MAYORISTA);
+        proforma.setVencimientoAutorizado(true);
+
+        service.preparar(proforma);
+
+        assertEquals(false, proforma.isVencimientoAutorizado());
     }
 }

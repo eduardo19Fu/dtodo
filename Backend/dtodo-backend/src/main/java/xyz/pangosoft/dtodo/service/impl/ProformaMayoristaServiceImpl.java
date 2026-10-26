@@ -1,5 +1,6 @@
 package xyz.pangosoft.dtodo.service.impl;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -8,7 +9,9 @@ import xyz.pangosoft.dtodo.error.exceptions.ReglaNegocioException;
 import xyz.pangosoft.dtodo.model.Cliente;
 import xyz.pangosoft.dtodo.model.DetalleProforma;
 import xyz.pangosoft.dtodo.model.Proforma;
+import xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoClienteEnum;
+import xyz.pangosoft.dtodo.model.enums.TipoDescuentoEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoProformaEnum;
 import xyz.pangosoft.dtodo.repository.IClienteRepository;
 import xyz.pangosoft.dtodo.service.IAmbitoVendedorService;
@@ -23,6 +26,25 @@ public class ProformaMayoristaServiceImpl implements IProformaMayoristaService {
 
     private final IClienteRepository clienteRepository;
     private final IAmbitoVendedorService ambito;
+
+    /** Sobre este porcentaje la proforma mayorista pide autorización de un administrador. */
+    @Value("${dtodo.mayorista.descuento-maximo:15}")
+    private double descuentoMaximo = 15;
+
+    @Override
+    public double descuentoMaximo() {
+        return descuentoMaximo;
+    }
+
+    @Override
+    public void evaluarAutorizacion(Proforma proforma) {
+        boolean requiere = proforma.getTipoProforma() == TipoProformaEnum.MAYORISTA
+                && proforma.getItemsProforma() != null
+                && proforma.getItemsProforma().stream().anyMatch(linea -> linea != null
+                        && linea.getTipoDescuento() != TipoDescuentoEnum.PRECIO_MAYORISTA
+                        && linea.getDescuento() != null && linea.getDescuento() > descuentoMaximo);
+        proforma.setEstadoAutorizacion(requiere ? EstadoAutorizacionEnum.PENDIENTE : null);
+    }
 
     @Transactional(readOnly = true)
     @Override
@@ -44,6 +66,8 @@ public class ProformaMayoristaServiceImpl implements IProformaMayoristaService {
             proforma.setRuta(null);
         }
         proforma.setTipoProforma(tipo);
+        // La autorización del vencimiento la da un administrador; nunca viene en la petición.
+        proforma.setVencimientoAutorizado(false);
 
         proforma.setObservaciones(limpiar(proforma.getObservaciones(), MAX_OBSERVACION_GENERAL, "La observación general"));
         if (proforma.getItemsProforma() != null) {

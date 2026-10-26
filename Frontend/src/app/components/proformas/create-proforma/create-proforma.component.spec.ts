@@ -468,3 +468,111 @@ describe('CreateProformaComponent - proforma mayorista', () => {
     expect(component.hoy).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 });
+
+describe('CreateProformaComponent - autorización y motivo de cambios', () => {
+  let component: CreateProformaComponent;
+  let proformaService: any;
+
+  function mayoristaConRuta(): Cliente {
+    const cliente = new Cliente();
+    cliente.idCliente = 5;
+    cliente.tipoCliente = 'MAYORISTA';
+    cliente.ruta = { idRuta: 1, nombre: 'RUTA 1' };
+    return cliente;
+  }
+
+  function linea(descuento: number, tipo: any = 'MANUAL'): DetalleProforma {
+    const item = new DetalleProforma();
+    item.producto = Object.assign(new Producto(), { idProducto: 1, nombre: 'CUADERNO', precioVenta: 10, stock: 50 });
+    item.cantidad = 2;
+    item.descuento = descuento;
+    item.tipoDescuento = tipo;
+    return item;
+  }
+
+  beforeEach(() => {
+    proformaService = {
+      create: jasmine.createSpy('create'),
+      update: jasmine.createSpy('update').and.returnValue(of({ idProforma: 9, noProforma: '9P', mensaje: 'ok' })),
+      getProformaPdf: jasmine.createSpy('getProformaPdf')
+    };
+    const router: any = { navigate: jasmine.createSpy('navigate') };
+    component = new CreateProformaComponent(proformaService, null, null, null, null, null, null, router, null);
+    component.proforma.idProforma = 9;
+    spyOn(component, 'generarProformaPdf');
+  });
+
+  it('avisa que quedará pendiente solo cuando una línea mayorista pasa del tope', () => {
+    component.cliente = mayoristaConRuta();
+    component.proforma.itemsProforma = [linea(10), linea(15)];
+    expect(component.requiereAutorizacion).toBeFalse();
+
+    component.proforma.itemsProforma = [linea(10), linea(15.5)];
+    expect(component.requiereAutorizacion).toBeTrue();
+  });
+
+  it('el precio mayorista fijo y la proforma minorista no avisan', () => {
+    component.cliente = mayoristaConRuta();
+    component.proforma.itemsProforma = [linea(30, 'PRECIO_MAYORISTA')];
+    expect(component.requiereAutorizacion).toBeFalse();
+
+    component.cliente = new Cliente();
+    component.proforma.itemsProforma = [linea(40)];
+    expect(component.requiereAutorizacion).toBeFalse();
+  });
+
+  it('editar una mayorista pide el motivo y lo envía junto con los cambios', async () => {
+    component.cliente = mayoristaConRuta();
+    component.proforma.itemsProforma = [linea(5)];
+    spyOn(swal, 'fire').and.callFake(((opciones: any) => opciones && opciones.input
+      ? Promise.resolve({ isConfirmed: true, value: '  cambio de cantidad ' }) : Promise.resolve({ isConfirmed: true })) as any);
+
+    component.update();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(proformaService.update).toHaveBeenCalledWith(component.proforma, 'cambio de cantidad');
+    expect(component.generarProformaPdf).toHaveBeenCalledWith(9, true);
+  });
+
+  it('si se cancela el motivo no se guarda nada', async () => {
+    component.cliente = mayoristaConRuta();
+    component.proforma.itemsProforma = [linea(5)];
+    spyOn(swal, 'fire').and.returnValue(Promise.resolve({ isConfirmed: false } as any));
+
+    component.update();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(proformaService.update).not.toHaveBeenCalled();
+  });
+
+  it('editar una minorista no pide motivo', () => {
+    component.cliente = new Cliente();
+    component.cliente.idCliente = 7;
+    component.proforma.itemsProforma = [linea(5)];
+    const fire = spyOn(swal, 'fire').and.returnValue(Promise.resolve({ isConfirmed: true } as any));
+
+    component.update();
+
+    // Solo el aviso final de "actualizada": ningún cuadro pide el motivo.
+    expect(fire.calls.allArgs().some(args => !!(args[0] as any).input)).toBeFalse();
+    expect(proformaService.update).toHaveBeenCalledWith(component.proforma, undefined);
+  });
+
+  it('al crear una proforma pendiente avisa antes de abrir los PDF', async () => {
+    component.cliente = mayoristaConRuta();
+    component.cliente.idCliente = 5;
+    component.proforma.itemsProforma = [linea(20)];
+    component.usuario = Object.assign(component.usuario, { idUsuario: 1 });
+    proformaService.create.and.returnValue(of({ idProforma: 9, noProforma: '9P', estadoAutorizacion: 'PENDIENTE' }));
+    const fire = spyOn(swal, 'fire').and.returnValue(Promise.resolve({ isConfirmed: true } as any));
+
+    component.createProforma();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(fire).toHaveBeenCalledWith('Pendiente de autorización', jasmine.stringMatching('9P'), 'info');
+    expect(component.generarProformaPdf).toHaveBeenCalledWith(9, true);
+  });
+});

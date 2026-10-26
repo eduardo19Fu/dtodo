@@ -10,6 +10,7 @@ export class ProformaDto {
   cliente: string;
   tipoProforma?: 'MINORISTA' | 'MAYORISTA';
   ruta?: string | null;
+  estadoAutorizacion?: 'PENDIENTE' | 'APROBADA' | 'RECHAZADA' | null;
   nitCliente: string;
   /** Factura generada desde la proforma; null/undefined si todavía no se factura. */
   idFactura?: number | null;

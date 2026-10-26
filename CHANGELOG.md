@@ -6,6 +6,21 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Auditoría y autorizaciones de proformas (Fase 1, paso 5)
+
+Las proformas mayoristas dejan historial de quién hizo qué, y un descuento sobre el tope o una proforma vencida no se factura sin la decisión de un administrador.
+
+- **Tope de descuento**: una proforma mayorista con una línea sobre 15 % (`dtodo.mayorista.descuento-maximo`, configurable) queda `PENDIENTE`, también un nivel Volumen de 20 %. El precio mayorista fijo no pide autorización porque lo fija el administrador. Una edición recalcula el estado: la proforma aprobada que se modifica vuelve a quedar pendiente si sigue sobre el tope. El servidor lo decide; lo que traiga la petición se ignora.
+- **Bloqueo al facturar** (`POST /api/facturas/createV2`): una proforma pendiente o rechazada responde 422, igual que una vencida sin autorización. Vencer es pasar de `fecha_vencimiento`: el último día todavía se factura.
+- **Bandeja de autorizaciones** (`/api/autorizaciones`, solo administrador): descuentos por autorizar (aprobar o rechazar) y proformas mayoristas vencidas, sin facturar y sin autorizar (autorizar facturar). Toda decisión exige motivo y queda en el historial. Pantalla nueva *Autorizaciones*, en el menú del administrador.
+- **Auditoría** (`proformas_auditoria`, `GET /api/proformas/{id}/auditoria`): creación, modificación (con el resumen antes y después), anulación, aprobación, rechazo, vencimiento autorizado y cambio de cliente al facturar. El usuario sale del token. El historial se conserva aunque la proforma se anule (sin llave foránea). Se ve en el detalle de la proforma; el vendedor solo el de las suyas.
+- **Motivo obligatorio**: editar o anular una proforma mayorista pide motivo (422 si falta, `?motivo=` en el PUT y el DELETE), y una mayorista ya facturada no se modifica ni se anula. Una minorista sigue como siempre, con motivo opcional.
+- **Cambio de cliente al facturar**: si la factura sale a un cliente distinto del de la proforma, queda en el historial. La factura ya está certificada, así que un fallo al auditar se registra en el log sin ocultarla.
+- **Base de datos** (`sql/mayoristas/07_create_auditoria_autorizaciones.sql`, **requerido antes del jar**; `99_rollback_mayoristas.sql` lo revierte): `estado_autorizacion` y `vencimiento_autorizado` en `proformas`, y la tabla `proformas_auditoria`.
+- **Frontend**: aviso en la proforma cuando una línea pasa del tope, motivo al guardar cambios de una mayorista, aviso al crear una pendiente y distintivo "Por autorizar" / "Rechazada" en el listado.
+- **Pruebas**: `AutorizacionProformaServiceImplTest`, `ProformaAuditoriaServiceImplTest`, `AutorizacionProformaRepositoryTest` (H2), `ProformaApiControllerAuditoriaTest`, `FacturaApiControllerAutorizacionTest`, casos nuevos en `ProformaMayoristaServiceImplTest`, `ProformaServiceImplTest` y `VendedorSeguridadTest`, y specs de la bandeja, el servicio y `CreateProformaComponent`.
+- **No incluido**: una proforma facturada con varias facturas, la reemisión tras anular y la pantalla "Cambiar cliente" al facturar (paso 6); hoy una proforma con factura, aunque esté anulada, no se vuelve a facturar. Tampoco se bloquea la entrega de una proforma pendiente porque la entrega es de la Fase 2.
+
 ### Agregado — Proforma mayorista (Fase 1, paso 4)
 
 Una proforma a un cliente mayorista con ruta es ahora una proforma mayorista: lleva observaciones, fecha de entrega estimada, vigencia de 15 días y dos copias impresas.
