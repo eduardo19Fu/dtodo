@@ -112,7 +112,7 @@ public class AutorizacionProformaServiceImpl implements IAutorizacionProformaSer
     @Override
     public void exigirSinFactura(Proforma proforma) {
         if (proforma != null && proforma.getIdProforma() != null
-                && facturaRepository.findFirstByIdProformaOrigen(proforma.getIdProforma()).isPresent()) {
+                && facturaRepository.findVigenteByProformaOrigen(proforma.getIdProforma()).isPresent()) {
             throw new ReglaNegocioException("La proforma " + proforma.getNoProforma()
                     + " ya fue facturada y no se puede modificar.");
         }

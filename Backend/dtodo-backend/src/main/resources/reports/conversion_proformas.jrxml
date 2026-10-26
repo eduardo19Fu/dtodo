@@ -32,7 +32,7 @@
                COALESCE(SUM(CASE WHEN f.id_factura IS NOT NULL AND f.id_estado != 4 THEN f.total ELSE 0 END), 0) AS valor_convertido
           FROM proformas p
           INNER JOIN usuarios u ON u.id_usuario = p.id_usuario
-          LEFT JOIN facturas f ON f.id_proforma_origen = p.id_proforma
+          LEFT JOIN facturas f ON f.id_proforma_origen = p.id_proforma AND f.id_estado != 4
          WHERE p.id_estado != 4
            AND p.id_sucursal = $P{ID_SUCURSAL}
            AND p.id_usuario = $P{ID_USUARIO}

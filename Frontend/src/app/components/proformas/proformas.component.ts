@@ -134,6 +134,11 @@ export class ProformasComponent implements OnInit, OnDestroy {
     return proforma.facturadoPor ? `${numero} · ${proforma.facturadoPor}` : numero;
   }
 
+  /** Tiene una factura vigente. Una factura anulada no cuenta: la proforma se puede volver a facturar. */
+  facturada(proforma: ProformaDto): boolean {
+    return !!proforma.idFactura && proforma.estadoFactura !== 'ANULADO';
+  }
+
   esMayorista(proforma: ProformaDto): boolean {
     return proforma.tipoProforma === 'MAYORISTA';
   }

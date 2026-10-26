@@ -287,8 +287,8 @@ class AmbitoVendedorServiceImplTest {
     void noModificaUnaProformaYaFacturada() {
         iniciarSesion("ROLE_VENDEDOR");
         Proforma facturada = proforma(3L, ID_VENDEDOR);
-        when(facturaRepository.findFirstByIdProformaOrigen(3L)).thenReturn(Optional.of(new Factura()));
-        when(facturaRepository.findFirstByIdProformaOrigen(4L)).thenReturn(Optional.empty());
+        when(facturaRepository.findVigenteByProformaOrigen(3L)).thenReturn(Optional.of(new Factura()));
+        when(facturaRepository.findVigenteByProformaOrigen(4L)).thenReturn(Optional.empty());
 
         ReglaNegocioException error = assertThrows(ReglaNegocioException.class, () -> ambito.exigirProformaSinFactura(facturada));
         assertTrue(error.getMessage().contains("ya fue facturada"));

@@ -6,6 +6,19 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Reemisión de la factura de una proforma (Fase 1, paso 6)
+
+Una proforma cuya factura se anuló se puede volver a facturar, por ejemplo con el NIT correcto. No se facturan cantidades por partes: eso no se necesita (el cliente solo pidió reemisión y cambio de cliente).
+
+- **Regla**: una proforma admite una sola factura *vigente*; las anuladas no cuentan. Antes bastaba una factura, anulada o no, para bloquearla. El mensaje al intentar facturar una proforma ya facturada indica anular primero esa factura.
+- **Sin carrera**: al emitir se bloquea la fila de la proforma y las facturas vigentes se leen con lectura bloqueante, así dos facturas simultáneas de la misma proforma no pasan la validación a la vez (la segunda ve la primera). El índice único ya no está.
+- **"Facturada" = factura vigente**: la edición del vendedor, la edición y anulación de una mayorista y la bandeja de vencidas ignoran las facturas anuladas.
+- **Listado**: con una proforma reemitida hay dos facturas; el listado muestra la vigente (o, si solo hubo anuladas, la última) y no repite la proforma. El botón de facturar se habilita cuando la factura está anulada. El reporte de conversión solo une facturas no anuladas, para no duplicar proformas.
+- **Cambiar cliente**: ya existía en la pantalla de facturar desde proforma (paso 0.5), y desde el paso 5 el cambio queda en el historial; no hizo falta tocarlo.
+- **Base de datos** (`sql/mayoristas/08_facturas_proforma_reemision.sql`, **requerido antes del jar**; `99_rollback_mayoristas.sql` lo revierte, y falla si ya hay proformas reemitidas): se crea `idx_facturas_proforma_origen` y luego se borra `uq_facturas_proforma_origen`, en ese orden porque la llave foránea necesita un índice.
+- **Pruebas**: `FacturaServiceImplTest` (reemisión y orden del bloqueo), `ProformaListadoFacturacionTest` (H2: una proforma reemitida aparece una vez), `AutorizacionProformaRepositoryTest` y specs de `ProformasComponent`.
+- **No incluido**: facturar en partes con control de cantidades por línea, y comparar el detalle de la factura con el de la proforma (hoy ningún rol lo valida).
+
 ### Agregado — Auditoría y autorizaciones de proformas (Fase 1, paso 5)
 
 Las proformas mayoristas dejan historial de quién hizo qué, y un descuento sobre el tope o una proforma vencida no se factura sin la decisión de un administrador.

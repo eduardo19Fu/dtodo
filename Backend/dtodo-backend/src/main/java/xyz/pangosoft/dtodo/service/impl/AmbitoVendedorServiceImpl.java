@@ -144,7 +144,7 @@ public class AmbitoVendedorServiceImpl implements IAmbitoVendedorService {
     @Transactional(readOnly = true)
     @Override
     public void exigirProformaSinFactura(Proforma proforma) {
-        if (esVendedor() && proforma != null && facturaRepository.findFirstByIdProformaOrigen(proforma.getIdProforma()).isPresent()) {
+        if (esVendedor() && proforma != null && facturaRepository.findVigenteByProformaOrigen(proforma.getIdProforma()).isPresent()) {
             throw new ReglaNegocioException("La proforma " + proforma.getNoProforma()
                     + " ya fue facturada y no se puede modificar.");
         }

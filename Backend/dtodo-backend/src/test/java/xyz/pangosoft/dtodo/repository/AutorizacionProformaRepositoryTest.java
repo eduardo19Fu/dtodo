@@ -152,4 +152,30 @@ class AutorizacionProformaRepositoryTest {
         assertEquals(AccionAuditoriaEnum.CREACION, historial.get(1).getAccion());
         assertTrue(historial.get(0).getFecha().isAfter(historial.get(1).getFecha()));
     }
+
+    @Test
+    void unaVencidaCuyaFacturaFueAnuladaSigueEnLaBandeja() {
+        base();
+        Estado anulado = Estado.builder().estado("ANULADO").build();
+        em.persist(anulado);
+        LocalDate ayer = LocalDate.now().minusDays(1);
+        Proforma proforma = proforma("1P", TipoProformaEnum.MAYORISTA, null, ayer, 5f);
+        em.flush();
+        Factura factura = new Factura();
+        factura.setSerie("A");
+        factura.setNoFactura(1L);
+        factura.setTotal(new BigDecimal("100.00"));
+        factura.setIdProformaOrigen(proforma.getIdProforma());
+        factura.setEstado(anulado);
+        factura.setUsuario(vendedor);
+        factura.setCliente(cliente);
+        em.persist(factura);
+        em.flush();
+
+        List<AutorizacionProformaDto> vencidas = proformaRepository.findVencidasSinAutorizar(TipoProformaEnum.MAYORISTA,
+                LocalDate.now());
+
+        assertEquals(1, vencidas.size());
+        assertEquals("1P", vencidas.get(0).getNoProforma());
+    }
 }

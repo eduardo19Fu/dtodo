@@ -20,6 +20,14 @@ import java.util.Optional;
 
 public interface IProformaRepository extends JpaRepository<Proforma, Long> {
 
+    /**
+     * Factura que se muestra en el listado: la vigente (no anulada) y, si solo hubo anuladas, la última. Una
+     * proforma puede tener varias facturas (anulada y reemitida); sin esto el listado repetiría la proforma.
+     */
+    String FACTURA_ACTUAL = "coalesce(" +
+            "(select max(fv.idFactura) from Factura fv where fv.idProformaOrigen = p.idProforma and fv.estado.estado <> 'ANULADO'), " +
+            "(select max(fa.idFactura) from Factura fa where fa.idProformaOrigen = p.idProforma))";
+
     String SELECT_AUTORIZACION = "select new xyz.pangosoft.dtodo.dto.AutorizacionProformaDto(" +
             "p.idProforma, p.noProforma, p.fechaEmision, p.total, c.nombre, rt.nombre, " +
             "trim(concat(coalesce(us.primerNombre, ''), ' ', coalesce(us.apellido, ''))), p.fechaVencimiento, " +
@@ -34,7 +42,7 @@ public interface IProformaRepository extends JpaRepository<Proforma, Long> {
     /** Proformas mayoristas vencidas que todavía no se facturan ni tienen el vencimiento autorizado. */
     @Query(SELECT_AUTORIZACION + "'VENCIDA') from Proforma p join p.cliente c join p.usuario us left join p.ruta rt " +
             "where p.tipoProforma = :tipo and p.fechaVencimiento < :hoy and p.vencimientoAutorizado = false " +
-            "and not exists (select 1 from Factura f where f.idProformaOrigen = p.idProforma) " +
+            "and not exists (select 1 from Factura f where f.idProformaOrigen = p.idProforma and f.estado.estado <> 'ANULADO') " +
             "order by p.fechaVencimiento")
     List<AutorizacionProformaDto> findVencidasSinAutorizar(
             @Param("tipo") xyz.pangosoft.dtodo.model.enums.TipoProformaEnum tipo,
@@ -75,7 +83,7 @@ public interface IProformaRepository extends JpaRepository<Proforma, Long> {
             "concat(coalesce(fu.primerNombre, ''), ' ', coalesce(fu.apellido, '')), p.tipoProforma, rt.nombre, p.estadoAutorizacion) " +
             "from Proforma p join p.estado e join p.usuario u join p.cliente c " +
             "left join p.ruta rt " +
-            "left join Factura f on f.idProformaOrigen = p.idProforma " +
+            "left join Factura f on f.idFactura = " + FACTURA_ACTUAL + " " +
             "left join f.estado fe left join f.usuario fu " +
             "where (:idUsuario is null or u.idUsuario = :idUsuario) " +
             "order by p.fechaEmision desc")
@@ -88,7 +96,7 @@ public interface IProformaRepository extends JpaRepository<Proforma, Long> {
             "concat(coalesce(fu.primerNombre, ''), ' ', coalesce(fu.apellido, '')), p.tipoProforma, rt.nombre, p.estadoAutorizacion) " +
             "from Proforma p join p.estado e join p.usuario u join p.cliente c " +
             "left join p.ruta rt " +
-            "left join Factura f on f.idProformaOrigen = p.idProforma " +
+            "left join Factura f on f.idFactura = " + FACTURA_ACTUAL + " " +
             "left join f.estado fe left join f.usuario fu " +
             "where p.fechaEmision >= :fechaIni and p.fechaEmision < :fechaFin " +
             "and (:idUsuario is null or u.idUsuario = :idUsuario)")
@@ -104,7 +112,7 @@ public interface IProformaRepository extends JpaRepository<Proforma, Long> {
             "concat(coalesce(fu.primerNombre, ''), ' ', coalesce(fu.apellido, '')), p.tipoProforma, rt.nombre, p.estadoAutorizacion) " +
             "from Proforma p join p.estado e join p.usuario u join p.cliente c " +
             "left join p.ruta rt " +
-            "left join Factura f on f.idProformaOrigen = p.idProforma " +
+            "left join Factura f on f.idFactura = " + FACTURA_ACTUAL + " " +
             "left join f.estado fe left join f.usuario fu " +
             "where p.fechaEmision >= :fechaIni and p.fechaEmision < :fechaFin " +
             "and (:idUsuario is null or u.idUsuario = :idUsuario) and (" +

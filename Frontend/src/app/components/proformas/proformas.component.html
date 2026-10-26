@@ -177,15 +177,15 @@
             </button>
             <button class="btn btn-sm table-action action-edit" type="button"
                     appTooltip="Editar proforma" aria-label="Editar proforma"
-                    *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_INVENTARIO') || (auth.hasRole('ROLE_VENDEDOR') && !proforma.idFactura)"
+                    *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_INVENTARIO') || (auth.hasRole('ROLE_VENDEDOR') && !facturada(proforma))"
                     [routerLink]="['/proformas/create', proforma.idProforma]">
               <i class="fas fa-edit"></i>
             </button>
             <button class="btn btn-sm table-action action-invoice" type="button"
-                    appTooltip="Crear factura desde esta proforma"
+                    [appTooltip]="proforma.estadoFactura === 'ANULADO' ? 'Volver a facturar: su factura fue anulada' : 'Crear factura desde esta proforma'"
                     aria-label="Crear factura desde esta proforma"
                     *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_INVENTARIO') || auth.hasRole('ROLE_VENDEDOR')"
-                    [disabled]="proforma.idEstado === 4 || !!proforma.idFactura" [routerLink]="['/facturas/create', proforma.idProforma]">
+                    [disabled]="proforma.idEstado === 4 || facturada(proforma)" [routerLink]="['/facturas/create', proforma.idProforma]">
               <i class="fas fa-file-invoice"></i>
             </button>
             </div>

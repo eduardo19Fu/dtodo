@@ -146,4 +146,75 @@ class ProformaListadoFacturacionTest {
         assertFalse(proformaRepository.findUltimasListadoDto(null, PageRequest.of(0, 10)).isEmpty());
         assertTrue(proformaRepository.findUltimasListadoDto(idCajero, PageRequest.of(0, 10)).isEmpty());
     }
+
+    private Factura factura(Proforma proforma, Estado estado, Usuario usuario, Cliente cliente, long numero) {
+        Factura factura = new Factura();
+        factura.setSerie("A");
+        factura.setNoFactura(numero);
+        factura.setTotal(new BigDecimal("100.00"));
+        factura.setIdProformaOrigen(proforma.getIdProforma());
+        factura.setEstado(estado);
+        factura.setUsuario(usuario);
+        factura.setCliente(cliente);
+        em.persist(factura);
+        return factura;
+    }
+
+    @Test
+    void unaProformaReemitidaApareceUnaSolaVezConSuFacturaVigente() {
+        Estado activo = Estado.builder().estado("ACTIVO").build();
+        Estado pagado = Estado.builder().estado("PAGADO").build();
+        Estado anulado = Estado.builder().estado("ANULADO").build();
+        em.persist(activo);
+        em.persist(pagado);
+        em.persist(anulado);
+        Usuario cajero = Usuario.builder().usuario("caja").primerNombre("Luis").apellido("Perez").password("x").build();
+        em.persist(cajero);
+        Cliente cliente = Cliente.builder().nombre("Libreria Uno").nit("4514627-6").build();
+        em.persist(cliente);
+        Proforma reemitida = proforma("111P", activo, cajero, cliente);
+        Proforma soloAnulada = proforma("222P", activo, cajero, cliente);
+        factura(reemitida, anulado, cajero, cliente, 10L);
+        factura(reemitida, pagado, cajero, cliente, 11L);
+        factura(soloAnulada, anulado, cajero, cliente, 12L);
+        em.flush();
+
+        List<ProformaDto> lista = proformaRepository.findAllListadoDto(ayer(), manana(), null, PageRequest.of(0, 10))
+                .getContent();
+
+        assertEquals(2, lista.size());
+        ProformaDto vigente = buscar(lista, "111P");
+        assertEquals(11L, vigente.getNoFactura());
+        assertEquals("PAGADO", vigente.getEstadoFactura());
+        ProformaDto anulada = buscar(lista, "222P");
+        assertEquals(12L, anulada.getNoFactura());
+        assertEquals("ANULADO", anulada.getEstadoFactura());
+    }
+
+    @Test
+    void laBusquedaYLasUltimasTampocoRepitenUnaProformaReemitida() {
+        Estado activo = Estado.builder().estado("ACTIVO").build();
+        Estado pagado = Estado.builder().estado("PAGADO").build();
+        Estado anulado = Estado.builder().estado("ANULADO").build();
+        em.persist(activo);
+        em.persist(pagado);
+        em.persist(anulado);
+        Usuario cajero = Usuario.builder().usuario("caja").primerNombre("Luis").apellido("Perez").password("x").build();
+        em.persist(cajero);
+        Cliente cliente = Cliente.builder().nombre("Libreria Uno").nit("4514627-6").build();
+        em.persist(cliente);
+        Proforma reemitida = proforma("111P", activo, cajero, cliente);
+        factura(reemitida, anulado, cajero, cliente, 10L);
+        factura(reemitida, pagado, cajero, cliente, 11L);
+        em.flush();
+
+        List<ProformaDto> busqueda = proformaRepository
+                .searchListadoDto(ayer(), manana(), null, "libreria", PageRequest.of(0, 10)).getContent();
+        List<ProformaDto> ultimas = proformaRepository.findUltimasListadoDto(null, PageRequest.of(0, 10));
+
+        assertEquals(1, busqueda.size());
+        assertEquals(11L, busqueda.get(0).getNoFactura());
+        assertEquals(1, ultimas.size());
+        assertEquals(11L, ultimas.get(0).getNoFactura());
+    }
 }

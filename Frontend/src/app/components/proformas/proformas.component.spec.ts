@@ -25,6 +25,23 @@ describe('ProformasComponent - estado de facturación', () => {
   });
 });
 
+describe('ProformasComponent - reemisión tras anular la factura', () => {
+  const component = new ProformasComponent(null, null);
+
+  function proforma(valores: Partial<ProformaDto>): ProformaDto {
+    return Object.assign(new ProformaDto(), valores);
+  }
+
+  it('sin factura o con la factura anulada se puede facturar', () => {
+    expect(component.facturada(proforma({}))).toBeFalse();
+    expect(component.facturada(proforma({ idFactura: 4, estadoFactura: 'ANULADO' }))).toBeFalse();
+  });
+
+  it('con una factura vigente ya está facturada', () => {
+    expect(component.facturada(proforma({ idFactura: 4, estadoFactura: 'PAGADO' }))).toBeTrue();
+  });
+});
+
 describe('ProformasComponent - impresión de la proforma mayorista', () => {
   let proformaService: any;
   let component: ProformasComponent;

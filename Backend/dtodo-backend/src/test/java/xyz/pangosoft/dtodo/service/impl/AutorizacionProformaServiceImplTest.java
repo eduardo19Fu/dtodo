@@ -100,7 +100,7 @@ class AutorizacionProformaServiceImplTest {
     @Test
     void unaProformaFacturadaNoSeResuelve() {
         proforma(EstadoAutorizacionEnum.PENDIENTE);
-        when(facturaRepository.findFirstByIdProformaOrigen(7L)).thenReturn(Optional.of(new Factura()));
+        when(facturaRepository.findVigenteByProformaOrigen(7L)).thenReturn(Optional.of(new Factura()));
 
         assertThrows(ReglaNegocioException.class, () -> service.aprobar(7L, "motivo"));
     }
@@ -188,11 +188,11 @@ class AutorizacionProformaServiceImplTest {
     @Test
     void exigirSinFacturaRechazaLaProformaYaFacturada() {
         Proforma proforma = proforma(null);
-        when(facturaRepository.findFirstByIdProformaOrigen(7L)).thenReturn(Optional.of(new Factura()));
+        when(facturaRepository.findVigenteByProformaOrigen(7L)).thenReturn(Optional.of(new Factura()));
 
         assertThrows(ReglaNegocioException.class, () -> service.exigirSinFactura(proforma));
 
-        when(facturaRepository.findFirstByIdProformaOrigen(7L)).thenReturn(Optional.empty());
+        when(facturaRepository.findVigenteByProformaOrigen(7L)).thenReturn(Optional.empty());
         service.exigirSinFactura(proforma);
         service.exigirSinFactura(null);
     }

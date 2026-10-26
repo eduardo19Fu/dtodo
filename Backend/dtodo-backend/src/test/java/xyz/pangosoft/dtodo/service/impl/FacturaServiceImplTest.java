@@ -309,7 +309,7 @@ class FacturaServiceImplTest {
     @Test
     void rechazaFacturarUnaProformaQueYaTieneFactura() {
         FacturaServiceImpl service = servicioDeVenta();
-        when(repoVenta.findFirstByIdProformaOrigen(33L)).thenReturn(java.util.Optional.of(facturaExistente("PAGADO")));
+        when(repoVenta.bloquearVigentesDeProforma(33L)).thenReturn(java.util.List.of(facturaExistente("PAGADO")));
         Factura venta = venta();
         venta.setIdProformaOrigen(33L);
 
@@ -323,17 +323,33 @@ class FacturaServiceImplTest {
     }
 
     @Test
-    void avisaCuandoLaFacturaDeLaProformaEstaAnulada() {
+    void unaProformaConSuFacturaAnuladaSePuedeFacturarDeNuevo() {
         FacturaServiceImpl service = servicioDeVenta();
-        when(repoVenta.findFirstByIdProformaOrigen(33L)).thenReturn(java.util.Optional.of(facturaExistente("ANULADO")));
+        // La factura anulada no es vigente: la consulta de vigentes viene vacía y la reemisión sigue su curso.
+        when(repoVenta.bloquearVigentesDeProforma(33L)).thenReturn(java.util.Collections.emptyList());
+        when(felVenta.certificar(any(), any(), any(), eq("CERTIFICACION"))).thenReturn(certificacion(true));
         Factura venta = venta();
         venta.setIdProformaOrigen(33L);
 
-        xyz.pangosoft.dtodo.error.exceptions.ReglaNegocioException error = assertThrows(
-                xyz.pangosoft.dtodo.error.exceptions.ReglaNegocioException.class, () -> service.facturaFel(venta));
+        Factura resultado = service.facturaFel(venta);
 
-        assertTrue(error.getMessage().contains("anulada"));
-        verify(repoVenta, never()).saveAndFlush(any());
+        assertEquals("UUID-123", resultado.getCertificacionSat());
+        verify(repoVenta).bloquearProforma(33L);
+    }
+
+    @Test
+    void laProformaSeBloqueaAntesDeRevisarSusFacturasVigentes() {
+        FacturaServiceImpl service = servicioDeVenta();
+        when(felVenta.certificar(any(), any(), any(), eq("CERTIFICACION"))).thenReturn(certificacion(true));
+        Factura venta = venta();
+        venta.setIdProformaOrigen(33L);
+
+        service.facturaFel(venta);
+
+        InOrder orden = inOrder(repoVenta);
+        orden.verify(repoVenta).bloquearProforma(33L);
+        orden.verify(repoVenta).bloquearVigentesDeProforma(33L);
+        orden.verify(repoVenta).saveAndFlush(any());
     }
 
     @Test

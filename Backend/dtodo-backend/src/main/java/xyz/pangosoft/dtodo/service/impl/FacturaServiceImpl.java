@@ -483,19 +483,19 @@ public class FacturaServiceImpl implements IFacturaService {
 			return;
 		}
 
-		repoFactura.findFirstByIdProformaOrigen(idProformaOrigen).ifPresent(existente -> {
+		// Una factura anulada no cuenta: la proforma se puede volver a facturar (por ejemplo, con el NIT correcto).
+		// Se bloquea la proforma y se leen las vigentes con lectura bloqueante para que dos facturas simultáneas
+		// de la misma proforma no pasen la validación a la vez.
+		repoFactura.bloquearProforma(idProformaOrigen);
+		repoFactura.bloquearVigentesDeProforma(idProformaOrigen).stream().findFirst().ifPresent(existente -> {
 			String referencia = (existente.getSerie() == null ? "" : existente.getSerie() + "-") + existente.getNoFactura();
-			boolean anulada = existente.getEstado() != null && "ANULADO".equals(existente.getEstado().getEstado());
 			String emitidaPor = existente.getUsuario() == null ? "" : (
 					(existente.getUsuario().getPrimerNombre() == null ? "" : existente.getUsuario().getPrimerNombre().trim()) + " "
 							+ (existente.getUsuario().getApellido() == null ? "" : existente.getUsuario().getApellido().trim())).trim();
 
-			if (anulada) {
-				throw new ReglaNegocioException("La factura " + referencia + " de esta proforma fue anulada. "
-						+ "Por ahora una proforma no puede facturarse de nuevo; genere una proforma nueva o consulte al administrador.");
-			}
 			throw new ReglaNegocioException("Esta proforma ya fue facturada con la factura " + referencia
-					+ (emitidaPor.isEmpty() ? "" : " (emitida por " + emitidaPor + ")") + ". Una proforma no puede facturarse dos veces.");
+					+ (emitidaPor.isEmpty() ? "" : " (emitida por " + emitidaPor + ")")
+					+ ". Para facturarla de nuevo anule primero esa factura.");
 		});
 	}
 
