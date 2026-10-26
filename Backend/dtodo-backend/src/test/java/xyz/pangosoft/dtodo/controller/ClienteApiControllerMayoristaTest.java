@@ -74,4 +74,15 @@ class ClienteApiControllerMayoristaTest {
 
         assertEquals(TipoClienteEnum.MINORISTA, cliente.getTipoCliente());
     }
+
+    @Test
+    void alVendedorNoSeLeDescartanLosDatosMayoristasPorqueSeValidanContraSusRutas() {
+        iniciarSesion("ROLE_VENDEDOR");
+        Cliente cliente = mayorista();
+
+        ClienteApiController.restringirDatosMayoristas(cliente);
+
+        assertEquals(TipoClienteEnum.MAYORISTA, cliente.getTipoCliente());
+        assertNotNull(cliente.getRuta());
+    }
 }

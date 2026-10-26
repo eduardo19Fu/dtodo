@@ -41,6 +41,14 @@ public interface IRutaRepository extends JpaRepository<Ruta, Integer> {
     @Query(SELECT_DTO + "where e.estado = 'ACTIVO' order by r.nombre")
     List<RutaDto> findActivasDto();
 
+    /** Ids de todas las rutas que atiende un vendedor, activas o no: su cartera sigue siendo suya. */
+    @Query("select r.idRuta from Ruta r where r.vendedor.idUsuario = :idUsuario")
+    List<Integer> findIdsByVendedor(@Param("idUsuario") Integer idUsuario);
+
+    /** Rutas activas de un vendedor, para el selector al registrar clientes. */
+    @Query(SELECT_DTO + "where v.idUsuario = :idUsuario and e.estado = 'ACTIVO' order by r.nombre")
+    List<RutaDto> findActivasDtoByVendedor(@Param("idUsuario") Integer idUsuario);
+
     @Query(SELECT_DTO + "where r.idRuta = :idRuta")
     Optional<RutaDto> findDtoById(@Param("idRuta") Integer idRuta);
 

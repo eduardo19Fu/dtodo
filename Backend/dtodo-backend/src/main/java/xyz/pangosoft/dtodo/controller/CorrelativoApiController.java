@@ -1,5 +1,6 @@
 package xyz.pangosoft.dtodo.controller;
 
+import xyz.pangosoft.dtodo.service.IAmbitoVendedorService;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +38,8 @@ import xyz.pangosoft.dtodo.service.ICorrelativoService;
 public class CorrelativoApiController {
 
 	private final ICorrelativoService serviceCorrelativo;
+
+	private final IAmbitoVendedorService ambito;
 
 	@Secured(value = {"ROLE_ADMIN"})
 	@GetMapping(value = "/correlativos")
@@ -101,10 +104,12 @@ public class CorrelativoApiController {
 		return ResponseEntity.ok(correlativo);
 	}
 	
-	@Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
+	@Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO", "ROLE_VENDEDOR"})
 	@GetMapping(value = "/correlativos/usuario/{id}")
 	public ResponseEntity<Correlativo> findByUsuario(@PathVariable("id") Integer idusuario){
 		log.info("Correlativo Activo para el usuario: {}", idusuario);
+
+		ambito.exigirUsuarioPropio(idusuario);
 
 		Correlativo correlativo = null;
 		correlativo = serviceCorrelativo.findByUsuario(idusuario);

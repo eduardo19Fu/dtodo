@@ -33,6 +33,37 @@ public class Utils {
         return esAdministrador(SecurityContextHolder.getContext().getAuthentication());
     }
 
+    /** Indica si la autenticación recibida tiene el rol indicado. */
+    public static boolean tieneRol(Authentication authentication, String rol) {
+        return authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(authority -> rol.equals(authority.getAuthority()));
+    }
+
+    /**
+     * Indica si la petición en curso la hace un vendedor cuyo alcance está acotado a sus rutas: tiene
+     * {@code ROLE_VENDEDOR} y ningún rol con alcance general (administrador, cobrador o inventario). Quien
+     * combina el rol de vendedor con otro de esos roles conserva el alcance del otro rol.
+     */
+    public static boolean esVendedorAcotado() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return tieneRol(authentication, "ROLE_VENDEDOR")
+                && !tieneRol(authentication, "ROLE_ADMIN")
+                && !tieneRol(authentication, "ROLE_COBRADOR")
+                && !tieneRol(authentication, "ROLE_INVENTARIO");
+    }
+
+    /**
+     * Id del usuario de la sesión en curso, tomado del claim {@code id_usuario} del token; {@code null} si no hay
+     * una sesión con token (por ejemplo, en pruebas sin autenticación).
+     */
+    public static Integer idUsuarioAutenticado() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof Jwt) {
+            return obtenerIdUsuario((Jwt) authentication.getPrincipal());
+        }
+        return null;
+    }
+
     /**
      * Método que devuelve configura una fecha en determinado formato y la devuelve
      * @param date Objeto tipo String que representa la fecha que se desea convertir

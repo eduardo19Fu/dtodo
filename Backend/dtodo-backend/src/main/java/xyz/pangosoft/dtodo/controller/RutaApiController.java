@@ -8,6 +8,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,6 +27,7 @@ import xyz.pangosoft.dtodo.dto.ClienteDto;
 import xyz.pangosoft.dtodo.dto.RutaDto;
 import xyz.pangosoft.dtodo.model.Ruta;
 import xyz.pangosoft.dtodo.service.IRutaService;
+import xyz.pangosoft.dtodo.util.Utils;
 
 /**
  * Catálogo de rutas de venta. Solo el administrador las crea y modifica; las consultas de apoyo (selectores y
@@ -70,6 +73,13 @@ public class RutaApiController {
 	@GetMapping(value = "/rutas/activas")
 	public ResponseEntity<List<RutaDto>> activas() {
 		return ResponseEntity.ok(serviceRuta.findActivas());
+	}
+
+	/** Rutas activas del vendedor de la sesión; el id sale del token, no de la petición. */
+	@Secured(value = { "ROLE_VENDEDOR" })
+	@GetMapping(value = "/rutas/mias")
+	public ResponseEntity<List<RutaDto>> mias(@AuthenticationPrincipal Jwt jwt) {
+		return ResponseEntity.ok(serviceRuta.findActivasDeVendedor(Utils.obtenerIdUsuario(jwt)));
 	}
 
 	@Secured(value = { "ROLE_ADMIN" })

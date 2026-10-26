@@ -1,5 +1,8 @@
 package xyz.pangosoft.dtodo.controller;
 
+import xyz.pangosoft.dtodo.service.IAmbitoVendedorService;
+import java.util.stream.Collectors;
+import org.springframework.security.access.AccessDeniedException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,10 +44,19 @@ public class ClienteApiController {
 
 	private final IClienteService serviceCliente;
 
+	private final IAmbitoVendedorService ambito;
+
 	@GetMapping(value = "/clientes")
 	public ResponseEntity<List<ClienteDto>> listarClientes () {
 		log.info("Listando Clientes");
-		return ResponseEntity.ok(serviceCliente.findAllDto());
+		List<ClienteDto> clientes = serviceCliente.findAllDto();
+		List<Integer> permitidas = ambito.idsRutasPermitidas();
+		if (permitidas != null) {
+			clientes = clientes.stream()
+					.filter(cliente -> cliente.getIdRuta() != null && permitidas.contains(cliente.getIdRuta()))
+					.collect(Collectors.toList());
+		}
+		return ResponseEntity.ok(clientes);
 	}
 
 	@GetMapping(value = "/clientes/listado")
@@ -61,6 +73,7 @@ public class ClienteApiController {
 		Sort.Direction sentido = "desc".equalsIgnoreCase(direccion)
 				? Sort.Direction.DESC : Sort.Direction.ASC;
 		ClienteFiltro criterios = ClienteFiltro.builder().texto(filtro).tipoCliente(tipoCliente).idRuta(idRuta)
+				.idsRutasPermitidas(ambito.idsRutasPermitidas())
 				.soloNitInvalido(nitInvalido && Utils.esAdministrador()).build();
 		return ResponseEntity.ok(serviceCliente.findListado(criterios,
 				PageRequest.of(page, size, Sort.by(sentido, obtenerPropiedadOrden(orden)))));
@@ -83,6 +96,8 @@ public class ClienteApiController {
 	public ResponseEntity<Page<Cliente>> listarClientesPaginados (@PathVariable("page") Integer page) {
 		log.info("Buscando clientes pagina: {}", page);
 
+		rechazarVendedor();
+
 		Page<Cliente> listadoPaginado = null;
 		listadoPaginado = serviceCliente.findAll(PageRequest.of(page, 5));
 		return ResponseEntity.ok(listadoPaginado);
@@ -91,6 +106,8 @@ public class ClienteApiController {
 	@GetMapping(value = "/clientes/nombre/{name}")
 	public ResponseEntity<List<Cliente>> findByName(@PathVariable("name") String name) {
 		log.info("Buscando clientes con nombre: {}", name);
+
+		rechazarVendedor();
 
 		List<Cliente> listadoClientes = new ArrayList<>();
 		listadoClientes = serviceCliente.findByName(name);
@@ -102,7 +119,7 @@ public class ClienteApiController {
 		log.info("Buscando cliente con nit: {}", nit);
 
 		Cliente cliente = null;
-		cliente = serviceCliente.findByNit(nit);
+		cliente = ambito.limitarLectura(serviceCliente.findByNit(nit));
 		return ResponseEntity.ok(cliente);
 	}
 
@@ -116,7 +133,7 @@ public class ClienteApiController {
 	@GetMapping(value = "/clientes/codigo/{codigo}")
 	public ResponseEntity<Cliente> findByCodigo(@PathVariable("codigo") String codigo) {
 		log.info("Buscando cliente con código: {}", codigo);
-		return ResponseEntity.ok(serviceCliente.findByCodigo(codigo));
+		return ResponseEntity.ok(ambito.limitarLectura(serviceCliente.findByCodigo(codigo)));
 	}
 
 	@GetMapping(value = "/clientes/{id}")
@@ -124,7 +141,7 @@ public class ClienteApiController {
 		log.info("Buscando cliente con ID: {}", id);
 
 		Cliente cliente = null;
-		cliente = serviceCliente.findById(id);
+		cliente = ambito.limitarLectura(serviceCliente.findById(id));
 		return ResponseEntity.ok(cliente);
 	}
 
@@ -137,23 +154,30 @@ public class ClienteApiController {
 		return ResponseEntity.ok(totalClientes);
 	}
 
-	@Secured(value = {"ROLE_COBRADOR","ROLE_ADMIN"})
+	@Secured(value = {"ROLE_COBRADOR","ROLE_ADMIN","ROLE_VENDEDOR"})
 	@PostMapping(value = "/clientes")
 	public ResponseEntity<Cliente> create(@RequestBody Cliente cliente) {
 		log.info("Registrando cliente con NIT: {}", cliente.getNit());
 
 		restringirDatosMayoristas(cliente);
 		Cliente newCliente = null;
-		newCliente = serviceCliente.save(cliente);
+		newCliente = serviceCliente.save(ambito.prepararAlta(cliente));
 		return new ResponseEntity<>(newCliente, HttpStatus.CREATED);
 	}
 	
+	/** Los listados sin alcance por ruta no se ofrecen al vendedor: usa el listado filtrado o la búsqueda por NIT. */
+	private void rechazarVendedor() {
+		if (ambito.esVendedor()) {
+			throw new AccessDeniedException("Esta consulta no está disponible para el rol de vendedor.");
+		}
+	}
+
 	/**
 	 * Convertir a un cliente en mayorista (tipo, categoría, ruta y crédito) es una decisión administrativa:
 	 * quien no es administrador solo puede registrar clientes minoristas.
 	 */
 	static void restringirDatosMayoristas(Cliente cliente) {
-		if (Utils.esAdministrador()) {
+		if (Utils.esAdministrador() || Utils.esVendedorAcotado()) {
 			return;
 		}
 		cliente.setTipoCliente(TipoClienteEnum.MINORISTA);
@@ -163,14 +187,14 @@ public class ClienteApiController {
 		cliente.setDiasCredito(null);
 	}
 
-	@Secured(value = {"ROLE_ADMIN"})
+	@Secured(value = {"ROLE_ADMIN", "ROLE_VENDEDOR"})
 	@SuppressWarnings("null")
 	@PutMapping(value = {"/clientes", "/clientes/update/{id}"})
 	public ResponseEntity<Cliente> update(@RequestBody Cliente cliente, @PathVariable(value = "id", required = false) Integer idcliente) {
 		log.info("Actualizando cliente: ", cliente.getIdCliente());
 
 		Cliente clienteUpdated = null;
-		clienteUpdated = serviceCliente.save(cliente);
+		clienteUpdated = serviceCliente.save(ambito.prepararEdicion(cliente));
 		return new ResponseEntity<>(clienteUpdated, HttpStatus.CREATED);
 	}
 	

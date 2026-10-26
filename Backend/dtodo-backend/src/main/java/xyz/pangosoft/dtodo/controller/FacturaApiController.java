@@ -1,5 +1,6 @@
 package xyz.pangosoft.dtodo.controller;
 
+import xyz.pangosoft.dtodo.service.IAmbitoVendedorService;
 import java.util.List;
 
 import xyz.pangosoft.dtodo.model.Factura;
@@ -34,6 +35,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class FacturaApiController {
 
     private final IFacturaService serviceFactura;
+
+    private final IAmbitoVendedorService ambito;
 
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
     @GetMapping(value = "/facturas")
@@ -170,10 +173,11 @@ public class FacturaApiController {
     }
 
     /**** Nuevas Implementaciones de creación de factura y anulación *****/
-    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO", "ROLE_VENDEDOR"})
     @PostMapping(value = "/facturas/createV2")
     public ResponseEntity<Factura> createV2(@RequestBody Factura factura) {
         log.info("********** Registrar Factura Versión 2 **********");
+        ambito.prepararFactura(factura);
         Factura facturaCreated = serviceFactura.facturaFel(factura);
         return ResponseEntity.status(HttpStatus.CREATED).body(facturaCreated);
     }

@@ -135,6 +135,15 @@ export class AuthService {
     return false;
   }
 
+  /**
+   * Vendedor acotado a sus rutas: tiene el rol de vendedor y ningún rol de alcance general. Replica la regla del
+   * backend (`Utils.esVendedorAcotado`), que es la que realmente protege los datos.
+   */
+  esVendedor(): boolean {
+    return this.hasRole('ROLE_VENDEDOR')
+      && !this.hasRole('ROLE_ADMIN') && !this.hasRole('ROLE_COBRADOR') && !this.hasRole('ROLE_INVENTARIO');
+  }
+
   hasRole(role: string): boolean {
     if (this.usuario.roles.includes(role)) {
       return true;

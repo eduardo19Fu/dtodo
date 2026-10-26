@@ -62,7 +62,9 @@ export class ClientesComponent implements OnInit, OnDestroy {
       this.idRutaFiltro = ruta;
       this.tipoFiltro = 'MAYORISTA';
     }
-    this.rutaService.getActivas().subscribe(rutas => this.rutas = rutas, () => this.rutas = []);
+    // El vendedor solo conoce sus rutas; pedirle todas respondería 403 y lo sacaría de la pantalla.
+    const rutas$ = this.auth.esVendedor() ? this.rutaService.getMias() : this.rutaService.getActivas();
+    rutas$.subscribe(rutas => this.rutas = rutas, () => this.rutas = []);
     if (this.auth.hasRole('ROLE_ADMIN')) {
       this.clienteService.getCantidadNitInvalidos().subscribe(total => this.totalNitInvalidos = total, () => { });
     }

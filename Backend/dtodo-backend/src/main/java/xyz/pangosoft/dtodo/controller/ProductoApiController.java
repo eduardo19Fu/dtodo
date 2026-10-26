@@ -157,7 +157,7 @@ public class ProductoApiController {
 		return ResponseEntity.ok(productosActivos);
 	}
 
-	@Secured({ "ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO" })
+	@Secured({ "ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO", "ROLE_VENDEDOR"})
 	@GetMapping(value = "/productos/{id}")
 	public ResponseEntity<Producto> findById(@PathVariable("id") int idproducto) {
 		log.info("Buscando Producto por ID: {}", idproducto);
@@ -258,7 +258,7 @@ public class ProductoApiController {
 		return ResponseEntity.ok(productos);
 	}
 
-	@Secured({ "ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO" })
+	@Secured({ "ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO", "ROLE_VENDEDOR"})
 	@GetMapping(value = "/productos/codigo/{codigo}")
 	public ResponseEntity<Producto> findByCodigo(@PathVariable("codigo") String codigo,
 			@RequestParam(value = "idSucursal", required = false) Integer idSucursal) {

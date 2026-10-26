@@ -36,7 +36,7 @@
             <label for="nombre">Nombre <span class="required-mark">*</span></label>
             <div class="control-with-icon">
               <i class="fas fa-user" aria-hidden="true"></i>
-              <input type="text" id="nombre" class="form-control" name="nombre"
+              <input type="text" id="nombre" [disabled]="soloContacto" class="form-control" name="nombre"
                 [(ngModel)]="cliente.nombre" required placeholder="Nombre completo o razón social" #nombre="ngModel">
             </div>
             <div class="validation-message" *ngIf="nombre.invalid && (nombre.touched || nombre.dirty)">
@@ -49,7 +49,7 @@
             <label for="nit">NIT</label>
             <div class="control-with-icon">
               <i class="fas fa-fingerprint" aria-hidden="true"></i>
-              <input type="text" id="nit" name="nit" class="form-control" [(ngModel)]="cliente.nit"
+              <input type="text" id="nit" [disabled]="soloContacto" name="nit" class="form-control" [(ngModel)]="cliente.nit"
                 placeholder="Ej. 1234567-8 o CF" autocomplete="off">
             </div>
             <small>Opcional: solo es indispensable al facturar. Usa CF para consumidor final y no escribas aquí el teléfono.</small>
@@ -59,7 +59,7 @@
             <label for="nombreNegocio">Nombre del negocio</label>
             <div class="control-with-icon">
               <i class="fas fa-store" aria-hidden="true"></i>
-              <input type="text" id="nombreNegocio" name="nombreNegocio" class="form-control"
+              <input type="text" id="nombreNegocio" [disabled]="soloContacto" name="nombreNegocio" class="form-control"
                 [(ngModel)]="cliente.nombreNegocio" placeholder="Ej. Librería Elizyov" autocomplete="off">
             </div>
             <small>Si el cliente es un negocio, escribe aquí su nombre y arriba el de la persona.</small>
@@ -69,7 +69,7 @@
             <label for="codigoCliente">Código de cliente</label>
             <div class="control-with-icon">
               <i class="fas fa-hashtag" aria-hidden="true"></i>
-              <input type="text" id="codigoCliente" name="codigoCliente" class="form-control"
+              <input type="text" id="codigoCliente" [disabled]="soloContacto" name="codigoCliente" class="form-control"
                 [(ngModel)]="cliente.codigoCliente" placeholder="Por defecto, su teléfono" maxlength="30"
                 autocomplete="off">
             </div>
@@ -81,7 +81,7 @@
         </div>
       </section>
 
-      <section class="form-section" [class.last-section]="!puedeAdministrarMayoristas" aria-labelledby="contact-title">
+      <section class="form-section" [class.last-section]="!veSeccionMayorista" aria-labelledby="contact-title">
         <div class="section-heading">
           <span class="section-number">02</span>
           <div>
@@ -110,7 +110,7 @@
             <label for="telefono">Teléfono</label>
             <div class="control-with-icon">
               <i class="fas fa-phone-alt" aria-hidden="true"></i>
-              <input type="text" name="telefono" id="telefono" class="form-control"
+              <input type="text" name="telefono" id="telefono" [disabled]="soloContacto" class="form-control"
                 [(ngModel)]="cliente.telefono" placeholder="Ej. 5555-5555">
             </div>
             <small>Este campo es opcional.</small>
@@ -118,7 +118,7 @@
         </div>
       </section>
 
-      <section class="form-section last-section" aria-labelledby="mayorista-title" *ngIf="puedeAdministrarMayoristas">
+      <section class="form-section last-section" aria-labelledby="mayorista-title" *ngIf="veSeccionMayorista">
         <div class="section-heading">
           <span class="section-number">03</span>
           <div>
@@ -127,7 +127,13 @@
           </div>
         </div>
 
-        <label class="mayorista-switch" for="esMayorista">
+        <p class="mayorista-nota" *ngIf="esVendedor">
+          <i class="fas fa-info-circle" aria-hidden="true"></i>
+          {{ soloContacto ? 'Solo puedes cambiar la dirección y los datos de contacto; el resto lo modifica el administrador.'
+            : 'El cliente se registra como mayorista en una de tus rutas. La categoría y el crédito los asigna el administrador.' }}
+        </p>
+
+        <label class="mayorista-switch" for="esMayorista" *ngIf="!esVendedor">
           <input type="checkbox" id="esMayorista" name="esMayorista" [(ngModel)]="esMayorista">
           <span>Es cliente mayorista</span>
         </label>
@@ -137,7 +143,8 @@
             <label for="ruta">Ruta <span class="required-mark">*</span></label>
             <div class="control-with-icon">
               <i class="fas fa-route" aria-hidden="true"></i>
-              <select id="ruta" name="ruta" class="form-control" [(ngModel)]="idRutaSeleccionada" required>
+              <select id="ruta" name="ruta" class="form-control" [(ngModel)]="idRutaSeleccionada" required
+                [disabled]="soloContacto">
                 <option [ngValue]="null" disabled>Seleccione una ruta</option>
                 <option *ngFor="let ruta of rutasDisponibles" [ngValue]="ruta.idRuta">{{ruta.nombre}}</option>
               </select>
@@ -148,7 +155,7 @@
             </div>
           </div>
 
-          <div class="field-group">
+          <div class="field-group" *ngIf="!esVendedor">
             <label for="categoriaDescuento">Categoría de descuento</label>
             <div class="control-with-icon">
               <i class="fas fa-percentage" aria-hidden="true"></i>
@@ -188,7 +195,7 @@
             </div>
           </div>
 
-          <div class="field-group">
+          <div class="field-group" *ngIf="!esVendedor">
             <label for="limiteCredito">Límite de crédito (Q)</label>
             <div class="control-with-icon">
               <i class="fas fa-coins" aria-hidden="true"></i>
@@ -197,7 +204,7 @@
             </div>
           </div>
 
-          <div class="field-group">
+          <div class="field-group" *ngIf="!esVendedor">
             <label for="diasCredito">Días de crédito</label>
             <div class="control-with-icon">
               <i class="far fa-calendar-check" aria-hidden="true"></i>

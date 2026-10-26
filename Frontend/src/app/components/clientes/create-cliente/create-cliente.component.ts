@@ -42,6 +42,10 @@ export class CreateClienteComponent implements OnInit {
   ngOnInit(): void {
     if (this.puedeAdministrarMayoristas) {
       this.rutaService.getActivas().subscribe(rutas => this.rutas = rutas, () => this.rutas = []);
+    } else if (this.esVendedor) {
+      // Un cliente que registra el vendedor siempre es mayorista y va en una de sus rutas.
+      this.cliente.tipoCliente = 'MAYORISTA';
+      this.rutaService.getMias().subscribe(rutas => this.rutas = rutas, () => this.rutas = []);
     }
     this.cargarCliente();
   }
@@ -49,6 +53,20 @@ export class CreateClienteComponent implements OnInit {
   /** Solo el administrador convierte clientes en mayoristas o ajusta su ruta, categoría y crédito. */
   get puedeAdministrarMayoristas(): boolean {
     return this.auth.hasRole('ROLE_ADMIN');
+  }
+
+  get esVendedor(): boolean {
+    return this.auth.esVendedor();
+  }
+
+  /** El administrador y el vendedor ven la sección del cliente mayorista; cada uno con lo que puede cambiar. */
+  get veSeccionMayorista(): boolean {
+    return this.puedeAdministrarMayoristas || this.esVendedor;
+  }
+
+  /** Al editar un cliente, el vendedor solo cambia la dirección y los datos de contacto. */
+  get soloContacto(): boolean {
+    return this.esVendedor && !!this.cliente.idCliente;
   }
 
   get esMayorista(): boolean {

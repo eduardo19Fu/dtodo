@@ -97,3 +97,53 @@ describe('CreateClienteComponent - cliente mayorista', () => {
     expect(router.navigate).toHaveBeenCalledWith(['/clientes/index']);
   });
 });
+
+describe('CreateClienteComponent - vendedor', () => {
+  let component: CreateClienteComponent;
+  let rutaService: any;
+  let roles: string[];
+
+  beforeEach(() => {
+    roles = ['ROLE_VENDEDOR'];
+    rutaService = {
+      getActivas: jasmine.createSpy('getActivas').and.returnValue(of([])),
+      getMias: jasmine.createSpy('getMias').and.returnValue(of([{ idRuta: 4, nombre: 'RUTA 2' }]))
+    };
+    const auth: any = {
+      hasRole: (rol: string) => roles.includes(rol),
+      esVendedor: () => roles.includes('ROLE_VENDEDOR') && !roles.includes('ROLE_ADMIN')
+    };
+    const activatedRoute: any = { params: of({}) };
+    component = new CreateClienteComponent(null, rutaService, null, activatedRoute, auth);
+  });
+
+  it('pide solo sus rutas, no el catálogo completo, y registra al cliente como mayorista', () => {
+    component.ngOnInit();
+
+    expect(rutaService.getMias).toHaveBeenCalled();
+    expect(rutaService.getActivas).not.toHaveBeenCalled();
+    expect(component.cliente.tipoCliente).toBe('MAYORISTA');
+    expect(component.rutasDisponibles.map(r => r.idRuta)).toEqual([4]);
+    expect(component.veSeccionMayorista).toBeTrue();
+    expect(component.puedeAdministrarMayoristas).toBeFalse();
+  });
+
+  it('al editar un cliente solo puede cambiar la dirección y el contacto', () => {
+    expect(component.soloContacto).toBeFalse();
+
+    component.cliente.idCliente = 9;
+
+    expect(component.soloContacto).toBeTrue();
+  });
+
+  it('el administrador pide todas las rutas activas y puede editarlo todo', () => {
+    roles = ['ROLE_ADMIN'];
+
+    component.ngOnInit();
+
+    expect(rutaService.getActivas).toHaveBeenCalled();
+    expect(rutaService.getMias).not.toHaveBeenCalled();
+    component.cliente.idCliente = 9;
+    expect(component.soloContacto).toBeFalse();
+  });
+});

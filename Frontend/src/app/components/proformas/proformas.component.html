@@ -117,7 +117,7 @@
           <th class="col-total"><button type="button" class="sort-header" (click)="ordenarPor('total')">Total <i [class]="iconoOrden('total')"></i></button></th>
           <th class="col-estado"><button type="button" class="sort-header" (click)="ordenarPor('estado')">Estado <i [class]="iconoOrden('estado')"></i></button></th>
           <th class="col-facturacion">Facturación</th>
-          <th class="col-opciones" *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR') || auth.hasRole('ROLE_INVENTARIO')">Opciones</th>
+          <th class="col-opciones" *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR') || auth.hasRole('ROLE_INVENTARIO') || auth.hasRole('ROLE_VENDEDOR')">Opciones</th>
         </tr>
       </thead>
       <tbody>
@@ -156,7 +156,7 @@
             </ng-template>
           </td>
           <td class="col-opciones mobile-actions-cell" data-label="Opciones"
-              *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR') || auth.hasRole('ROLE_INVENTARIO')">
+              *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR') || auth.hasRole('ROLE_INVENTARIO') || auth.hasRole('ROLE_VENDEDOR')">
             <div class="action-buttons">
             <button class="btn btn-sm table-action action-detail" type="button"
                     appTooltip="Ver detalle de la proforma"
@@ -170,14 +170,14 @@
             </button>
             <button class="btn btn-sm table-action action-edit" type="button"
                     appTooltip="Editar proforma" aria-label="Editar proforma"
-                    *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_INVENTARIO')"
+                    *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_INVENTARIO') || (auth.hasRole('ROLE_VENDEDOR') && !proforma.idFactura)"
                     [routerLink]="['/proformas/create', proforma.idProforma]">
               <i class="fas fa-edit"></i>
             </button>
             <button class="btn btn-sm table-action action-invoice" type="button"
                     appTooltip="Crear factura desde esta proforma"
                     aria-label="Crear factura desde esta proforma"
-                    *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_INVENTARIO')"
+                    *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_INVENTARIO') || auth.hasRole('ROLE_VENDEDOR')"
                     [disabled]="proforma.idEstado === 4 || !!proforma.idFactura" [routerLink]="['/facturas/create', proforma.idProforma]">
               <i class="fas fa-file-invoice"></i>
             </button>

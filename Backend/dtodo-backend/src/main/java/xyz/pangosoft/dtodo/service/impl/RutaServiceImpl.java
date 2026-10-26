@@ -63,6 +63,12 @@ public class RutaServiceImpl implements IRutaService {
 
     @Transactional(readOnly = true)
     @Override
+    public List<RutaDto> findActivasDeVendedor(Integer idUsuario) {
+        return rutaRepository.findActivasDtoByVendedor(idUsuario);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
     public Ruta findById(Integer idRuta) {
         return rutaRepository.findById(idRuta)
                 .orElseThrow(() -> new NotFoundException("La ruta con ID " + idRuta + " no se encuentra registrada."));

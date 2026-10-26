@@ -34,4 +34,26 @@ describe('AuthService - roles', () => {
     expect(service.esSoloBodega()).toBeFalse();
     expect(service.esSoloCobrador()).toBeTrue();
   });
+
+  it('un vendedor sin otro rol de alcance general está acotado a sus rutas', () => {
+    iniciarSesionConRoles(['ROLE_VENDEDOR']);
+
+    expect(service.esVendedor()).toBeTrue();
+  });
+
+  it('combinar el rol de vendedor con otro de alcance general lo deja de acotar', () => {
+    for (const otro of ['ROLE_ADMIN', 'ROLE_COBRADOR', 'ROLE_INVENTARIO']) {
+      service = new AuthService(null);
+      sessionStorage.clear();
+      iniciarSesionConRoles(['ROLE_VENDEDOR', otro]);
+
+      expect(service.esVendedor()).toBeFalse();
+    }
+  });
+
+  it('quien no tiene el rol de vendedor no es vendedor', () => {
+    iniciarSesionConRoles(['ROLE_COBRADOR']);
+
+    expect(service.esVendedor()).toBeFalse();
+  });
 });

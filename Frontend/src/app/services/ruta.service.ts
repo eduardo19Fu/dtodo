@@ -37,6 +37,11 @@ export class RutaService {
     return this.http.get<RutaDto[]>(`${this.url}/rutas/activas`);
   }
 
+  /** Rutas activas del vendedor de la sesión (el servidor toma el usuario del token). */
+  getMias(): Observable<RutaDto[]> {
+    return this.http.get<RutaDto[]>(`${this.url}/rutas/mias`);
+  }
+
   getRuta(id: number): Observable<RutaDto> {
     return this.http.get<RutaDto>(`${this.url}/rutas/${id}`);
   }

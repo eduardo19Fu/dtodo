@@ -16,6 +16,9 @@ public interface IRutaService {
     /** Rutas activas, para los selectores. */
     List<RutaDto> findActivas();
 
+    /** Rutas activas que atiende un vendedor. */
+    List<RutaDto> findActivasDeVendedor(Integer idUsuario);
+
     Ruta findById(Integer idRuta);
 
     RutaDto findDtoById(Integer idRuta);

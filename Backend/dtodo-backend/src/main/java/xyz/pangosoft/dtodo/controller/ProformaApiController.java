@@ -1,5 +1,6 @@
 package xyz.pangosoft.dtodo.controller;
 
+import xyz.pangosoft.dtodo.service.IAmbitoVendedorService;
 import xyz.pangosoft.dtodo.dto.ProformaFechaDto;
 import xyz.pangosoft.dtodo.dto.ProformaDto;
 import xyz.pangosoft.dtodo.dto.UsuarioDto;
@@ -49,6 +50,8 @@ public class ProformaApiController {
 
     private final IEstadoService estadoService;
 
+    private final IAmbitoVendedorService ambito;
+
     @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @GetMapping("/proformas")
     public ResponseEntity<List<Proforma>> index(){
@@ -56,7 +59,7 @@ public class ProformaApiController {
         return ResponseEntity.ok(proformaService.findAll());
     }
 
-    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO", "ROLE_VENDEDOR"})
     @GetMapping("/proformas-dto/page/{page}")
     public ResponseEntity<Page<ProformaDto>> getListadoDto(
             @PathVariable("page") Integer page,
@@ -67,10 +70,10 @@ public class ProformaApiController {
             @RequestParam(value = "orden", defaultValue = "fecha") String orden,
             @RequestParam(value = "direccion", defaultValue = "desc") String direccion) {
         return ResponseEntity.ok(proformaService.findAllListadoDto(
-                fechaIni, fechaFin, idUsuario, PageRequest.of(page, size, obtenerOrden(orden, direccion))));
+                fechaIni, fechaFin, ambito.forzarUsuario(idUsuario), PageRequest.of(page, size, obtenerOrden(orden, direccion))));
     }
 
-    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO", "ROLE_VENDEDOR"})
     @GetMapping("/proformas-dto/search/{page}")
     public ResponseEntity<Page<ProformaDto>> searchListadoDto(
             @PathVariable("page") Integer page,
@@ -82,10 +85,10 @@ public class ProformaApiController {
             @RequestParam(value = "orden", defaultValue = "fecha") String orden,
             @RequestParam(value = "direccion", defaultValue = "desc") String direccion) {
         return ResponseEntity.ok(proformaService.searchListadoDto(
-                fechaIni, fechaFin, filtro, idUsuario, PageRequest.of(page, size, obtenerOrden(orden, direccion))));
+                fechaIni, fechaFin, filtro, ambito.forzarUsuario(idUsuario), PageRequest.of(page, size, obtenerOrden(orden, direccion))));
     }
 
-    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO", "ROLE_VENDEDOR"})
     @GetMapping("/proformas-dto/ultimas/{page}")
     public ResponseEntity<Page<ProformaDto>> getUltimasListadoDto(
             @PathVariable("page") Integer page,
@@ -95,14 +98,14 @@ public class ProformaApiController {
             @RequestParam(value = "orden", defaultValue = "fecha") String orden,
             @RequestParam(value = "direccion", defaultValue = "desc") String direccion) {
         return ResponseEntity.ok(proformaService.findUltimasListadoDto(
-                filtro, idUsuario, PageRequest.of(page, size, obtenerOrden(orden, direccion))));
+                filtro, ambito.forzarUsuario(idUsuario), PageRequest.of(page, size, obtenerOrden(orden, direccion))));
     }
 
-    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_VENDEDOR"})
     @GetMapping("/proformas/cantidad-proformas")
     public ResponseEntity<Long> cantidadProformas(
             @RequestParam(value = "idUsuario", required = false) Integer idUsuario) {
-        return ResponseEntity.ok(proformaService.totalProformas(idUsuario));
+        return ResponseEntity.ok(proformaService.totalProformas(ambito.forzarUsuario(idUsuario)));
     }
 
     private Sort obtenerOrden(String orden, String direccion) {
@@ -119,12 +122,15 @@ public class ProformaApiController {
         }
     }
 
-    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO", "ROLE_VENDEDOR"})
     @GetMapping("/proformas-dto/{idProforma}/detalle/{page}")
     public ResponseEntity<Page<DetalleDocumentoDto>> getDetalleDto(
             @PathVariable("idProforma") Long idProforma,
             @PathVariable("page") Integer page,
             @RequestParam(value = "size", defaultValue = "5") Integer size) {
+        if (ambito.esVendedor()) {
+            ambito.exigirProformaPropia(proformaService.findProforma(idProforma));
+        }
         return ResponseEntity.ok(proformaService.findDetalleDto(idProforma, PageRequest.of(page, size)));
     }
 
@@ -135,11 +141,13 @@ public class ProformaApiController {
         return ResponseEntity.ok(proformaService.findOrigenNotaDto(noProforma));
     }
 
-    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO", "ROLE_VENDEDOR"})
     @GetMapping("/proformas/{id}")
     public ResponseEntity<Proforma> findProforma(@PathVariable("id") Long id){
         log.info("Retornando Proforma registrada con ID: {}", id);
-        return ResponseEntity.ok(proformaService.findProforma(id));
+        Proforma proforma = proformaService.findProforma(id);
+        ambito.exigirProformaPropia(proforma);
+        return ResponseEntity.ok(proforma);
     }
 
     /**
@@ -156,18 +164,25 @@ public class ProformaApiController {
         return ResponseEntity.ok(proformaService.findByNoProforma(noProforma));
     }
 
-    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO", "ROLE_VENDEDOR"})
     @PostMapping(value = "/proformas")
     public ResponseEntity<Proforma> create(@Valid @RequestBody Proforma proforma) {
         log.info("Registrando nueva proforma: {}", proforma.toString());
+        ambito.prepararProforma(proforma);
         Proforma newProforma = proformaService.save(proforma, null);
         return ResponseEntity.status(HttpStatus.CREATED).body(newProforma);
     }
 
-    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO", "ROLE_VENDEDOR"})
     @PutMapping(value = "/proformas/{id}")
     public ResponseEntity<Proforma> udpate(@Valid @RequestBody Proforma proforma, @PathVariable Long id) {
         log.info("Actualizando proforma: {}", proforma.toString());
+        if (ambito.esVendedor()) {
+            Proforma existente = proformaService.findProforma(id);
+            ambito.exigirProformaPropia(existente);
+            ambito.exigirProformaSinFactura(existente);
+        }
+        ambito.prepararProforma(proforma);
         Proforma proformaUpdated = proformaService.save(proforma, id);
         return ResponseEntity.status(HttpStatus.CREATED).body(proformaUpdated);
     }
@@ -214,6 +229,10 @@ public class ProformaApiController {
     public ResponseEntity<byte[]> showProforma(@PathVariable("id") Long idproforma) {
         long inicio = System.currentTimeMillis();
         log.info("Iniciando GET /api/proformas/generate/{}", idproforma);
+
+        if (ambito.esVendedor()) {
+            ambito.exigirProformaPropia(proformaService.findProforma(idproforma));
+        }
 
         try {
             byte[] proformaPdf = proformaService.showProforma(idproforma);

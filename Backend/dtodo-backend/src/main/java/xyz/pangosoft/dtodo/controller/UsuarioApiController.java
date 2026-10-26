@@ -1,5 +1,6 @@
 package xyz.pangosoft.dtodo.controller;
 
+import xyz.pangosoft.dtodo.service.IAmbitoVendedorService;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,8 @@ import xyz.pangosoft.dtodo.service.IUsuarioService;
 public class UsuarioApiController {
 
 	private final IUsuarioService serviceUsuario;
+
+	private final IAmbitoVendedorService ambito;
 
 	@Secured(value = { "ROLE_ADMIN", "ROLE_COBRADOR" })
 	@GetMapping(value = "/usuarios")
@@ -90,10 +93,11 @@ public class UsuarioApiController {
 		}
 	}
 
-	@Secured(value = { "ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO" })
+	@Secured(value = { "ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO", "ROLE_VENDEDOR"})
 	@GetMapping(value = "/usuarios/{id}")
 	public ResponseEntity<Usuario> findById(@PathVariable("id") Integer idUsuario) {
 		log.info("Buscando usuario con ID: {}", idUsuario);
+		ambito.exigirUsuarioPropio(idUsuario);
 		return ResponseEntity.ok(serviceUsuario.findById(idUsuario));
 	}
 

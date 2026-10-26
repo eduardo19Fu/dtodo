@@ -6,6 +6,18 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Rol de vendedor y alcance por ruta (Fase 1, paso 2)
+
+El vendedor (`ROLE_VENDEDOR`, creado en `sql/mayoristas/03`) trabaja solo con los clientes de sus rutas y con sus propias proformas. Las reglas viven en el servidor (`IAmbitoVendedorService`): el usuario sale del token, no de la petición. Un usuario que combina `ROLE_VENDEDOR` con administrador, cobrador o inventario conserva el alcance del otro rol.
+
+- **Clientes**: el vendedor solo ve los de sus rutas (listado, búsqueda por NIT, código e id; lo ajeno responde 404). Registra clientes en una de sus rutas: quedan como mayoristas, sin categoría ni crédito (los fija el administrador) y sin repetir un NIT ya registrado. De un cliente existente solo cambia dirección, contacto, teléfono de contacto y referencia de ubicación. `/clientes/page` y `/clientes/nombre` (sin alcance por ruta, ya sin uso en el frontend) se le cierran.
+- **Proformas**: el listado, el conteo, el detalle, la impresión y la edición se limitan a las suyas. Al crearlas o editarlas el autor es siempre el vendedor de la sesión y el cliente debe ser de sus rutas. No puede modificar una proforma ya facturada.
+- **Facturas**: puede emitir (`createV2`), pero solo desde una proforma suya, a un cliente de sus rutas y con su propio correlativo. No anula facturas ni ve el listado general.
+- **Consulta**: productos (precio de venta y existencias; el costo sigue siendo solo del administrador), su propio usuario y su correlativo; `GET /api/rutas/mias` devuelve sus rutas activas.
+- **Frontend**: menú de Productos, Proformas y Clientes para el vendedor; sus pantallas piden solo sus rutas (el catálogo completo respondería 403 y lo sacaría de la pantalla); en el formulario de cliente la sección mayorista limita lo editable y oculta categoría y crédito. `AuthService.esVendedor()`.
+- **Pruebas**: `AmbitoVendedorServiceImplTest`, `UtilsVendedorTest`, `VendedorSeguridadTest` (qué endpoints ve y cuáles no el vendedor) y specs de `CreateClienteComponent` y `AuthService`.
+- **No incluido**: la auditoría de cambios y la autorización de descuentos (pasos 5 y 6) y que el vendedor se limite a las líneas y precios de su proforma al facturar; hoy el servidor, como para los demás roles, no compara el detalle de la factura con el de la proforma.
+
 ### Agregado — Búsqueda de cliente por código y depuración de NIT inválidos (cierre del paso 1)
 
 - **Elegir del directorio**: en proforma y factura, el cliente elegido en el directorio se carga completo por su `id`. Antes se volvía a buscar por NIT, lo que fallaba con un cliente sin NIT (ahora válido).
