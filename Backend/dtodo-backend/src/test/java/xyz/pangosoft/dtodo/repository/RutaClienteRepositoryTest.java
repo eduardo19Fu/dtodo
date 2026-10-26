@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityManager;
 import xyz.pangosoft.dtodo.dto.ClienteDto;
+import xyz.pangosoft.dtodo.dto.ClienteFiltro;
 import xyz.pangosoft.dtodo.dto.RutaDto;
 import xyz.pangosoft.dtodo.model.Cliente;
 import xyz.pangosoft.dtodo.model.Estado;
@@ -187,5 +188,54 @@ class RutaClienteRepositoryTest {
         assertFalse(clienteRepository.findByCodigoCliente("000").isPresent());
         assertEquals(2, clienteRepository.findByRuta_IdRutaOrderByNombre(ruta1.getIdRuta()).size());
         assertEquals(2, clienteRepository.countByRuta_IdRuta(ruta1.getIdRuta()));
+    }
+
+    @Test
+    void elFiltroDeNitInvalidoSoloDevuelveLosNitEscritosQueNoSonValidos() {
+        escenario();
+        em.persist(Cliente.builder().nombre("Con NIT valido").nit("4514627-6").build());
+        em.persist(Cliente.builder().nombre("Con telefono como NIT").nit("55551234").build());
+        em.persist(Cliente.builder().nombre("Consumidor final").nit("C/F").build());
+        em.persist(Cliente.builder().nombre("Con digito incorrecto").nit("4514627-5").build());
+        em.flush();
+        em.clear();
+
+        Page<ClienteDto> invalidos = clienteService.findListado(
+                ClienteFiltro.builder().soloNitInvalido(true).build(), PageRequest.of(0, 10, Sort.by("nombre")));
+
+        assertEquals(2, invalidos.getTotalElements());
+        assertEquals("Con digito incorrecto", invalidos.getContent().get(0).getNombre());
+        assertEquals("Con telefono como NIT", invalidos.getContent().get(1).getNombre());
+        assertEquals(2, clienteService.totalNitInvalidos());
+    }
+
+    @Test
+    void sinClientesConNitInvalidoElFiltroNoDevuelveNada() {
+        escenario();
+
+        Page<ClienteDto> invalidos = clienteService.findListado(
+                ClienteFiltro.builder().soloNitInvalido(true).build(), PageRequest.of(0, 10));
+
+        assertEquals(0, invalidos.getTotalElements());
+        assertEquals(0, clienteService.totalNitInvalidos());
+    }
+
+    @Test
+    void elListadoPuedeLimitarseALasRutasPermitidas() {
+        escenario();
+
+        Page<ClienteDto> deRuta1 = clienteService.findListado(
+                ClienteFiltro.builder().idsRutasPermitidas(java.util.Collections.singletonList(ruta1.getIdRuta())).build(),
+                PageRequest.of(0, 10));
+        Page<ClienteDto> deNinguna = clienteService.findListado(
+                ClienteFiltro.builder().idsRutasPermitidas(java.util.Collections.<Integer>emptyList()).build(),
+                PageRequest.of(0, 10));
+        Page<ClienteDto> deRuta2 = clienteService.findListado(
+                ClienteFiltro.builder().idsRutasPermitidas(java.util.Collections.singletonList(ruta2.getIdRuta())).build(),
+                PageRequest.of(0, 10));
+
+        assertEquals(2, deRuta1.getTotalElements());
+        assertEquals(0, deNinguna.getTotalElements());
+        assertEquals(0, deRuta2.getTotalElements());
     }
 }

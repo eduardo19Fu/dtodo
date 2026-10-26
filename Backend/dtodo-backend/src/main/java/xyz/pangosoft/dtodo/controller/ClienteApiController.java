@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import xyz.pangosoft.dtodo.dto.ClienteDto;
+import xyz.pangosoft.dtodo.dto.ClienteFiltro;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -54,11 +55,14 @@ public class ClienteApiController {
 			@RequestParam(value = "orden", defaultValue = "nombre") String orden,
 			@RequestParam(value = "direccion", defaultValue = "asc") String direccion,
 			@RequestParam(value = "tipoCliente", required = false) TipoClienteEnum tipoCliente,
-			@RequestParam(value = "idRuta", required = false) Integer idRuta) {
+			@RequestParam(value = "idRuta", required = false) Integer idRuta,
+			@RequestParam(value = "nitInvalido", defaultValue = "false") boolean nitInvalido) {
 		log.info("Listando clientes paginados con filtro");
 		Sort.Direction sentido = "desc".equalsIgnoreCase(direccion)
 				? Sort.Direction.DESC : Sort.Direction.ASC;
-		return ResponseEntity.ok(serviceCliente.findListado(filtro, tipoCliente, idRuta,
+		ClienteFiltro criterios = ClienteFiltro.builder().texto(filtro).tipoCliente(tipoCliente).idRuta(idRuta)
+				.soloNitInvalido(nitInvalido && Utils.esAdministrador()).build();
+		return ResponseEntity.ok(serviceCliente.findListado(criterios,
 				PageRequest.of(page, size, Sort.by(sentido, obtenerPropiedadOrden(orden)))));
 	}
 
@@ -100,6 +104,13 @@ public class ClienteApiController {
 		Cliente cliente = null;
 		cliente = serviceCliente.findByNit(nit);
 		return ResponseEntity.ok(cliente);
+	}
+
+	/** Cuántos clientes tienen un NIT escrito que no es válido; sirve para depurar datos antes de facturar. */
+	@Secured(value = {"ROLE_ADMIN"})
+	@GetMapping(value = "/clientes/cantidad-nit-invalidos")
+	public ResponseEntity<Long> cantidadNitInvalidos() {
+		return ResponseEntity.ok(serviceCliente.totalNitInvalidos());
 	}
 
 	@GetMapping(value = "/clientes/codigo/{codigo}")

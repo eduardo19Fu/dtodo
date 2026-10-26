@@ -32,6 +32,8 @@ export class ClientesComponent implements OnInit, OnDestroy {
   orden = 'nombre';
   direccion: 'asc' | 'desc' = 'asc';
   tipoFiltro = '';
+  soloNitInvalido = false;
+  totalNitInvalidos: number = null;
   idRutaFiltro: number = null;
   rutas: RutaDto[] = [];
 
@@ -61,6 +63,9 @@ export class ClientesComponent implements OnInit, OnDestroy {
       this.tipoFiltro = 'MAYORISTA';
     }
     this.rutaService.getActivas().subscribe(rutas => this.rutas = rutas, () => this.rutas = []);
+    if (this.auth.hasRole('ROLE_ADMIN')) {
+      this.clienteService.getCantidadNitInvalidos().subscribe(total => this.totalNitInvalidos = total, () => { });
+    }
     this.cargarClientes(0);
     this.busquedaSubscription = this.busquedaSubject.pipe(
       debounceTime(300),
@@ -80,7 +85,7 @@ export class ClientesComponent implements OnInit, OnDestroy {
   cargarClientes(page: number): void {
     this.cargando = true;
     this.clienteService.getListado(page, this.pageSize, this.filtro, this.orden, this.direccion,
-      this.tipoFiltro, this.idRutaFiltro).subscribe(
+      this.tipoFiltro, this.idRutaFiltro, this.soloNitInvalido).subscribe(
       response => {
         this.clientes = response.content;
         this.paginaActual = response.number;
@@ -110,12 +115,13 @@ export class ClientesComponent implements OnInit, OnDestroy {
   }
 
   get hayFiltrosActivos(): boolean {
-    return !!this.tipoFiltro || !!this.idRutaFiltro;
+    return !!this.tipoFiltro || !!this.idRutaFiltro || this.soloNitInvalido;
   }
 
   limpiarFiltros(): void {
     this.tipoFiltro = '';
     this.idRutaFiltro = null;
+    this.soloNitInvalido = false;
     this.cargarClientes(0);
   }
 

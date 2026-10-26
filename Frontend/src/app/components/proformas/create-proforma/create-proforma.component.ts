@@ -108,9 +108,12 @@ export class CreateProformaComponent implements OnInit {
   }
 
   loadCliente(cliente: Cliente): void {
-    this.nitBusqueda = cliente.nit;
     this.cerrarModalCliente();
-    this.buscarCliente();
+    // El directorio entrega una fila del listado; se pide el cliente completo por su id. Buscar de nuevo por NIT
+    // fallaría con un cliente sin NIT, que es válido hasta que se factura.
+    this.clienteService.getCliente(cliente.idCliente).subscribe(
+      completo => this.seleccionarCliente(completo)
+    );
   }
 
   cargarCliente(cliente: Cliente): void {
@@ -146,27 +149,42 @@ export class CreateProformaComponent implements OnInit {
   }
 
   buscarCliente(): void {
-    const nit = (this.nitBusqueda || '').trim();
+    const valor = (this.nitBusqueda || '').trim();
 
-    if (nit) {
-      this.clienteService.getClienteByNit(nit).subscribe(
-        cliente => {
-          this.cliente = cliente;
-          (document.getElementById('codigo')).focus();
-        },
+    if (valor) {
+      this.clienteService.getClienteByNit(valor).subscribe(
+        cliente => this.seleccionarCliente(cliente),
         error => {
           if (error.status === 400) {
             swal.fire(`Error: ${error.error.status}`, 'Petición Equivocada', 'error');
           }
           if (error.status === 404) {
-            this.nitIngresado = nit;
-            this.clienteCreateService.abrirModal();
+            this.buscarClientePorCodigo(valor);
           }
         }
       );
     } else {
       swal.fire('NIT Vacío', 'Ingrese un valor valido para realizar la búsqueda.', 'warning');
     }
+  }
+
+  /** Si el valor no es un NIT registrado se prueba como código de cliente; si tampoco existe, se ofrece registrarlo. */
+  private buscarClientePorCodigo(valor: string): void {
+    this.clienteService.getClienteByCodigo(valor).subscribe(
+      cliente => this.seleccionarCliente(cliente),
+      error => {
+        if (error.status === 404) {
+          this.nitIngresado = valor;
+          this.clienteCreateService.abrirModal();
+        }
+      }
+    );
+  }
+
+  private seleccionarCliente(cliente: Cliente): void {
+    this.cliente = cliente;
+    this.nitBusqueda = cliente.nit || cliente.codigoCliente || '';
+    (document.getElementById('codigo') as HTMLInputElement)?.focus();
   }
 
   agregarLinea(): void {

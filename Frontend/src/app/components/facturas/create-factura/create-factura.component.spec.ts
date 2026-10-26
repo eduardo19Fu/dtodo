@@ -290,4 +290,64 @@ describe('CreateFacturaComponent - edición de detalle', () => {
     expect(ultima[1]).toContain('55551234');
     expect(component.isSaving).toBeFalse();
   });
+
+  describe('búsqueda de cliente', () => {
+    let clienteService: any;
+    let clienteCreateService: any;
+
+    beforeEach(() => {
+      clienteService = {
+        getCliente: jasmine.createSpy('getCliente'),
+        getClienteByNit: jasmine.createSpy('getClienteByNit'),
+        getClienteByCodigo: jasmine.createSpy('getClienteByCodigo')
+      };
+      clienteCreateService = { abrirModal: jasmine.createSpy('abrirModal') };
+      component = new CreateFacturaComponent(null, null, null, clienteService, null, clienteCreateService, null, null, null);
+    });
+
+    it('elige del directorio al cliente completo por su id aunque no tenga NIT', () => {
+      const completo = new Cliente();
+      completo.idCliente = 3;
+      completo.nombre = 'Cliente sin NIT';
+      completo.nit = null;
+      clienteService.getCliente.and.returnValue(of(completo));
+      const fila = new Cliente();
+      fila.idCliente = 3;
+      component.abrirModalCliente();
+
+      component.loadCliente(fila);
+
+      expect(clienteService.getCliente).toHaveBeenCalledWith(3);
+      expect(clienteService.getClienteByNit).not.toHaveBeenCalled();
+      expect(component.cliente).toBe(completo);
+      expect(component.modalClienteVisible).toBeFalse();
+    });
+
+    it('si el valor no es un NIT registrado lo busca como código de cliente', () => {
+      const porCodigo = new Cliente();
+      porCodigo.idCliente = 8;
+      porCodigo.codigoCliente = 'C-0008';
+      clienteService.getClienteByNit.and.returnValue(throwError({ status: 404 }));
+      clienteService.getClienteByCodigo.and.returnValue(of(porCodigo));
+      component.nitBusqueda = ' C-0008 ';
+
+      component.buscarCliente();
+
+      expect(clienteService.getClienteByNit).toHaveBeenCalledWith('C-0008');
+      expect(clienteService.getClienteByCodigo).toHaveBeenCalledWith('C-0008');
+      expect(component.cliente).toBe(porCodigo);
+      expect(clienteCreateService.abrirModal).not.toHaveBeenCalled();
+    });
+
+    it('ofrece registrar al cliente solo si ni el NIT ni el código existen', () => {
+      clienteService.getClienteByNit.and.returnValue(throwError({ status: 404 }));
+      clienteService.getClienteByCodigo.and.returnValue(throwError({ status: 404 }));
+      component.nitBusqueda = '999';
+
+      component.buscarCliente();
+
+      expect(clienteCreateService.abrirModal).toHaveBeenCalled();
+      expect(component.nitIngresado).toBe('999');
+    });
+  });
 });

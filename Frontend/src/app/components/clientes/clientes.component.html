@@ -66,6 +66,14 @@
           <option *ngFor="let ruta of rutas" [ngValue]="ruta.idRuta">{{ruta.nombre}}</option>
         </select>
       </div>
+      <div class="col-sm-4 col-md-3 d-flex align-items-end" *ngIf="auth.hasRole('ROLE_ADMIN')">
+        <label class="mb-0 filtro-nit" for="filtroNitInvalido"
+          appTooltip="Clientes con un NIT escrito que no es válido, por ejemplo un teléfono">
+          <input type="checkbox" id="filtroNitInvalido" [(ngModel)]="soloNitInvalido" (ngModelChange)="cambiarFiltros()">
+          Solo con NIT inválido
+          <span class="listing-status-pill listing-status-warning" *ngIf="totalNitInvalidos">{{totalNitInvalidos}}</span>
+        </label>
+      </div>
       <div class="col-sm-4 col-md-3 d-flex align-items-end">
         <button type="button" class="btn btn-sm btn-outline-secondary" *ngIf="hayFiltrosActivos"
           (click)="limpiarFiltros()"><i class="fas fa-times"></i> Quitar filtros</button>

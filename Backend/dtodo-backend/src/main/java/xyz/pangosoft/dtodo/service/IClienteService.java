@@ -6,6 +6,7 @@ import xyz.pangosoft.dtodo.dto.ClienteDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import xyz.pangosoft.dtodo.dto.ClienteFiltro;
 import xyz.pangosoft.dtodo.model.Cliente;
 import xyz.pangosoft.dtodo.model.enums.TipoClienteEnum;
 
@@ -19,6 +20,12 @@ public interface IClienteService {
 
 	/** Listado con filtros opcionales por tipo de cliente y por ruta (cualquiera puede ser {@code null}). */
 	Page<ClienteDto> findListado(String filtro, TipoClienteEnum tipoCliente, Integer idRuta, Pageable pageable);
+
+	/** Listado con todos los criterios disponibles. */
+	Page<ClienteDto> findListado(ClienteFiltro filtro, Pageable pageable);
+
+	/** Cantidad de clientes con un NIT escrito que no es válido (por ejemplo, un teléfono). */
+	long totalNitInvalidos();
 	
 	public Page<Cliente> findAll(Pageable pageable);
 	

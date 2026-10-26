@@ -57,6 +57,10 @@ public interface IClienteRepository extends JpaRepository<Cliente, Integer>, Jpa
 
 	Optional<Cliente> findByCodigoCliente(String codigoCliente);
 
+	/** Id y NIT de todos los clientes, para validar el NIT en memoria. */
+	@Query("select c.idCliente, c.nit from Cliente c")
+	List<Object[]> findIdsYNit();
+
 	List<Cliente> findByRuta_IdRutaOrderByNombre(Integer idRuta);
 
 	long countByRuta_IdRuta(Integer idRuta);

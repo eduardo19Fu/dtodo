@@ -22,6 +22,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import xyz.pangosoft.dtodo.model.Cliente;
+import java.util.Set;
+import xyz.pangosoft.dtodo.util.NitValidator;
+import xyz.pangosoft.dtodo.dto.ClienteFiltro;
 import xyz.pangosoft.dtodo.repository.IRutaRepository;
 import xyz.pangosoft.dtodo.model.enums.TipoClienteEnum;
 import xyz.pangosoft.dtodo.model.Ruta;
@@ -94,17 +97,44 @@ public class ClienteServiceImpl implements IClienteService {
 	@Transactional(readOnly = true)
 	@Override
 	public Page<ClienteDto> findListado(String filtro, TipoClienteEnum tipoCliente, Integer idRuta, Pageable pageable) {
+		return findListado(ClienteFiltro.builder().texto(filtro).tipoCliente(tipoCliente).idRuta(idRuta).build(), pageable);
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public Page<ClienteDto> findListado(ClienteFiltro filtro, Pageable pageable) {
 		try {
 			log.info("Listando clientes paginados con filtro");
-			List<String> terminos = obtenerTerminosBusqueda(filtro);
+			List<String> terminos = obtenerTerminosBusqueda(filtro.getTexto());
+			Set<Integer> idsNitInvalido = filtro.isSoloNitInvalido() ? idsConNitInvalido() : null;
 			Page<Cliente> clientes = clienteRepository.findAll(
-					crearEspecificacionBusqueda(terminos, tipoCliente, idRuta), pageable);
+					crearEspecificacionBusqueda(terminos, filtro, idsNitInvalido), pageable);
 			return clientes.map(this::mapClienteToDto);
 		} catch (DataAccessException e) {
 			log.error("Error al consultar el listado paginado de clientes", e);
 			throw new xyz.pangosoft.dtodo.error.exceptions.DataAccessException(
 					"Ha ocurrido un error al consultar los clientes", e);
 		}
+	}
+
+	/**
+	 * Ids de los clientes con un NIT escrito que no es válido (un teléfono, un dígito verificador incorrecto...).
+	 * Los que no tienen NIT no cuentan: es opcional hasta que se factura. El NIT se valida en memoria porque el
+	 * dígito verificador no se puede calcular en la consulta.
+	 */
+	@Transactional(readOnly = true)
+	Set<Integer> idsConNitInvalido() {
+		return clienteRepository.findIdsYNit().stream()
+				.filter(fila -> fila[1] != null && !((String) fila[1]).trim().isEmpty())
+				.filter(fila -> !NitValidator.esValido((String) fila[1]))
+				.map(fila -> (Integer) fila[0])
+				.collect(Collectors.toSet());
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public long totalNitInvalidos() {
+		return idsConNitInvalido().size();
 	}
 
 	static List<String> obtenerTerminosBusqueda(String filtro) {
@@ -117,8 +147,8 @@ public class ClienteServiceImpl implements IClienteService {
 				.collect(Collectors.toList());
 	}
 
-	private Specification<Cliente> crearEspecificacionBusqueda(List<String> terminos, TipoClienteEnum tipoCliente,
-			Integer idRuta) {
+	private Specification<Cliente> crearEspecificacionBusqueda(List<String> terminos, ClienteFiltro filtro,
+			Set<Integer> idsNitInvalido) {
 		return (root, query, criteriaBuilder) -> {
 			List<Predicate> condiciones = new ArrayList<>();
 
@@ -135,11 +165,19 @@ public class ClienteServiceImpl implements IClienteService {
 						criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(root.get("telefonoContacto"), "")), patron, '\\')));
 			}
 
-			if (tipoCliente != null) {
-				condiciones.add(criteriaBuilder.equal(root.get("tipoCliente"), tipoCliente));
+			if (filtro.getTipoCliente() != null) {
+				condiciones.add(criteriaBuilder.equal(root.get("tipoCliente"), filtro.getTipoCliente()));
 			}
-			if (idRuta != null) {
-				condiciones.add(criteriaBuilder.equal(root.get("ruta").get("idRuta"), idRuta));
+			if (filtro.getIdRuta() != null) {
+				condiciones.add(criteriaBuilder.equal(root.get("ruta").get("idRuta"), filtro.getIdRuta()));
+			}
+			if (filtro.getIdsRutasPermitidas() != null) {
+				condiciones.add(filtro.getIdsRutasPermitidas().isEmpty() ? criteriaBuilder.disjunction()
+						: root.get("ruta").get("idRuta").in(filtro.getIdsRutasPermitidas()));
+			}
+			if (idsNitInvalido != null) {
+				condiciones.add(idsNitInvalido.isEmpty() ? criteriaBuilder.disjunction()
+						: root.get("idCliente").in(idsNitInvalido));
 			}
 
 			return condiciones.isEmpty() ? criteriaBuilder.conjunction()

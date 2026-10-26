@@ -28,7 +28,7 @@ export class ClienteService {
   }
 
   getListado(page: number, size: number, filtro: string, orden: string, direccion: string,
-             tipoCliente?: string, idRuta?: number): Observable<any> {
+             tipoCliente?: string, idRuta?: number, nitInvalido?: boolean): Observable<any> {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString())
@@ -40,6 +40,9 @@ export class ClienteService {
     }
     if (idRuta) {
       params = params.set('idRuta', idRuta.toString());
+    }
+    if (nitInvalido) {
+      params = params.set('nitInvalido', 'true');
     }
     return this.http.get(`${this.url}/clientes/listado`, { params });
   }
@@ -69,6 +72,11 @@ export class ClienteService {
 
   getClienteByNit(nit: string): Observable<Cliente> {
     return this.http.get<Cliente>(`${this.url}/clientes/nit/${nit}`);
+  }
+
+  /** Cuántos clientes tienen un NIT escrito que no es válido (solo administrador). */
+  getCantidadNitInvalidos(): Observable<number> {
+    return this.http.get<number>(`${this.url}/clientes/cantidad-nit-invalidos`);
   }
 
   /** Busca por el código con el que el negocio identifica al cliente (por defecto su teléfono). */

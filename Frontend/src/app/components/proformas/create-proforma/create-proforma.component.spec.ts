@@ -1,5 +1,7 @@
 import { fakeAsync, tick } from '@angular/core/testing';
+import { of, throwError } from 'rxjs';
 
+import { Cliente } from '../../../models/cliente';
 import { DetalleProforma } from '../../../models/detalle-proforma';
 import { Producto } from '../../../models/producto';
 import { CreateProformaComponent } from './create-proforma.component';
@@ -145,4 +147,64 @@ describe('CreateProformaComponent - edición de detalle', () => {
     expect(component.proforma.itemsProforma.length).toBe(1);
     expect(component.proforma.total).toBe(180);
   }));
+
+  describe('búsqueda de cliente', () => {
+    let clienteService: any;
+    let clienteCreateService: any;
+
+    beforeEach(() => {
+      clienteService = {
+        getCliente: jasmine.createSpy('getCliente'),
+        getClienteByNit: jasmine.createSpy('getClienteByNit'),
+        getClienteByCodigo: jasmine.createSpy('getClienteByCodigo')
+      };
+      clienteCreateService = { abrirModal: jasmine.createSpy('abrirModal') };
+      component = new CreateProformaComponent(null, null, clienteService, clienteCreateService, null, null, null, null);
+    });
+
+    it('elige del directorio al cliente completo por su id aunque no tenga NIT', () => {
+      const completo = new Cliente();
+      completo.idCliente = 3;
+      completo.nombre = 'Cliente sin NIT';
+      completo.nit = null;
+      clienteService.getCliente.and.returnValue(of(completo));
+      const fila = new Cliente();
+      fila.idCliente = 3;
+      component.abrirModalCliente();
+
+      component.loadCliente(fila);
+
+      expect(clienteService.getCliente).toHaveBeenCalledWith(3);
+      expect(clienteService.getClienteByNit).not.toHaveBeenCalled();
+      expect(component.cliente).toBe(completo);
+      expect(component.modalClienteVisible).toBeFalse();
+    });
+
+    it('si el valor no es un NIT registrado lo busca como código de cliente', () => {
+      const porCodigo = new Cliente();
+      porCodigo.idCliente = 8;
+      porCodigo.codigoCliente = 'C-0008';
+      clienteService.getClienteByNit.and.returnValue(throwError({ status: 404 }));
+      clienteService.getClienteByCodigo.and.returnValue(of(porCodigo));
+      component.nitBusqueda = ' C-0008 ';
+
+      component.buscarCliente();
+
+      expect(clienteService.getClienteByNit).toHaveBeenCalledWith('C-0008');
+      expect(clienteService.getClienteByCodigo).toHaveBeenCalledWith('C-0008');
+      expect(component.cliente).toBe(porCodigo);
+      expect(clienteCreateService.abrirModal).not.toHaveBeenCalled();
+    });
+
+    it('ofrece registrar al cliente solo si ni el NIT ni el código existen', () => {
+      clienteService.getClienteByNit.and.returnValue(throwError({ status: 404 }));
+      clienteService.getClienteByCodigo.and.returnValue(throwError({ status: 404 }));
+      component.nitBusqueda = '999';
+
+      component.buscarCliente();
+
+      expect(clienteCreateService.abrirModal).toHaveBeenCalled();
+      expect(component.nitIngresado).toBe('999');
+    });
+  });
 });

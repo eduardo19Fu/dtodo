@@ -6,6 +6,13 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Búsqueda de cliente por código y depuración de NIT inválidos (cierre del paso 1)
+
+- **Elegir del directorio**: en proforma y factura, el cliente elegido en el directorio se carga completo por su `id`. Antes se volvía a buscar por NIT, lo que fallaba con un cliente sin NIT (ahora válido).
+- **Código de cliente**: al buscar en proforma o factura, si el valor no es un NIT registrado se prueba como código; el aviso de "registrar cliente" solo aparece si no existe ninguno de los dos.
+- **NIT inválido**: filtro *Solo con NIT inválido* (solo administrador) con la cantidad, en Clientes; `GET /api/clientes/cantidad-nit-invalidos` y `nitInvalido=true` en el listado. El NIT se valida en memoria con el dígito verificador. `sql/mayoristas/diagnostico_nit_telefono.sql` (solo lectura) dimensiona el problema por ambiente. No se corrige ningún dato automáticamente.
+- **Pruebas**: filtros del listado sobre H2 (`RutaClienteRepositoryTest`) y specs de búsqueda en `CreateFacturaComponent` y `CreateProformaComponent`.
+
 ### Agregado — Rutas y clientes mayoristas (Fase 1, paso 1)
 
 Primer paso de `PLAN_MAYORISTAS.md`: catálogo de rutas y datos del cliente mayorista. Todavía no incluye el rol de vendedor, descuentos ni la proforma mayorista.
