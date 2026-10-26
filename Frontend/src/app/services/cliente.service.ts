@@ -27,13 +27,20 @@ export class ClienteService {
     return this.http.get<Cliente[]>(`${this.url}/clientes`);
   }
 
-  getListado(page: number, size: number, filtro: string, orden: string, direccion: string): Observable<any> {
-    const params = new HttpParams()
+  getListado(page: number, size: number, filtro: string, orden: string, direccion: string,
+             tipoCliente?: string, idRuta?: number): Observable<any> {
+    let params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString())
       .set('filtro', filtro || '')
       .set('orden', orden)
       .set('direccion', direccion);
+    if (tipoCliente) {
+      params = params.set('tipoCliente', tipoCliente);
+    }
+    if (idRuta) {
+      params = params.set('idRuta', idRuta.toString());
+    }
     return this.http.get(`${this.url}/clientes/listado`, { params });
   }
 
@@ -64,6 +71,11 @@ export class ClienteService {
     return this.http.get<Cliente>(`${this.url}/clientes/nit/${nit}`);
   }
 
+  /** Busca por el código con el que el negocio identifica al cliente (por defecto su teléfono). */
+  getClienteByCodigo(codigo: string): Observable<Cliente> {
+    return this.http.get<Cliente>(`${this.url}/clientes/codigo/${encodeURIComponent(codigo)}`);
+  }
+
   getTotalClientes(): Observable<any> {
     return this.http.get<any>(`${this.url}/clientes/cantidad-clientes`).pipe(
       catchError(e => {
@@ -76,6 +88,10 @@ export class ClienteService {
   create(cliente: Cliente): Observable<any> {
     return this.http.post<any>(`${this.url}/clientes`, cliente).pipe(
       catchError(e => {
+        // Las reglas de negocio (422) las muestra la pantalla con el mensaje del servidor.
+        if (e.status === 422) {
+          return throwError(e);
+        }
         swal.fire(e.error.mensaje, e.error.error, 'error');
         return throwError(e);
       })
@@ -85,6 +101,9 @@ export class ClienteService {
   update(cliente: Cliente): Observable<any> {
     return this.http.put<any>(`${this.url}/clientes`, cliente).pipe(
       catchError(e => {
+        if (e.status === 422) {
+          return throwError(e);
+        }
         swal.fire(e.error.mensaje, e.error.error, 'error');
         return throwError(e);
       })

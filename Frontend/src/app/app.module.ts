@@ -51,6 +51,8 @@ import { ExportarProductosComponent } from './components/productos/exportar-prod
 import { SucursalesComponent } from './components/sucursales/sucursales.component';
 import { CreateSucursalComponent } from './components/sucursales/create-sucursal/create-sucursal.component';
 import { DetailSucursalComponent } from './components/sucursales/detail-sucursal/detail-sucursal.component';
+import { RutasComponent } from './components/rutas/rutas.component';
+import { CreateRutaComponent } from './components/rutas/create-ruta/create-ruta.component';
 import { ProveedoresComponent } from './components/proveedores/proveedores.component';
 import { CreateProveedorComponent } from './components/proveedores/create-proveedor/create-proveedor.component';
 import { DetailProveedorComponent } from './components/proveedores/detail-proveedor/detail-proveedor.component';
@@ -124,6 +126,8 @@ import { ReporteSelectorComponent } from './components/reportes/reporte-selector
     SucursalesComponent,
     CreateSucursalComponent,
     DetailSucursalComponent,
+    RutasComponent,
+    CreateRutaComponent,
     ProveedoresComponent,
     CreateProveedorComponent,
     DetailProveedorComponent,

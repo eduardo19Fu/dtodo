@@ -27,6 +27,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import xyz.pangosoft.dtodo.model.Cliente;
+import xyz.pangosoft.dtodo.model.enums.TipoClienteEnum;
+import xyz.pangosoft.dtodo.util.Utils;
 import xyz.pangosoft.dtodo.service.IClienteService;
 
 @CrossOrigin(origins = {"http://localhost:4200", "https://dtodojalapa.xyz"})
@@ -50,11 +52,13 @@ public class ClienteApiController {
 			@RequestParam(value = "size", defaultValue = "5") Integer size,
 			@RequestParam(value = "filtro", defaultValue = "") String filtro,
 			@RequestParam(value = "orden", defaultValue = "nombre") String orden,
-			@RequestParam(value = "direccion", defaultValue = "asc") String direccion) {
+			@RequestParam(value = "direccion", defaultValue = "asc") String direccion,
+			@RequestParam(value = "tipoCliente", required = false) TipoClienteEnum tipoCliente,
+			@RequestParam(value = "idRuta", required = false) Integer idRuta) {
 		log.info("Listando clientes paginados con filtro");
 		Sort.Direction sentido = "desc".equalsIgnoreCase(direccion)
 				? Sort.Direction.DESC : Sort.Direction.ASC;
-		return ResponseEntity.ok(serviceCliente.findListado(filtro,
+		return ResponseEntity.ok(serviceCliente.findListado(filtro, tipoCliente, idRuta,
 				PageRequest.of(page, size, Sort.by(sentido, obtenerPropiedadOrden(orden)))));
 	}
 
@@ -65,6 +69,8 @@ public class ClienteApiController {
 			case "telefono": return "telefono";
 			case "direccion": return "direccion";
 			case "fecha": return "fechaRegistro";
+			case "codigo": return "codigoCliente";
+			case "tipo": return "tipoCliente";
 			default: return "nombre";
 		}
 	}
@@ -96,6 +102,12 @@ public class ClienteApiController {
 		return ResponseEntity.ok(cliente);
 	}
 
+	@GetMapping(value = "/clientes/codigo/{codigo}")
+	public ResponseEntity<Cliente> findByCodigo(@PathVariable("codigo") String codigo) {
+		log.info("Buscando cliente con código: {}", codigo);
+		return ResponseEntity.ok(serviceCliente.findByCodigo(codigo));
+	}
+
 	@GetMapping(value = "/clientes/{id}")
 	public ResponseEntity<?> findById(@PathVariable("id") Integer id) {
 		log.info("Buscando cliente con ID: {}", id);
@@ -119,11 +131,27 @@ public class ClienteApiController {
 	public ResponseEntity<Cliente> create(@RequestBody Cliente cliente) {
 		log.info("Registrando cliente con NIT: {}", cliente.getNit());
 
+		restringirDatosMayoristas(cliente);
 		Cliente newCliente = null;
 		newCliente = serviceCliente.save(cliente);
 		return new ResponseEntity<>(newCliente, HttpStatus.CREATED);
 	}
 	
+	/**
+	 * Convertir a un cliente en mayorista (tipo, categoría, ruta y crédito) es una decisión administrativa:
+	 * quien no es administrador solo puede registrar clientes minoristas.
+	 */
+	static void restringirDatosMayoristas(Cliente cliente) {
+		if (Utils.esAdministrador()) {
+			return;
+		}
+		cliente.setTipoCliente(TipoClienteEnum.MINORISTA);
+		cliente.setCategoriaDescuento(null);
+		cliente.setRuta(null);
+		cliente.setLimiteCredito(null);
+		cliente.setDiasCredito(null);
+	}
+
 	@Secured(value = {"ROLE_ADMIN"})
 	@SuppressWarnings("null")
 	@PutMapping(value = {"/clientes", "/clientes/update/{id}"})

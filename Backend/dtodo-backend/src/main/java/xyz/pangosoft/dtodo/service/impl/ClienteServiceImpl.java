@@ -22,6 +22,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import xyz.pangosoft.dtodo.model.Cliente;
+import xyz.pangosoft.dtodo.repository.IRutaRepository;
+import xyz.pangosoft.dtodo.model.enums.TipoClienteEnum;
+import xyz.pangosoft.dtodo.model.Ruta;
+import xyz.pangosoft.dtodo.error.exceptions.ReglaNegocioException;
 import xyz.pangosoft.dtodo.repository.IClienteRepository;
 import xyz.pangosoft.dtodo.service.IClienteService;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +38,7 @@ import jakarta.persistence.criteria.Predicate;
 public class ClienteServiceImpl implements IClienteService {
 
 	private final IClienteRepository clienteRepository;
+	private final IRutaRepository rutaRepository;
 
 	@Transactional(readOnly = true)
 	@Override
@@ -83,11 +88,17 @@ public class ClienteServiceImpl implements IClienteService {
 	@Transactional(readOnly = true)
 	@Override
 	public Page<ClienteDto> findListado(String filtro, Pageable pageable) {
+		return findListado(filtro, null, null, pageable);
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public Page<ClienteDto> findListado(String filtro, TipoClienteEnum tipoCliente, Integer idRuta, Pageable pageable) {
 		try {
 			log.info("Listando clientes paginados con filtro");
 			List<String> terminos = obtenerTerminosBusqueda(filtro);
 			Page<Cliente> clientes = clienteRepository.findAll(
-					crearEspecificacionBusqueda(terminos), pageable);
+					crearEspecificacionBusqueda(terminos, tipoCliente, idRuta), pageable);
 			return clientes.map(this::mapClienteToDto);
 		} catch (DataAccessException e) {
 			log.error("Error al consultar el listado paginado de clientes", e);
@@ -106,23 +117,33 @@ public class ClienteServiceImpl implements IClienteService {
 				.collect(Collectors.toList());
 	}
 
-	private Specification<Cliente> crearEspecificacionBusqueda(List<String> terminos) {
+	private Specification<Cliente> crearEspecificacionBusqueda(List<String> terminos, TipoClienteEnum tipoCliente,
+			Integer idRuta) {
 		return (root, query, criteriaBuilder) -> {
-			if (terminos.isEmpty()) {
-				return criteriaBuilder.conjunction();
-			}
+			List<Predicate> condiciones = new ArrayList<>();
 
-			List<Predicate> coincidencias = new ArrayList<>();
 			for (String termino : terminos) {
 				String patron = "%" + escaparLike(termino) + "%";
-				coincidencias.add(criteriaBuilder.or(
+				condiciones.add(criteriaBuilder.or(
 						criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(root.get("nombre"), "")), patron, '\\'),
 						criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(root.get("nit"), "")), patron, '\\'),
 						criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(root.get("telefono"), "")), patron, '\\'),
-						criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(root.get("direccion"), "")), patron, '\\')));
+						criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(root.get("direccion"), "")), patron, '\\'),
+						criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(root.get("codigoCliente"), "")), patron, '\\'),
+						criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(root.get("nombreNegocio"), "")), patron, '\\'),
+						criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(root.get("contacto"), "")), patron, '\\'),
+						criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(root.get("telefonoContacto"), "")), patron, '\\')));
 			}
 
-			return criteriaBuilder.and(coincidencias.toArray(new Predicate[0]));
+			if (tipoCliente != null) {
+				condiciones.add(criteriaBuilder.equal(root.get("tipoCliente"), tipoCliente));
+			}
+			if (idRuta != null) {
+				condiciones.add(criteriaBuilder.equal(root.get("ruta").get("idRuta"), idRuta));
+			}
+
+			return condiciones.isEmpty() ? criteriaBuilder.conjunction()
+					: criteriaBuilder.and(condiciones.toArray(new Predicate[0]));
 		};
 	}
 
@@ -137,7 +158,18 @@ public class ClienteServiceImpl implements IClienteService {
 				cliente.getNit(),
 				cliente.getDireccion(),
 				cliente.getFechaRegistro(),
-				cliente.getTelefono());
+				cliente.getTelefono(),
+				cliente.getCodigoCliente(),
+				cliente.getNombreNegocio(),
+				cliente.getTipoCliente(),
+				cliente.getCategoriaDescuento(),
+				cliente.getRuta() == null ? null : cliente.getRuta().getIdRuta(),
+				cliente.getRuta() == null ? null : cliente.getRuta().getNombre(),
+				cliente.getContacto(),
+				cliente.getTelefonoContacto(),
+				cliente.getReferenciaUbicacion(),
+				cliente.getLimiteCredito(),
+				cliente.getDiasCredito());
 	}
 
 	@Transactional(readOnly = true)
@@ -239,6 +271,14 @@ public class ClienteServiceImpl implements IClienteService {
 
 	@Transactional(readOnly = true)
 	@Override
+	public Cliente findByCodigo(String codigoCliente) {
+		String codigo = codigoCliente == null ? "" : codigoCliente.trim();
+		return clienteRepository.findByCodigoCliente(codigo)
+				.orElseThrow(() -> new NotFoundException("Cliente con código: " + codigo + " no se encuentra registrado"));
+	}
+
+	@Transactional(readOnly = true)
+	@Override
 	public Integer totalClientes() {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
 		log.debug("Enter {}", __method);
@@ -257,35 +297,110 @@ public class ClienteServiceImpl implements IClienteService {
 	@Transactional
 	@Override
 	public Cliente save(Cliente cliente) {
-		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
-		Cliente newCliente = null;
-		log.debug("Enter {}", __method);
-
-		if (cliente.getFechaRegistro() == null) {
-			cliente.setFechaRegistro(LocalDateTime.now());
-		}
-
 		try {
-			log.info("Registrando nuevo cliente");
-
-			if(cliente.getIdCliente() != null) {
-				log.info("Actuliazando registro de cliente con ID: {}", cliente.getIdCliente());
-				Cliente clienteActualizado = new Cliente();
-				clienteActualizado.setIdCliente(cliente.getIdCliente());
-				clienteActualizado.setNit(cliente.getNit());
-				clienteActualizado.setNombre(cliente.getNombre());
-				clienteActualizado.setDireccion(cliente.getDireccion());
-				clienteActualizado.setTelefono(cliente.getTelefono());
-
-				newCliente = clienteRepository.save(clienteActualizado);
+			if (cliente.getIdCliente() == null) {
+				log.info("Registrando nuevo cliente");
+				normalizar(cliente);
+				validarCodigoUnico(cliente.getCodigoCliente(), null);
+				cliente.setRuta(resolverRuta(cliente, null));
+				if (cliente.getFechaRegistro() == null) {
+					cliente.setFechaRegistro(LocalDateTime.now());
+				}
+				return clienteRepository.save(cliente);
 			}
 
-			newCliente = clienteRepository.save(cliente);
+			log.info("Actualizando registro de cliente con ID: {}", cliente.getIdCliente());
+			Cliente existente = clienteRepository.findById(cliente.getIdCliente()).orElseThrow(() -> new NotFoundException(
+					"Cliente con ID: " + cliente.getIdCliente() + " no se encuentra registrado"));
+			normalizar(cliente);
+			validarCodigoUnico(cliente.getCodigoCliente(), existente.getIdCliente());
+			Ruta ruta = resolverRuta(cliente, existente.getRuta());
+
+			// Solo se copian los campos editables: la fecha de registro nunca la manda el cliente.
+			existente.setNit(cliente.getNit());
+			existente.setNombre(cliente.getNombre());
+			existente.setDireccion(cliente.getDireccion());
+			existente.setTelefono(cliente.getTelefono());
+			existente.setCodigoCliente(cliente.getCodigoCliente());
+			existente.setNombreNegocio(cliente.getNombreNegocio());
+			existente.setTipoCliente(cliente.getTipoCliente());
+			existente.setCategoriaDescuento(cliente.getCategoriaDescuento());
+			existente.setRuta(ruta);
+			existente.setContacto(cliente.getContacto());
+			existente.setTelefonoContacto(cliente.getTelefonoContacto());
+			existente.setReferenciaUbicacion(cliente.getReferenciaUbicacion());
+			existente.setLimiteCredito(cliente.getLimiteCredito());
+			existente.setDiasCredito(cliente.getDiasCredito());
+			return clienteRepository.save(existente);
 		} catch (DataAccessException e) {
 			log.error("Error de base de datos: {}", e.getMessage());
 			throw new xyz.pangosoft.dtodo.error.exceptions.DataAccessException(e.getMessage(), e);
 		}
-		return newCliente;
+	}
+
+	/**
+	 * Deja el cliente consistente antes de validarlo: tipo por defecto, texto vacío como nulo y, para un
+	 * minorista, sin ruta ni categoría (esos datos solo tienen sentido en un mayorista).
+	 */
+	static void normalizar(Cliente cliente) {
+		if (cliente.getTipoCliente() == null) {
+			cliente.setTipoCliente(TipoClienteEnum.MINORISTA);
+		}
+		cliente.setCodigoCliente(textoONulo(cliente.getCodigoCliente()));
+		cliente.setNombreNegocio(textoONulo(cliente.getNombreNegocio()));
+		cliente.setContacto(textoONulo(cliente.getContacto()));
+		cliente.setTelefonoContacto(textoONulo(cliente.getTelefonoContacto()));
+		cliente.setReferenciaUbicacion(textoONulo(cliente.getReferenciaUbicacion()));
+
+		if (cliente.getLimiteCredito() != null && cliente.getLimiteCredito().signum() < 0) {
+			throw new ReglaNegocioException("El límite de crédito no puede ser negativo.");
+		}
+		if (cliente.getDiasCredito() != null && cliente.getDiasCredito() < 0) {
+			throw new ReglaNegocioException("Los días de crédito no pueden ser negativos.");
+		}
+
+		if (cliente.getTipoCliente() == TipoClienteEnum.MINORISTA) {
+			cliente.setRuta(null);
+			cliente.setCategoriaDescuento(null);
+		}
+	}
+
+	private static String textoONulo(String texto) {
+		if (texto == null || texto.trim().isEmpty()) {
+			return null;
+		}
+		return texto.trim();
+	}
+
+	private void validarCodigoUnico(String codigo, Integer idActual) {
+		if (codigo == null) {
+			return;
+		}
+		clienteRepository.findByCodigoCliente(codigo)
+				.filter(otro -> !otro.getIdCliente().equals(idActual))
+				.ifPresent(otro -> {
+					throw new ReglaNegocioException("El código \"" + codigo + "\" ya pertenece al cliente " + otro.getNombre() + ".");
+				});
+	}
+
+	/**
+	 * Un mayorista debe tener una ruta existente y activa. Si el cliente ya estaba en esa ruta se acepta aunque
+	 * hoy esté inactiva, para poder seguir editando sus demás datos.
+	 */
+	private Ruta resolverRuta(Cliente cliente, Ruta rutaActual) {
+		if (cliente.getTipoCliente() != TipoClienteEnum.MAYORISTA) {
+			return null;
+		}
+		if (cliente.getRuta() == null || cliente.getRuta().getIdRuta() == null) {
+			throw new ReglaNegocioException("Un cliente mayorista debe tener una ruta.");
+		}
+		Ruta ruta = rutaRepository.findById(cliente.getRuta().getIdRuta())
+				.orElseThrow(() -> new ReglaNegocioException("La ruta seleccionada no existe."));
+		boolean mismaRuta = rutaActual != null && rutaActual.getIdRuta().equals(ruta.getIdRuta());
+		if (!mismaRuta && (ruta.getEstado() == null || !"ACTIVO".equals(ruta.getEstado().getEstado()))) {
+			throw new ReglaNegocioException("La ruta " + ruta.getNombre() + " está inactiva.");
+		}
+		return ruta;
 	}
 
 	@Transactional

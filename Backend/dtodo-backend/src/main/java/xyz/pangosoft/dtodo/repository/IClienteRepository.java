@@ -33,13 +33,17 @@ public interface IClienteRepository extends JpaRepository<Cliente, Integer>, Jpa
 	Integer getCantClientes();
 
 	@Query("select new xyz.pangosoft.dtodo.dto.ClienteDto(" +
-			"c.idCliente, c.nombre, c.nit, c.direccion, c.fechaRegistro, c.telefono) " +
-			"from Cliente c")
+			"c.idCliente, c.nombre, c.nit, c.direccion, c.fechaRegistro, c.telefono, c.codigoCliente, c.nombreNegocio, " +
+			"c.tipoCliente, c.categoriaDescuento, r.idRuta, r.nombre, c.contacto, c.telefonoContacto, " +
+			"c.referenciaUbicacion, c.limiteCredito, c.diasCredito) " +
+			"from Cliente c left join c.ruta r")
 	List<ClienteDto> consultarClientesDto();
 
 	@Query(value = "SELECT new xyz.pangosoft.dtodo.dto.ClienteDto(" +
-			"c.idCliente, c.nombre, c.nit, c.direccion, c.fechaRegistro, c.telefono) " +
-			"FROM Cliente c WHERE (:filtro = '' " +
+			"c.idCliente, c.nombre, c.nit, c.direccion, c.fechaRegistro, c.telefono, c.codigoCliente, c.nombreNegocio, " +
+			"c.tipoCliente, c.categoriaDescuento, r.idRuta, r.nombre, c.contacto, c.telefonoContacto, " +
+			"c.referenciaUbicacion, c.limiteCredito, c.diasCredito) " +
+			"FROM Cliente c LEFT JOIN c.ruta r WHERE (:filtro = '' " +
 			"OR LOWER(COALESCE(c.nombre, '')) LIKE LOWER(CONCAT('%', :filtro, '%')) " +
 			"OR LOWER(COALESCE(c.nit, '')) LIKE LOWER(CONCAT('%', :filtro, '%')) " +
 			"OR LOWER(COALESCE(c.telefono, '')) LIKE LOWER(CONCAT('%', :filtro, '%')) " +
@@ -50,4 +54,10 @@ public interface IClienteRepository extends JpaRepository<Cliente, Integer>, Jpa
 					"OR LOWER(COALESCE(c.telefono, '')) LIKE LOWER(CONCAT('%', :filtro, '%')) " +
 					"OR LOWER(COALESCE(c.direccion, '')) LIKE LOWER(CONCAT('%', :filtro, '%')))")
 	Page<ClienteDto> findListado(@Param("filtro") String filtro, Pageable pageable);
+
+	Optional<Cliente> findByCodigoCliente(String codigoCliente);
+
+	List<Cliente> findByRuta_IdRutaOrderByNombre(Integer idRuta);
+
+	long countByRuta_IdRuta(Integer idRuta);
 }

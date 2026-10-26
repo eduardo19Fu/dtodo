@@ -6,6 +6,19 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Rutas y clientes mayoristas (Fase 1, paso 1)
+
+Primer paso de `PLAN_MAYORISTAS.md`: catálogo de rutas y datos del cliente mayorista. Todavía no incluye el rol de vendedor, descuentos ni la proforma mayorista.
+
+- **Base de datos** (`sql/mayoristas/`, aditivo; `99_rollback_mayoristas.sql` lo revierte): `01` tabla `rutas`, `02` columnas del cliente (`codigo_cliente`, `nombre_negocio`, `tipo_cliente`, `categoria_descuento`, `id_ruta`, `contacto`, `telefono_contacto`, `referencia_ubicacion`, `limite_credito`, `dias_credito`), `03` rol `ROLE_VENDEDOR` (el `id_role` se calcula: la columna no es autoincremental) y `04` las rutas iniciales (RUTA 1, RUTA 2, RUTA 3 y JALAPA, sin vendedor). **Aplicar `01` a `03` antes de desplegar el jar**: `VerificadorEsquema` impide arrancar si faltan las tablas o columnas.
+- **Rutas**: CRUD solo para `ROLE_ADMIN` (`/api/rutas/listado`, `/{id}`, `/{id}/clientes`, `POST`, `PUT`) y `GET /api/rutas/activas` para los selectores. Una ruta puede quedar sin vendedor; si lo tiene, debe estar habilitado y tener `ROLE_VENDEDOR`. El nombre no se repite dentro de una sucursal. Se inactiva en lugar de borrarse.
+- **Cliente**: tipo `MINORISTA` (por defecto) o `MAYORISTA`, categoría `A`/`B`/`VOLUMEN`, ruta, código único (por defecto el teléfono), nombre del negocio, contacto, referencia de ubicación, límite y días de crédito. Un mayorista exige una ruta activa; un minorista pierde ruta y categoría. `GET /api/clientes/codigo/{codigo}`; el listado filtra por `tipoCliente` e `idRuta` y busca también por código, negocio y contacto.
+- **Corregido de paso**: `ClienteServiceImpl.save` guardaba una copia parcial y luego el objeto completo del request. Ahora, al actualizar, carga el cliente y copia solo los campos editables (la fecha de registro nunca la manda el cliente); un id inexistente responde 404 en lugar de crear un cliente nuevo.
+- **Permisos**: solo `ROLE_ADMIN` registra o convierte clientes en mayoristas; el cobrador sigue creando minoristas (los datos mayoristas del request se descartan).
+- **NIT opcional**: el formulario de cliente ya no lo exige; se valida al facturar (ver la entrada anterior).
+- **Frontend**: módulo *Rutas* (listado con búsqueda y orden, formulario con vendedor y sucursal, entrada en el menú para administradores); en *Clientes*, filtros por tipo y ruta, columna *Tipo / Ruta* y, en el formulario, una sección *Cliente mayorista* visible solo para el administrador. `?ruta=ID` en el listado de clientes muestra la cartera de una ruta.
+- **Pruebas**: `RutaServiceImplTest`, `ClienteMayoristaServiceTest`, `ClienteApiControllerMayoristaTest`, `RutaClienteRepositoryTest` (consultas contra H2) y specs de `CreateRutaComponent` y `CreateClienteComponent`.
+
 ### Agregado — Estado de facturación de las proformas y validaciones antes de facturar
 
 Primer paso del módulo de clientes mayoristas (Fase 0.5 de `PLAN_MAYORISTAS.md`); no depende de rutas ni de mayoristas.

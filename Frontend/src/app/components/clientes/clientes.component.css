@@ -8,9 +8,9 @@
 
 :host ::ng-deep .table-bordered { border-top: 2px solid #dee2e6; }
 
-.clientes-table { min-width: 1180px; table-layout: fixed; width: 100%; }
-.listing-empty-state { min-width: 1180px; }
-.table-controls-row { margin-left: 0; margin-right: 0; min-width: 1180px; width: 100%; }
+.clientes-table { min-width: 1330px; table-layout: fixed; width: 100%; }
+.listing-empty-state { min-width: 1330px; }
+.table-controls-row { margin-left: 0; margin-right: 0; min-width: 1330px; width: 100%; }
 .table-controls-row > [class*='col-']:first-child { padding-left: 0; }
 .table-controls-row > [class*='col-']:last-child { padding-right: 0; }
 .table-controls-row > [class*='col-']:last-child > div { width: 100%; }
@@ -36,6 +36,7 @@
 
 .clientes-table .col-id { text-align: center; width: 70px; }
 .clientes-table .col-nombre { width: 245px; }
+.clientes-table .col-tipo { text-align: center; width: 150px; }
 .clientes-table .col-nit { width: 145px; }
 .clientes-table .col-telefono { width: 145px; }
 .clientes-table .col-direccion { width: 270px; }
@@ -144,3 +145,7 @@ select.page-size-select:focus {
 @media (max-width: 767.98px) {
   .table-controls-row > div { margin-bottom: 0.75rem; text-align: left !important; }
 }
+
+.cliente-codigo { color: #6c757d; display: block; font-size: 0.78rem; margin-top: 0.2rem; }
+.filtros-clientes { margin-left: 0; margin-right: 0; min-width: 1330px; }
+.filtros-clientes > [class*='col-']:first-child { padding-left: 0; }

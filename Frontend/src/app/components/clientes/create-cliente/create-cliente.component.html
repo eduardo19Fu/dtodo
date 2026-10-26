@@ -46,22 +46,42 @@
           </div>
 
           <div class="field-group">
-            <label for="nit">NIT <span class="required-mark">*</span></label>
+            <label for="nit">NIT</label>
             <div class="control-with-icon">
               <i class="fas fa-fingerprint" aria-hidden="true"></i>
               <input type="text" id="nit" name="nit" class="form-control" [(ngModel)]="cliente.nit"
-                required placeholder="Ej. 1234567-8 o CF" #nit="ngModel">
+                placeholder="Ej. 1234567-8 o CF" autocomplete="off">
             </div>
-            <small>Ingresa el NIT con guion o utiliza CF para consumidor final.</small>
-            <div class="validation-message" *ngIf="nit.invalid && (nit.touched || nit.dirty)">
-              <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
-              El NIT no puede estar vacío.
+            <small>Opcional: solo es indispensable al facturar. Usa CF para consumidor final y no escribas aquí el teléfono.</small>
+          </div>
+
+          <div class="field-group">
+            <label for="nombreNegocio">Nombre del negocio</label>
+            <div class="control-with-icon">
+              <i class="fas fa-store" aria-hidden="true"></i>
+              <input type="text" id="nombreNegocio" name="nombreNegocio" class="form-control"
+                [(ngModel)]="cliente.nombreNegocio" placeholder="Ej. Librería Elizyov" autocomplete="off">
             </div>
+            <small>Si el cliente es un negocio, escribe aquí su nombre y arriba el de la persona.</small>
+          </div>
+
+          <div class="field-group">
+            <label for="codigoCliente">Código de cliente</label>
+            <div class="control-with-icon">
+              <i class="fas fa-hashtag" aria-hidden="true"></i>
+              <input type="text" id="codigoCliente" name="codigoCliente" class="form-control"
+                [(ngModel)]="cliente.codigoCliente" placeholder="Por defecto, su teléfono" maxlength="30"
+                autocomplete="off">
+            </div>
+            <small>
+              Con este código se busca al cliente; no se puede repetir.
+              <a href="javascript:void(0)" *ngIf="cliente.telefono" (click)="usarTelefonoComoCodigo()">Usar el teléfono</a>
+            </small>
           </div>
         </div>
       </section>
 
-      <section class="form-section last-section" aria-labelledby="contact-title">
+      <section class="form-section" [class.last-section]="!puedeAdministrarMayoristas" aria-labelledby="contact-title">
         <div class="section-heading">
           <span class="section-number">02</span>
           <div>
@@ -97,17 +117,108 @@
           </div>
         </div>
       </section>
+
+      <section class="form-section last-section" aria-labelledby="mayorista-title" *ngIf="puedeAdministrarMayoristas">
+        <div class="section-heading">
+          <span class="section-number">03</span>
+          <div>
+            <h3 id="mayorista-title">Cliente mayorista</h3>
+            <p>Asigna una ruta y una categoría de descuento a quien compra por volumen para reventa.</p>
+          </div>
+        </div>
+
+        <label class="mayorista-switch" for="esMayorista">
+          <input type="checkbox" id="esMayorista" name="esMayorista" [(ngModel)]="esMayorista">
+          <span>Es cliente mayorista</span>
+        </label>
+
+        <div class="form-grid contact-grid" *ngIf="esMayorista">
+          <div class="field-group">
+            <label for="ruta">Ruta <span class="required-mark">*</span></label>
+            <div class="control-with-icon">
+              <i class="fas fa-route" aria-hidden="true"></i>
+              <select id="ruta" name="ruta" class="form-control" [(ngModel)]="idRutaSeleccionada" required>
+                <option [ngValue]="null" disabled>Seleccione una ruta</option>
+                <option *ngFor="let ruta of rutasDisponibles" [ngValue]="ruta.idRuta">{{ruta.nombre}}</option>
+              </select>
+            </div>
+            <div class="validation-message" *ngIf="faltaRuta">
+              <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+              Un cliente mayorista debe tener una ruta.
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="categoriaDescuento">Categoría de descuento</label>
+            <div class="control-with-icon">
+              <i class="fas fa-percentage" aria-hidden="true"></i>
+              <select id="categoriaDescuento" name="categoriaDescuento" class="form-control"
+                [(ngModel)]="cliente.categoriaDescuento">
+                <option [ngValue]="null">Sin categoría</option>
+                <option *ngFor="let categoria of categorias" [ngValue]="categoria.valor">{{categoria.etiqueta}}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="contacto">Persona de contacto</label>
+            <div class="control-with-icon">
+              <i class="fas fa-user-friends" aria-hidden="true"></i>
+              <input type="text" id="contacto" name="contacto" class="form-control" [(ngModel)]="cliente.contacto"
+                placeholder="Encargado del negocio" autocomplete="off">
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="telefonoContacto">Teléfono de contacto</label>
+            <div class="control-with-icon">
+              <i class="fas fa-phone-alt" aria-hidden="true"></i>
+              <input type="text" id="telefonoContacto" name="telefonoContacto" class="form-control"
+                [(ngModel)]="cliente.telefonoContacto" placeholder="Ej. 5555-5555" autocomplete="off">
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="referenciaUbicacion">Referencia de ubicación</label>
+            <div class="control-with-icon">
+              <i class="fas fa-map-pin" aria-hidden="true"></i>
+              <input type="text" id="referenciaUbicacion" name="referenciaUbicacion" class="form-control"
+                [(ngModel)]="cliente.referenciaUbicacion" placeholder="Ej. frente a la escuela, a un costado del parque"
+                autocomplete="off">
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="limiteCredito">Límite de crédito (Q)</label>
+            <div class="control-with-icon">
+              <i class="fas fa-coins" aria-hidden="true"></i>
+              <input type="number" min="0" step="0.01" id="limiteCredito" name="limiteCredito" class="form-control"
+                [(ngModel)]="cliente.limiteCredito" placeholder="Opcional">
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="diasCredito">Días de crédito</label>
+            <div class="control-with-icon">
+              <i class="far fa-calendar-check" aria-hidden="true"></i>
+              <input type="number" min="0" step="1" id="diasCredito" name="diasCredito" class="form-control"
+                [(ngModel)]="cliente.diasCredito" placeholder="Opcional">
+            </div>
+            <small>Por ahora solo se guardan; el control de crédito llega en una etapa posterior.</small>
+          </div>
+        </div>
+      </section>
     </div>
 
     <footer class="form-actions">
       <p><i class="fas fa-shield-alt" aria-hidden="true"></i> La información se utilizará en documentos y búsquedas.</p>
       <button type="submit" class="primary-action" (click)="create()"
-        *ngIf="!cliente.idCliente else updateBlock" [disabled]="!clienteForm.form.valid">
+        *ngIf="!cliente.idCliente else updateBlock" [disabled]="!clienteForm.form.valid || faltaRuta || guardando">
         <i class="fas fa-save" aria-hidden="true"></i> Guardar cliente
       </button>
       <ng-template #updateBlock>
         <button type="submit" class="primary-action" (click)="update()"
-          [disabled]="!clienteForm.form.valid">
+          [disabled]="!clienteForm.form.valid || faltaRuta || guardando">
           <i class="fas fa-check" aria-hidden="true"></i> Actualizar cliente
         </button>
       </ng-template>

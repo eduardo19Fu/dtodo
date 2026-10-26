@@ -1,10 +1,13 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
-import { Cliente } from 'src/app/models/cliente';
+import { RutaDto } from 'src/app/dtos/ruta-dto';
+import { ClienteDto } from 'src/app/dtos/cliente-dto';
 import { AuthService } from 'src/app/services/auth.service';
 import { ClienteService } from 'src/app/services/cliente.service';
+import { RutaService } from 'src/app/services/ruta.service';
 
 import Swal from 'sweetalert2';
 
@@ -16,7 +19,7 @@ import Swal from 'sweetalert2';
 export class ClientesComponent implements OnInit, OnDestroy {
 
   title = 'Clientes';
-  clientes: Cliente[] = [];
+  clientes: ClienteDto[] = [];
   paginaActual = 0;
   totalPaginas = 0;
   totalElementos = 0;
@@ -28,6 +31,9 @@ export class ClientesComponent implements OnInit, OnDestroy {
   cargando = false;
   orden = 'nombre';
   direccion: 'asc' | 'desc' = 'asc';
+  tipoFiltro = '';
+  idRutaFiltro: number = null;
+  rutas: RutaDto[] = [];
 
   private busquedaSubject = new Subject<string>();
   private busquedaSubscription: Subscription;
@@ -42,10 +48,19 @@ export class ClientesComponent implements OnInit, OnDestroy {
 
   constructor(
     private clienteService: ClienteService,
+    private rutaService: RutaService,
+    private activatedRoute: ActivatedRoute,
     public auth: AuthService
   ) { }
 
   ngOnInit(): void {
+    // Desde el listado de rutas se llega con ?ruta=ID para ver solo la cartera de esa ruta.
+    const ruta = Number(this.activatedRoute.snapshot.queryParamMap.get('ruta'));
+    if (ruta) {
+      this.idRutaFiltro = ruta;
+      this.tipoFiltro = 'MAYORISTA';
+    }
+    this.rutaService.getActivas().subscribe(rutas => this.rutas = rutas, () => this.rutas = []);
     this.cargarClientes(0);
     this.busquedaSubscription = this.busquedaSubject.pipe(
       debounceTime(300),
@@ -64,7 +79,8 @@ export class ClientesComponent implements OnInit, OnDestroy {
 
   cargarClientes(page: number): void {
     this.cargando = true;
-    this.clienteService.getListado(page, this.pageSize, this.filtro, this.orden, this.direccion).subscribe(
+    this.clienteService.getListado(page, this.pageSize, this.filtro, this.orden, this.direccion,
+      this.tipoFiltro, this.idRutaFiltro).subscribe(
       response => {
         this.clientes = response.content;
         this.paginaActual = response.number;
@@ -84,6 +100,24 @@ export class ClientesComponent implements OnInit, OnDestroy {
   }
 
   onBuscar(valor: string): void { this.busquedaSubject.next(valor); }
+
+  /** Cambia el tipo o la ruta del filtro; una ruta solo aplica a clientes mayoristas. */
+  cambiarFiltros(): void {
+    if (this.idRutaFiltro) {
+      this.tipoFiltro = 'MAYORISTA';
+    }
+    this.cargarClientes(0);
+  }
+
+  get hayFiltrosActivos(): boolean {
+    return !!this.tipoFiltro || !!this.idRutaFiltro;
+  }
+
+  limpiarFiltros(): void {
+    this.tipoFiltro = '';
+    this.idRutaFiltro = null;
+    this.cargarClientes(0);
+  }
 
   ordenarPor(campo: string): void {
     if (this.orden === campo) {
@@ -119,7 +153,7 @@ export class ClientesComponent implements OnInit, OnDestroy {
     return paginas;
   }
 
-  delete(cliente: Cliente): void {
+  delete(cliente: ClienteDto): void {
     this.swalWithBootstrapButtons.fire({
       title: '¿Está seguro?',
       text: `¿Seguro que desea eliminar al cliente ${cliente.nombre}?`,

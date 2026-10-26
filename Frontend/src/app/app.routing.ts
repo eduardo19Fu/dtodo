@@ -29,6 +29,8 @@ import { NotasCreditoComponent } from './components/notas-credito/notas-credito.
 import { CreateNotaComponent } from './components/notas-credito/create-nota/create-nota.component';
 import { SucursalesComponent } from './components/sucursales/sucursales.component';
 import { CreateSucursalComponent } from './components/sucursales/create-sucursal/create-sucursal.component';
+import { RutasComponent } from './components/rutas/rutas.component';
+import { CreateRutaComponent } from './components/rutas/create-ruta/create-ruta.component';
 import { ProveedoresComponent } from './components/proveedores/proveedores.component';
 import { CreateProveedorComponent } from './components/proveedores/create-proveedor/create-proveedor.component';
 import { ComprasComponent } from './components/compras/compras.component';
@@ -119,6 +121,11 @@ const appRoutes: Routes = [
         canActivate: [AuthGuard, RoleGuard],
         data: { role: ['ROLE_ADMIN'] }
     },
+
+    /****** MENUS DE RUTAS ******/
+    { path: 'rutas/index', component: RutasComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN'] } },
+    { path: 'rutas/create', component: CreateRutaComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN'] } },
+    { path: 'rutas/create/:id', component: CreateRutaComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN'] } },
 
     /****** MENUS DE PROVEEDORES ******/
     { path: 'proveedores/index', component: ProveedoresComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN'] } },
