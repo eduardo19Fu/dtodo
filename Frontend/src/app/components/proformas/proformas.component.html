@@ -116,6 +116,7 @@
           <th class="col-usuario"><button type="button" class="sort-header" (click)="ordenarPor('usuario')">Usuario <i [class]="iconoOrden('usuario')"></i></button></th>
           <th class="col-total"><button type="button" class="sort-header" (click)="ordenarPor('total')">Total <i [class]="iconoOrden('total')"></i></button></th>
           <th class="col-estado"><button type="button" class="sort-header" (click)="ordenarPor('estado')">Estado <i [class]="iconoOrden('estado')"></i></button></th>
+          <th class="col-facturacion">Facturación</th>
           <th class="col-opciones" *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR') || auth.hasRole('ROLE_INVENTARIO')">Opciones</th>
         </tr>
       </thead>
@@ -142,6 +143,18 @@
               {{proforma.estado}}
             </span>
           </td>
+          <td class="col-facturacion" data-label="Facturación">
+            <ng-container *ngIf="proforma.idFactura; else sinFactura">
+              <span class="listing-status-pill"
+                    [ngClass]="proforma.estadoFactura === 'ANULADO' ? 'listing-status-danger' : 'listing-status-success'">
+                {{proforma.estadoFactura === 'ANULADO' ? 'Factura anulada' : 'Facturada'}}
+              </span>
+              <small class="factura-referencia" [title]="referenciaFactura(proforma)">{{referenciaFactura(proforma)}}</small>
+            </ng-container>
+            <ng-template #sinFactura>
+              <span class="listing-status-pill listing-status-neutral">Sin facturar</span>
+            </ng-template>
+          </td>
           <td class="col-opciones mobile-actions-cell" data-label="Opciones"
               *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR') || auth.hasRole('ROLE_INVENTARIO')">
             <div class="action-buttons">
@@ -165,7 +178,7 @@
                     appTooltip="Crear factura desde esta proforma"
                     aria-label="Crear factura desde esta proforma"
                     *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_INVENTARIO')"
-                    [disabled]="proforma.idEstado === 4" [routerLink]="['/facturas/create', proforma.idProforma]">
+                    [disabled]="proforma.idEstado === 4 || !!proforma.idFactura" [routerLink]="['/facturas/create', proforma.idProforma]">
               <i class="fas fa-file-invoice"></i>
             </button>
             </div>

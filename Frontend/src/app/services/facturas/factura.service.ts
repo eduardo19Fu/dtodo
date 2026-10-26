@@ -172,6 +172,10 @@ export class FacturaService {
   createV2(factura: Factura): Observable<any> {
     return this.http.post<any>(`${this.url}/facturas/createV2`, factura).pipe(
       catchError(e => {
+        // Las reglas de negocio (422) las muestra el componente en línea, sin recargar la pantalla.
+        if (e.status === 422) {
+          return throwError(e);
+        }
         swal.fire(e.error.mensaje, e.error.error, 'error');
         return throwError(e);
       })

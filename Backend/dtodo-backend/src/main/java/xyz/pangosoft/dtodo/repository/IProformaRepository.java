@@ -49,16 +49,24 @@ public interface IProformaRepository extends JpaRepository<Proforma, Long> {
 
     @Query("select new xyz.pangosoft.dtodo.dto.ProformaDto(" +
             "p.idProforma, p.noProforma, p.fechaEmision, p.total, e.idEstado, e.estado, " +
-            "u.usuario, concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, '')), c.nombre, c.nit) " +
+            "u.usuario, concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, '')), c.nombre, c.nit, " +
+            "f.idFactura, f.serie, f.noFactura, fe.estado, " +
+            "concat(coalesce(fu.primerNombre, ''), ' ', coalesce(fu.apellido, ''))) " +
             "from Proforma p join p.estado e join p.usuario u join p.cliente c " +
+            "left join Factura f on f.idProformaOrigen = p.idProforma " +
+            "left join f.estado fe left join f.usuario fu " +
             "where (:idUsuario is null or u.idUsuario = :idUsuario) " +
             "order by p.fechaEmision desc")
     List<ProformaDto> findUltimasListadoDto(@Param("idUsuario") Integer idUsuario, Pageable pageable);
 
     @Query("select new xyz.pangosoft.dtodo.dto.ProformaDto(" +
             "p.idProforma, p.noProforma, p.fechaEmision, p.total, e.idEstado, e.estado, " +
-            "u.usuario, concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, '')), c.nombre, c.nit) " +
+            "u.usuario, concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, '')), c.nombre, c.nit, " +
+            "f.idFactura, f.serie, f.noFactura, fe.estado, " +
+            "concat(coalesce(fu.primerNombre, ''), ' ', coalesce(fu.apellido, ''))) " +
             "from Proforma p join p.estado e join p.usuario u join p.cliente c " +
+            "left join Factura f on f.idProformaOrigen = p.idProforma " +
+            "left join f.estado fe left join f.usuario fu " +
             "where p.fechaEmision >= :fechaIni and p.fechaEmision < :fechaFin " +
             "and (:idUsuario is null or u.idUsuario = :idUsuario)")
     Page<ProformaDto> findAllListadoDto(@Param("fechaIni") Date fechaIni,
@@ -68,8 +76,12 @@ public interface IProformaRepository extends JpaRepository<Proforma, Long> {
 
     @Query("select new xyz.pangosoft.dtodo.dto.ProformaDto(" +
             "p.idProforma, p.noProforma, p.fechaEmision, p.total, e.idEstado, e.estado, " +
-            "u.usuario, concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, '')), c.nombre, c.nit) " +
+            "u.usuario, concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, '')), c.nombre, c.nit, " +
+            "f.idFactura, f.serie, f.noFactura, fe.estado, " +
+            "concat(coalesce(fu.primerNombre, ''), ' ', coalesce(fu.apellido, ''))) " +
             "from Proforma p join p.estado e join p.usuario u join p.cliente c " +
+            "left join Factura f on f.idProformaOrigen = p.idProforma " +
+            "left join f.estado fe left join f.usuario fu " +
             "where p.fechaEmision >= :fechaIni and p.fechaEmision < :fechaFin " +
             "and (:idUsuario is null or u.idUsuario = :idUsuario) and (" +
             "lower(c.nombre) like lower(concat('%', :filtro, '%')) or " +

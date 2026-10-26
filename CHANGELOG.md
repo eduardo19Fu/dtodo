@@ -6,6 +6,18 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Estado de facturación de las proformas y validaciones antes de facturar
+
+Primer paso del módulo de clientes mayoristas (Fase 0.5 de `PLAN_MAYORISTAS.md`); no depende de rutas ni de mayoristas.
+
+- **Listado y detalle de proformas**: nueva columna *Facturación* con **Sin facturar**, **Facturada** o **Factura anulada**, la serie y el número de la factura y quién la emitió. El botón de facturar se deshabilita cuando la proforma ya tiene factura. `ProformaDto` suma `idFactura`, `serieFactura`, `noFactura`, `estadoFactura` y `facturadoPor`, calculados con una unión por entidad sobre `facturas.id_proforma_origen`.
+- **Proforma ya facturada**: `facturaFel` la rechaza **antes** de grabar con un mensaje que indica la factura y quién la emitió (distingue si está anulada). Antes el usuario recibía un error genérico de base de datos por el índice único `uq_facturas_proforma_origen`, que se mantiene.
+- **NIT inválido**: nueva `NitValidator` (dígito verificador módulo 11; acepta `CF` y `C/F`). Un NIT que en realidad es un teléfono, o un cliente sin NIT, se rechaza antes de tocar la base de datos y de ir a la certificadora, en lugar de revertir la venta después.
+- **Respuesta 422**: nueva `ReglaNegocioException` → `422 Unprocessable Entity` (401 y 403 están reservados por el interceptor del frontend). La pantalla de factura muestra el mensaje en línea y **no recarga**; `FacturaService.createV2` no abre su propio Swal ante un 422.
+- **Cambiar cliente al facturar**: botón visible *Cambiar cliente* junto al cliente seleccionado, que abre el directorio, y un aviso cuando la factura va a un cliente distinto del que registra la proforma. La proforma conserva su cliente.
+- **Pruebas**: `NitValidatorTest`, 5 casos nuevos en `FacturaServiceImplTest`, `ProformaListadoFacturacionTest` (ejecuta las tres consultas del listado contra H2 con una proforma facturada y otra sin facturar) y specs de `CreateFacturaComponent` y `ProformasComponent`.
+- **No incluido**: volver a facturar una proforma (reemisión tras anular) y facturar por partes; llegan con la Fase 1 al reemplazar el índice único por el control de cantidades.
+
 ### Cambiado — Rediseño del comprobante de despacho (guía de despacho)
 
 `despacho_bodega.jrxml` se rediseñó para que se lea como una guía de envío y se distinga a simple vista del comprobante de devolución: azul marino con franja dorada y chevrones «»», una **etiqueta de envío** con el total de unidades y el destino en grande, el avance en **tres pasos** (registrado, resolución, ingreso al destino) con color según el estado, una ficha de datos con celdas de formulario, y en la tabla las columnas **«Quedan»** (existencia de la bodega tras el despacho; en rojo si queda en cero) y **«Conforme»** (casilla para que quien recibe marque cada línea) con filas alternadas y pie de totales. Se agregó un bloque de **recepción en el destino** (conforme o con diferencias, fecha y hora, observaciones) y las firmas sin recuadros. La consulta suma `es_traslado` para rotular «Sucursal destino» o «Bodega destino · traslado». Los costos siguen visibles solo para el administrador. Pruebas nuevas en `BodegaTemplatesTest`; manual (8.6) actualizado.

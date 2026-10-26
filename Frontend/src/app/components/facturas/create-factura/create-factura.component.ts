@@ -59,6 +59,8 @@ export class CreateFacturaComponent implements OnInit {
   usuario: UsuarioAuxiliar;
   factura: Factura;
   proforma: Proforma;
+  /** Cliente que registra la proforma de origen; sirve para avisar cuando la factura va a otro cliente. */
+  clienteDeProforma: Cliente = null;
   correlativo: Correlativo;
 
   efectivo: number;
@@ -82,6 +84,7 @@ export class CreateFacturaComponent implements OnInit {
     this.correlativo = new Correlativo();
     this.producto = new Producto();
     this.proforma = null;
+    this.clienteDeProforma = null;
   }
 
   ngOnInit(): void {
@@ -500,6 +503,12 @@ export class CreateFacturaComponent implements OnInit {
         window.open(url, '_blank').focus();
       }, error => {
         this.isSaving = false;
+        if (error.status === 422) {
+          // Regla de negocio (proforma ya facturada, NIT inválido...): no se registró nada y no hace falta
+          // recargar; el usuario puede cambiar de cliente y reintentar.
+          swal.fire('No se pudo facturar', error.error?.message ?? 'La venta no cumple una regla del sistema.', 'warning');
+          return;
+        }
         // El backend revierte la venta completa (factura, existencias y correlativo) cuando falla;
         // se recarga la pantalla para no seguir trabajando con correlativo y stock desactualizados.
         swal.fire(
@@ -530,6 +539,7 @@ export class CreateFacturaComponent implements OnInit {
         this.proforma = proforma;
         this.factura.idProformaOrigen = proforma.idProforma;
         this.cliente = proforma.cliente;
+        this.clienteDeProforma = proforma.cliente;
         this.nitBusqueda = this.cliente.nit || '';
         this.cargarStockActualDeProforma();
       }, error => {
@@ -691,6 +701,18 @@ export class CreateFacturaComponent implements OnInit {
 
   abrirModalCliente(): void {
     this.modalClienteVisible = true;
+  }
+
+  /** Vuelve a abrir el directorio para elegir otro cliente (por ejemplo, si el de la proforma no tiene un NIT válido). */
+  cambiarCliente(): void {
+    this.nitIngresado = null;
+    this.abrirModalCliente();
+  }
+
+  /** Verdadero cuando se factura una proforma a un cliente distinto del que ella registra. */
+  get clienteDifiereDeLaProforma(): boolean {
+    return !!this.proforma && !!this.clienteDeProforma && !!this.cliente
+      && this.cliente.idCliente !== this.clienteDeProforma.idCliente;
   }
 
   cerrarModalCliente(): void {

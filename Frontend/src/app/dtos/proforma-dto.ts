@@ -9,4 +9,10 @@ export class ProformaDto {
   vendedor: string;
   cliente: string;
   nitCliente: string;
+  /** Factura generada desde la proforma; null/undefined si todavía no se factura. */
+  idFactura?: number | null;
+  serieFactura?: string | null;
+  noFactura?: number | null;
+  estadoFactura?: string | null;
+  facturadoPor?: string | null;
 }

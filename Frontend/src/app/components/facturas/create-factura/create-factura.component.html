@@ -158,7 +158,17 @@
             <span class="selection-status" *ngIf="cliente.idCliente">
               <i class="fas fa-check-circle" aria-hidden="true"></i> Seleccionado
             </span>
+            <button type="button" class="btn btn-sm btn-outline-secondary change-client-button"
+              *ngIf="cliente.idCliente" (click)="cambiarCliente()"
+              aria-label="Cambiar el cliente de la factura">
+              <i class="fas fa-exchange-alt" aria-hidden="true"></i> Cambiar cliente
+            </button>
           </div>
+
+          <p class="client-differs-note" *ngIf="clienteDifiereDeLaProforma">
+            <i class="fas fa-info-circle" aria-hidden="true"></i>
+            La proforma está a nombre de <strong>{{ clienteDeProforma.nombre }}</strong>; la factura se emitirá al cliente seleccionado.
+          </p>
 
           <div class="client-data-grid">
             <div>

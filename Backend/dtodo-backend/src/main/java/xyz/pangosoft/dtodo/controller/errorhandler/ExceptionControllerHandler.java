@@ -11,6 +11,7 @@ import xyz.pangosoft.dtodo.error.exceptions.NoContentException;
 import xyz.pangosoft.dtodo.error.exceptions.NotFoundException;
 import xyz.pangosoft.dtodo.error.exceptions.NumberFormatException;
 import xyz.pangosoft.dtodo.error.exceptions.ParseException;
+import xyz.pangosoft.dtodo.error.exceptions.ReglaNegocioException;
 import xyz.pangosoft.dtodo.error.exceptions.ReportGenerationException;
 import xyz.pangosoft.dtodo.error.exceptions.SQLException;
 
@@ -220,6 +221,17 @@ public class ExceptionControllerHandler extends ResponseEntityExceptionHandler {
         errorDTO.setStatus(HttpStatus.CONFLICT);
         errorDTO.setInstant(Instant.now());
         return new ResponseEntity<>(errorDTO, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(value = {ReglaNegocioException.class})
+    public ResponseEntity<ErrorDTO> reglaNegocioExceptionHandler(ReglaNegocioException exception) {
+        log.warn("Operación rechazada por una regla de negocio: {}", exception.getMessage());
+        ErrorDTO errorDTO = new ErrorDTO();
+        errorDTO.setMessage(exception.getMessage());
+        errorDTO.setCode(HttpStatus.UNPROCESSABLE_ENTITY.value());
+        errorDTO.setStatus(HttpStatus.UNPROCESSABLE_ENTITY);
+        errorDTO.setInstant(Instant.now());
+        return new ResponseEntity<>(errorDTO, HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     @ExceptionHandler(value = {InvalidPasswordException.class})

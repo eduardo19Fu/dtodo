@@ -40,6 +40,7 @@ import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -292,5 +293,85 @@ class FacturaServiceImplTest {
         service.anularDteHuerfano(factura, Emisor.builder().nit("12345678").build(), new Certificador());
 
         verify(felVenta).certificar(any(), eq("xml-firmado"), eq("ANULACION_100"), eq("ANULACION"));
+    }
+
+    // ---------- Validaciones previas a la certificación ----------
+
+    private Factura facturaExistente(String estado) {
+        Factura existente = new Factura();
+        existente.setSerie("A");
+        existente.setNoFactura(55L);
+        existente.setEstado(Estado.builder().estado(estado).build());
+        existente.setUsuario(Usuario.builder().primerNombre("Luis").apellido("Perez").build());
+        return existente;
+    }
+
+    @Test
+    void rechazaFacturarUnaProformaQueYaTieneFactura() {
+        FacturaServiceImpl service = servicioDeVenta();
+        when(repoVenta.findFirstByIdProformaOrigen(33L)).thenReturn(java.util.Optional.of(facturaExistente("PAGADO")));
+        Factura venta = venta();
+        venta.setIdProformaOrigen(33L);
+
+        xyz.pangosoft.dtodo.error.exceptions.ReglaNegocioException error = assertThrows(
+                xyz.pangosoft.dtodo.error.exceptions.ReglaNegocioException.class, () -> service.facturaFel(venta));
+
+        assertTrue(error.getMessage().contains("A-55"));
+        assertTrue(error.getMessage().contains("Luis Perez"));
+        verify(repoVenta, never()).saveAndFlush(any());
+        verify(felVenta, never()).certificar(any(), any(), any(), any());
+    }
+
+    @Test
+    void avisaCuandoLaFacturaDeLaProformaEstaAnulada() {
+        FacturaServiceImpl service = servicioDeVenta();
+        when(repoVenta.findFirstByIdProformaOrigen(33L)).thenReturn(java.util.Optional.of(facturaExistente("ANULADO")));
+        Factura venta = venta();
+        venta.setIdProformaOrigen(33L);
+
+        xyz.pangosoft.dtodo.error.exceptions.ReglaNegocioException error = assertThrows(
+                xyz.pangosoft.dtodo.error.exceptions.ReglaNegocioException.class, () -> service.facturaFel(venta));
+
+        assertTrue(error.getMessage().contains("anulada"));
+        verify(repoVenta, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void rechazaUnNitQueEsUnTelefonoAntesDeTocarLaBaseDeDatos() {
+        FacturaServiceImpl service = servicioDeVenta();
+        Factura venta = venta();
+        venta.getCliente().setNit("55551234");
+
+        xyz.pangosoft.dtodo.error.exceptions.ReglaNegocioException error = assertThrows(
+                xyz.pangosoft.dtodo.error.exceptions.ReglaNegocioException.class, () -> service.facturaFel(venta));
+
+        assertTrue(error.getMessage().contains("55551234"));
+        verify(repoVenta, never()).saveAndFlush(any());
+        verify(movimientosVenta, never()).save(any());
+        verify(felVenta, never()).certificar(any(), any(), any(), any());
+    }
+
+    @Test
+    void rechazaUnClienteSinNit() {
+        FacturaServiceImpl service = servicioDeVenta();
+        Factura venta = venta();
+        venta.getCliente().setNit("  ");
+
+        assertThrows(xyz.pangosoft.dtodo.error.exceptions.ReglaNegocioException.class, () -> service.facturaFel(venta));
+
+        verify(repoVenta, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void aceptaUnNitValidoYUnaProformaSinFactura() {
+        FacturaServiceImpl service = servicioDeVenta();
+        when(felVenta.certificar(any(), any(), any(), eq("CERTIFICACION"))).thenReturn(certificacion(true));
+        Factura venta = venta();
+        venta.getCliente().setNit("4514627-6");
+        venta.setIdProformaOrigen(34L);
+
+        Factura resultado = service.facturaFel(venta);
+
+        assertEquals("UUID-123", resultado.getCertificacionSat());
     }
 }

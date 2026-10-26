@@ -29,6 +29,9 @@ public interface IFacturaRepository extends JpaRepository<Factura, Long> {
 
     Optional<Factura> findFacturaByNoFactura(Long noFactura);
 
+    /** Factura asociada a una proforma, sin importar su estado (el índice único permite una sola). */
+    Optional<Factura> findFirstByIdProformaOrigen(Long idProformaOrigen);
+
     Optional<Factura> findFacturaByCorrelativoSatAndSerieSat(String correlativoSat, String serieSat);
 
     @Query("select new xyz.pangosoft.dtodo.dto.DocumentoOrigenNotaDto(" +

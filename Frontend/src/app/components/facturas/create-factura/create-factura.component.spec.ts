@@ -1,5 +1,5 @@
 import { fakeAsync, tick } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 import { DetalleFactura } from '../../../models/detalle-factura';
 import { Cliente } from '../../../models/cliente';
@@ -243,4 +243,51 @@ describe('CreateFacturaComponent - edición de detalle', () => {
     expect(component.factura.itemsFactura.length).toBe(1);
     expect(component.factura.total).toBe(180);
   }));
+
+  it('abre el directorio de clientes al cambiar de cliente', () => {
+    component.nitIngresado = '12345';
+
+    component.cambiarCliente();
+
+    expect(component.modalClienteVisible).toBeTrue();
+    expect(component.nitIngresado).toBeNull();
+  });
+
+  it('avisa cuando la factura va a un cliente distinto del de la proforma', () => {
+    const proforma = new Proforma();
+    proforma.idProforma = 42;
+    const clienteProforma = new Cliente();
+    clienteProforma.idCliente = 1;
+    clienteProforma.nombre = 'Cliente de la proforma';
+    proforma.cliente = clienteProforma;
+    proforma.itemsProforma = [];
+    const proformaService: any = { getProforma: () => of(proforma) };
+    component = new CreateFacturaComponent(null, proformaService, null, null, null, null, null, null, null);
+
+    component.buscarProformaPorId(42);
+    expect(component.clienteDifiereDeLaProforma).toBeFalse();
+
+    const otro = new Cliente();
+    otro.idCliente = 2;
+    component.cargarCliente(otro);
+
+    expect(component.clienteDifiereDeLaProforma).toBeTrue();
+  });
+
+  it('muestra en línea una regla de negocio (422) sin recargar la pantalla', async () => {
+    const facturaService: any = {
+      createV2: () => throwError({ status: 422, error: { message: 'El NIT "55551234" no es válido' } })
+    };
+    (component as any).facturaService = facturaService;
+    component.efectivo = 180;
+    component.calcularCambio();
+    const alerta = spyOn(swal, 'fire').and.returnValue(Promise.resolve({ isConfirmed: true } as any));
+
+    await component.createFactura();
+
+    const ultima = alerta.calls.mostRecent().args;
+    expect(ultima[0]).toBe('No se pudo facturar');
+    expect(ultima[1]).toContain('55551234');
+    expect(component.isSaving).toBeFalse();
+  });
 });

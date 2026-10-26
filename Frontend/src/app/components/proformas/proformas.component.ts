@@ -125,6 +125,15 @@ export class ProformasComponent implements OnInit, OnDestroy {
     this.cargarProformas(0);
   }
 
+  /** Texto corto con la factura de la proforma: serie-número y quién la emitió. */
+  referenciaFactura(proforma: ProformaDto): string {
+    if (!proforma.idFactura) {
+      return '';
+    }
+    const numero = `${proforma.serieFactura ? proforma.serieFactura + '-' : ''}${proforma.noFactura}`;
+    return proforma.facturadoPor ? `${numero} · ${proforma.facturadoPor}` : numero;
+  }
+
   printProforma(proforma: ProformaDto): void {
     this.proformaService.getProformaPdf(proforma.idProforma).subscribe(response => {
       const url = window.URL.createObjectURL(response.data);

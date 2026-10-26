@@ -70,6 +70,18 @@
                 <strong>{{proformadto.vendedor || proformadto.usuario || 'Sin vendedor asignado'}}</strong>
               </div>
             </article>
+            <article class="summary-card wide-card">
+              <span class="card-icon"><i class="fas fa-file-invoice" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Facturación</span>
+                <strong *ngIf="proformadto.idFactura; else detalleSinFactura">
+                  {{proformadto.estadoFactura === 'ANULADO' ? 'Factura anulada' : 'Facturada'}}:
+                  {{proformadto.serieFactura ? proformadto.serieFactura + '-' : ''}}{{proformadto.noFactura}}<ng-container
+                    *ngIf="proformadto.facturadoPor"> · emitida por {{proformadto.facturadoPor}}</ng-container>
+                </strong>
+                <ng-template #detalleSinFactura><strong>Sin facturar</strong></ng-template>
+              </div>
+            </article>
           </div>
         </section>
 

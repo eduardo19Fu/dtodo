@@ -29,6 +29,8 @@ import xyz.pangosoft.dtodo.dto.FacturaDto;
 import xyz.pangosoft.dtodo.dto.DetalleDocumentoDto;
 import xyz.pangosoft.dtodo.dto.DocumentoOrigenNotaDto;
 import xyz.pangosoft.dtodo.error.exceptions.NotFoundException;
+import xyz.pangosoft.dtodo.error.exceptions.ReglaNegocioException;
+import xyz.pangosoft.dtodo.util.NitValidator;
 import xyz.pangosoft.dtodo.error.exceptions.ReportGenerationException;
 import xyz.pangosoft.dtodo.model.Certificador;
 import xyz.pangosoft.dtodo.model.Cliente;
@@ -405,6 +407,8 @@ public class FacturaServiceImpl implements IFacturaService {
 			DocumentoFel documentoFel = new DocumentoFel();
 
 			if(factura.getIdFactura() == null) {
+				validarProformaSinFactura(factura.getIdProformaOrigen());
+				validarNitDelCliente(factura.getCliente());
 				log.info("********** Registrando nueva venta **********");
 				List<String> lineasSolicitadas = resumirLineasSolicitadas(factura.getItemsFactura());
 				log.info("Detalle recibido para factura {}-{}: {}", factura.getSerie(), factura.getNoFactura(), lineasSolicitadas);
@@ -458,7 +462,7 @@ public class FacturaServiceImpl implements IFacturaService {
 			}
 
 			return newFactura;
-		} catch (BadRequestException e) {
+		} catch (BadRequestException | ReglaNegocioException e) {
 			throw e;
 		} catch (DataAccessException e) {
 			log.error("Ha ocurrido un error a nivel de base de datos: {}", e.getMessage());
@@ -466,6 +470,54 @@ public class FacturaServiceImpl implements IFacturaService {
 		} catch (Exception e) {
 			log.error("Ha ocurrido un error inesperado: {}", e);
 			throw new RuntimeException("Ha ocurrido un error inesperado: ", e);
+		}
+	}
+
+	/**
+	 * Rechaza la venta si la proforma de origen ya tiene una factura. Hoy una proforma admite una sola
+	 * factura (índice único {@code uq_facturas_proforma_origen}), de modo que se avisa con un mensaje claro
+	 * en lugar de dejar que la base de datos falle al grabar.
+	 */
+	private void validarProformaSinFactura(Long idProformaOrigen) {
+		if (idProformaOrigen == null) {
+			return;
+		}
+
+		repoFactura.findFirstByIdProformaOrigen(idProformaOrigen).ifPresent(existente -> {
+			String referencia = (existente.getSerie() == null ? "" : existente.getSerie() + "-") + existente.getNoFactura();
+			boolean anulada = existente.getEstado() != null && "ANULADO".equals(existente.getEstado().getEstado());
+			String emitidaPor = existente.getUsuario() == null ? "" : (
+					(existente.getUsuario().getPrimerNombre() == null ? "" : existente.getUsuario().getPrimerNombre().trim()) + " "
+							+ (existente.getUsuario().getApellido() == null ? "" : existente.getUsuario().getApellido().trim())).trim();
+
+			if (anulada) {
+				throw new ReglaNegocioException("La factura " + referencia + " de esta proforma fue anulada. "
+						+ "Por ahora una proforma no puede facturarse de nuevo; genere una proforma nueva o consulte al administrador.");
+			}
+			throw new ReglaNegocioException("Esta proforma ya fue facturada con la factura " + referencia
+					+ (emitidaPor.isEmpty() ? "" : " (emitida por " + emitidaPor + ")") + ". Una proforma no puede facturarse dos veces.");
+		});
+	}
+
+	/**
+	 * Valida el NIT del cliente antes de iniciar la certificación. Un valor que no es NIT (por ejemplo un
+	 * teléfono guardado en ese campo) lo rechaza la certificadora y revierte toda la venta.
+	 */
+	private void validarNitDelCliente(Cliente cliente) {
+		if (cliente == null) {
+			throw new ReglaNegocioException("Seleccione un cliente antes de facturar.");
+		}
+
+		String nit = cliente.getNit();
+		String nombre = cliente.getNombre() == null ? "" : cliente.getNombre().trim();
+		if (nit == null || nit.trim().isEmpty()) {
+			throw new ReglaNegocioException("El cliente " + nombre + " no tiene NIT. Cambie el cliente de la factura "
+					+ "o pida a un administrador registrar su NIT. Para consumidor final use C/F.");
+		}
+		if (!NitValidator.esValido(nit)) {
+			throw new ReglaNegocioException("El NIT \"" + nit.trim() + "\" del cliente " + nombre + " no es válido "
+					+ "(podría ser un teléfono). Cambie el cliente de la factura o pida a un administrador corregir su NIT. "
+					+ "Para consumidor final use C/F.");
 		}
 	}
 

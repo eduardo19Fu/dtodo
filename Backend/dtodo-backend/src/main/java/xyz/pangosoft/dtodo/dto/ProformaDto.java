@@ -1,6 +1,5 @@
 package xyz.pangosoft.dtodo.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,7 +8,6 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class ProformaDto {
@@ -23,4 +21,34 @@ public class ProformaDto {
     private String vendedor;
     private String cliente;
     private String nitCliente;
+
+    /** Factura generada desde esta proforma; {@code null} si todavía no se factura. */
+    private Long idFactura;
+    private String serieFactura;
+    private Long noFactura;
+    private String estadoFactura;
+    /** Nombre de quien emitió la factura; {@code null} si la proforma no se ha facturado. */
+    private String facturadoPor;
+
+    public ProformaDto(Long idProforma, String noProforma, Date fechaEmision, BigDecimal total, Integer idEstado,
+                       String estado, String usuario, String vendedor, String cliente, String nitCliente,
+                       Long idFactura, String serieFactura, Long noFactura, String estadoFactura,
+                       String facturadoPor) {
+        this.idProforma = idProforma;
+        this.noProforma = noProforma;
+        this.fechaEmision = fechaEmision;
+        this.total = total;
+        this.idEstado = idEstado;
+        this.estado = estado;
+        this.usuario = usuario;
+        this.vendedor = vendedor;
+        this.cliente = cliente;
+        this.nitCliente = nitCliente;
+        this.idFactura = idFactura;
+        this.serieFactura = serieFactura;
+        this.noFactura = noFactura;
+        this.estadoFactura = estadoFactura;
+        this.facturadoPor = idFactura == null || facturadoPor == null || facturadoPor.trim().isEmpty()
+                ? null : facturadoPor.trim();
+    }
 }

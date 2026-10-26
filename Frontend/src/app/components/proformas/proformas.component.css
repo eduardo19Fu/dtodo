@@ -117,13 +117,13 @@
 }
 
 .document-table {
-  min-width: 1260px;
+  min-width: 1360px;
   table-layout: fixed;
   width: 100%;
 }
 
 .listing-empty-state {
-  min-width: 1260px;
+  min-width: 1360px;
 }
 
 .document-table th {
@@ -147,11 +147,13 @@
 
 .document-table .col-numero { width: 125px; }
 .document-table .col-fecha { width: 130px; }
-.document-table .col-cliente { width: 300px; }
-.document-table .col-vendedor { width: 180px; }
+.document-table .col-cliente { width: 250px; }
+.document-table .col-vendedor { width: 160px; }
 .document-table .col-usuario { width: 130px; }
 .document-table .col-total { text-align: right; width: 95px; }
 .document-table .col-estado { text-align: center; width: 100px; }
+.document-table .col-facturacion { text-align: center; width: 170px; }
+.factura-referencia { color: #6c757d; display: block; font-size: 0.75rem; margin-top: 0.25rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .document-table .col-opciones { text-align: center; width: 200px; }
 
 .cell-ellipsis { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -174,7 +176,7 @@
 .table-controls-row {
   margin-left: 0;
   margin-right: 0;
-  min-width: 1260px;
+  min-width: 1360px;
   width: 100%;
 }
 
