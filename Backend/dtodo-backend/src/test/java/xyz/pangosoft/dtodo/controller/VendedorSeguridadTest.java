@@ -100,4 +100,13 @@ class VendedorSeguridadTest {
         assertTrue(roles(AutorizacionProformaApiController.class, "aprobar").equals(Arrays.asList("ROLE_ADMIN")),
                 "aprobar es solo del administrador");
     }
+
+    @Test
+    void losReportesDeMayoristasSonSoloDelAdministrador() {
+        niegaAlVendedor(ReporteMayoristasApiController.class, "clientesPorRuta", "clientesSinCompras", "proformasPorVendedor");
+        for (String metodo : new String[] { "clientesPorRuta", "clientesSinCompras", "proformasPorVendedor" }) {
+            assertTrue(roles(ReporteMayoristasApiController.class, metodo).equals(Arrays.asList("ROLE_ADMIN")),
+                    metodo + " es solo del administrador");
+        }
+    }
 }

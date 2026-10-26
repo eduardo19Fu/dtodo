@@ -6,6 +6,17 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Reportes de mayoristas (Fase 1, paso 7)
+
+Tres reportes de solo lectura para el administrador, en una categoría nueva "Mayoristas" de la pantalla de reportes. No dependen de la entrega del pedido ni agregan tablas: es el último paso de la Fase 1.
+
+- **Clientes por ruta**: clientes mayoristas agrupados por ruta, con el vendedor, negocio, encargado, teléfono, dirección, categoría y días de crédito, y el conteo por ruta. Filtro opcional de ruta. Un cliente sin ruta aparece en "Sin ruta".
+- **Clientes sin compras**: clientes mayoristas sin compras en el período, con su última compra ("Nunca" si no tienen ninguna) y los días sin comprar. Se considera compra una proforma o una factura no anulada: la proforma es el documento de venta principal y no todo se factura. Filtros de período y ruta.
+- **Proformas por vendedor**: proformas mayoristas generadas y facturadas por cada vendedor en el período, con valor proformado, valor facturado, porcentaje facturado y cuántas esperan autorización. Facturada es tener una factura vigente (no anulada), aunque se haya emitido después del período. Es distinto del reporte "Conversión a ventas", que es de un solo usuario y de todo tipo de proforma.
+- **API**: `GET /api/reportes/mayoristas/{clientes-ruta|clientes-sin-compras|proformas-vendedor}`, solo `ROLE_ADMIN`, PDF o XLSX. Plantillas `mayoristas_*.jrxml` escritas a mano (no abrir con Jaspersoft Studio 7). Sin script SQL.
+- **Pruebas**: `ReportesMayoristasTemplateTest` (cada plantilla con datos de ejemplo), `ReporteMayoristasServiceImplTest` (validación de filtros), la matriz de roles y specs de `ReportesComponent` y `ReporteService`. Las tres consultas se ejecutaron contra MySQL para validar la sintaxis; la base de desarrollo no tiene clientes mayoristas, así que el resultado con datos reales queda por revisar.
+- **No incluido**: reporte por sucursal (los clientes no tienen sucursal; la ruta sí) y acceso del vendedor a sus propios reportes.
+
 ### Agregado — Reemisión de la factura de una proforma (Fase 1, paso 6)
 
 Una proforma cuya factura se anuló se puede volver a facturar, por ejemplo con el NIT correcto. No se facturan cantidades por partes: eso no se necesita (el cliente solo pidió reemisión y cambio de cliente).

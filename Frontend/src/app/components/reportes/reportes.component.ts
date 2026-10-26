@@ -26,7 +26,8 @@ export class ReportesComponent implements OnInit, OnDestroy {
     { codigo: 'PROFORMAS', titulo: 'Proformas', icono: 'fa-file-alt' },
     { codigo: 'NOTAS_CREDITO', titulo: 'Notas de crédito', icono: 'fa-credit-card' },
     { codigo: 'COMPRAS', titulo: 'Compras', icono: 'fa-shopping-basket' },
-    { codigo: 'BODEGAS', titulo: 'Bodegas', icono: 'fa-warehouse' }
+    { codigo: 'BODEGAS', titulo: 'Bodegas', icono: 'fa-warehouse' },
+    { codigo: 'MAYORISTAS', titulo: 'Mayoristas', icono: 'fa-route' }
   ];
 
   readonly reportes: ReporteDefinicion[] = [
@@ -88,7 +89,16 @@ export class ReportesComponent implements OnInit, OnDestroy {
     this.reporte('BODEGA_DESPACHOS', 'BODEGAS', 'Despachos de bodega',
       'Despachos a sucursales y traslados por período, bodega y estado. El valor al costo solo lo incluye para administradores.',
       'fa-truck-loading', ['PDF', 'XLSX'],
-      ['FECHAS', 'BODEGA_OPCIONAL', 'ESTADO'], ['ROLE_ADMIN', 'ROLE_BODEGA'], true)
+      ['FECHAS', 'BODEGA_OPCIONAL', 'ESTADO'], ['ROLE_ADMIN', 'ROLE_BODEGA'], true),
+    this.reporte('MAYORISTAS_CLIENTES_RUTA', 'MAYORISTAS', 'Clientes por ruta',
+      'Clientes mayoristas agrupados por ruta, con su vendedor, contacto y condiciones.', 'fa-route', ['PDF', 'XLSX'],
+      ['RUTA'], ['ROLE_ADMIN'], true),
+    this.reporte('MAYORISTAS_SIN_COMPRAS', 'MAYORISTAS', 'Clientes sin compras',
+      'Clientes mayoristas sin proformas ni facturas en el período, con su última compra.', 'fa-user-clock', ['PDF', 'XLSX'],
+      ['FECHAS', 'RUTA'], ['ROLE_ADMIN'], true),
+    this.reporte('MAYORISTAS_PROFORMAS_VENDEDOR', 'MAYORISTAS', 'Proformas por vendedor',
+      'Proformas mayoristas generadas frente a las facturadas por cada vendedor.', 'fa-people-carry', ['PDF', 'XLSX'],
+      ['FECHAS', 'RUTA'], ['ROLE_ADMIN'], true)
   ];
 
   busquedaReportes = '';
@@ -100,6 +110,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
   clientes: ReporteSelectorOpcionDto[] = [];
   productos: ReporteSelectorOpcionDto[] = [];
   bodegas: ReporteSelectorOpcionDto[] = [];
+  rutas: ReporteSelectorOpcionDto[] = [];
   fechaInicio: string;
   fechaFin: string;
   fechaCorte: string;
@@ -110,6 +121,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
   idCategoria: number;
   idCliente: number;
   idProducto: number;
+  idRuta: number;
   estado: string;
   formatoSeleccionado: 'PDF' | 'XLSX' = 'PDF';
   generando = false;
@@ -140,6 +152,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
   private sucursalesCargadas = false;
   private proveedoresCargados = false;
   private bodegasCargadas = false;
+  private rutasCargadas = false;
   private categoriasCargadas = false;
   private clientesCargados = false;
   private readonly productosCache = new Map<number, ReporteSelectorOpcionDto[]>();
@@ -202,6 +215,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
     this.idCategoria = null;
     this.idCliente = null;
     this.idProducto = null;
+    this.idRuta = null;
     this.idBodega = null;
     this.estado = '';
     this.formatoSeleccionado = reporte.formatos[0];
@@ -223,6 +237,9 @@ export class ReportesComponent implements OnInit, OnDestroy {
     if (reporte.filtros.includes('PRODUCTO')) {
       this.cargarProductos();
     }
+    if (reporte.filtros.includes('RUTA')) {
+      this.cargarRutas();
+    }
     this.programarGuia();
   }
 
@@ -241,6 +258,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
     this.idCategoria = null;
     this.idCliente = null;
     this.idProducto = null;
+    this.idRuta = null;
     this.idBodega = null;
     this.estado = '';
     this.formatoSeleccionado = this.reporteSeleccionado.formatos[0];
@@ -268,6 +286,10 @@ export class ReportesComponent implements OnInit, OnDestroy {
 
   get opcionesProducto(): ReporteSelectorOpcionDto[] {
     return this.productos;
+  }
+
+  get opcionesRuta(): ReporteSelectorOpcionDto[] {
+    return this.rutas;
   }
 
   get opcionesBodega(): ReporteSelectorOpcionDto[] {
@@ -346,6 +368,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
       idCategoria: this.idCategoria,
       idCliente: this.idCliente,
       idProducto: this.idProducto,
+      idRuta: this.idRuta,
       estado: this.estado,
       formato: this.formatoSeleccionado
     };
@@ -469,6 +492,17 @@ export class ReportesComponent implements OnInit, OnDestroy {
     this.reporteService.listarProveedoresSelector().subscribe(
       opciones => this.proveedores = opciones,
       () => this.proveedoresCargados = false
+    );
+  }
+
+  private cargarRutas(): void {
+    if (this.rutasCargadas) {
+      return;
+    }
+    this.rutasCargadas = true;
+    this.reporteService.listarRutasSelector().subscribe(
+      opciones => this.rutas = opciones,
+      () => this.rutasCargadas = false
     );
   }
 

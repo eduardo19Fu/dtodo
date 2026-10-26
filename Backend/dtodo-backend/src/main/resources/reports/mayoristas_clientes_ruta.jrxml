@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Clientes mayoristas por ruta. Plantilla escrita a mano en formato JasperReports 6.x; no abrir ni guardar con Jaspersoft Studio 7,
+     que cambia el formato y la librería del proyecto no lo entiende. -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="mayoristas_clientes_ruta" pageWidth="842" pageHeight="595" orientation="Landscape"
+              whenNoDataType="AllSectionsNoDetail" columnWidth="802" leftMargin="20" rightMargin="20"
+              topMargin="18" bottomMargin="18" isSummaryWithPageHeaderAndFooter="true"
+              uuid="3b7c1e52-8f4a-4d19-a6c3-5e0d92b41f01">
+    <property name="net.sf.jasperreports.export.xlsx.detect.cell.type" value="true"/>
+    <property name="net.sf.jasperreports.export.xlsx.remove.empty.space.between.rows" value="true"/>
+    <property name="net.sf.jasperreports.export.xlsx.white.page.background" value="false"/>
+
+    <style name="Base" isDefault="true" fontName="DejaVu Sans" fontSize="8" forecolor="#23344D"/>
+    <style name="Header" style="Base" mode="Opaque" backcolor="#1769D2" forecolor="#FFFFFF"
+           fontSize="8" isBold="true" vTextAlign="Middle"/>
+    <style name="Cell" style="Base" mode="Opaque" backcolor="#FFFFFF" vTextAlign="Middle">
+        <box><pen lineWidth="0.35" lineColor="#D9E3EF"/></box>
+    </style>
+    <style name="AlertCell" style="Cell" forecolor="#B42318" isBold="true"/>
+    <style name="GroupCell" style="Base" mode="Opaque" backcolor="#E8F0FB" forecolor="#17233B" isBold="true" vTextAlign="Middle"/>
+
+    <parameter name="ID_RUTA" class="java.lang.Integer"/>
+    <parameter name="RUTA" class="java.lang.String"/>
+    <parameter name="FORMATO" class="java.lang.String"/>
+
+    <queryString language="SQL"><![CDATA[
+        SELECT COALESCE(r.nombre, 'Sin ruta') AS ruta,
+               TRIM(CONCAT(COALESCE(v.primer_nombre, ''), ' ', COALESCE(v.apellido, ''))) AS vendedor,
+               c.codigo_cliente AS codigo,
+               c.nombre_negocio AS negocio,
+               c.nombre AS cliente,
+               c.contacto AS contacto,
+               c.telefono_contacto AS telefono,
+               c.direccion AS direccion,
+               c.categoria_descuento AS categoria,
+               c.dias_credito AS dias_credito
+          FROM clientes c
+          LEFT JOIN rutas r ON r.id_ruta = c.id_ruta
+          LEFT JOIN usuarios v ON v.id_usuario = r.id_vendedor
+         WHERE c.tipo_cliente = 'MAYORISTA'
+           AND ($P{ID_RUTA} IS NULL OR c.id_ruta = $P{ID_RUTA})
+         ORDER BY r.nombre, c.nombre
+    ]]></queryString>
+
+    <field name="ruta" class="java.lang.String"/>
+    <field name="vendedor" class="java.lang.String"/>
+    <field name="codigo" class="java.lang.String"/>
+    <field name="negocio" class="java.lang.String"/>
+    <field name="cliente" class="java.lang.String"/>
+    <field name="contacto" class="java.lang.String"/>
+    <field name="telefono" class="java.lang.String"/>
+    <field name="direccion" class="java.lang.String"/>
+    <field name="categoria" class="java.lang.String"/>
+    <field name="dias_credito" class="java.lang.Integer"/>
+
+    <variable name="TOTAL_CLIENTES" class="java.lang.Integer" calculation="Count">
+        <variableExpression><![CDATA[$F{cliente}]]></variableExpression>
+    </variable>
+    <variable name="CLIENTES_RUTA" class="java.lang.Integer" resetType="Group" resetGroup="ruta" calculation="Count">
+        <variableExpression><![CDATA[$F{cliente}]]></variableExpression>
+    </variable>
+
+    <group name="ruta">
+        <groupExpression><![CDATA[$F{ruta}]]></groupExpression>
+        <groupHeader>
+            <band height="22">
+                <textField isBlankWhenNull="true">
+                    <reportElement style="GroupCell" x="0" y="2" width="802" height="20"/>
+                    <textElement><font size="9"/><paragraph leftIndent="6"/></textElement>
+                    <textFieldExpression><![CDATA["Ruta: " + $F{ruta} + ($F{vendedor} == null || $F{vendedor}.isEmpty() ? " · sin vendedor asignado" : " · Vendedor: " + $F{vendedor})]]></textFieldExpression>
+                </textField>
+            </band>
+        </groupHeader>
+        <groupFooter>
+            <band height="18">
+                <textField>
+                    <reportElement x="562" y="2" width="240" height="14" forecolor="#53647A"/>
+                    <textElement textAlignment="Right"><font size="8" isBold="true"/></textElement>
+                    <textFieldExpression><![CDATA["Clientes de la ruta: " + $V{CLIENTES_RUTA}]]></textFieldExpression>
+                </textField>
+            </band>
+        </groupFooter>
+    </group>
+
+    <title>
+        <band height="72">
+            <rectangle radius="8">
+                <reportElement x="90" y="0" width="712" height="48" forecolor="#1769D2" backcolor="#1769D2"/>
+            </rectangle>
+            <image scaleImage="RetainShape" hAlign="Center">
+                <reportElement x="0" y="0" width="72" height="48"/>
+                <imageExpression><![CDATA[this.getClass().getResourceAsStream("/static/images/reports-image/logo-dtodo.jpg")]]></imageExpression>
+            </image>
+            <staticText>
+                <reportElement x="90" y="0" width="478" height="24" forecolor="#FFFFFF"
+                               backcolor="#1769D2" mode="Opaque"/>
+                <textElement verticalAlignment="Middle"><font size="16" isBold="true"/><paragraph leftIndent="18"/></textElement>
+                <text><![CDATA[Clientes mayoristas por ruta]]></text>
+            </staticText>
+            <textField isBlankWhenNull="true">
+                <reportElement x="90" y="24" width="478" height="24" forecolor="#DCEBFF"
+                               backcolor="#1769D2" mode="Opaque"/>
+                <textElement verticalAlignment="Middle"><font size="8"/><paragraph leftIndent="18"/></textElement>
+                <textFieldExpression><![CDATA["Clientes de tipo mayorista · " + ($P{RUTA} == null ? "todas las rutas" : $P{RUTA})]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="568" y="0" width="234" height="24" forecolor="#FFFFFF"
+                               backcolor="#1769D2" mode="Opaque"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/><paragraph rightIndent="18"/></textElement>
+                <textFieldExpression><![CDATA[$P{RUTA}]]></textFieldExpression>
+            </textField>
+            <textField pattern="dd/MM/yyyy HH:mm">
+                <reportElement x="568" y="24" width="234" height="24" forecolor="#DCEBFF"
+                               backcolor="#1769D2" mode="Opaque"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="7"/><paragraph rightIndent="18"/></textElement>
+                <textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+            </textField>
+            <staticText>
+                <reportElement x="0" y="54" width="802" height="14" forecolor="#66758A"/>
+                <textElement><font size="8" isItalic="true"/></textElement>
+                <text><![CDATA[Incluye los clientes mayoristas registrados. Un cliente sin ruta aparece en "Sin ruta".]]></text>
+            </staticText>
+        </band>
+    </title>
+    <columnHeader>
+        <band height="28">
+            <staticText><reportElement style="Header" x="0" y="0" width="70" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Código]]></text></staticText>
+            <staticText><reportElement style="Header" x="70" y="0" width="140" height="28"/><textElement textAlignment="Left"/><text><![CDATA[Negocio]]></text></staticText>
+            <staticText><reportElement style="Header" x="210" y="0" width="140" height="28"/><textElement textAlignment="Left"/><text><![CDATA[Cliente]]></text></staticText>
+            <staticText><reportElement style="Header" x="350" y="0" width="110" height="28"/><textElement textAlignment="Left"/><text><![CDATA[Encargado]]></text></staticText>
+            <staticText><reportElement style="Header" x="460" y="0" width="80" height="28"/><textElement textAlignment="Left"/><text><![CDATA[Teléfono]]></text></staticText>
+            <staticText><reportElement style="Header" x="540" y="0" width="162" height="28"/><textElement textAlignment="Left"/><text><![CDATA[Dirección]]></text></staticText>
+            <staticText><reportElement style="Header" x="702" y="0" width="60" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Categoría]]></text></staticText>
+            <staticText><reportElement style="Header" x="762" y="0" width="40" height="28"/><textElement textAlignment="Right"/><text><![CDATA[Crédito (días)]]></text></staticText>
+        </band>
+    </columnHeader>
+    <detail>
+        <band height="24">
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="0" y="0" width="70" height="24"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA[$F{codigo}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="70" y="0" width="140" height="24"/><textElement textAlignment="Left"/><textFieldExpression><![CDATA[$F{negocio}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="210" y="0" width="140" height="24"/><textElement textAlignment="Left"/><textFieldExpression><![CDATA[$F{cliente}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="350" y="0" width="110" height="24"/><textElement textAlignment="Left"/><textFieldExpression><![CDATA[$F{contacto}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="460" y="0" width="80" height="24"/><textElement textAlignment="Left"/><textFieldExpression><![CDATA[$F{telefono}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="540" y="0" width="162" height="24"/><textElement textAlignment="Left"/><textFieldExpression><![CDATA[$F{direccion}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="702" y="0" width="60" height="24"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA[$F{categoria}]]></textFieldExpression></textField>
+            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="762" y="0" width="40" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{dias_credito}]]></textFieldExpression></textField>
+        </band>
+    </detail>
+
+    <pageFooter>
+        <band height="18">
+            <textField>
+                <reportElement x="642" y="2" width="115" height="14" forecolor="#7B8798">
+                    <printWhenExpression><![CDATA["PDF".equals($P{FORMATO})]]></printWhenExpression>
+                </reportElement>
+                <textElement textAlignment="Right"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+            <textField evaluationTime="Report">
+                <reportElement x="757" y="2" width="35" height="14" forecolor="#7B8798">
+                    <printWhenExpression><![CDATA["PDF".equals($P{FORMATO})]]></printWhenExpression>
+                </reportElement>
+                <textElement textAlignment="Left"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA[" de " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+        </band>
+    </pageFooter>
+
+    <summary>
+        <band height="52">
+            <line><reportElement x="0" y="8" width="802" height="1" forecolor="#B9C9DC"/></line>
+            <staticText>
+                <reportElement x="0" y="16" width="400" height="24" forecolor="#52647C" backcolor="#F4F8FC" mode="Opaque">
+                    <printWhenExpression><![CDATA[$V{REPORT_COUNT}.intValue() == 0]]></printWhenExpression>
+                </reportElement>
+                <box><pen lineWidth="0.5" lineColor="#D6E2F0"/></box>
+                <textElement verticalAlignment="Middle"><font size="9" isItalic="true"/></textElement>
+                <text><![CDATA[No hay clientes mayoristas para los filtros seleccionados.]]></text>
+            </staticText>
+            <staticText><reportElement x="560" y="16" width="100" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Clientes en el reporte:]]></text></staticText>
+            <textField pattern="#,##0"><reportElement x="660" y="16" width="90" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_CLIENTES} == null ? 0 : $V{TOTAL_CLIENTES}]]></textFieldExpression></textField>
+        </band>
+    </summary>
+</jasperReport>

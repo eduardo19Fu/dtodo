@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import { ReporteFiltroDto } from '../dtos/reporte-filtro-dto';
 import { ReporteSelectorOpcionDto } from '../dtos/reporte-selector-opcion-dto';
@@ -45,6 +46,13 @@ export class ReporteService {
 
   listarClientesSelector(): Observable<ReporteSelectorOpcionDto[]> {
     return this.http.get<ReporteSelectorOpcionDto[]>(`${this.url}/filtros/clientes`);
+  }
+
+  /** Rutas activas (solo administrador), para los reportes de mayoristas. */
+  listarRutasSelector(): Observable<ReporteSelectorOpcionDto[]> {
+    return this.http.get<Array<{ idRuta: number; nombre: string; vendedor?: string }>>(`${global.url}/rutas/activas`).pipe(
+      map(rutas => rutas.map(ruta => ({ valor: ruta.idRuta, etiqueta: ruta.nombre, detalle: ruta.vendedor || 'Sin vendedor' })))
+    );
   }
 
   listarProveedoresSelector(): Observable<ReporteSelectorOpcionDto[]> {
@@ -102,6 +110,12 @@ export class ReporteService {
         return { ruta: 'bodegas/movimientos', incluirUsuario: false, incluirOpciones: true };
       case 'BODEGA_DESPACHOS':
         return { ruta: 'bodegas/despachos', incluirUsuario: false, incluirOpciones: true };
+      case 'MAYORISTAS_CLIENTES_RUTA':
+        return { ruta: 'mayoristas/clientes-ruta', incluirUsuario: false, incluirOpciones: true };
+      case 'MAYORISTAS_SIN_COMPRAS':
+        return { ruta: 'mayoristas/clientes-sin-compras', incluirUsuario: false, incluirOpciones: true };
+      case 'MAYORISTAS_PROFORMAS_VENDEDOR':
+        return { ruta: 'mayoristas/proformas-vendedor', incluirUsuario: false, incluirOpciones: true };
       default:
         throw new Error(`El reporte ${codigo} todavía no tiene un endpoint habilitado.`);
     }
@@ -142,6 +156,9 @@ export class ReporteService {
     }
     if (incluirOpciones && filtros.idCliente) {
       params = params.set('idCliente', filtros.idCliente.toString());
+    }
+    if (incluirOpciones && filtros.idRuta) {
+      params = params.set('idRuta', filtros.idRuta.toString());
     }
     if (incluirOpciones && filtros.idProducto) {
       params = params.set('idProducto', filtros.idProducto.toString());

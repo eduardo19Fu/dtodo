@@ -133,6 +133,12 @@
           (despliegueChange)="alCambiarDespliegueSelector()">
         </app-reporte-selector>
 
+        <app-reporte-selector *ngIf="requiereFiltro('RUTA')" etiqueta="Ruta" icono="fa-route"
+          [opciones]="opcionesRuta" [(valor)]="idRuta" textoVacio="Todas las rutas"
+          detalleVacio="Sin filtro de ruta" placeholderBusqueda="Buscar ruta o vendedor"
+          (despliegueChange)="alCambiarDespliegueSelector()">
+        </app-reporte-selector>
+
         <app-reporte-selector *ngIf="requiereFiltro('PRODUCTO')" etiqueta="Producto" icono="fa-box"
           [opciones]="opcionesProducto" [(valor)]="idProducto" [permitirVacio]="false" [requerido]="true"
           textoVacio="Selecciona un producto" placeholderBusqueda="Buscar por nombre, código o categoría"

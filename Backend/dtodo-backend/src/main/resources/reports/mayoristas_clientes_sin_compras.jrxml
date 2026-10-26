@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Clientes mayoristas sin compras. Plantilla escrita a mano en formato JasperReports 6.x; no abrir ni guardar con Jaspersoft Studio 7,
+     que cambia el formato y la librería del proyecto no lo entiende. -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="mayoristas_clientes_sin_compras" pageWidth="842" pageHeight="595" orientation="Landscape"
+              whenNoDataType="AllSectionsNoDetail" columnWidth="802" leftMargin="20" rightMargin="20"
+              topMargin="18" bottomMargin="18" isSummaryWithPageHeaderAndFooter="true"
+              uuid="9d2a6f04-1c7b-4e83-b5a0-7f3e18c6d202">
+    <property name="net.sf.jasperreports.export.xlsx.detect.cell.type" value="true"/>
+    <property name="net.sf.jasperreports.export.xlsx.remove.empty.space.between.rows" value="true"/>
+    <property name="net.sf.jasperreports.export.xlsx.white.page.background" value="false"/>
+
+    <style name="Base" isDefault="true" fontName="DejaVu Sans" fontSize="8" forecolor="#23344D"/>
+    <style name="Header" style="Base" mode="Opaque" backcolor="#1769D2" forecolor="#FFFFFF"
+           fontSize="8" isBold="true" vTextAlign="Middle"/>
+    <style name="Cell" style="Base" mode="Opaque" backcolor="#FFFFFF" vTextAlign="Middle">
+        <box><pen lineWidth="0.35" lineColor="#D9E3EF"/></box>
+    </style>
+    <style name="AlertCell" style="Cell" forecolor="#B42318" isBold="true"/>
+    <style name="GroupCell" style="Base" mode="Opaque" backcolor="#E8F0FB" forecolor="#17233B" isBold="true" vTextAlign="Middle"/>
+
+    <parameter name="ID_RUTA" class="java.lang.Integer"/>
+    <parameter name="RUTA" class="java.lang.String"/>
+    <parameter name="FECHA_INICIO" class="java.sql.Timestamp"/>
+    <parameter name="FECHA_FIN_EXCLUSIVA" class="java.sql.Timestamp"/>
+    <parameter name="RANGO" class="java.lang.String"/>
+    <parameter name="FORMATO" class="java.lang.String"/>
+
+    <queryString language="SQL"><![CDATA[
+        SELECT COALESCE(r.nombre, 'Sin ruta') AS ruta,
+               TRIM(CONCAT(COALESCE(v.primer_nombre, ''), ' ', COALESCE(v.apellido, ''))) AS vendedor,
+               c.codigo_cliente AS codigo,
+               c.nombre_negocio AS negocio,
+               c.nombre AS cliente,
+               c.contacto AS contacto,
+               c.telefono_contacto AS telefono,
+               ult.ultima_compra AS ultima_compra,
+               DATEDIFF(CURRENT_DATE, ult.ultima_compra) AS dias_sin_compra
+          FROM clientes c
+          LEFT JOIN rutas r ON r.id_ruta = c.id_ruta
+          LEFT JOIN usuarios v ON v.id_usuario = r.id_vendedor
+          LEFT JOIN (SELECT x.id_cliente, MAX(x.fecha) AS ultima_compra
+                       FROM (SELECT p.id_cliente, p.fecha_emision AS fecha
+                               FROM proformas p WHERE p.id_estado != 4
+                              UNION ALL
+                             SELECT f.id_cliente, f.fecha
+                               FROM facturas f WHERE f.id_estado != 4) x
+                      GROUP BY x.id_cliente) ult ON ult.id_cliente = c.id_cliente
+         WHERE c.tipo_cliente = 'MAYORISTA'
+           AND ($P{ID_RUTA} IS NULL OR c.id_ruta = $P{ID_RUTA})
+           AND NOT EXISTS (SELECT 1 FROM proformas p
+                            WHERE p.id_cliente = c.id_cliente AND p.id_estado != 4
+                              AND p.fecha_emision >= $P{FECHA_INICIO} AND p.fecha_emision < $P{FECHA_FIN_EXCLUSIVA})
+           AND NOT EXISTS (SELECT 1 FROM facturas f
+                            WHERE f.id_cliente = c.id_cliente AND f.id_estado != 4
+                              AND f.fecha >= $P{FECHA_INICIO} AND f.fecha < $P{FECHA_FIN_EXCLUSIVA})
+         ORDER BY r.nombre, ult.ultima_compra IS NOT NULL, ult.ultima_compra, c.nombre
+    ]]></queryString>
+
+    <field name="ruta" class="java.lang.String"/>
+    <field name="vendedor" class="java.lang.String"/>
+    <field name="codigo" class="java.lang.String"/>
+    <field name="negocio" class="java.lang.String"/>
+    <field name="cliente" class="java.lang.String"/>
+    <field name="contacto" class="java.lang.String"/>
+    <field name="telefono" class="java.lang.String"/>
+    <field name="ultima_compra" class="java.sql.Timestamp"/>
+    <field name="dias_sin_compra" class="java.lang.Integer"/>
+
+    <variable name="TOTAL_CLIENTES" class="java.lang.Integer" calculation="Count">
+        <variableExpression><![CDATA[$F{cliente}]]></variableExpression>
+    </variable>
+    <variable name="NUNCA_COMPRARON" class="java.lang.Integer" calculation="Sum">
+        <variableExpression><![CDATA[$F{ultima_compra} == null ? Integer.valueOf(1) : Integer.valueOf(0)]]></variableExpression>
+        <initialValueExpression><![CDATA[Integer.valueOf(0)]]></initialValueExpression>
+    </variable>
+
+
+    <title>
+        <band height="72">
+            <rectangle radius="8">
+                <reportElement x="90" y="0" width="712" height="48" forecolor="#1769D2" backcolor="#1769D2"/>
+            </rectangle>
+            <image scaleImage="RetainShape" hAlign="Center">
+                <reportElement x="0" y="0" width="72" height="48"/>
+                <imageExpression><![CDATA[this.getClass().getResourceAsStream("/static/images/reports-image/logo-dtodo.jpg")]]></imageExpression>
+            </image>
+            <staticText>
+                <reportElement x="90" y="0" width="478" height="24" forecolor="#FFFFFF"
+                               backcolor="#1769D2" mode="Opaque"/>
+                <textElement verticalAlignment="Middle"><font size="16" isBold="true"/><paragraph leftIndent="18"/></textElement>
+                <text><![CDATA[Clientes mayoristas sin compras]]></text>
+            </staticText>
+            <textField isBlankWhenNull="true">
+                <reportElement x="90" y="24" width="478" height="24" forecolor="#DCEBFF"
+                               backcolor="#1769D2" mode="Opaque"/>
+                <textElement verticalAlignment="Middle"><font size="8"/><paragraph leftIndent="18"/></textElement>
+                <textFieldExpression><![CDATA["Sin compras · " + $P{RANGO} + " · " + ($P{RUTA} == null ? "todas las rutas" : $P{RUTA})]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="568" y="0" width="234" height="24" forecolor="#FFFFFF"
+                               backcolor="#1769D2" mode="Opaque"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/><paragraph rightIndent="18"/></textElement>
+                <textFieldExpression><![CDATA[$P{RUTA}]]></textFieldExpression>
+            </textField>
+            <textField pattern="dd/MM/yyyy HH:mm">
+                <reportElement x="568" y="24" width="234" height="24" forecolor="#DCEBFF"
+                               backcolor="#1769D2" mode="Opaque"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="7"/><paragraph rightIndent="18"/></textElement>
+                <textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+            </textField>
+            <staticText>
+                <reportElement x="0" y="54" width="802" height="14" forecolor="#66758A"/>
+                <textElement><font size="8" isItalic="true"/></textElement>
+                <text><![CDATA[Se considera compra una proforma o una factura no anulada del cliente. "Nunca" significa que el cliente no tiene ninguna.]]></text>
+            </staticText>
+        </band>
+    </title>
+    <columnHeader>
+        <band height="28">
+            <staticText><reportElement style="Header" x="0" y="0" width="90" height="28"/><textElement textAlignment="Left"/><text><![CDATA[Ruta]]></text></staticText>
+            <staticText><reportElement style="Header" x="90" y="0" width="100" height="28"/><textElement textAlignment="Left"/><text><![CDATA[Vendedor]]></text></staticText>
+            <staticText><reportElement style="Header" x="190" y="0" width="60" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Código]]></text></staticText>
+            <staticText><reportElement style="Header" x="250" y="0" width="140" height="28"/><textElement textAlignment="Left"/><text><![CDATA[Negocio]]></text></staticText>
+            <staticText><reportElement style="Header" x="390" y="0" width="140" height="28"/><textElement textAlignment="Left"/><text><![CDATA[Cliente]]></text></staticText>
+            <staticText><reportElement style="Header" x="530" y="0" width="100" height="28"/><textElement textAlignment="Left"/><text><![CDATA[Encargado]]></text></staticText>
+            <staticText><reportElement style="Header" x="630" y="0" width="72" height="28"/><textElement textAlignment="Left"/><text><![CDATA[Teléfono]]></text></staticText>
+            <staticText><reportElement style="Header" x="702" y="0" width="60" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Última compra]]></text></staticText>
+            <staticText><reportElement style="Header" x="762" y="0" width="40" height="28"/><textElement textAlignment="Right"/><text><![CDATA[Días sin comprar]]></text></staticText>
+        </band>
+    </columnHeader>
+    <detail>
+        <band height="24">
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="0" y="0" width="90" height="24"/><textElement textAlignment="Left"/><textFieldExpression><![CDATA[$F{ruta}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="90" y="0" width="100" height="24"/><textElement textAlignment="Left"/><textFieldExpression><![CDATA[$F{vendedor}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="190" y="0" width="60" height="24"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA[$F{codigo}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="250" y="0" width="140" height="24"/><textElement textAlignment="Left"/><textFieldExpression><![CDATA[$F{negocio}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="390" y="0" width="140" height="24"/><textElement textAlignment="Left"/><textFieldExpression><![CDATA[$F{cliente}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="530" y="0" width="100" height="24"/><textElement textAlignment="Left"/><textFieldExpression><![CDATA[$F{contacto}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="630" y="0" width="72" height="24"/><textElement textAlignment="Left"/><textFieldExpression><![CDATA[$F{telefono}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="702" y="0" width="60" height="24"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA[$F{ultima_compra} == null ? "Nunca" : new java.text.SimpleDateFormat("dd/MM/yyyy").format($F{ultima_compra})]]></textFieldExpression></textField>
+            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="762" y="0" width="40" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{dias_sin_compra}]]></textFieldExpression></textField>
+        </band>
+    </detail>
+
+    <pageFooter>
+        <band height="18">
+            <textField>
+                <reportElement x="642" y="2" width="115" height="14" forecolor="#7B8798">
+                    <printWhenExpression><![CDATA["PDF".equals($P{FORMATO})]]></printWhenExpression>
+                </reportElement>
+                <textElement textAlignment="Right"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+            <textField evaluationTime="Report">
+                <reportElement x="757" y="2" width="35" height="14" forecolor="#7B8798">
+                    <printWhenExpression><![CDATA["PDF".equals($P{FORMATO})]]></printWhenExpression>
+                </reportElement>
+                <textElement textAlignment="Left"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA[" de " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+        </band>
+    </pageFooter>
+
+    <summary>
+        <band height="52">
+            <line><reportElement x="0" y="8" width="802" height="1" forecolor="#B9C9DC"/></line>
+            <staticText>
+                <reportElement x="0" y="16" width="400" height="24" forecolor="#52647C" backcolor="#F4F8FC" mode="Opaque">
+                    <printWhenExpression><![CDATA[$V{REPORT_COUNT}.intValue() == 0]]></printWhenExpression>
+                </reportElement>
+                <box><pen lineWidth="0.5" lineColor="#D6E2F0"/></box>
+                <textElement verticalAlignment="Middle"><font size="9" isItalic="true"/></textElement>
+                <text><![CDATA[Todos los clientes mayoristas compraron en el período seleccionado.]]></text>
+            </staticText>
+            <staticText><reportElement x="200" y="16" width="130" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Clientes sin compras:]]></text></staticText>
+            <textField pattern="#,##0"><reportElement x="330" y="16" width="90" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_CLIENTES} == null ? 0 : $V{TOTAL_CLIENTES}]]></textFieldExpression></textField>
+            <staticText><reportElement x="440" y="16" width="140" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Nunca han comprado:]]></text></staticText>
+            <textField pattern="#,##0"><reportElement x="580" y="16" width="90" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{NUNCA_COMPRARON} == null ? 0 : $V{NUNCA_COMPRARON}]]></textFieldExpression></textField>
+        </band>
+    </summary>
+</jasperReport>

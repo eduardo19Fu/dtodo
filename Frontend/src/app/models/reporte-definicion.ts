@@ -1,7 +1,7 @@
-export type CategoriaReporte = 'VENTAS' | 'INVENTARIO' | 'PROFORMAS' | 'NOTAS_CREDITO' | 'COMPRAS' | 'BODEGAS';
+export type CategoriaReporte = 'VENTAS' | 'INVENTARIO' | 'PROFORMAS' | 'NOTAS_CREDITO' | 'COMPRAS' | 'BODEGAS' | 'MAYORISTAS';
 export type FormatoReporte = 'PDF' | 'XLSX';
 export type FiltroReporte = 'FECHAS' | 'SUCURSAL' | 'USUARIO' | 'CATEGORIA' | 'CLIENTE' |
-  'PRODUCTO' | 'PROVEEDOR' | 'ESTADO' | 'FECHA_CORTE' | 'BODEGA' | 'BODEGA_OPCIONAL';
+  'PRODUCTO' | 'PROVEEDOR' | 'ESTADO' | 'FECHA_CORTE' | 'BODEGA' | 'BODEGA_OPCIONAL' | 'RUTA';
 
 export interface ReporteDefinicion {
   codigo: string;

@@ -1,10 +1,13 @@
+import { of, throwError } from 'rxjs';
+import Swal from 'sweetalert2';
+
 import { ReportesComponent } from './reportes.component';
 
 describe('ReportesComponent', () => {
-  it('incluye los 19 reportes aprobados en el catálogo', () => {
+  it('incluye los 22 reportes aprobados en el catálogo', () => {
     const auth: any = { usuario: {}, hasRole: () => true };
     const component = new ReportesComponent(auth, {} as any);
-    expect(component.reportes.length).toBe(19);
+    expect(component.reportes.length).toBe(22);
   });
 
   it('no permite generar con un rango invertido', () => {
@@ -151,6 +154,66 @@ describe('ReportesComponent', () => {
       component.limpiarFiltros();
 
       expect(component.idBodega).toBeNull();
+    });
+  });
+
+  describe('reportes de mayoristas', () => {
+    const admin: any = { usuario: {}, hasRole: (rol: string) => rol === 'ROLE_ADMIN' };
+
+    it('son solo del administrador y están en su propia categoría', () => {
+      const component = new ReportesComponent(admin, {} as any);
+      const mayoristas = component.reportes.filter(reporte => reporte.categoria === 'MAYORISTAS');
+
+      expect(mayoristas.map(reporte => reporte.codigo)).toEqual(
+        ['MAYORISTAS_CLIENTES_RUTA', 'MAYORISTAS_SIN_COMPRAS', 'MAYORISTAS_PROFORMAS_VENDEDOR']);
+      expect(mayoristas.every(reporte => reporte.roles.length === 1 && reporte.roles[0] === 'ROLE_ADMIN')).toBeTrue();
+      expect(component.reportesPorCategoria('MAYORISTAS').length).toBe(3);
+
+      const cobrador: any = { usuario: {}, hasRole: (rol: string) => rol === 'ROLE_COBRADOR' };
+      expect(new ReportesComponent(cobrador, {} as any).reportesPorCategoria('MAYORISTAS').length).toBe(0);
+    });
+
+    it('clientes por ruta se genera sin fechas, con ruta opcional', () => {
+      const component = new ReportesComponent(admin, {} as any);
+      component.reporteSeleccionado = component.reportes.find(reporte => reporte.codigo === 'MAYORISTAS_CLIENTES_RUTA');
+      component.fechaInicio = null;
+      component.fechaFin = null;
+
+      expect(component.requiereFiltro('RUTA')).toBeTrue();
+      expect(component.requiereFiltro('FECHAS')).toBeFalse();
+      expect(component.puedeGenerar()).toBeTrue();
+    });
+
+    it('sin compras y proformas por vendedor piden un período válido', () => {
+      const component = new ReportesComponent(admin, {} as any);
+      component.reporteSeleccionado = component.reportes.find(reporte => reporte.codigo === 'MAYORISTAS_SIN_COMPRAS');
+      component.fechaInicio = '2026-10-20';
+      component.fechaFin = '2026-10-10';
+      expect(component.puedeGenerar()).toBeFalse();
+
+      component.fechaFin = '2026-10-31';
+      expect(component.puedeGenerar()).toBeTrue();
+    });
+
+    it('al elegir el reporte carga las rutas una sola vez y envía la ruta al generarlo', () => {
+      const rutas = [{ valor: 1, etiqueta: 'RUTA 1', detalle: 'Ana' }];
+      const servicio: any = {
+        listarRutasSelector: jasmine.createSpy('listarRutasSelector').and.returnValue(of(rutas)),
+        generar: jasmine.createSpy('generar').and.returnValue(throwError({ error: { message: 'x' } }))
+      };
+      const component = new ReportesComponent(admin, servicio);
+      const reporte = component.reportes.find(item => item.codigo === 'MAYORISTAS_PROFORMAS_VENDEDOR');
+
+      component.seleccionarReporte(reporte);
+      component.seleccionarReporte(reporte);
+      expect(servicio.listarRutasSelector).toHaveBeenCalledTimes(1);
+      expect(component.opcionesRuta).toEqual(rutas);
+
+      spyOn(Swal, 'fire');
+      component.idRuta = 1;
+      component.generar();
+      expect(servicio.generar).toHaveBeenCalledWith('MAYORISTAS_PROFORMAS_VENDEDOR',
+        jasmine.objectContaining({ idRuta: 1 }));
     });
   });
 });
