@@ -24,6 +24,9 @@ export class PedidoDto {
   estadoPedido: EstadoPedido;
   unidades: number;
   estadoAutorizacion?: 'PENDIENTE' | 'APROBADA' | 'RECHAZADA' | null;
+  /** Piloto asignado al cargar el pedido a ruta. */
+  idRepartidor?: number | null;
+  repartidor?: string | null;
 }
 
 export class PedidoEtapaDto {
@@ -96,6 +99,8 @@ export class PedidoDetalleDto {
   vendedor: string;
   estadoPedido: EstadoPedido;
   estadoAutorizacion?: 'PENDIENTE' | 'APROBADA' | 'RECHAZADA' | null;
+  idRepartidor?: number | null;
+  repartidor?: string | null;
   observaciones?: string | null;
   /** Sucursal de la proforma: la que se propone para descontar el inventario. */
   idSucursal?: number | null;

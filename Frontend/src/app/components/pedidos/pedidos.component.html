@@ -3,9 +3,10 @@
     <div class="row mb-2">
       <div class="col-sm-9">
         <h1>{{title}}</h1>
-        <p class="pedidos-subtitle">
+        <p class="pedidos-subtitle" *ngIf="!esRepartidor">
           Pedidos mayoristas por entregar, por ruta. Bodega avanza cada etapa: picking, empaque y salida a ruta.
         </p>
+        <p class="pedidos-subtitle" *ngIf="esRepartidor">Tus pedidos en ruta. Al entregar, registra lo que dejaste en cada cliente.</p>
       </div>
     </div>
   </div>
@@ -72,6 +73,7 @@
           <th>Pedido</th>
           <th>Cliente</th>
           <th>Vendedor</th>
+          <th>Piloto</th>
           <th>Entrega est.</th>
           <th class="text-right">Unidades</th>
           <th>Etapa</th>
@@ -86,6 +88,7 @@
             <small *ngIf="pedido.negocio" class="d-block text-muted">{{pedido.cliente}}</small>
           </td>
           <td data-label="Vendedor">{{pedido.vendedor}}</td>
+          <td data-label="Piloto">{{pedido.repartidor || '—'}}</td>
           <td data-label="Entrega est.">{{pedido.fechaEntregaEstimada ? (pedido.fechaEntregaEstimada | date: 'dd/MM/yyyy') : '—'}}</td>
           <td data-label="Unidades" class="text-right">{{pedido.unidades | number}}</td>
           <td data-label="Etapa">
@@ -119,6 +122,10 @@
                 [attr.aria-label]="'Registrar la entrega del pedido ' + pedido.noProforma">
                 <i class="fas fa-truck" aria-hidden="true"></i> Registrar entrega
               </button>
+              <button *ngIf="puedeCambiarPiloto(pedido)" type="button" class="btn btn-sm btn-outline-secondary" (click)="cambiarPiloto(pedido)"
+                [disabled]="procesando === pedido.idProforma" [attr.aria-label]="'Cambiar el piloto del pedido ' + pedido.noProforma" title="Cambiar piloto">
+                <i class="fas fa-user-edit" aria-hidden="true"></i>
+              </button>
               <button *ngIf="puedeRetroceder(pedido)" type="button" class="btn btn-sm btn-outline-danger" (click)="retroceder(pedido)"
                 [disabled]="procesando === pedido.idProforma" [attr.aria-label]="'Regresar de etapa el pedido ' + pedido.noProforma"
                 title="Regresar a la etapa anterior">
@@ -151,6 +158,7 @@
         <div><span>Encargado</span><strong>{{detalle.contacto || '—'}} {{detalle.telefonoContacto}}</strong></div>
         <div><span>Ruta</span><strong>{{detalle.ruta || '—'}}</strong></div>
         <div><span>Vendedor</span><strong>{{detalle.vendedor}}</strong></div>
+        <div *ngIf="detalle.repartidor"><span>Piloto</span><strong>{{detalle.repartidor}}</strong></div>
         <div><span>Etapa</span><strong>{{etiquetaEstado(detalle.estadoPedido)}}</strong></div>
       </div>
 
@@ -186,7 +194,7 @@
       <form *ngIf="registrandoEntrega" class="entrega-form" (ngSubmit)="confirmarEntrega()" novalidate>
         <h4>Registrar entrega</h4>
         <div class="entrega-campos">
-          <label>
+          <label *ngIf="!esRepartidor">
             <span>Sucursal de la que se descuenta</span>
             <select class="form-control form-control-sm" [(ngModel)]="entrega.idSucursal" name="entregaSucursal">
               <option [ngValue]="null">Elegir sucursal</option>
@@ -198,7 +206,7 @@
             <input type="date" class="form-control form-control-sm" [(ngModel)]="entrega.fechaEntrega" name="entregaFecha"
               [min]="fechaMinimaEntrega" [max]="hoy">
           </label>
-          <label>
+          <label *ngIf="!esRepartidor">
             <span>Entregó (opcional)</span>
             <input type="text" class="form-control form-control-sm" [(ngModel)]="entrega.entregadoPor" name="entregaPor"
               maxlength="150" placeholder="Nombre del piloto o vendedor">
@@ -222,7 +230,7 @@
           </table>
         </div>
 
-        <label class="entrega-casilla">
+        <label class="entrega-casilla" *ngIf="!esRepartidor">
           <input type="checkbox" [(ngModel)]="entrega.descontadoAMano" name="entregaMano">
           <span>El inventario de lo entregado ya se descontó a mano (la entrega no lo descontará otra vez)</span>
         </label>

@@ -356,4 +356,51 @@ class AmbitoVendedorServiceImplTest {
         ambito.exigirUsuarioPropio(ID_VENDEDOR);
         assertThrows(NotFoundException.class, () -> ambito.exigirUsuarioPropio(1234));
     }
+
+    // ---------------------------------------------------------------- repartidor
+
+    private void iniciarSesionRepartidor(String... roles) {
+        Jwt jwt = Jwt.withTokenValue("token").header("alg", "none").claim("id_usuario", "21")
+                .issuedAt(Instant.now()).expiresAt(Instant.now().plusSeconds(60)).build();
+        SecurityContextHolder.getContext().setAuthentication(
+                new JwtAuthenticationToken(jwt, AuthorityUtils.createAuthorityList(roles)));
+    }
+
+    private static Proforma pedidoDe(Integer idRepartidor, xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum estado) {
+        Proforma pedido = new Proforma();
+        pedido.setIdProforma(5L);
+        pedido.setEstadoPedido(estado);
+        if (idRepartidor != null) {
+            pedido.setRepartidor(Usuario.builder().idUsuario(idRepartidor).build());
+        }
+        return pedido;
+    }
+
+    @Test
+    void unRepartidorSoloVeLosPedidosAsignadosQueSiguenPorEntregar() {
+        iniciarSesionRepartidor("ROLE_REPARTIDOR");
+        assertTrue(ambito.esRepartidor());
+        assertEquals(Integer.valueOf(21), ambito.idRepartidorForzado());
+
+        ambito.exigirPedidoAsignado(pedidoDe(21, xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum.EN_RUTA));
+        ambito.exigirPedidoAsignado(pedidoDe(21, xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum.ENTREGADA_PARCIAL));
+
+        assertThrows(NotFoundException.class, () -> ambito.exigirPedidoAsignado(pedidoDe(22, xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum.EN_RUTA)));
+        assertThrows(NotFoundException.class, () -> ambito.exigirPedidoAsignado(pedidoDe(null, xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum.EN_RUTA)));
+        assertThrows(NotFoundException.class, () -> ambito.exigirPedidoAsignado(pedidoDe(21, xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum.EMPACADA)));
+        assertThrows(NotFoundException.class, () -> ambito.exigirPedidoAsignado(pedidoDe(21, xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum.ENTREGADA)));
+        assertThrows(NotFoundException.class, () -> ambito.exigirPedidoAsignado(null));
+    }
+
+    @Test
+    void losDemasRolesNoTienenAlcanceDeRepartidor() {
+        iniciarSesionRepartidor("ROLE_ADMIN");
+        assertFalse(ambito.esRepartidor());
+        assertNull(ambito.idRepartidorForzado());
+        ambito.exigirPedidoAsignado(pedidoDe(99, xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum.CONFIRMADA));
+
+        iniciarSesionRepartidor("ROLE_REPARTIDOR", "ROLE_BODEGA");
+        assertFalse(ambito.esRepartidor());
+        ambito.exigirPedidoAsignado(pedidoDe(99, xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum.CONFIRMADA));
+    }
 }

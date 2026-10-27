@@ -6,6 +6,19 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Rol Repartidor y piloto del pedido (Fase 2C)
+
+Los pilotos entran con su propio usuario, ven solo los pedidos que se les asignaron y registran la entrega. Los reportes de lo entregado son el siguiente paso de la 2C.
+
+- **Rol** `ROLE_REPARTIDOR` y **piloto asignado**: "Cargar y salir a ruta" exige elegir al piloto (un usuario activo con ese rol; si no hay ninguno, la pantalla avisa que el administrador debe crearlo). Administrador y bodega pueden cambiarlo mientras el pedido esté en ruta o con entrega parcial, y el cambio queda en las etapas. Nuevos `GET /api/pedidos/repartidores` y `POST /api/pedidos/{id}/repartidor`.
+- **Alcance del repartidor** (lo hace valer el servidor, no la pantalla): lista y detalle solo de sus pedidos en ruta o parciales; cualquier otro pedido responde 404. No imprime picking, empaque ni nota de envío, no avanza ni regresa etapas, no cambia el piloto, no anula entregas ni lee clientes, facturas, productos con costo ni reportes. Quien combina el rol con otro rol operativo conserva el alcance de ese otro rol.
+- **Entrega del repartidor**: descuenta siempre de la sucursal del pedido y nunca con la casilla "ya descontado a mano"; esas decisiones quedan para bodega y el administrador. Lo que mande la petición sobre sucursal, casilla o nombre se ignora. Un pedido sin sucursal se rechaza.
+- **Pantalla**: entra directo a *Pedidos* al iniciar sesión, con la lista adaptada al celular, una columna "Piloto" para todos los roles y el formulario de entrega reducido a fecha y cantidades. La página de inicio no consulta productos ni clientes para él.
+- **Cierre de lecturas sin rol** (revisión que motivó el rol): además de los clientes, `GET /api/facturas/page/{page}` estaba abierta al público (sin token y sin rol), y `GET /api/proformas/generate/{id}` (imprime una proforma con precios y cliente), `GET /api/notas-credito`, `GET /api/usuarios/cajero` y `GET /api/usuarios/page/{page}` no declaraban roles, así que cualquier usuario con sesión —un repartidor incluido— las alcanzaba. Ahora todas declaran sus roles. `ControladoresSinRolTest` falla si aparece un endpoint nuevo sin rol que no sea del catálogo público (productos, marcas, tipos de producto, roles y rangos de correlativos, que siguen públicos a propósito).
+- **Base de datos** (`sql/mayoristas/12_create_rol_repartidor.sql`, **requerido antes del jar**; el rollback lo revierte): el rol y `proformas.id_repartidor`.
+- **Pruebas**: alcance del repartidor en `UtilsVendedorTest` y `AmbitoVendedorServiceImplTest`, piloto y lista en `PedidoServiceImplTest`, entrega del repartidor en `EntregaPedidoServiceImplTest`, la matriz de roles (el repartidor no llega a ningún otro controlador), lecturas sin token en `LecturaPublicaClientesTest`, y specs de `PedidosComponent`, `PedidoService` y `AuthService`.
+- **Por hacer en la 2C**: el reporte de ventas entregadas por ruta y vendedor.
+
 ### Corregido — Lectura pública de clientes (seguridad)
 
 `GET /api/clientes`, `/api/clientes/{id}` y `/api/clientes/page/**` estaban abiertas al público en `SecurityConfig` y sus métodos no tenían rol: cualquiera, sin iniciar sesión, podía leer todos los clientes (nombre, NIT, dirección, teléfono, ruta y datos de crédito). Eso también dejaba sin efecto el alcance por ruta del vendedor.

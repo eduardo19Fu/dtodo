@@ -133,4 +133,32 @@ class VendedorSeguridadTest {
         assertTrue(roles(PedidoApiController.class, "cerrarConLoEntregado").equals(Arrays.asList("ROLE_ADMIN")),
                 "cerrarConLoEntregado es solo del administrador");
     }
+
+    @Test
+    void elRepartidorVeYEntregaSusPedidosPeroNadaMasDeLosPedidos() {
+        for (String metodo : new String[] { "listar", "detalle", "registrarEntrega" }) {
+            assertTrue(roles(PedidoApiController.class, metodo).contains("ROLE_REPARTIDOR"), metodo + " debe permitir al repartidor");
+        }
+        for (String metodo : new String[] { "avanzar", "retroceder", "picking", "empaque", "notaEnvio", "sucursales", "repartidores",
+                "asignarRepartidor", "anularEntrega", "cerrarConLoEntregado" }) {
+            assertFalse(roles(PedidoApiController.class, metodo).contains("ROLE_REPARTIDOR"), metodo + " no debe permitir al repartidor");
+        }
+        assertTrue(roles(PedidoApiController.class, "asignarRepartidor").equals(Arrays.asList("ROLE_ADMIN", "ROLE_BODEGA")));
+        assertTrue(roles(PedidoApiController.class, "repartidores").equals(Arrays.asList("ROLE_ADMIN", "ROLE_BODEGA")));
+    }
+
+    @Test
+    void elRepartidorNoLlegaANingunOtroControlador() throws Exception {
+        for (Class<?> controlador : new Class<?>[] { ProformaApiController.class, FacturaApiController.class, ClienteApiController.class,
+                ProductoApiController.class, RutaApiController.class, DescuentoApiController.class,
+                AutorizacionProformaApiController.class, ReporteMayoristasApiController.class }) {
+            for (Method metodo : controlador.getDeclaredMethods()) {
+                Secured secured = metodo.getAnnotation(Secured.class);
+                if (secured != null) {
+                    assertFalse(Arrays.asList(secured.value()).contains("ROLE_REPARTIDOR"),
+                            controlador.getSimpleName() + "." + metodo.getName());
+                }
+            }
+        }
+    }
 }

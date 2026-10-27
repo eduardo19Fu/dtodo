@@ -144,6 +144,15 @@ export class AuthService {
       && !this.hasRole('ROLE_ADMIN') && !this.hasRole('ROLE_COBRADOR') && !this.hasRole('ROLE_INVENTARIO');
   }
 
+  /**
+   * Repartidor acotado: solo tiene el rol de repartidor. Ve únicamente los pedidos que se le asignaron; replica la regla del
+   * backend (`Utils.esRepartidorAcotado`), que es la que realmente protege los datos.
+   */
+  esRepartidor(): boolean {
+    return this.hasRole('ROLE_REPARTIDOR') && !this.hasRole('ROLE_ADMIN') && !this.hasRole('ROLE_BODEGA')
+      && !this.hasRole('ROLE_VENDEDOR') && !this.hasRole('ROLE_COBRADOR') && !this.hasRole('ROLE_INVENTARIO');
+  }
+
   hasRole(role: string): boolean {
     if (this.usuario.roles.includes(role)) {
       return true;

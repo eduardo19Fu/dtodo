@@ -57,6 +57,7 @@ public class FacturaApiController {
         return ResponseEntity.ok(serviceFactura.findAll());
     }
 
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR"})
     @GetMapping(value = "/facturas/page/{page}")
     public ResponseEntity<Page<Factura>> index(@PathVariable("page") Integer page) {
         log.info("********** Buscando listado de facturas de pagina {} **********", page);

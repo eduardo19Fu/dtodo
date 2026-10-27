@@ -101,6 +101,12 @@ public class Proforma implements Serializable {
     @Enumerated(EnumType.STRING)
     private EstadoPedidoEnum estadoPedido;
 
+    /** Piloto asignado al cargar el pedido a ruta; lo fija el servidor. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_repartidor")
+    @JsonIgnoreProperties({ "password", "roles", "sucursal", "hibernateLazyInitializer", "handler" })
+    private Usuario repartidor;
+
     /** Un administrador autorizó facturarla aunque ya venció. */
     private boolean vencimientoAutorizado;
 

@@ -41,8 +41,20 @@ export class PedidoService {
   }
 
   /** Pasa el pedido a la etapa siguiente; {@code responsable} es el nombre de quien lo hizo si no tiene usuario. */
-  avanzar(idProforma: number, responsable?: string): Observable<PedidoDetalleDto> {
-    return this.http.post<PedidoDetalleDto>(`${this.url}/${idProforma}/avanzar`, { responsable: responsable || null });
+  /** Al cargar el pedido a ruta es obligatorio el piloto ({@code idRepartidor}); en las demás etapas se ignora. */
+  avanzar(idProforma: number, responsable?: string, idRepartidor?: number): Observable<PedidoDetalleDto> {
+    return this.http.post<PedidoDetalleDto>(`${this.url}/${idProforma}/avanzar`,
+      { responsable: responsable || null, idRepartidor: idRepartidor || null });
+  }
+
+  /** Los repartidores activos, para elegir el piloto (administrador y bodega). */
+  repartidores(): Observable<ReporteSelectorOpcionDto[]> {
+    return this.http.get<ReporteSelectorOpcionDto[]>(`${this.url}/repartidores`);
+  }
+
+  /** Cambia el piloto de un pedido en ruta o con entrega parcial. */
+  asignarRepartidor(idProforma: number, idRepartidor: number): Observable<PedidoDetalleDto> {
+    return this.http.post<PedidoDetalleDto>(`${this.url}/${idProforma}/repartidor`, { idRepartidor });
   }
 
   /** Solo administrador; el motivo es obligatorio. */

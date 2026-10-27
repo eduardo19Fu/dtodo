@@ -34,10 +34,10 @@ describe('PedidoService', () => {
     service.avanzar(7, 'Irene Ortega').subscribe();
     const avanzar = http.expectOne(`${global.url}/pedidos/7/avanzar`);
     expect(avanzar.request.method).toBe('POST');
-    expect(avanzar.request.body).toEqual({ responsable: 'Irene Ortega' });
+    expect(avanzar.request.body).toEqual({ responsable: 'Irene Ortega', idRepartidor: null });
 
     service.avanzar(8).subscribe();
-    expect(http.expectOne(`${global.url}/pedidos/8/avanzar`).request.body).toEqual({ responsable: null });
+    expect(http.expectOne(`${global.url}/pedidos/8/avanzar`).request.body).toEqual({ responsable: null, idRepartidor: null });
 
     service.retroceder(7, 'faltó un producto').subscribe();
     expect(http.expectOne(`${global.url}/pedidos/7/retroceder`).request.body).toEqual({ motivo: 'faltó un producto' });
@@ -70,5 +70,16 @@ describe('PedidoService', () => {
 
     service.sucursales().subscribe();
     expect(http.expectOne(`${global.url}/pedidos/sucursales`).request.method).toBe('GET');
+  });
+
+  it('avanza enviando el piloto, lista los repartidores y cambia el piloto', () => {
+    service.avanzar(7, undefined, 21).subscribe();
+    expect(http.expectOne(`${global.url}/pedidos/7/avanzar`).request.body).toEqual({ responsable: null, idRepartidor: 21 });
+
+    service.repartidores().subscribe();
+    expect(http.expectOne(`${global.url}/pedidos/repartidores`).request.method).toBe('GET');
+
+    service.asignarRepartidor(7, 22).subscribe();
+    expect(http.expectOne(`${global.url}/pedidos/7/repartidor`).request.body).toEqual({ idRepartidor: 22 });
   });
 });

@@ -66,14 +66,18 @@ public class EntregaPedidoServiceImpl implements IEntregaPedidoService {
     public PedidoDetalleDto registrar(Long idProforma, EntregaSolicitudDto solicitud) {
         Proforma pedido = pedidoService.obtenerPedido(idProforma);
         ambito.exigirProformaPropia(pedido);
+        ambito.exigirPedidoAsignado(pedido);
         exigirEntregable(pedido);
         if (solicitud == null) {
             throw new ReglaNegocioException("Indique lo que se entregó.");
         }
 
-        Sucursal sucursal = cargarSucursal(solicitud.getIdSucursal());
+        // Un repartidor no decide sobre el inventario: se descuenta de la sucursal del pedido y nunca se marca a mano.
+        boolean repartidor = ambito.esRepartidor();
+        boolean descontadoAMano = !repartidor && solicitud.isDescontadoAMano();
+        Sucursal sucursal = repartidor ? sucursalDelPedido(pedido) : cargarSucursal(solicitud.getIdSucursal());
         LocalDate fechaEntrega = validarFecha(solicitud.getFechaEntrega(), pedido);
-        String entregadoPor = limpiar(solicitud.getEntregadoPor(), MAX_ENTREGADO_POR, "El nombre de quien entregó");
+        String entregadoPor = repartidor ? null : limpiar(solicitud.getEntregadoPor(), MAX_ENTREGADO_POR, "El nombre de quien entregó");
         String observaciones = limpiar(solicitud.getObservaciones(), MAX_OBSERVACIONES, "Las observaciones");
         Map<Long, Integer> cantidades = validarLineas(pedido, solicitud);
 
@@ -89,7 +93,7 @@ public class EntregaPedidoServiceImpl implements IEntregaPedidoService {
             int entregadaNueva = valor(linea.getCantidadEntregada()) + cantidad;
             int cubierta = Math.max(0, entregadaNueva - valor(linea.getCantidadDescontada()));
             cubiertas.put(linea.getIdDetalle(), cubierta);
-            if (!solicitud.isDescontadoAMano() && cubierta > 0) {
+            if (!descontadoAMano && cubierta > 0) {
                 Producto producto = linea.getProducto();
                 porProducto.merge(producto.getIdProducto(), cubierta, Integer::sum);
                 productos.putIfAbsent(producto.getIdProducto(), producto);
@@ -105,7 +109,7 @@ public class EntregaPedidoServiceImpl implements IEntregaPedidoService {
                 .entregadoPor(entregadoPor)
                 .fechaEntrega(fechaEntrega)
                 .fechaRegistro(LocalDateTime.now())
-                .descontadoAMano(solicitud.isDescontadoAMano())
+                .descontadoAMano(descontadoAMano)
                 .observaciones(observaciones)
                 .build();
         for (DetalleProforma linea : pedido.getItemsProforma()) {
@@ -114,7 +118,7 @@ public class EntregaPedidoServiceImpl implements IEntregaPedidoService {
                 continue;
             }
             int cubierta = cubiertas.get(linea.getIdDetalle());
-            int descontadaPorElSistema = solicitud.isDescontadoAMano() ? 0 : cubierta;
+            int descontadaPorElSistema = descontadoAMano ? 0 : cubierta;
             entrega.getDetalles().add(ProformaEntregaDetalle.builder()
                     .entrega(entrega)
                     .idDetalle(linea.getIdDetalle())
@@ -210,6 +214,13 @@ public class EntregaPedidoServiceImpl implements IEntregaPedidoService {
             throw new ReglaNegocioException("El descuento del pedido " + pedido.getNoProforma()
                     + " no está autorizado; no se puede entregar.");
         }
+    }
+
+    private Sucursal sucursalDelPedido(Proforma pedido) {
+        if (pedido.getSucursal() == null) {
+            throw new ReglaNegocioException("El pedido " + pedido.getNoProforma() + " no tiene sucursal; pida a bodega o al administrador que registre la entrega.");
+        }
+        return pedido.getSucursal();
     }
 
     private Sucursal cargarSucursal(Integer idSucursal) {

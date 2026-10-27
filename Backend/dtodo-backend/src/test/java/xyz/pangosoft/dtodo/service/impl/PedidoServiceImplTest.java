@@ -41,17 +41,21 @@ import xyz.pangosoft.dtodo.service.IUsuarioService;
 class PedidoServiceImplTest {
 
     private final IProformaRepository proformaRepository = mock(IProformaRepository.class);
+    private final xyz.pangosoft.dtodo.repository.IUsuarioRepository usuarioRepository = mock(xyz.pangosoft.dtodo.repository.IUsuarioRepository.class);
     private final IProformaEtapaRepository etapaRepository = mock(IProformaEtapaRepository.class);
     private final IAmbitoVendedorService ambito = mock(IAmbitoVendedorService.class);
     private final IUsuarioService usuarioService = mock(IUsuarioService.class);
     private final IProformaAuditoriaService auditoria = mock(IProformaAuditoriaService.class);
     private final PedidoServiceImpl service =
             new PedidoServiceImpl(proformaRepository, etapaRepository, mock(IProformaEntregaRepository.class), ambito,
-                    usuarioService, auditoria);
+                    usuarioService, usuarioRepository, auditoria);
 
     @BeforeEach
     void sesion() {
         when(ambito.idUsuarioActual()).thenReturn(9);
+        when(ambito.idRepartidorForzado()).thenReturn(null);
+        when(usuarioService.findById(21)).thenReturn(Usuario.builder().idUsuario(21).primerNombre("David").apellido("Aguilar")
+                .enabled(true).roles(java.util.Collections.singletonList(xyz.pangosoft.dtodo.model.Role.builder().role("ROLE_REPARTIDOR").build())).build());
         when(usuarioService.findById(9)).thenReturn(Usuario.builder().idUsuario(9).primerNombre("Irene").apellido("Ortega").build());
         when(auditoria.motivoObligatorio(any(), any())).thenAnswer(inv -> {
             String motivo = inv.getArgument(0);
@@ -82,7 +86,7 @@ class PedidoServiceImplTest {
     void bodegaAvanzaElPedidoEtapaPorEtapaYDejaQuienYCuando() {
         Proforma proforma = pedido(EstadoPedidoEnum.CONFIRMADA);
 
-        service.avanzar(7L, "  Irene Ortega  ");
+        service.avanzar(7L, "  Irene Ortega  ", null);
         assertEquals(EstadoPedidoEnum.EN_PREPARACION, proforma.getEstadoPedido());
         ProformaEtapa etapa = etapaGuardada();
         assertEquals(EstadoPedidoEnum.EN_PREPARACION, etapa.getEtapa());
@@ -90,17 +94,18 @@ class PedidoServiceImplTest {
         assertEquals(Integer.valueOf(9), etapa.getUsuario().getIdUsuario());
         assertTrue(etapa.getFecha() != null);
 
-        service.avanzar(7L, null);
+        service.avanzar(7L, null, null);
         assertEquals(EstadoPedidoEnum.EMPACADA, proforma.getEstadoPedido());
-        service.avanzar(7L, "");
+        service.avanzar(7L, "", 21);
         assertEquals(EstadoPedidoEnum.EN_RUTA, proforma.getEstadoPedido());
+        assertEquals(Integer.valueOf(21), proforma.getRepartidor().getIdUsuario());
     }
 
     @Test
     void unPedidoQueYaSalioARutaNoAvanzaEnBodega() {
         pedido(EstadoPedidoEnum.EN_RUTA);
 
-        ReglaNegocioException error = assertThrows(ReglaNegocioException.class, () -> service.avanzar(7L, null));
+        ReglaNegocioException error = assertThrows(ReglaNegocioException.class, () -> service.avanzar(7L, null, null));
 
         assertTrue(error.getMessage().contains("ya salió a ruta"));
         verify(etapaRepository, never()).save(any());
@@ -110,7 +115,7 @@ class PedidoServiceImplTest {
     void unPedidoEntregadoNoAvanza() {
         pedido(EstadoPedidoEnum.ENTREGADA_PARCIAL);
 
-        ReglaNegocioException error = assertThrows(ReglaNegocioException.class, () -> service.avanzar(7L, null));
+        ReglaNegocioException error = assertThrows(ReglaNegocioException.class, () -> service.avanzar(7L, null, null));
 
         assertTrue(error.getMessage().contains("ya se entregó"));
     }
@@ -119,18 +124,18 @@ class PedidoServiceImplTest {
     void conElDescuentoPendienteORechazadoNoSePreparaElPedido() {
         Proforma proforma = pedido(EstadoPedidoEnum.CONFIRMADA);
         proforma.setEstadoAutorizacion(EstadoAutorizacionEnum.PENDIENTE);
-        ReglaNegocioException pendiente = assertThrows(ReglaNegocioException.class, () -> service.avanzar(7L, null));
+        ReglaNegocioException pendiente = assertThrows(ReglaNegocioException.class, () -> service.avanzar(7L, null, null));
         assertTrue(pendiente.getMessage().contains("pendiente de autorización"));
 
         proforma.setEstadoAutorizacion(EstadoAutorizacionEnum.RECHAZADA);
-        ReglaNegocioException rechazada = assertThrows(ReglaNegocioException.class, () -> service.avanzar(7L, null));
+        ReglaNegocioException rechazada = assertThrows(ReglaNegocioException.class, () -> service.avanzar(7L, null, null));
         assertTrue(rechazada.getMessage().contains("rechazado"));
 
         assertEquals(EstadoPedidoEnum.CONFIRMADA, proforma.getEstadoPedido());
         verify(etapaRepository, never()).save(any());
 
         proforma.setEstadoAutorizacion(EstadoAutorizacionEnum.APROBADA);
-        service.avanzar(7L, null);
+        service.avanzar(7L, null, null);
         assertEquals(EstadoPedidoEnum.EN_PREPARACION, proforma.getEstadoPedido());
     }
 
@@ -138,18 +143,18 @@ class PedidoServiceImplTest {
     void elResponsableMuyLargoSeRechaza() {
         pedido(EstadoPedidoEnum.CONFIRMADA);
 
-        assertThrows(ReglaNegocioException.class, () -> service.avanzar(7L, new String(new char[151]).replace('\0', 'a')));
+        assertThrows(ReglaNegocioException.class, () -> service.avanzar(7L, new String(new char[151]).replace('\0', 'a'), null));
     }
 
     @Test
     void unaProformaMinoristaOSinEtapaNoEsUnPedido() {
         Proforma minorista = pedido(EstadoPedidoEnum.CONFIRMADA);
         minorista.setTipoProforma(TipoProformaEnum.MINORISTA);
-        assertThrows(NotFoundException.class, () -> service.avanzar(7L, null));
+        assertThrows(NotFoundException.class, () -> service.avanzar(7L, null, null));
         assertThrows(NotFoundException.class, () -> service.detalle(7L));
 
         Proforma sinEtapa = pedido(null);
-        assertThrows(NotFoundException.class, () -> service.avanzar(7L, null));
+        assertThrows(NotFoundException.class, () -> service.avanzar(7L, null, null));
 
         when(proformaRepository.findById(99L)).thenReturn(Optional.empty());
         assertThrows(NotFoundException.class, () -> service.detalle(99L));
@@ -238,23 +243,23 @@ class PedidoServiceImplTest {
     @Test
     void laListaSinEtapaTraeLosPedidosPorEntregarYElVendedorSoloVeLosSuyos() {
         when(ambito.forzarUsuario(null)).thenReturn(5);
-        when(proformaRepository.findPedidos(any(), any(), any(), any(), any(), any(), any())).thenReturn(Collections.emptyList());
+        when(proformaRepository.findPedidos(any(), any(), any(), any(), any(), any(), any(), any())).thenReturn(Collections.emptyList());
 
         service.listar(3, null, LocalDate.of(2026, 10, 1), null);
 
         verify(proformaRepository).findPedidos(eq(TipoProformaEnum.MAYORISTA), eq(EstadoPedidoEnum.POR_ENTREGAR), eq(3),
-                eq(5), any(), any(), any());
+                eq(5), eq(null), any(), any(), any());
     }
 
     @Test
     void laListaConUnaEtapaFiltraSoloPorEsa() {
         when(ambito.forzarUsuario(null)).thenReturn(null);
-        when(proformaRepository.findPedidos(any(), any(), any(), any(), any(), any(), any())).thenReturn(Collections.emptyList());
+        when(proformaRepository.findPedidos(any(), any(), any(), any(), any(), any(), any(), any())).thenReturn(Collections.emptyList());
 
         service.listar(null, EstadoPedidoEnum.EMPACADA, null, null);
 
         verify(proformaRepository).findPedidos(eq(TipoProformaEnum.MAYORISTA),
-                eq(Collections.singletonList(EstadoPedidoEnum.EMPACADA)), eq(null), eq(null), any(), any(), any());
+                eq(Collections.singletonList(EstadoPedidoEnum.EMPACADA)), eq(null), eq(null), eq(null), any(), any(), any());
     }
 
     @Test
@@ -286,5 +291,93 @@ class PedidoServiceImplTest {
         linea.setCantidad(cantidad);
         linea.setObservacion(observacion);
         return linea;
+    }
+
+    // ---------------------------------------------------------------- piloto y alcance del repartidor
+
+    @Test
+    void cargarAUnaRutaExigeElegirUnPilotoQueSeaRepartidorActivo() {
+        Proforma proforma = pedido(EstadoPedidoEnum.EMPACADA);
+
+        assertThrows(ReglaNegocioException.class, () -> service.avanzar(7L, null, null));
+        assertEquals(EstadoPedidoEnum.EMPACADA, proforma.getEstadoPedido());
+
+        when(usuarioService.findById(30)).thenReturn(Usuario.builder().idUsuario(30).enabled(true)
+                .roles(Collections.singletonList(xyz.pangosoft.dtodo.model.Role.builder().role("ROLE_COBRADOR").build())).build());
+        ReglaNegocioException noEsRepartidor = assertThrows(ReglaNegocioException.class, () -> service.avanzar(7L, null, 30));
+        assertTrue(noEsRepartidor.getMessage().contains("no es un repartidor"));
+
+        when(usuarioService.findById(31)).thenReturn(Usuario.builder().idUsuario(31).enabled(false)
+                .roles(Collections.singletonList(xyz.pangosoft.dtodo.model.Role.builder().role("ROLE_REPARTIDOR").build())).build());
+        assertThrows(ReglaNegocioException.class, () -> service.avanzar(7L, null, 31));
+        verify(etapaRepository, never()).save(any());
+
+        service.avanzar(7L, null, 21);
+        assertEquals(EstadoPedidoEnum.EN_RUTA, proforma.getEstadoPedido());
+        assertTrue(etapaGuardada().getMotivo().contains("David Aguilar"));
+    }
+
+    @Test
+    void elPilotoSoloSeIndicaAlCargarYLasOtrasEtapasLoIgnoran() {
+        Proforma proforma = pedido(EstadoPedidoEnum.CONFIRMADA);
+
+        service.avanzar(7L, null, 21);
+
+        assertEquals(EstadoPedidoEnum.EN_PREPARACION, proforma.getEstadoPedido());
+        assertEquals(null, proforma.getRepartidor());
+    }
+
+    @Test
+    void elPilotoSeCambiaMientrasElPedidoEstaEnRutaOParcial() {
+        Proforma proforma = pedido(EstadoPedidoEnum.EN_RUTA);
+
+        service.asignarRepartidor(7L, 21);
+
+        assertEquals(Integer.valueOf(21), proforma.getRepartidor().getIdUsuario());
+        ProformaEtapa etapa = etapaGuardada();
+        assertEquals(EstadoPedidoEnum.EN_RUTA, etapa.getEtapa());
+        assertTrue(etapa.getMotivo().contains("Piloto asignado: David Aguilar"));
+
+        pedido(EstadoPedidoEnum.EMPACADA);
+        assertThrows(ReglaNegocioException.class, () -> service.asignarRepartidor(7L, 21));
+        pedido(EstadoPedidoEnum.ENTREGADA);
+        assertThrows(ReglaNegocioException.class, () -> service.asignarRepartidor(7L, 21));
+    }
+
+    @Test
+    void elRepartidorSoloListaSusPedidosEnRutaOParciales() {
+        when(ambito.idRepartidorForzado()).thenReturn(21);
+        when(ambito.forzarUsuario(null)).thenReturn(null);
+        when(proformaRepository.findPedidos(any(), any(), any(), any(), any(), any(), any(), any())).thenReturn(Collections.emptyList());
+
+        service.listar(null, null, null, null);
+
+        verify(proformaRepository).findPedidos(eq(TipoProformaEnum.MAYORISTA),
+                eq(java.util.Arrays.asList(EstadoPedidoEnum.EN_RUTA, EstadoPedidoEnum.ENTREGADA_PARCIAL)), eq(null), eq(null),
+                eq(21), any(), any(), any());
+    }
+
+    @Test
+    void siElRepartidorPideUnaEtapaQueNoEsDeRutaNoSeConsultaNada() {
+        when(ambito.idRepartidorForzado()).thenReturn(21);
+
+        assertTrue(service.listar(null, EstadoPedidoEnum.CONFIRMADA, null, null).isEmpty());
+
+        verify(proformaRepository, never()).findPedidos(any(), any(), any(), any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void elDetalleNoSeEntregaAUnRepartidorQueNoEsElAsignado() {
+        Proforma proforma = pedido(EstadoPedidoEnum.EN_RUTA);
+        org.mockito.Mockito.doThrow(new NotFoundException("no es suyo")).when(ambito).exigirPedidoAsignado(proforma);
+
+        assertThrows(NotFoundException.class, () -> service.detalle(7L));
+    }
+
+    @Test
+    void laListaDeRepartidoresViveEnElRepositorio() {
+        service.repartidores();
+
+        verify(usuarioRepository).findRepartidores();
     }
 }

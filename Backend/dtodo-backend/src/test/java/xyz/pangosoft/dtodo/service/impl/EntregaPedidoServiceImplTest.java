@@ -407,4 +407,44 @@ class EntregaPedidoServiceImplTest {
         pedido.setEstadoPedido(EstadoPedidoEnum.ENTREGADA);
         assertThrows(ReglaNegocioException.class, () -> service.cerrarConLoEntregado(7L, "motivo"));
     }
+
+    // ------------------------------------------------------------------------------------------ repartidor
+
+    @Test
+    void elRepartidorEntregaDeLaSucursalDelPedidoSinElegirNiMarcarLaCasilla() {
+        when(ambito.esRepartidor()).thenReturn(true);
+        pedido.setSucursal(central);
+        EntregaSolicitudDto solicitud = solicitud(10, 5);
+        solicitud.setIdSucursal(99);
+        solicitud.setDescontadoAMano(true);
+        solicitud.setEntregadoPor("otro nombre");
+
+        service.registrar(7L, solicitud);
+
+        verify(movimientoService).save(argThat(m -> m.getCantidad() == 10 && m.getSucursal() == central));
+        verify(pedidoService).cambiarEstado(eq(pedido), eq(EstadoPedidoEnum.ENTREGADA), isNull(), isNull());
+        verify(sucursalRepository, never()).findById(99);
+        assertEquals(10, cuadernos.getCantidadDescontada());
+    }
+
+    @Test
+    void elRepartidorNoEntregaUnPedidoSinSucursal() {
+        when(ambito.esRepartidor()).thenReturn(true);
+        pedido.setSucursal(null);
+
+        assertThrows(ReglaNegocioException.class, () -> service.registrar(7L, solicitud(1, 1)));
+
+        verify(entregaRepository, never()).save(any());
+    }
+
+    @Test
+    void elRepartidorSoloEntregaLosPedidosQueSeLeAsignaron() {
+        when(ambito.esRepartidor()).thenReturn(true);
+        pedido.setSucursal(central);
+        org.mockito.Mockito.doThrow(new NotFoundException("no es suyo")).when(ambito).exigirPedidoAsignado(pedido);
+
+        assertThrows(NotFoundException.class, () -> service.registrar(7L, solicitud(1, 1)));
+
+        verify(entregaRepository, never()).save(any());
+    }
 }

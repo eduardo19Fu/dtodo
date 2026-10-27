@@ -56,4 +56,17 @@ describe('AuthService - roles', () => {
 
     expect(service.esVendedor()).toBeFalse();
   });
+
+  it('el repartidor acotado solo tiene ese rol', () => {
+    iniciarSesionConRoles(['ROLE_REPARTIDOR']);
+    expect(service.esRepartidor()).toBeTrue();
+
+    for (const otro of ['ROLE_ADMIN', 'ROLE_BODEGA', 'ROLE_VENDEDOR', 'ROLE_COBRADOR', 'ROLE_INVENTARIO']) {
+      service = new AuthService(null);
+      sessionStorage.clear();
+      iniciarSesionConRoles(['ROLE_REPARTIDOR', otro]);
+
+      expect(service.esRepartidor()).toBeFalse();
+    }
+  });
 });

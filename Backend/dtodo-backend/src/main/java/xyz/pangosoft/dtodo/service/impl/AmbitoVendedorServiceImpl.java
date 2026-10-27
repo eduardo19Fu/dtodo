@@ -37,6 +37,30 @@ public class AmbitoVendedorServiceImpl implements IAmbitoVendedorService {
     }
 
     @Override
+    public boolean esRepartidor() {
+        return Utils.esRepartidorAcotado();
+    }
+
+    @Override
+    public Integer idRepartidorForzado() {
+        return esRepartidor() ? idUsuarioActual() : null;
+    }
+
+    @Override
+    public void exigirPedidoAsignado(Proforma proforma) {
+        if (!esRepartidor()) {
+            return;
+        }
+        boolean asignado = proforma != null && proforma.getRepartidor() != null
+                && idUsuarioActual().equals(proforma.getRepartidor().getIdUsuario())
+                && (proforma.getEstadoPedido() == xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum.EN_RUTA
+                || proforma.getEstadoPedido() == xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum.ENTREGADA_PARCIAL);
+        if (!asignado) {
+            throw new NotFoundException("El pedido solicitado no se encuentra entre los suyos.");
+        }
+    }
+
+    @Override
     public Integer idUsuarioActual() {
         return Utils.idUsuarioAutenticado();
     }

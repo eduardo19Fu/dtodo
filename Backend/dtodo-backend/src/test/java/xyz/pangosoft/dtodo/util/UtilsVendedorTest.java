@@ -76,4 +76,23 @@ class UtilsVendedorTest {
         iniciarSesion(token(null), "ROLE_VENDEDOR");
         assertThrows(AccessDeniedException.class, Utils::idUsuarioAutenticado);
     }
+
+    @Test
+    void esRepartidorAcotadoSoloSinNingunOtroRolOperativo() {
+        iniciarSesion(token("21"), "ROLE_REPARTIDOR");
+        assertTrue(Utils.esRepartidorAcotado());
+
+        for (String otro : new String[] { "ROLE_ADMIN", "ROLE_BODEGA", "ROLE_VENDEDOR", "ROLE_COBRADOR", "ROLE_INVENTARIO" }) {
+            iniciarSesion(token("21"), "ROLE_REPARTIDOR", otro);
+            assertFalse(Utils.esRepartidorAcotado(), otro);
+        }
+    }
+
+    @Test
+    void sinSesionOSinElRolNoEsRepartidor() {
+        assertFalse(Utils.esRepartidorAcotado());
+
+        iniciarSesion(token("7"), "ROLE_VENDEDOR");
+        assertFalse(Utils.esRepartidorAcotado());
+    }
 }

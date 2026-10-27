@@ -20,6 +20,18 @@ public interface IAmbitoVendedorService {
     /** {@code true} si la sesión es de un vendedor acotado a sus rutas. */
     boolean esVendedor();
 
+    /** El usuario de la sesión es un repartidor acotado (ver {@code Utils.esRepartidorAcotado()}). */
+    boolean esRepartidor();
+
+    /** El id del repartidor de la sesión, para limitar listados a sus pedidos; {@code null} si no es un repartidor acotado. */
+    Integer idRepartidorForzado();
+
+    /**
+     * Un repartidor solo ve los pedidos que se le asignaron y que siguen por entregar; de otro modo responde como si no
+     * existieran (404). No hace nada para los demás roles.
+     */
+    void exigirPedidoAsignado(Proforma proforma);
+
     /** Id del usuario de la sesión, tomado del token. */
     Integer idUsuarioActual();
 

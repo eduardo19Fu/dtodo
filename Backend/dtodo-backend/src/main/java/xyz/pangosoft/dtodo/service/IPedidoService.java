@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import xyz.pangosoft.dtodo.dto.PedidoDetalleDto;
+import xyz.pangosoft.dtodo.dto.ReporteSelectorDto;
 import xyz.pangosoft.dtodo.dto.PedidoDto;
 import xyz.pangosoft.dtodo.model.Proforma;
 import xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum;
@@ -26,9 +27,16 @@ public interface IPedidoService {
 
     /**
      * Pasa el pedido a la etapa siguiente. No avanza si el descuento está pendiente o rechazado. {@code responsable}
-     * es opcional: el nombre de quien lo hizo cuando no tiene usuario.
+     * es opcional: el nombre de quien lo hizo cuando no tiene usuario. Al cargarlo a ruta es obligatorio el piloto
+     * ({@code idRepartidor}, un usuario activo con el rol repartidor).
      */
-    PedidoDetalleDto avanzar(Long idProforma, String responsable);
+    PedidoDetalleDto avanzar(Long idProforma, String responsable, Integer idRepartidor);
+
+    /** Cambia el piloto de un pedido que ya salió a ruta (por ejemplo, si el camión falla). */
+    PedidoDetalleDto asignarRepartidor(Long idProforma, Integer idRepartidor);
+
+    /** Los repartidores activos, para elegir el piloto. */
+    List<ReporteSelectorDto> repartidores();
 
     /** Vuelve el pedido a la etapa anterior; el motivo es obligatorio. No aplica a uno ya entregado. */
     PedidoDetalleDto retroceder(Long idProforma, String motivo);

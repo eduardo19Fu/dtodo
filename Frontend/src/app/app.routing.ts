@@ -127,7 +127,7 @@ const appRoutes: Routes = [
 
     /****** MENUS DE RUTAS ******/
     { path: 'autorizaciones/index', component: AutorizacionesComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN'] } },
-    { path: 'pedidos/index', component: PedidosComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_BODEGA', 'ROLE_VENDEDOR'] } },
+    { path: 'pedidos/index', component: PedidosComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_BODEGA', 'ROLE_VENDEDOR', 'ROLE_REPARTIDOR'] } },
     { path: 'rutas/index', component: RutasComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN'] } },
     { path: 'rutas/create', component: CreateRutaComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN'] } },
     { path: 'rutas/create/:id', component: CreateRutaComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN'] } },

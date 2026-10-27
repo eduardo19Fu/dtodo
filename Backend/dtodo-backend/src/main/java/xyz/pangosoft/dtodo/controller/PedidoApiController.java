@@ -24,6 +24,7 @@ import xyz.pangosoft.dtodo.dto.PedidoDetalleDto;
 import xyz.pangosoft.dtodo.dto.PedidoDto;
 import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
 import xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum;
+import xyz.pangosoft.dtodo.dto.AvancePedidoDto;
 import xyz.pangosoft.dtodo.dto.EntregaSolicitudDto;
 import xyz.pangosoft.dtodo.dto.ReporteSelectorDto;
 import xyz.pangosoft.dtodo.service.IEntregaPedidoService;
@@ -47,7 +48,7 @@ public class PedidoApiController {
     private final IEntregaPedidoService entregaService;
     private final IReporteSelectorService selectorService;
 
-    @Secured({ "ROLE_ADMIN", "ROLE_BODEGA", "ROLE_VENDEDOR" })
+    @Secured({ "ROLE_ADMIN", "ROLE_BODEGA", "ROLE_VENDEDOR", "ROLE_REPARTIDOR" })
     @GetMapping
     public ResponseEntity<List<PedidoDto>> listar(
             @RequestParam(required = false) Integer idRuta,
@@ -58,7 +59,7 @@ public class PedidoApiController {
                 parsearFecha(fechaFin)));
     }
 
-    @Secured({ "ROLE_ADMIN", "ROLE_BODEGA", "ROLE_VENDEDOR" })
+    @Secured({ "ROLE_ADMIN", "ROLE_BODEGA", "ROLE_VENDEDOR", "ROLE_REPARTIDOR" })
     @GetMapping("/{idProforma}")
     public ResponseEntity<PedidoDetalleDto> detalle(@PathVariable("idProforma") Long idProforma) {
         return ResponseEntity.ok(pedidoService.detalle(idProforma));
@@ -67,9 +68,25 @@ public class PedidoApiController {
     @Secured({ "ROLE_ADMIN", "ROLE_BODEGA" })
     @PostMapping("/{idProforma}/avanzar")
     public ResponseEntity<PedidoDetalleDto> avanzar(@PathVariable("idProforma") Long idProforma,
-            @RequestBody(required = false) Map<String, String> cuerpo) {
+            @RequestBody(required = false) AvancePedidoDto cuerpo) {
         log.info("Avanzando el pedido {}", idProforma);
-        return ResponseEntity.ok(pedidoService.avanzar(idProforma, cuerpo == null ? null : cuerpo.get("responsable")));
+        return ResponseEntity.ok(pedidoService.avanzar(idProforma, cuerpo == null ? null : cuerpo.getResponsable(),
+                cuerpo == null ? null : cuerpo.getIdRepartidor()));
+    }
+
+    /** Los repartidores activos, para elegir el piloto que lleva el pedido. */
+    @Secured({ "ROLE_ADMIN", "ROLE_BODEGA" })
+    @GetMapping("/repartidores")
+    public ResponseEntity<List<ReporteSelectorDto>> repartidores() {
+        return ResponseEntity.ok(pedidoService.repartidores());
+    }
+
+    @Secured({ "ROLE_ADMIN", "ROLE_BODEGA" })
+    @PostMapping("/{idProforma}/repartidor")
+    public ResponseEntity<PedidoDetalleDto> asignarRepartidor(@PathVariable("idProforma") Long idProforma,
+            @RequestBody AvancePedidoDto cuerpo) {
+        log.info("Cambiando el piloto del pedido {}", idProforma);
+        return ResponseEntity.ok(pedidoService.asignarRepartidor(idProforma, cuerpo.getIdRepartidor()));
     }
 
     @Secured("ROLE_ADMIN")
@@ -87,7 +104,7 @@ public class PedidoApiController {
         return ResponseEntity.ok(selectorService.listarSucursales());
     }
 
-    @Secured({ "ROLE_ADMIN", "ROLE_BODEGA", "ROLE_VENDEDOR" })
+    @Secured({ "ROLE_ADMIN", "ROLE_BODEGA", "ROLE_VENDEDOR", "ROLE_REPARTIDOR" })
     @PostMapping("/{idProforma}/entregas")
     public ResponseEntity<PedidoDetalleDto> registrarEntrega(@PathVariable("idProforma") Long idProforma,
             @RequestBody EntregaSolicitudDto solicitud) {

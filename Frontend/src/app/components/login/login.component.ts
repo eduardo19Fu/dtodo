@@ -54,7 +54,8 @@ export class LoginComponent implements OnInit {
       response => {
         this.authService.guardarSesion(response.access_token, response.refresh_token);
 
-        window.location.href = '/home';
+        // Un repartidor solo trabaja con sus pedidos: entra directo a ellos.
+        window.location.href = this.authService.esRepartidor() ? '/pedidos/index' : '/home';
       },
       error => {
         this.cargando = false;

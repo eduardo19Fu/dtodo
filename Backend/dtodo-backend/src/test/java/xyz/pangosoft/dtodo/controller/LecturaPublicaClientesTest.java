@@ -40,6 +40,14 @@ class LecturaPublicaClientesTest {
     }
 
     @Test
+    void sinTokenTampocoSeLeenFacturasNotasDeCreditoNiSeImprimeUnaProforma() throws Exception {
+        for (String ruta : new String[] { "/api/facturas/page/0", "/api/facturas", "/api/notas-credito",
+                "/api/proformas/generate/1", "/api/usuarios/page/0", "/api/usuarios/cajero" }) {
+            mockMvc.perform(get(ruta)).andExpect(status().isUnauthorized());
+        }
+    }
+
+    @Test
     void lasLecturasQueSiSonPublicasSiguenSiendolo() throws Exception {
         // El catálogo de productos y sus imágenes no cambia: no son datos de clientes.
         mockMvc.perform(get("/api/marcas")).andExpect(status().is(org.hamcrest.Matchers.not(401)));

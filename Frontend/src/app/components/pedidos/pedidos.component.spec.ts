@@ -9,7 +9,7 @@ describe('PedidosComponent', () => {
   let component: PedidosComponent;
 
   function auth(...roles: string[]): any {
-    return { hasRole: (rol: string) => roles.includes(rol) };
+    return { hasRole: (rol: string) => roles.includes(rol), esRepartidor: () => roles.length === 1 && roles[0] === 'ROLE_REPARTIDOR' };
   }
 
   function pedido(valores: Partial<PedidoDto> = {}): PedidoDto {
@@ -196,7 +196,7 @@ describe('PedidosComponent - entrega', () => {
   let component: PedidosComponent;
 
   function auth(...roles: string[]): any {
-    return { hasRole: (rol: string) => roles.includes(rol) };
+    return { hasRole: (rol: string) => roles.includes(rol), esRepartidor: () => roles.length === 1 && roles[0] === 'ROLE_REPARTIDOR' };
   }
 
   function detalle(valores: Partial<PedidoDetalleDto> = {}): PedidoDetalleDto {
@@ -361,5 +361,125 @@ describe('PedidosComponent - entrega', () => {
     const minima = new Date(component.fechaMinimaEntrega + 'T00:00:00');
     const hoy = new Date(component.hoy + 'T00:00:00');
     expect(Math.round((hoy.getTime() - minima.getTime()) / 86400000)).toBe(7);
+  });
+});
+
+describe('PedidosComponent - repartidor y piloto', () => {
+  let servicio: any;
+
+  function auth(...roles: string[]): any {
+    return { hasRole: (rol: string) => roles.includes(rol), esRepartidor: () => roles.length === 1 && roles[0] === 'ROLE_REPARTIDOR' };
+  }
+
+  function pedido(valores: Partial<PedidoDto> = {}): PedidoDto {
+    return Object.assign(new PedidoDto(), { idProforma: 7, noProforma: '123P', estadoPedido: 'EMPACADA', ruta: 'RUTA 1', idRuta: 1,
+      unidades: 15 }, valores);
+  }
+
+  async function esperar(): Promise<void> {
+    for (let i = 0; i < 4; i++) {
+      await Promise.resolve();
+    }
+  }
+
+  beforeEach(() => {
+    servicio = {
+      listar: jasmine.createSpy('listar').and.returnValue(of([])),
+      avanzar: jasmine.createSpy('avanzar').and.returnValue(of({})),
+      asignarRepartidor: jasmine.createSpy('asignarRepartidor').and.returnValue(of({})),
+      repartidores: jasmine.createSpy('repartidores').and.returnValue(of([
+        { valor: 21, etiqueta: 'David Aguilar' }, { valor: 22, etiqueta: 'Denis Reynoso' }])),
+      sucursales: jasmine.createSpy('sucursales').and.returnValue(of([])),
+      detalle: jasmine.createSpy('detalle').and.returnValue(of({ idProforma: 7, estadoPedido: 'EN_RUTA', idSucursal: 1, lineas: [], etapas: [], entregas: [] })),
+      registrarEntrega: jasmine.createSpy('registrarEntrega').and.returnValue(of({ estadoPedido: 'ENTREGADA', lineas: [], etapas: [], entregas: [] }))
+    };
+  });
+
+  it('cargar a ruta pide elegir el piloto y lo envía', async () => {
+    const component = new PedidosComponent(servicio, auth('ROLE_BODEGA'));
+    spyOn(Swal, 'fire').and.callFake(((opciones: any) => Promise.resolve({ isConfirmed: true, value: opciones.input === 'select' ? '22' : '' })) as any);
+
+    component.avanzar(pedido());
+    await esperar();
+
+    expect(servicio.repartidores).toHaveBeenCalled();
+    expect(servicio.avanzar).toHaveBeenCalledWith(7, undefined, 22);
+  });
+
+  it('si se cancela la elección del piloto el pedido no avanza', async () => {
+    const component = new PedidosComponent(servicio, auth('ROLE_BODEGA'));
+    spyOn(Swal, 'fire').and.returnValue(Promise.resolve({ isConfirmed: false } as any));
+
+    component.avanzar(pedido());
+    await esperar();
+
+    expect(servicio.avanzar).not.toHaveBeenCalled();
+  });
+
+  it('sin repartidores avisa y no avanza', async () => {
+    servicio.repartidores.and.returnValue(of([]));
+    const component = new PedidosComponent(servicio, auth('ROLE_BODEGA'));
+    const fire = spyOn(Swal, 'fire').and.returnValue(Promise.resolve({ isConfirmed: true } as any));
+
+    component.avanzar(pedido());
+    await esperar();
+
+    expect(fire).toHaveBeenCalledWith('No hay repartidores', jasmine.any(String), 'info');
+    expect(servicio.avanzar).not.toHaveBeenCalled();
+  });
+
+  it('las demás etapas siguen sin pedir piloto', async () => {
+    const component = new PedidosComponent(servicio, auth('ROLE_BODEGA'));
+    spyOn(Swal, 'fire').and.returnValue(Promise.resolve({ isConfirmed: true, value: 'Irene' } as any));
+
+    component.avanzar(pedido({ estadoPedido: 'CONFIRMADA' }));
+    await esperar();
+
+    expect(servicio.repartidores).not.toHaveBeenCalled();
+    expect(servicio.avanzar).toHaveBeenCalledWith(7, 'Irene');
+  });
+
+  it('bodega y el administrador cambian el piloto de un pedido en ruta', async () => {
+    const component = new PedidosComponent(servicio, auth('ROLE_BODEGA'));
+    expect(component.puedeCambiarPiloto(pedido({ estadoPedido: 'EN_RUTA' }))).toBeTrue();
+    expect(component.puedeCambiarPiloto(pedido({ estadoPedido: 'ENTREGADA_PARCIAL' }))).toBeTrue();
+    expect(component.puedeCambiarPiloto(pedido({ estadoPedido: 'EMPACADA' }))).toBeFalse();
+    expect(new PedidosComponent(servicio, auth('ROLE_REPARTIDOR')).puedeCambiarPiloto(pedido({ estadoPedido: 'EN_RUTA' }))).toBeFalse();
+    spyOn(Swal, 'fire').and.callFake(((opciones: any) => Promise.resolve({ isConfirmed: true, value: '21' })) as any);
+
+    component.cambiarPiloto(pedido({ estadoPedido: 'EN_RUTA' }));
+    await esperar();
+
+    expect(servicio.asignarRepartidor).toHaveBeenCalledWith(7, 21);
+  });
+
+  it('el repartidor solo entrega: no opera etapas ni cambia el piloto ni retrocede', () => {
+    const component = new PedidosComponent(servicio, auth('ROLE_REPARTIDOR'));
+    const enRuta = pedido({ estadoPedido: 'EN_RUTA' });
+
+    expect(component.esRepartidor).toBeTrue();
+    expect(component.puedeOperar).toBeFalse();
+    expect(component.puedeEntregar(enRuta)).toBeTrue();
+    expect(component.puedeAvanzar(pedido({ estadoPedido: 'CONFIRMADA' }))).toBeFalse();
+    expect(component.puedeRetroceder(enRuta)).toBeFalse();
+    expect(component.puedeEntregar(pedido({ estadoPedido: 'EMPACADA' }))).toBeFalse();
+  });
+
+  it('el repartidor registra la entrega sin elegir sucursal ni usar la casilla', () => {
+    const component = new PedidosComponent(servicio, auth('ROLE_REPARTIDOR'));
+    component.detalle = Object.assign(new PedidoDetalleDto(), { idProforma: 7, estadoPedido: 'EN_RUTA', idSucursal: 1,
+      lineas: [{ idDetalle: 1, codigo: 'A', producto: 'CUADERNO', cantidad: 10, cantidadEntregada: 0, pendiente: 10 }], entregas: [] });
+
+    component.abrirEntrega();
+    expect(servicio.sucursales).not.toHaveBeenCalled();
+    component.entrega.idSucursal = null;
+    component.entrega.descontadoAMano = true;
+    component.entrega.entregadoPor = 'Otro';
+    expect(component.validarEntrega()).toBe('');
+
+    component.confirmarEntrega();
+
+    expect(servicio.registrarEntrega).toHaveBeenCalledWith(7, jasmine.objectContaining({
+      descontadoAMano: false, entregadoPor: null, lineas: [{ idDetalle: 1, cantidad: 10 }] }));
   });
 });

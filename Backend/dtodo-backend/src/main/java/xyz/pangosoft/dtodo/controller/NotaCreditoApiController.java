@@ -35,6 +35,7 @@ public class NotaCreditoApiController {
 
     private final INotaCreditoService notaCreditoService;
 
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO"})
     @GetMapping(value = "/notas-credito")
     public ResponseEntity<List<NotaCreditoDto>> getNotasCredito() {
         log.info("Buscando listado de Notas de Credito");

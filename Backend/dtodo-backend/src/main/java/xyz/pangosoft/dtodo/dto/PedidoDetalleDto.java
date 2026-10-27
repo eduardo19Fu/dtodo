@@ -28,6 +28,8 @@ public class PedidoDetalleDto {
     private String vendedor;
     private EstadoPedidoEnum estadoPedido;
     private EstadoAutorizacionEnum estadoAutorizacion;
+    private Integer idRepartidor;
+    private String repartidor;
     /** Observación general del pedido (cómo se empaca). */
     private String observaciones;
     /** Sucursal de la proforma: la que se propone para descontar el inventario en la entrega. */

@@ -140,7 +140,7 @@
         <span class="menu-label">Sucursales</span>
       </a>
 
-      <a *ngIf="coincide('pedidos', 'mayoristas', 'picking', 'empaque', 'entregas', 'nota de envío') && (authService.hasRole('ROLE_ADMIN') || authService.hasRole('ROLE_BODEGA') || authService.hasRole('ROLE_VENDEDOR'))" [routerLink]="['/pedidos/index']"
+      <a *ngIf="coincide('pedidos', 'mayoristas', 'picking', 'empaque', 'entregas', 'nota de envío') && (authService.hasRole('ROLE_ADMIN') || authService.hasRole('ROLE_BODEGA') || authService.hasRole('ROLE_VENDEDOR') || authService.hasRole('ROLE_REPARTIDOR'))" [routerLink]="['/pedidos/index']"
         class="menu-link" [class.active]="router.url.startsWith('/pedidos')" (click)="notificarNavegacion()" title="Pedidos">
         <span class="menu-icon"><i class="fas fa-dolly" aria-hidden="true"></i></span>
         <span class="menu-label">Pedidos</span>

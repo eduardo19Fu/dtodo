@@ -49,6 +49,7 @@ public class UsuarioApiController {
 		return ResponseEntity.ok(serviceUsuario.findAll());
 	}
 
+	@Secured(value = { "ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO" })
 	@GetMapping(value = "/usuarios/cajero")
 	public ResponseEntity<List<Usuario>> findCajeros(
 			@RequestParam(value = "idSucursal", required = false) Integer idSucursal) {
@@ -56,6 +57,7 @@ public class UsuarioApiController {
 		return ResponseEntity.ok(serviceUsuario.cajeros(idSucursal));
 	}
 
+	@Secured(value = { "ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO" })
 	@GetMapping(value = "/usuarios/page/{page}")
 	public ResponseEntity<Page<Usuario>> index(@PathVariable("page") Integer page) {
 		log.info("Listando usuarios pagina: {}", page);

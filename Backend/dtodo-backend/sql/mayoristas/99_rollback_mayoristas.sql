@@ -1,5 +1,12 @@
--- Revierte el módulo de Clientes Mayoristas (pasos 01 a 11). Orden inverso a la creación.
+-- Revierte el módulo de Clientes Mayoristas (pasos 01 a 12). Orden inverso a la creación.
 -- ATENCIÓN: borra la información de rutas, los datos mayoristas de los clientes y los descuentos. Respaldar antes.
+-- Paso 12
+ALTER TABLE proformas DROP FOREIGN KEY fk_proforma_repartidor;
+DROP INDEX idx_proforma_repartidor ON proformas;
+ALTER TABLE proformas DROP COLUMN id_repartidor;
+DELETE FROM usuarios_roles WHERE role_id IN (SELECT id_role FROM roles WHERE role = 'ROLE_REPARTIDOR');
+DELETE FROM roles WHERE role = 'ROLE_REPARTIDOR';
+
 ALTER TABLE facturas_detalle DROP COLUMN cantidad_descontada;
 
 -- Paso 10: los valores nuevos del ENUM de movimientos_producto (ENTREGA_PROFORMA...) se dejan: quitarlos fallaria si ya

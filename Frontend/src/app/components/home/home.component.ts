@@ -59,7 +59,7 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     // Un usuario solo de bodega no tiene acceso a productos ni clientes: no se consultan para no generar errores 403
-    if (!this.auth.esSoloBodega()) {
+    if (!this.auth.esSoloBodega() && !this.auth.esRepartidor()) {
       this.getProductos();
       this.getClientes();
     }

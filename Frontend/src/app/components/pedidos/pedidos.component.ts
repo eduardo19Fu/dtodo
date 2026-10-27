@@ -78,6 +78,11 @@ export class PedidosComponent implements OnInit {
     return this.auth.hasRole('ROLE_ADMIN') || this.auth.hasRole('ROLE_BODEGA');
   }
 
+  /** Un repartidor ve solo sus pedidos y registra la entrega con lo mínimo: no decide sobre el inventario. */
+  get esRepartidor(): boolean {
+    return this.auth.esRepartidor();
+  }
+
   get esAdmin(): boolean {
     return this.auth.hasRole('ROLE_ADMIN');
   }
@@ -144,6 +149,14 @@ export class PedidosComponent implements OnInit {
   }
 
   avanzar(pedido: PedidoDto): void {
+    if (pedido.estadoPedido === 'EMPACADA') {
+      this.elegirPiloto(`${this.textoAvance(pedido)}: pedido ${pedido.noProforma}`, this.textoAvance(pedido)).then(idRepartidor => {
+        if (idRepartidor) {
+          this.ejecutar(pedido, this.pedidoService.avanzar(pedido.idProforma, undefined, idRepartidor));
+        }
+      });
+      return;
+    }
     Swal.fire({
       title: `${this.textoAvance(pedido)}: pedido ${pedido.noProforma}`,
       input: 'text',
@@ -156,6 +169,48 @@ export class PedidosComponent implements OnInit {
       if (resultado.isConfirmed) {
         this.ejecutar(pedido, this.pedidoService.avanzar(pedido.idProforma, String(resultado.value || '').trim()));
       }
+    });
+  }
+
+  /** Puede cambiar de piloto un pedido que ya salió a ruta (por ejemplo, si el camión falla). */
+  puedeCambiarPiloto(pedido: PedidoDto): boolean {
+    return this.puedeOperar && (pedido.estadoPedido === 'EN_RUTA' || pedido.estadoPedido === 'ENTREGADA_PARCIAL');
+  }
+
+  cambiarPiloto(pedido: PedidoDto): void {
+    this.elegirPiloto(`Cambiar el piloto del pedido ${pedido.noProforma}`, 'Cambiar piloto').then(idRepartidor => {
+      if (idRepartidor) {
+        this.ejecutar(pedido, this.pedidoService.asignarRepartidor(pedido.idProforma, idRepartidor));
+      }
+    });
+  }
+
+  /** Pide elegir un repartidor activo; devuelve su id o {@code null} si se cancela o no hay repartidores. */
+  private elegirPiloto(titulo: string, boton: string): Promise<number> {
+    return new Promise<number>(resolver => {
+      this.pedidoService.repartidores().subscribe(repartidores => {
+        if (!repartidores.length) {
+          Swal.fire('No hay repartidores', 'Pide al administrador que cree el usuario del piloto con el rol Repartidor.', 'info');
+          resolver(null);
+          return;
+        }
+        const opciones: { [id: string]: string } = {};
+        repartidores.forEach(repartidor => opciones[String(repartidor.valor)] = repartidor.etiqueta);
+        Swal.fire({
+          title: titulo,
+          input: 'select',
+          inputOptions: opciones,
+          inputPlaceholder: 'Elige el piloto',
+          inputLabel: 'Piloto que lleva el pedido (obligatorio)',
+          showCancelButton: true,
+          confirmButtonText: boton,
+          cancelButtonText: 'Cancelar',
+          inputValidator: valor => valor ? null : 'Elige el piloto.'
+        }).then(resultado => resolver(resultado.isConfirmed ? Number(resultado.value) : null));
+      }, error => {
+        Swal.fire('No se pudieron cargar los pilotos', error.error?.message || 'Ha ocurrido un error inesperado', 'error');
+        resolver(null);
+      });
     });
   }
 
@@ -216,12 +271,12 @@ export class PedidosComponent implements OnInit {
 
   /** Administrador, bodega y vendedor (los suyos) registran la entrega de un pedido en ruta o con entrega parcial. */
   puedeEntregar(pedido: PedidoDto): boolean {
-    return (this.puedeOperar || this.auth.hasRole('ROLE_VENDEDOR'))
+    return (this.puedeOperar || this.auth.hasRole('ROLE_VENDEDOR') || this.esRepartidor)
       && (pedido.estadoPedido === 'EN_RUTA' || pedido.estadoPedido === 'ENTREGADA_PARCIAL') && !this.bloqueadoPorAutorizacion(pedido);
   }
 
   puedeEntregarDetalle(detalle: PedidoDetalleDto): boolean {
-    return (this.puedeOperar || this.auth.hasRole('ROLE_VENDEDOR'))
+    return (this.puedeOperar || this.auth.hasRole('ROLE_VENDEDOR') || this.esRepartidor)
       && (detalle.estadoPedido === 'EN_RUTA' || detalle.estadoPedido === 'ENTREGADA_PARCIAL')
       && detalle.estadoAutorizacion !== 'PENDIENTE' && detalle.estadoAutorizacion !== 'RECHAZADA';
   }
@@ -246,7 +301,9 @@ export class PedidosComponent implements OnInit {
     if (!this.detalle) {
       return;
     }
-    this.cargarSucursales();
+    if (!this.esRepartidor) {
+      this.cargarSucursales();
+    }
     this.errorEntrega = '';
     this.entrega = { idSucursal: this.detalle.idSucursal || null, fechaEntrega: this.hoy, entregadoPor: '',
       descontadoAMano: false, observaciones: '' };
@@ -270,7 +327,7 @@ export class PedidosComponent implements OnInit {
 
   /** Lo que se va a entregar, o el primer problema que impide registrarlo. */
   validarEntrega(): string {
-    if (!this.entrega.idSucursal) {
+    if (!this.esRepartidor && !this.entrega.idSucursal) {
       return 'Elige la sucursal de la que se descuenta el inventario.';
     }
     if (!this.entrega.fechaEntrega || this.entrega.fechaEntrega > this.hoy || this.entrega.fechaEntrega < this.fechaMinimaEntrega) {
@@ -298,8 +355,8 @@ export class PedidosComponent implements OnInit {
     const solicitud: EntregaSolicitudDto = {
       idSucursal: this.entrega.idSucursal,
       fechaEntrega: this.entrega.fechaEntrega,
-      entregadoPor: this.entrega.entregadoPor.trim() || null,
-      descontadoAMano: this.entrega.descontadoAMano,
+      entregadoPor: this.esRepartidor ? null : this.entrega.entregadoPor.trim() || null,
+      descontadoAMano: !this.esRepartidor && this.entrega.descontadoAMano,
       observaciones: this.entrega.observaciones.trim() || null,
       lineas: this.detalle.lineas.map(linea => ({ idDetalle: linea.idDetalle, cantidad: Number(this.cantidades[linea.idDetalle]) || 0 }))
         .filter(linea => linea.cantidad > 0)

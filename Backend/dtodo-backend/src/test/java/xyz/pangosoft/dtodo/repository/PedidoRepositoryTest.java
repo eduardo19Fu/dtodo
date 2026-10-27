@@ -95,7 +95,7 @@ class PedidoRepositoryTest {
     }
 
     private List<PedidoDto> pedidos(List<EstadoPedidoEnum> estados, Integer idRuta, Integer idUsuario) {
-        return proformaRepository.findPedidos(TipoProformaEnum.MAYORISTA, estados, idRuta, idUsuario, DESDE, HASTA,
+        return proformaRepository.findPedidos(TipoProformaEnum.MAYORISTA, estados, idRuta, idUsuario, null, DESDE, HASTA,
                 PageRequest.of(0, 50));
     }
 
@@ -148,7 +148,7 @@ class PedidoRepositoryTest {
         Date pasado = new Date(System.currentTimeMillis() + 48L * 3600 * 1000);
 
         List<PedidoDto> futuros = proformaRepository.findPedidos(TipoProformaEnum.MAYORISTA, EstadoPedidoEnum.POR_ENTREGAR,
-                null, null, manana, pasado, PageRequest.of(0, 50));
+                null, null, null, manana, pasado, PageRequest.of(0, 50));
 
         assertTrue(futuros.isEmpty());
     }

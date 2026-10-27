@@ -291,6 +291,7 @@ public class ProformaApiController {
      * @param idproforma Valor de tipo entero que refencia el ID de la proforma que se desea generar.
      * */
 
+    @Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO", "ROLE_VENDEDOR"})
     @GetMapping("/proformas/generate/{id}")
     public ResponseEntity<byte[]> showProforma(@PathVariable("id") Long idproforma,
             @RequestParam(value = "copia", defaultValue = "CLIENTE") String copia) {

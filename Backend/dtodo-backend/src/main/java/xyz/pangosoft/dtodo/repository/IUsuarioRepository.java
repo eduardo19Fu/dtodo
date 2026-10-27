@@ -15,6 +15,13 @@ import xyz.pangosoft.dtodo.model.Usuario;
 
 public interface IUsuarioRepository extends JpaRepository<Usuario, Integer> {
 
+    /** Los repartidores activos, para elegir el piloto de un pedido. */
+    @Query("select new xyz.pangosoft.dtodo.dto.ReporteSelectorDto(u.idUsuario, " +
+            "trim(concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, ''))), concat('Usuario: ', u.usuario)) " +
+            "from Usuario u join u.roles r where r.role = 'ROLE_REPARTIDOR' and u.enabled = true " +
+            "order by u.primerNombre, u.apellido")
+    List<ReporteSelectorDto> findRepartidores();
+
 	@Query("select distinct new xyz.pangosoft.dtodo.dto.ReporteSelectorDto(" +
 			"u.idUsuario, trim(concat(concat(coalesce(u.primerNombre, ''), ' '), " +
 			"concat(coalesce(u.segundoNombre, ''), concat(' ', coalesce(u.apellido, ''))))), " +

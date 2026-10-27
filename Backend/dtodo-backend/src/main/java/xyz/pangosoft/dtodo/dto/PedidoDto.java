@@ -28,4 +28,7 @@ public class PedidoDto {
     private Long unidades;
     /** PENDIENTE o RECHAZADA impiden que el pedido avance. */
     private EstadoAutorizacionEnum estadoAutorizacion;
+    /** Piloto asignado; nulo mientras el pedido no sale a ruta. */
+    private Integer idRepartidor;
+    private String repartidor;
 }

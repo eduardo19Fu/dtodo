@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import xyz.pangosoft.dtodo.dto.EntregaDto;
 import xyz.pangosoft.dtodo.dto.PedidoDetalleDto;
+import xyz.pangosoft.dtodo.dto.ReporteSelectorDto;
 import xyz.pangosoft.dtodo.dto.PedidoDto;
 import xyz.pangosoft.dtodo.error.exceptions.NotFoundException;
 import xyz.pangosoft.dtodo.error.exceptions.ReglaNegocioException;
@@ -22,12 +23,14 @@ import xyz.pangosoft.dtodo.model.Proforma;
 import xyz.pangosoft.dtodo.model.ProformaEntrega;
 import xyz.pangosoft.dtodo.model.ProformaEntregaDetalle;
 import xyz.pangosoft.dtodo.model.ProformaEtapa;
+import xyz.pangosoft.dtodo.model.Usuario;
 import xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum;
 import xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoProformaEnum;
 import xyz.pangosoft.dtodo.repository.IProformaEntregaRepository;
 import xyz.pangosoft.dtodo.repository.IProformaEtapaRepository;
 import xyz.pangosoft.dtodo.repository.IProformaRepository;
+import xyz.pangosoft.dtodo.repository.IUsuarioRepository;
 import xyz.pangosoft.dtodo.service.IAmbitoVendedorService;
 import xyz.pangosoft.dtodo.service.IPedidoService;
 import xyz.pangosoft.dtodo.service.IProformaAuditoriaService;
@@ -49,16 +52,26 @@ public class PedidoServiceImpl implements IPedidoService {
     private final IProformaEntregaRepository entregaRepository;
     private final IAmbitoVendedorService ambito;
     private final IUsuarioService usuarioService;
+    private final IUsuarioRepository usuarioRepository;
     private final IProformaAuditoriaService auditoria;
 
     @Transactional(readOnly = true)
     @Override
     public List<PedidoDto> listar(Integer idRuta, EstadoPedidoEnum estado, LocalDate desde, LocalDate hasta) {
+        Integer idRepartidor = ambito.idRepartidorForzado();
         List<EstadoPedidoEnum> estados = estado == null ? EstadoPedidoEnum.POR_ENTREGAR : java.util.Collections.singletonList(estado);
+        if (idRepartidor != null) {
+            // Un repartidor solo ve lo que está en ruta o con entrega parcial.
+            estados = estados.stream().filter(e -> e == EstadoPedidoEnum.EN_RUTA || e == EstadoPedidoEnum.ENTREGADA_PARCIAL)
+                    .collect(java.util.stream.Collectors.toList());
+            if (estados.isEmpty()) {
+                return java.util.Collections.emptyList();
+            }
+        }
         Date inicio = desde == null ? SIN_LIMITE_INFERIOR : Date.from(desde.atStartOfDay(ZoneId.systemDefault()).toInstant());
         Date fin = hasta == null ? SIN_LIMITE_SUPERIOR
                 : Date.from(hasta.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant());
-        return proformaRepository.findPedidos(TipoProformaEnum.MAYORISTA, estados, idRuta, ambito.forzarUsuario(null), inicio, fin,
+        return proformaRepository.findPedidos(TipoProformaEnum.MAYORISTA, estados, idRuta, ambito.forzarUsuario(null), idRepartidor, inicio, fin,
                 org.springframework.data.domain.PageRequest.of(0, MAX_FILAS));
     }
 
@@ -67,12 +80,13 @@ public class PedidoServiceImpl implements IPedidoService {
     public PedidoDetalleDto detalle(Long idProforma) {
         Proforma proforma = cargarPedido(idProforma);
         ambito.exigirProformaPropia(proforma);
+        ambito.exigirPedidoAsignado(proforma);
         return armarDetalle(proforma);
     }
 
     @Transactional
     @Override
-    public PedidoDetalleDto avanzar(Long idProforma, String responsable) {
+    public PedidoDetalleDto avanzar(Long idProforma, String responsable, Integer idRepartidor) {
         Proforma proforma = cargarPedido(idProforma);
         EstadoPedidoEnum actual = proforma.getEstadoPedido();
         EstadoPedidoEnum siguiente = actual.siguienteEnBodega();
@@ -83,10 +97,58 @@ public class PedidoServiceImpl implements IPedidoService {
         }
         exigirAutorizado(proforma);
 
+        String motivo = null;
+        if (siguiente == EstadoPedidoEnum.EN_RUTA) {
+            Usuario piloto = cargarRepartidor(idRepartidor);
+            proforma.setRepartidor(piloto);
+            motivo = "Piloto: " + nombre(piloto);
+        }
+
         proforma.setEstadoPedido(siguiente);
         proformaRepository.save(proforma);
-        registrarEtapa(proforma.getIdProforma(), siguiente, limpiarResponsable(responsable), null);
+        registrarEtapa(proforma.getIdProforma(), siguiente, limpiarResponsable(responsable), motivo);
         return armarDetalle(proforma);
+    }
+
+    @Transactional
+    @Override
+    public PedidoDetalleDto asignarRepartidor(Long idProforma, Integer idRepartidor) {
+        Proforma proforma = cargarPedido(idProforma);
+        EstadoPedidoEnum estado = proforma.getEstadoPedido();
+        if (estado != EstadoPedidoEnum.EN_RUTA && estado != EstadoPedidoEnum.ENTREGADA_PARCIAL) {
+            throw new ReglaNegocioException("El piloto solo se cambia mientras el pedido " + proforma.getNoProforma()
+                    + " está en ruta o con entrega parcial.");
+        }
+        Usuario piloto = cargarRepartidor(idRepartidor);
+        proforma.setRepartidor(piloto);
+        proformaRepository.save(proforma);
+        registrarEtapa(proforma.getIdProforma(), estado, null, "Piloto asignado: " + nombre(piloto));
+        return armarDetalle(proforma);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<ReporteSelectorDto> repartidores() {
+        return usuarioRepository.findRepartidores();
+    }
+
+    /** Un usuario activo con el rol repartidor; 422 si no se indica o no lo es. */
+    private Usuario cargarRepartidor(Integer idRepartidor) {
+        if (idRepartidor == null) {
+            throw new ReglaNegocioException("Elija el piloto que lleva el pedido.");
+        }
+        Usuario piloto = usuarioService.findById(idRepartidor);
+        boolean esRepartidor = piloto != null && piloto.isEnabled() && piloto.getRoles() != null
+                && piloto.getRoles().stream().anyMatch(rol -> "ROLE_REPARTIDOR".equals(rol.getRole()));
+        if (!esRepartidor) {
+            throw new ReglaNegocioException("El usuario elegido no es un repartidor activo.");
+        }
+        return piloto;
+    }
+
+    private static String nombre(Usuario usuario) {
+        return ((usuario.getPrimerNombre() == null ? "" : usuario.getPrimerNombre()) + " "
+                + (usuario.getApellido() == null ? "" : usuario.getApellido())).trim();
     }
 
     @Transactional
@@ -225,6 +287,10 @@ public class PedidoServiceImpl implements IPedidoService {
         }
         dto.setEstadoPedido(proforma.getEstadoPedido());
         dto.setEstadoAutorizacion(proforma.getEstadoAutorizacion());
+        if (proforma.getRepartidor() != null) {
+            dto.setIdRepartidor(proforma.getRepartidor().getIdUsuario());
+            dto.setRepartidor(nombre(proforma.getRepartidor()));
+        }
         dto.setObservaciones(proforma.getObservaciones());
         if (proforma.getItemsProforma() != null) {
             proforma.getItemsProforma().stream()

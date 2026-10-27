@@ -53,6 +53,20 @@ public class Utils {
     }
 
     /**
+     * El usuario de la sesión es un repartidor acotado: ve solo los pedidos que se le asignaron. Quien combina el rol con
+     * cualquier otro rol operativo conserva el alcance de ese rol.
+     */
+    public static boolean esRepartidorAcotado() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return tieneRol(authentication, "ROLE_REPARTIDOR")
+                && !tieneRol(authentication, "ROLE_ADMIN")
+                && !tieneRol(authentication, "ROLE_BODEGA")
+                && !tieneRol(authentication, "ROLE_VENDEDOR")
+                && !tieneRol(authentication, "ROLE_COBRADOR")
+                && !tieneRol(authentication, "ROLE_INVENTARIO");
+    }
+
+    /**
      * Id del usuario de la sesión en curso, tomado del claim {@code id_usuario} del token; {@code null} si no hay
      * una sesión con token (por ejemplo, en pruebas sin autenticación).
      */

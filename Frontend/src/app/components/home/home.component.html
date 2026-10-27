@@ -11,7 +11,7 @@
   </header>
 
   <div class="summary-grid">
-    <article class="summary-card summary-card-products" *ngIf="!auth.esSoloBodega()">
+    <article class="summary-card summary-card-products" *ngIf="!auth.esSoloBodega() && !auth.esRepartidor()">
       <div class="summary-card-body">
         <div class="summary-icon" aria-hidden="true"><i class="fas fa-box-open"></i></div>
         <div class="summary-content">
@@ -25,7 +25,7 @@
       </a>
     </article>
 
-    <article class="summary-card summary-card-clients" *ngIf="!auth.esSoloBodega()">
+    <article class="summary-card summary-card-clients" *ngIf="!auth.esSoloBodega() && !auth.esRepartidor()">
       <div class="summary-card-body">
         <div class="summary-icon" aria-hidden="true"><i class="fas fa-user-friends"></i></div>
         <div class="summary-content">
