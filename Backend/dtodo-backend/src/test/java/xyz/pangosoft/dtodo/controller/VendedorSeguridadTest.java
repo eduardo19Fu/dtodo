@@ -112,6 +112,16 @@ class VendedorSeguridadTest {
     }
 
     @Test
+    void lasComisionesSonSoloDelAdministrador() {
+        String[] metodos = { "metas", "guardarMetas", "copiarMetas", "avance", "liquidar", "deshacer" };
+        niegaAlVendedor(ComisionApiController.class, metodos);
+        for (String metodo : metodos) {
+            assertTrue(roles(ComisionApiController.class, metodo).equals(Arrays.asList("ROLE_ADMIN")),
+                    metodo + " es solo del administrador");
+        }
+    }
+
+    @Test
     void elVendedorSoloVeSusPedidosYBodegaOperaLasEtapas() {
         permiteAlVendedor(PedidoApiController.class, "listar", "detalle");
         niegaAlVendedor(PedidoApiController.class, "avanzar", "retroceder", "picking", "empaque", "notaEnvio");
@@ -152,7 +162,7 @@ class VendedorSeguridadTest {
     void elRepartidorNoLlegaANingunOtroControlador() throws Exception {
         for (Class<?> controlador : new Class<?>[] { ProformaApiController.class, FacturaApiController.class, ClienteApiController.class,
                 ProductoApiController.class, RutaApiController.class, DescuentoApiController.class,
-                AutorizacionProformaApiController.class, ReporteMayoristasApiController.class }) {
+                AutorizacionProformaApiController.class, ReporteMayoristasApiController.class, ComisionApiController.class }) {
             for (Method metodo : controlador.getDeclaredMethods()) {
                 Secured secured = metodo.getAnnotation(Secured.class);
                 if (secured != null) {

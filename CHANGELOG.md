@@ -6,6 +6,18 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Cálculo y liquidación de comisiones de vendedores (Fase 3A, backend)
+
+Solo servidor y base de datos; la pantalla y el reporte vienen en la 3B.
+
+- **Regla**: porcentaje **plano** sobre todo lo entregado en el año por los pedidos mayoristas del vendedor, según el nivel más alto alcanzado (no por tramos). Ej.: Q750,000 con metas 300k/700k/1M/2M → nivel de 700k al 1.00 % = Q7,500. Lo entregado se toma por la fecha real de entrega, al precio con descuento de la línea del pedido; entregas anuladas y pedidos anulados no cuentan.
+- **Metas por año** (`comisiones_metas`): el administrador define un juego por año (monto y porcentaje crecientes, porcentaje ≤ 100) y puede copiar las de otro año. El script siembra 2026: 300k→0.50 %, 700k→1.00 %, 1M→1.50 %, 2M→2.00 %.
+- **Quién cobra**: solo quien el administrador marque como que **completó el año** al liquidar; los demás quedan en cero (sin comisión ese año).
+- **Liquidación**: solo de un año terminado, con metas y no liquidado antes; se guarda por vendedor (entregado, meta, porcentaje, comisión) con quién y cuándo, y ya no se recalcula. **Deshacer** exige motivo y deja constancia en `comisiones_deshechas` con lo que se había liquidado.
+- **API** (`/api/comisiones`, solo `ROLE_ADMIN`): `GET/PUT /metas`, `POST /metas/copiar`, `GET /avance`, `POST /liquidar`, `POST /deshacer`.
+- **Base de datos** (`sql/mayoristas/13_create_comisiones.sql`, **requerido antes del jar**; el rollback lo revierte): tres tablas nuevas.
+- **Pruebas**: `ComisionServiceImplTest` (nivel, bordes de meta, parciales, redondeo, validaciones, liquidar/deshacer) y la matriz de roles.
+
 ### Agregado — Reporte de ventas entregadas por ruta y vendedor (Fase 2C)
 
 Cierra la Fase 2. Solo lectura, para el administrador, sin script SQL.

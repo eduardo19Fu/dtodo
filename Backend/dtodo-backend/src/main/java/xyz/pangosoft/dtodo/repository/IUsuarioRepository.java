@@ -15,6 +15,10 @@ import xyz.pangosoft.dtodo.model.Usuario;
 
 public interface IUsuarioRepository extends JpaRepository<Usuario, Integer> {
 
+    /** Los vendedores activos: los que pueden cobrar comisión. */
+    @Query("select distinct u from Usuario u join u.roles r where r.role = 'ROLE_VENDEDOR' and u.enabled = true")
+    List<Usuario> findVendedoresActivos();
+
     /** Los repartidores activos, para elegir el piloto de un pedido. */
     @Query("select new xyz.pangosoft.dtodo.dto.ReporteSelectorDto(u.idUsuario, " +
             "trim(concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, ''))), concat('Usuario: ', u.usuario)) " +

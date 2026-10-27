@@ -1,5 +1,10 @@
--- Revierte el módulo de Clientes Mayoristas (pasos 01 a 12). Orden inverso a la creación.
+-- Revierte el módulo de Clientes Mayoristas (pasos 01 a 13). Orden inverso a la creación.
 -- ATENCIÓN: borra la información de rutas, los datos mayoristas de los clientes y los descuentos. Respaldar antes.
+-- Paso 13
+DROP TABLE IF EXISTS comisiones_deshechas;
+DROP TABLE IF EXISTS comisiones_liquidaciones;
+DROP TABLE IF EXISTS comisiones_metas;
+
 -- Paso 12
 ALTER TABLE proformas DROP FOREIGN KEY fk_proforma_repartidor;
 DROP INDEX idx_proforma_repartidor ON proformas;
