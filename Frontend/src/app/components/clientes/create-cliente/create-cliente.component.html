@@ -69,14 +69,10 @@
             <label for="codigoCliente">Código de cliente</label>
             <div class="control-with-icon">
               <i class="fas fa-hashtag" aria-hidden="true"></i>
-              <input type="text" id="codigoCliente" [disabled]="soloContacto" name="codigoCliente" class="form-control"
-                [(ngModel)]="cliente.codigoCliente" placeholder="Por defecto, su teléfono" maxlength="30"
-                autocomplete="off">
+              <input type="text" id="codigoCliente" name="codigoCliente" class="form-control" readonly
+                [value]="cliente.codigoCliente || ''" placeholder="Se asigna al guardar" autocomplete="off">
             </div>
-            <small>
-              Con este código se busca al cliente; no se puede repetir.
-              <a href="javascript:void(0)" *ngIf="cliente.telefono" (click)="usarTelefonoComoCodigo()">Usar el teléfono</a>
-            </small>
+            <small>Lo asigna el sistema, no se puede editar ni repetir. Con este código se busca al cliente.</small>
           </div>
         </div>
       </section>

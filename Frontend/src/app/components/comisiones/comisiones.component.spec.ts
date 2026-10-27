@@ -167,6 +167,17 @@ describe('ComisionesComponent', () => {
     expect(component.liquidado).toBeFalse();
   });
 
+  it('el total a pagar no cuenta a quien aún no cumple 365 días', () => {
+    servicio.avance.and.returnValue(of(avance({
+      filas: [fila({ situacion: 'PENDIENTE' }), fila({ idVendedor: 2, comision: 1500, situacion: 'BLOQUE' })]
+    })));
+    component.cargar();
+    component.completaron[2] = true;
+
+    expect(component.totalAPagar).toBe(1500);
+    expect(component.avance.filas[0].situacion).toBe('PENDIENTE');
+  });
+
   it('un año liquidado conserva las decisiones guardadas', () => {
     servicio.avance.and.returnValue(of(avance({
       liquidado: true, filas: [fila({ completoAnio: true }), fila({ idVendedor: 2, completoAnio: false })]

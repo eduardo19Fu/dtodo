@@ -96,8 +96,12 @@ class ComisionServiceImplTest {
     }
 
     /** Una línea entregada: vendedor, unidades entregadas, importe de la línea y unidades de la línea. */
-    private static Object[] entregada(int idVendedor, int entregadas, String importeLinea, int unidadesLinea) {
-        return new Object[] { idVendedor, entregadas, new BigDecimal(importeLinea), unidadesLinea };
+    private Object[] entregada(int idVendedor, int entregadas, String importeLinea, int unidadesLinea) {
+        return entregadaEl(LocalDate.of(pasado, 6, 15), idVendedor, entregadas, importeLinea, unidadesLinea);
+    }
+
+    private static Object[] entregadaEl(LocalDate fecha, int idVendedor, int entregadas, String importeLinea, int unidadesLinea) {
+        return new Object[] { idVendedor, entregadas, new BigDecimal(importeLinea), unidadesLinea, fecha };
     }
 
     private void entregado(Object[]... filas) {
@@ -254,6 +258,83 @@ class ComisionServiceImplTest {
 
         assertFalse(avance.isAnioTerminado());
         assertTrue(avance.getMetas().isEmpty());
+    }
+
+    // ------------------------------------------------------------------------------------------ ingreso a mitad de año
+
+    private Usuario ingresoEl(int idUsuario, LocalDate alta) {
+        Usuario usuario = Usuario.builder().idUsuario(idUsuario).primerNombre("Nuevo" + idUsuario).apellido("Vendedor").enabled(true)
+                .fechaRegistro(alta.atTime(9, 0)).build();
+        when(usuarioService.findById(idUsuario)).thenReturn(usuario);
+        when(usuarioRepository.findVendedoresActivos()).thenReturn(Arrays.asList(ana, usuario));
+        return usuario;
+    }
+
+    @Test
+    void quienIngresoElAnioAnteriorCobraEnUnBloqueTodoLoEntregadoDesdeSuIngreso() {
+        ingresoEl(3, LocalDate.of(pasado - 1, 7, 1));
+        entregado(entregadaEl(LocalDate.of(pasado - 1, 3, 1), 3, 1, "1000.00", 1),   // antes de ingresar
+                entregadaEl(LocalDate.of(pasado - 1, 9, 1), 3, 1, "200.00", 1),
+                entregadaEl(LocalDate.of(pasado, 3, 1), 3, 1, "300.00", 1),
+                entregadaEl(LocalDate.of(pasado + 1, 1, 5), 3, 1, "9999.00", 1));  // ya del año siguiente
+
+        FilaComisionDto fila = fila(service.avance(pasado), 3);
+
+        assertEquals("BLOQUE", fila.getSituacion());
+        assertEquals(LocalDate.of(pasado - 1, 7, 1), fila.getPeriodoDesde());
+        assertEquals(new BigDecimal("500.00"), fila.getMontoEntregado());
+    }
+
+    @Test
+    void quienIngresoEsteAnioQuedaPendienteYNoSePuedeLiquidar() {
+        ingresoEl(3, LocalDate.of(pasado, 6, 1));
+        entregado(entregadaEl(LocalDate.of(pasado, 3, 1), 3, 1, "1000.00", 1), entregadaEl(LocalDate.of(pasado, 8, 1), 3, 1, "400.00", 1));
+
+        FilaComisionDto fila = fila(service.avance(pasado), 3);
+
+        assertEquals("PENDIENTE", fila.getSituacion());
+        assertEquals(new BigDecimal("400.00"), fila.getMontoEntregado());
+        ReglaNegocioException error = assertThrows(ReglaNegocioException.class, () -> service.liquidar(pasado, decision(3)));
+        assertTrue(error.getMessage().contains("365 días"));
+        verify(liquidacionRepository, never()).saveAll(any());
+    }
+
+    @Test
+    void elPendienteSiPuedeQuedarSinMarcarAlLiquidar() {
+        ingresoEl(3, LocalDate.of(pasado, 6, 1));
+        entregado(entregadaEl(LocalDate.of(pasado, 8, 1), 3, 1, "400.00", 1));
+
+        service.liquidar(pasado, decision(1));
+
+        assertEquals(2, liquidadas().size());
+    }
+
+    @Test
+    void quienIngresoElPrimeroDeEneroOAntesDelAnioAnteriorEsNormal() {
+        Usuario enero = ingresoEl(3, LocalDate.of(pasado, 1, 1));
+        assertEquals("NORMAL", ComisionServiceImpl.situacion(enero, pasado));
+
+        Usuario hace2 = ingresoEl(4, LocalDate.of(pasado - 1, 1, 1));
+        entregado(entregadaEl(LocalDate.of(pasado - 1, 5, 1), 4, 1, "700.00", 1), entregadaEl(LocalDate.of(pasado, 5, 1), 4, 1, "50.00", 1));
+
+        assertEquals("NORMAL", ComisionServiceImpl.situacion(hace2, pasado));
+        assertEquals(new BigDecimal("50.00"), fila(service.avance(pasado), 4).getMontoEntregado());
+    }
+
+    @Test
+    void quienIngresaDespuesDelAnioNoApareceEnEl() {
+        ingresoEl(3, LocalDate.of(pasado + 1, 2, 1));
+        entregado();
+
+        assertTrue(service.avance(pasado).getFilas().stream().noneMatch(f -> f.getIdVendedor() == 3));
+    }
+
+    @Test
+    void sinFechaDeAltaSeTrataComoDeAnioCompleto() {
+        Usuario sinAlta = Usuario.builder().idUsuario(3).primerNombre("Sin").apellido("Alta").enabled(true).build();
+
+        assertEquals("NORMAL", ComisionServiceImpl.situacion(sinAlta, pasado));
+        assertEquals(LocalDate.of(pasado, 1, 1), ComisionServiceImpl.periodoDesde(sinAlta, pasado));
     }
 
     // ------------------------------------------------------------------------------------------ liquidar

@@ -17,6 +17,10 @@ export class FilaComisionDto {
   comision: number;
   siguienteMeta?: number | null;
   faltaParaSiguiente?: number | null;
+  /** NORMAL, BLOQUE (ingresó el año anterior: se paga desde su ingreso) o PENDIENTE (ingresó este año: se paga el año siguiente). */
+  situacion?: 'NORMAL' | 'BLOQUE' | 'PENDIENTE';
+  /** yyyy-MM-dd: desde cuándo cuenta lo entregado. */
+  periodoDesde?: string | null;
   /** Solo en un año liquidado. */
   completoAnio?: boolean | null;
 }

@@ -1,6 +1,7 @@
 package xyz.pangosoft.dtodo.dto;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import lombok.Data;
@@ -26,6 +27,14 @@ public class FilaComisionDto {
     private BigDecimal siguienteMeta;
     /** Lo que le falta entregar para la siguiente meta. */
     private BigDecimal faltaParaSiguiente;
+    /**
+     * Cómo cuenta el año para este vendedor: NORMAL (de enero a diciembre), BLOQUE (ingresó el año anterior: se le paga ahora
+     * todo lo entregado desde su ingreso, porque ya cumplió 365 días) o PENDIENTE (ingresó este año: aún no cumple 365 días y
+     * se le paga en la liquidación del año siguiente).
+     */
+    private String situacion = "NORMAL";
+    /** Desde cuándo cuenta lo entregado para este vendedor en el año. */
+    private LocalDate periodoDesde;
     /** Solo en un año liquidado: el administrador marcó que completó el año. */
     private Boolean completoAnio;
 }

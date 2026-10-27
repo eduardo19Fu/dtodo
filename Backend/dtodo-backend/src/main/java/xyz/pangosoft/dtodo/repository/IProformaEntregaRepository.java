@@ -14,10 +14,10 @@ public interface IProformaEntregaRepository extends JpaRepository<ProformaEntreg
 
     /**
      * Lo entregado en un período (por la fecha real de entrega), una fila por línea entregada: vendedor del pedido, unidades
-     * entregadas, importe con descuento de la línea y unidades de la línea. Solo pedidos del tipo indicado; las entregas
+     * entregadas, importe con descuento de la línea, unidades de la línea y fecha de entrega. Solo pedidos del tipo indicado; las entregas
      * anuladas no cuentan. Quien llama calcula el valor de lo entregado como unidades × importe / unidades de la línea.
      */
-    @Query("select p.usuario.idUsuario, ed.cantidad, l.subTotalDescuento, l.cantidad " +
+    @Query("select p.usuario.idUsuario, ed.cantidad, l.subTotalDescuento, l.cantidad, e.fechaEntrega " +
             "from ProformaEntrega e, ProformaEntregaDetalle ed, DetalleProforma l, Proforma p " +
             "where ed.entrega = e and l.idDetalle = ed.idDetalle and p.idProforma = e.idProforma " +
             "and e.anulada = false and p.tipoProforma = :tipo and p.estado.estado <> 'ANULADO' " +

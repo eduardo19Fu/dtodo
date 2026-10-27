@@ -103,7 +103,11 @@ class ClienteMayoristaServiceTest {
 
         assertSame(rutaActiva, guardado.getRuta());
         assertEquals(CategoriaClienteEnum.VOLUMEN, guardado.getCategoriaDescuento());
-        assertEquals("55551234", guardado.getCodigoCliente());
+        assertTrue(esUuid(guardado.getCodigoCliente()));
+    }
+
+    private static boolean esUuid(String texto) {
+        return texto != null && texto.matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}");
     }
 
     @Test
@@ -119,25 +123,21 @@ class ClienteMayoristaServiceTest {
     }
 
     @Test
-    void rechazaUnCodigoQueYaPerteneceAOtroCliente() {
-        Cliente otro = Cliente.builder().idCliente(8).nombre("Tienda Dos").codigoCliente("55551234").build();
-        when(clienteRepository.findByCodigoCliente("55551234")).thenReturn(Optional.of(otro));
+    void elCodigoLoAsignaElServidorYSeIgnoraElQueMandaLaPeticion() {
         Cliente cliente = mayorista(1);
         cliente.setCodigoCliente("55551234");
 
-        ReglaNegocioException error = assertThrows(ReglaNegocioException.class, () -> service.save(cliente));
+        String codigo = service.save(cliente).getCodigoCliente();
 
-        assertTrue(error.getMessage().contains("Tienda Dos"));
-        verify(clienteRepository, never()).save(any());
+        assertTrue(esUuid(codigo));
     }
 
     @Test
-    void elCodigoVacioSeGuardaComoNulo() {
-        Cliente cliente = mayorista(1);
-        cliente.setCodigoCliente("   ");
+    void siElUuidYaExisteGeneraOtro() {
+        Cliente otro = Cliente.builder().idCliente(8).nombre("Tienda Dos").build();
+        when(clienteRepository.findByCodigoCliente(any())).thenReturn(Optional.of(otro)).thenReturn(Optional.empty());
 
-        assertNull(service.save(cliente).getCodigoCliente());
-        verify(clienteRepository, never()).findByCodigoCliente(any());
+        assertTrue(esUuid(service.save(mayorista(1)).getCodigoCliente()));
     }
 
     @Test
@@ -200,15 +200,24 @@ class ClienteMayoristaServiceTest {
     }
 
     @Test
-    void elMismoClienteConservaSuPropioCodigo() {
+    void actualizarConservaElCodigoYNoLoDejaCambiar() {
         Cliente existente = existente();
-        existente.setCodigoCliente("55551234");
-        when(clienteRepository.findByCodigoCliente("55551234")).thenReturn(Optional.of(existente));
+        existente.setCodigoCliente("11111111-2222-3333-4444-555555555555");
         Cliente cambios = mayorista(2);
         cambios.setIdCliente(4);
         cambios.setCodigoCliente("55551234");
 
-        assertEquals("55551234", service.save(cambios).getCodigoCliente());
+        assertEquals("11111111-2222-3333-4444-555555555555", service.save(cambios).getCodigoCliente());
+    }
+
+    @Test
+    void unClienteAnteriorSinCodigoLoRecibeAlActualizarse() {
+        Cliente existente = existente();
+        existente.setCodigoCliente(null);
+        Cliente cambios = mayorista(2);
+        cambios.setIdCliente(4);
+
+        assertTrue(esUuid(service.save(cambios).getCodigoCliente()));
     }
 
     @Test

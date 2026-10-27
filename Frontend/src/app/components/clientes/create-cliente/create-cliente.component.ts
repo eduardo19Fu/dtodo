@@ -104,10 +104,6 @@ export class CreateClienteComponent implements OnInit {
     return this.esMayorista && !this.cliente.ruta;
   }
 
-  usarTelefonoComoCodigo(): void {
-    this.cliente.codigoCliente = (this.cliente.telefono || '').trim();
-  }
-
   cargarCliente(): void {
 
     this.activatedRoute.params.subscribe(params => {

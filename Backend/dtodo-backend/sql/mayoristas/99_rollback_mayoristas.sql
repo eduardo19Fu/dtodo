@@ -1,5 +1,9 @@
--- Revierte el módulo de Clientes Mayoristas (pasos 01 a 13). Orden inverso a la creación.
+-- Revierte el módulo de Clientes Mayoristas (pasos 01 a 14). Orden inverso a la creación.
 -- ATENCIÓN: borra la información de rutas, los datos mayoristas de los clientes y los descuentos. Respaldar antes.
+-- Paso 14: los codigos UUID no caben en 30 caracteres; se borran antes de reducir la columna.
+UPDATE clientes SET codigo_cliente = NULL WHERE CHAR_LENGTH(codigo_cliente) > 30;
+ALTER TABLE clientes MODIFY COLUMN codigo_cliente VARCHAR(30) NULL;
+
 -- Paso 13
 DROP TABLE IF EXISTS comisiones_deshechas;
 DROP TABLE IF EXISTS comisiones_liquidaciones;

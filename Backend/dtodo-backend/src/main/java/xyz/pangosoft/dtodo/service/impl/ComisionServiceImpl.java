@@ -40,6 +40,9 @@ import xyz.pangosoft.dtodo.service.IUsuarioService;
 @RequiredArgsConstructor
 public class ComisionServiceImpl implements IComisionService {
 
+    static final String SITUACION_NORMAL = "NORMAL";
+    static final String SITUACION_BLOQUE = "BLOQUE";
+    static final String SITUACION_PENDIENTE = "PENDIENTE";
     static final int ANIO_MINIMO = 2020;
     private static final BigDecimal CIEN = new BigDecimal("100");
 
@@ -163,6 +166,7 @@ public class ComisionServiceImpl implements IComisionService {
             fila.setVendedor(nombre(liquidacion.getVendedor()));
             fila.setFechaAlta(liquidacion.getVendedor().getFechaRegistro());
             fila.setActivo(liquidacion.getVendedor().isEnabled());
+            marcarSituacion(fila, liquidacion.getVendedor(), liquidacion.getAnio());
             fila.setMontoEntregado(liquidacion.getMontoEntregado());
             fila.setMetaAlcanzada(liquidacion.getMontoMeta());
             fila.setPorcentaje(liquidacion.getPorcentaje());
@@ -177,21 +181,27 @@ public class ComisionServiceImpl implements IComisionService {
 
     /** Todos los vendedores activos y quien haya entregado en el año, con su nivel y su comisión potencial. */
     private List<FilaComisionDto> filasEnVivo(int anio, List<ComisionMeta> metas) {
-        Map<Integer, BigDecimal> entregado = entregadoPorVendedor(anio);
+        List<Object[]> entregas = entregasDelPeriodo(anio);
         Map<Integer, Usuario> vendedores = new LinkedHashMap<>();
         usuarioRepository.findVendedoresActivos().forEach(vendedor -> vendedores.put(vendedor.getIdUsuario(), vendedor));
-        for (Integer idVendedor : entregado.keySet()) {
+        for (Object[] entrega : entregas) {
+            Integer idVendedor = (Integer) entrega[0];
             if (!vendedores.containsKey(idVendedor)) {
                 vendedores.put(idVendedor, usuarioService.findById(idVendedor));
             }
         }
+        Map<Integer, BigDecimal> entregado = entregadoPorVendedor(entregas, vendedores, anio);
         List<FilaComisionDto> filas = new ArrayList<>();
         for (Usuario vendedor : vendedores.values()) {
+            if (ingresoDespuesDe(vendedor, anio)) {
+                continue;
+            }
             FilaComisionDto fila = new FilaComisionDto();
             fila.setIdVendedor(vendedor.getIdUsuario());
             fila.setVendedor(nombre(vendedor));
             fila.setFechaAlta(vendedor.getFechaRegistro());
             fila.setActivo(vendedor.isEnabled());
+            marcarSituacion(fila, vendedor, anio);
             BigDecimal monto = entregado.getOrDefault(vendedor.getIdUsuario(), BigDecimal.ZERO);
             fila.setMontoEntregado(monto);
             aplicarNivel(fila, monto, metas);
@@ -199,6 +209,41 @@ public class ComisionServiceImpl implements IComisionService {
         }
         filas.sort(Comparator.comparing(FilaComisionDto::getMontoEntregado).reversed().thenComparing(FilaComisionDto::getVendedor));
         return filas;
+    }
+
+    // Un año de servicio son 365 días. Quien ingresa a mitad de año no cobra ese año: cuando cumple los 365 días (dentro del
+    // año siguiente) se le paga, al cierre de ese año siguiente, todo lo entregado desde su ingreso.
+
+    private static LocalDate fechaAlta(Usuario vendedor) {
+        return vendedor.getFechaRegistro() == null ? null : vendedor.getFechaRegistro().toLocalDate();
+    }
+
+    /** Ingresó después de terminado el año: no participa en él. */
+    static boolean ingresoDespuesDe(Usuario vendedor, int anio) {
+        LocalDate alta = fechaAlta(vendedor);
+        return alta != null && alta.getYear() > anio;
+    }
+
+    /** NORMAL, BLOQUE o PENDIENTE según cuándo ingresó el vendedor respecto del año que se liquida. */
+    static String situacion(Usuario vendedor, int anio) {
+        LocalDate alta = fechaAlta(vendedor);
+        if (alta == null || !alta.isAfter(LocalDate.of(anio - 1, 1, 1))) {
+            return SITUACION_NORMAL;
+        }
+        if (alta.getYear() == anio) {
+            return alta.isAfter(LocalDate.of(anio, 1, 1)) ? SITUACION_PENDIENTE : SITUACION_NORMAL;
+        }
+        return SITUACION_BLOQUE;
+    }
+
+    /** Desde cuándo cuenta lo entregado para el vendedor en ese año. */
+    static LocalDate periodoDesde(Usuario vendedor, int anio) {
+        return SITUACION_NORMAL.equals(situacion(vendedor, anio)) ? LocalDate.of(anio, 1, 1) : fechaAlta(vendedor);
+    }
+
+    private static void marcarSituacion(FilaComisionDto fila, Usuario vendedor, int anio) {
+        fila.setSituacion(situacion(vendedor, anio));
+        fila.setPeriodoDesde(periodoDesde(vendedor, anio));
     }
 
     /** El nivel más alto cuya meta se alcanzó; el porcentaje es plano sobre todo lo entregado. */
@@ -227,12 +272,25 @@ public class ComisionServiceImpl implements IComisionService {
         return monto.multiply(porcentaje).divide(CIEN, 2, RoundingMode.HALF_UP);
     }
 
-    /** Lo entregado en el año por vendedor: unidades entregadas × importe de la línea / unidades de la línea. */
-    Map<Integer, BigDecimal> entregadoPorVendedor(int anio) {
+    /** Las entregas que pueden contar en el año: desde el 1 de enero anterior (por los ingresos del año pasado) hasta el cierre. */
+    private List<Object[]> entregasDelPeriodo(int anio) {
+        return entregaRepository.entregadoDelPeriodo(TipoProformaEnum.MAYORISTA, LocalDate.of(anio - 1, 1, 1),
+                LocalDate.of(anio + 1, 1, 1));
+    }
+
+    /**
+     * Lo entregado por vendedor desde el inicio de su período: unidades entregadas × importe de la línea / unidades de la
+     * línea.
+     */
+    static Map<Integer, BigDecimal> entregadoPorVendedor(List<Object[]> entregas, Map<Integer, Usuario> vendedores, int anio) {
         Map<Integer, BigDecimal> total = new HashMap<>();
-        for (Object[] fila : entregaRepository.entregadoDelPeriodo(TipoProformaEnum.MAYORISTA, LocalDate.of(anio, 1, 1),
-                LocalDate.of(anio + 1, 1, 1))) {
+        for (Object[] fila : entregas) {
             Integer idVendedor = (Integer) fila[0];
+            Usuario vendedor = vendedores.get(idVendedor);
+            LocalDate fecha = (LocalDate) fila[4];
+            if (vendedor == null || fecha == null || fecha.isBefore(periodoDesde(vendedor, anio)) || fecha.getYear() > anio) {
+                continue;
+            }
             BigDecimal unidadesEntregadas = new BigDecimal(((Number) fila[1]).intValue());
             BigDecimal importeLinea = fila[2] == null ? BigDecimal.ZERO : (BigDecimal) fila[2];
             int unidadesLinea = ((Number) fila[3]).intValue();
@@ -271,9 +329,12 @@ public class ComisionServiceImpl implements IComisionService {
             }
         }
         List<FilaComisionDto> filas = filasEnVivo(anio, metas);
-        for (Integer idDecidido : completaron.keySet()) {
-            if (filas.stream().noneMatch(fila -> fila.getIdVendedor().equals(idDecidido))) {
-                throw new ReglaNegocioException("El usuario " + idDecidido + " no es un vendedor de este año.");
+        for (Map.Entry<Integer, Boolean> decidido : completaron.entrySet()) {
+            FilaComisionDto fila = filas.stream().filter(f -> f.getIdVendedor().equals(decidido.getKey())).findFirst()
+                    .orElseThrow(() -> new ReglaNegocioException("El usuario " + decidido.getKey() + " no es un vendedor de este año."));
+            if (decidido.getValue() && SITUACION_PENDIENTE.equals(fila.getSituacion())) {
+                throw new ReglaNegocioException(fila.getVendedor() + " ingresó en " + anio
+                        + " y aún no cumple 365 días: su comisión se liquida el año siguiente.");
             }
         }
 

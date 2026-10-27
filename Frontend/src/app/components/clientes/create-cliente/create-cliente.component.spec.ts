@@ -63,14 +63,6 @@ describe('CreateClienteComponent - cliente mayorista', () => {
     expect(opciones[1].nombre).toContain('inactiva');
   });
 
-  it('propone el teléfono como código del cliente', () => {
-    component.cliente.telefono = ' 5555-1234 ';
-
-    component.usarTelefonoComoCodigo();
-
-    expect(component.cliente.codigoCliente).toBe('5555-1234');
-  });
-
   it('solo el administrador ve la sección de mayoristas', () => {
     expect(component.puedeAdministrarMayoristas).toBeTrue();
 

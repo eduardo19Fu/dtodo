@@ -92,12 +92,17 @@ export class ComisionesComponent implements OnInit {
     if (!this.avance) {
       return 0;
     }
-    return this.avance.filas.filter(fila => this.completaron[fila.idVendedor])
+    return this.avance.filas.filter(fila => this.cobra(fila))
       .reduce((suma, fila) => suma + Number(fila.comision || 0), 0);
   }
 
+  /** Marcado como que completó el año y con 365 días cumplidos (quien ingresó este año nunca cobra todavía). */
+  private cobra(fila: FilaComisionDto): boolean {
+    return !!this.completaron[fila.idVendedor] && fila.situacion !== 'PENDIENTE';
+  }
+
   get cantidadMarcados(): number {
-    return this.avance ? this.avance.filas.filter(fila => this.completaron[fila.idVendedor]).length : 0;
+    return this.avance ? this.avance.filas.filter(fila => this.cobra(fila)).length : 0;
   }
 
   // ---- metas
@@ -151,7 +156,7 @@ export class ComisionesComponent implements OnInit {
   // ---- liquidación
 
   liquidar(): void {
-    const decisiones = this.avance.filas.map(fila => ({ idVendedor: fila.idVendedor, completoAnio: !!this.completaron[fila.idVendedor] }));
+    const decisiones = this.avance.filas.map(fila => ({ idVendedor: fila.idVendedor, completoAnio: this.cobra(fila) }));
     const total = this.totalAPagar.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     Swal.fire({
       title: `Liquidar las comisiones ${this.anio}`,

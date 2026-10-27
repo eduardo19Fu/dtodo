@@ -6,6 +6,13 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Cambiado — Código de cliente como UUID y comisión de quien ingresa a mitad de año
+
+- **Código de cliente**: ya no se escribe ni se propone el teléfono. El servidor asigna un **UUID** al crear el cliente; no se edita (lo que mande la petición se ignora), es único y sigue sirviendo para buscar. Un cliente anterior sin código lo recibe la próxima vez que se guarda. La pantalla del cliente lo muestra de solo lectura y se quitó "Usar el teléfono". Script `sql/mayoristas/14_codigo_cliente_uuid.sql` (**requerido antes del jar**; amplía la columna a 36 caracteres y asigna UUID a los mayoristas sin código; el rollback borra los UUID para volver a 30).
+- **Comisión de quien ingresa a mitad de año** (un año son 365 días; se toma como ingreso la fecha de alta del usuario): quien ingresó **antes del 1 de enero del año anterior** o ese día cobra normal; quien ingresó **durante el año anterior** cobra en un solo bloque, en la liquidación de este año, todo lo entregado **desde su ingreso** hasta el 31 de diciembre (ya cumplió los 365 días); quien ingresó **durante este año** queda *pendiente*: aún no cumple los 365 días, la liquidación no le permite cobrar y se le paga con la del año siguiente. Quien ingresa después del año no aparece. La pantalla lo indica por vendedor, y el administrador sigue marcando quién completó el año.
+- **Pruebas**: bloque, pendiente, enero 1, sin fecha de alta, ingreso posterior; códigos UUID (asignado, ignorado si lo manda la petición, se regenera si choca, se conserva al actualizar).
+- **Pendiente del cliente**: el vendedor de la Ruta 3 se registrará a mano después.
+
 ### Agregado — Pantalla y reporte de comisiones (Fase 3B)
 
 Cierra la Fase 3. Pantalla *Comisiones* (menú lateral, solo administrador) y reporte del año.

@@ -107,6 +107,12 @@
             <td data-label="Vendedor">
               <strong>{{fila.vendedor}}</strong>
               <small *ngIf="!fila.activo" class="d-block text-muted">Usuario inactivo</small>
+              <small *ngIf="fila.situacion === 'BLOQUE'" class="d-block text-info">
+                Ingresó el {{fila.periodoDesde | date: 'dd/MM/yyyy'}}: se le paga todo lo entregado desde su ingreso.
+              </small>
+              <small *ngIf="fila.situacion === 'PENDIENTE'" class="d-block text-warning">
+                Ingresó el {{fila.periodoDesde | date: 'dd/MM/yyyy'}}: aún no cumple 365 días, se liquida el año siguiente.
+              </small>
             </td>
             <td data-label="Alta">{{fila.fechaAlta ? (fila.fechaAlta | date: 'dd/MM/yyyy') : '—'}}</td>
             <td data-label="Entregado" class="text-right">{{fila.montoEntregado | currency: 'Q' : 'symbol'}}</td>
@@ -117,7 +123,7 @@
             <td data-label="Completó el año" class="text-center">
               <ng-container *ngIf="liquidado">{{fila.completoAnio ? 'Sí' : 'No'}}</ng-container>
               <input *ngIf="!liquidado" type="checkbox" [(ngModel)]="completaron[fila.idVendedor]" [name]="'completo' + fila.idVendedor"
-                [disabled]="!avance.anioTerminado" [attr.aria-label]="'Completó el año ' + fila.vendedor" />
+                [disabled]="!avance.anioTerminado || fila.situacion === 'PENDIENTE'" [attr.aria-label]="'Completó el año ' + fila.vendedor" />
             </td>
           </tr>
         </tbody>

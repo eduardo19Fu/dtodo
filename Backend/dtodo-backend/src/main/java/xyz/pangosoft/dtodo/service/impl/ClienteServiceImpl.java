@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -339,7 +340,8 @@ public class ClienteServiceImpl implements IClienteService {
 			if (cliente.getIdCliente() == null) {
 				log.info("Registrando nuevo cliente");
 				normalizar(cliente);
-				validarCodigoUnico(cliente.getCodigoCliente(), null);
+				// El código lo asigna el servidor: un UUID que nunca se repite ni cambia.
+				cliente.setCodigoCliente(nuevoCodigo());
 				cliente.setRuta(resolverRuta(cliente, null));
 				if (cliente.getFechaRegistro() == null) {
 					cliente.setFechaRegistro(LocalDateTime.now());
@@ -351,7 +353,6 @@ public class ClienteServiceImpl implements IClienteService {
 			Cliente existente = clienteRepository.findById(cliente.getIdCliente()).orElseThrow(() -> new NotFoundException(
 					"Cliente con ID: " + cliente.getIdCliente() + " no se encuentra registrado"));
 			normalizar(cliente);
-			validarCodigoUnico(cliente.getCodigoCliente(), existente.getIdCliente());
 			Ruta ruta = resolverRuta(cliente, existente.getRuta());
 
 			// Solo se copian los campos editables: la fecha de registro nunca la manda el cliente.
@@ -359,7 +360,10 @@ public class ClienteServiceImpl implements IClienteService {
 			existente.setNombre(cliente.getNombre());
 			existente.setDireccion(cliente.getDireccion());
 			existente.setTelefono(cliente.getTelefono());
-			existente.setCodigoCliente(cliente.getCodigoCliente());
+			// El código no se edita: lo que mande la petición se ignora. Un cliente anterior que no lo tenga lo recibe ahora.
+			if (existente.getCodigoCliente() == null) {
+				existente.setCodigoCliente(nuevoCodigo());
+			}
 			existente.setNombreNegocio(cliente.getNombreNegocio());
 			existente.setTipoCliente(cliente.getTipoCliente());
 			existente.setCategoriaDescuento(cliente.getCategoriaDescuento());
@@ -410,15 +414,12 @@ public class ClienteServiceImpl implements IClienteService {
 		return texto.trim();
 	}
 
-	private void validarCodigoUnico(String codigo, Integer idActual) {
-		if (codigo == null) {
-			return;
-		}
-		clienteRepository.findByCodigoCliente(codigo)
-				.filter(otro -> !otro.getIdCliente().equals(idActual))
-				.ifPresent(otro -> {
-					throw new ReglaNegocioException("El código \"" + codigo + "\" ya pertenece al cliente " + otro.getNombre() + ".");
-				});
+	private String nuevoCodigo() {
+		String codigo;
+		do {
+			codigo = UUID.randomUUID().toString();
+		} while (clienteRepository.findByCodigoCliente(codigo).isPresent());
+		return codigo;
 	}
 
 	/**

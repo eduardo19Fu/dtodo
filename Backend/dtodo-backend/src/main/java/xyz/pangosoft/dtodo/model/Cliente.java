@@ -46,7 +46,7 @@ public class Cliente implements Serializable {
 	private String telefono;
 	private LocalDateTime fechaRegistro;
 
-	/** Código con el que el negocio identifica al cliente (por defecto su teléfono). Único cuando existe. */
+	/** Código del cliente: un UUID que asigna el servidor al crearlo y que no se edita. Único. */
 	private String codigoCliente;
 	private String nombreNegocio;
 
