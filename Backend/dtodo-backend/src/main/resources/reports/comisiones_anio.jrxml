@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Comisiones de vendedores de un año. Plantilla escrita a mano en formato JasperReports 6.x; no abrir ni guardar con Jaspersoft Studio 7,
+     que cambia el formato y la librería del proyecto no lo entiende. Se llena con una lista de FilaComisionDto, no con SQL. -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="comisiones_anio" pageWidth="842" pageHeight="595" orientation="Landscape"
+              whenNoDataType="AllSectionsNoDetail" columnWidth="802" leftMargin="20" rightMargin="20"
+              topMargin="18" bottomMargin="18" isSummaryWithPageHeaderAndFooter="true"
+              uuid="7d2a9c41-5b6e-4f83-9a17-c3e08b52d604">
+    <property name="net.sf.jasperreports.export.xlsx.detect.cell.type" value="true"/>
+    <property name="net.sf.jasperreports.export.xlsx.remove.empty.space.between.rows" value="true"/>
+    <property name="net.sf.jasperreports.export.xlsx.white.page.background" value="false"/>
+
+    <style name="Base" isDefault="true" fontName="DejaVu Sans" fontSize="8" forecolor="#23344D"/>
+    <style name="Header" style="Base" mode="Opaque" backcolor="#1769D2" forecolor="#FFFFFF"
+           fontSize="8" isBold="true" vTextAlign="Middle"/>
+    <style name="Cell" style="Base" mode="Opaque" backcolor="#FFFFFF" vTextAlign="Middle">
+        <box><pen lineWidth="0.35" lineColor="#D9E3EF"/></box>
+    </style>
+
+    <parameter name="ANIO" class="java.lang.Integer"/>
+    <parameter name="FORMATO" class="java.lang.String"/>
+    <parameter name="ESTADO" class="java.lang.String"/>
+    <parameter name="METAS" class="java.lang.String"/>
+    <parameter name="TOTAL_ENTREGADO" class="java.math.BigDecimal"/>
+    <parameter name="TOTAL_COMISION" class="java.math.BigDecimal"/>
+    <parameter name="LIQUIDADO" class="java.lang.Boolean"/>
+
+    <field name="vendedor" class="java.lang.String"/>
+    <field name="montoEntregado" class="java.math.BigDecimal"/>
+    <field name="metaAlcanzada" class="java.math.BigDecimal"/>
+    <field name="porcentaje" class="java.math.BigDecimal"/>
+    <field name="comision" class="java.math.BigDecimal"/>
+    <field name="faltaParaSiguiente" class="java.math.BigDecimal"/>
+    <field name="completoAnio" class="java.lang.Boolean"/>
+
+    <title>
+        <band height="88">
+            <rectangle radius="8">
+                <reportElement x="90" y="0" width="712" height="48" forecolor="#1769D2" backcolor="#1769D2"/>
+            </rectangle>
+            <image scaleImage="RetainShape" hAlign="Center">
+                <reportElement x="0" y="0" width="72" height="48"/>
+                <imageExpression><![CDATA[this.getClass().getResourceAsStream("/static/images/reports-image/logo-dtodo.jpg")]]></imageExpression>
+            </image>
+            <textField>
+                <reportElement x="90" y="0" width="478" height="24" forecolor="#FFFFFF" backcolor="#1769D2" mode="Opaque"/>
+                <textElement verticalAlignment="Middle"><font size="16" isBold="true"/><paragraph leftIndent="18"/></textElement>
+                <textFieldExpression><![CDATA["Comisiones de vendedores " + $P{ANIO}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="90" y="24" width="478" height="24" forecolor="#DCEBFF" backcolor="#1769D2" mode="Opaque"/>
+                <textElement verticalAlignment="Middle"><font size="8"/><paragraph leftIndent="18"/></textElement>
+                <textFieldExpression><![CDATA[$P{ESTADO}]]></textFieldExpression>
+            </textField>
+            <textField pattern="dd/MM/yyyy HH:mm">
+                <reportElement x="568" y="24" width="234" height="24" forecolor="#DCEBFF" backcolor="#1769D2" mode="Opaque"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="7"/><paragraph rightIndent="18"/></textElement>
+                <textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="0" y="54" width="802" height="14" forecolor="#66758A"/>
+                <textElement><font size="8" isItalic="true"/></textElement>
+                <textFieldExpression><![CDATA["Metas del año: " + $P{METAS}]]></textFieldExpression>
+            </textField>
+            <staticText>
+                <reportElement x="0" y="68" width="802" height="14" forecolor="#66758A"/>
+                <textElement><font size="8" isItalic="true"/></textElement>
+                <text><![CDATA[Porcentaje plano sobre todo lo entregado según la meta más alta alcanzada. Solo cobra quien completó el año.]]></text>
+            </staticText>
+        </band>
+    </title>
+    <columnHeader>
+        <band height="28">
+            <staticText><reportElement style="Header" x="0" y="0" width="242" height="28"/><textElement textAlignment="Left"/><text><![CDATA[Vendedor]]></text></staticText>
+            <staticText><reportElement style="Header" x="242" y="0" width="110" height="28"/><textElement textAlignment="Right"/><text><![CDATA[Entregado]]></text></staticText>
+            <staticText><reportElement style="Header" x="352" y="0" width="110" height="28"/><textElement textAlignment="Right"/><text><![CDATA[Meta alcanzada]]></text></staticText>
+            <staticText><reportElement style="Header" x="462" y="0" width="50" height="28"/><textElement textAlignment="Right"/><text><![CDATA[%]]></text></staticText>
+            <staticText><reportElement style="Header" x="512" y="0" width="110" height="28"/><textElement textAlignment="Right"/><text><![CDATA[Comisión]]></text></staticText>
+            <staticText><reportElement style="Header" x="622" y="0" width="110" height="28"/><textElement textAlignment="Right"/><text><![CDATA[Falta p/ siguiente]]></text></staticText>
+            <staticText><reportElement style="Header" x="732" y="0" width="70" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Completó el año]]></text></staticText>
+        </band>
+    </columnHeader>
+    <detail>
+        <band height="22">
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="0" y="0" width="242" height="22"/><textElement textAlignment="Left"><paragraph leftIndent="4"/></textElement><textFieldExpression><![CDATA[$F{vendedor}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="242" y="0" width="110" height="22"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{montoEntregado}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="352" y="0" width="110" height="22"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{metaAlcanzada}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="462" y="0" width="50" height="22"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{porcentaje}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="512" y="0" width="110" height="22"/><textElement textAlignment="Right"><font isBold="true"/><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{comision}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="622" y="0" width="110" height="22"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{faltaParaSiguiente}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="732" y="0" width="70" height="22"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA[$F{completoAnio} == null ? "Sin definir" : ($F{completoAnio} ? "Sí" : "No")]]></textFieldExpression></textField>
+        </band>
+    </detail>
+
+    <pageFooter>
+        <band height="18">
+            <textField>
+                <reportElement x="642" y="2" width="115" height="14" forecolor="#7B8798">
+                    <printWhenExpression><![CDATA["PDF".equals($P{FORMATO})]]></printWhenExpression>
+                </reportElement>
+                <textElement textAlignment="Right"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+            <textField evaluationTime="Report">
+                <reportElement x="757" y="2" width="35" height="14" forecolor="#7B8798">
+                    <printWhenExpression><![CDATA["PDF".equals($P{FORMATO})]]></printWhenExpression>
+                </reportElement>
+                <textElement textAlignment="Left"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA[" de " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+        </band>
+    </pageFooter>
+
+    <summary>
+        <band height="68">
+            <line><reportElement x="0" y="8" width="802" height="1" forecolor="#B9C9DC"/></line>
+            <staticText>
+                <reportElement x="0" y="40" width="400" height="24" forecolor="#52647C" backcolor="#F4F8FC" mode="Opaque">
+                    <printWhenExpression><![CDATA[$V{REPORT_COUNT} == null || $V{REPORT_COUNT}.intValue() == 0]]></printWhenExpression>
+                </reportElement>
+                <box><pen lineWidth="0.5" lineColor="#D6E2F0"/></box>
+                <textElement verticalAlignment="Middle"><font size="9" isItalic="true"/></textElement>
+                <text><![CDATA[No hay vendedores para este año.]]></text>
+            </staticText>
+            <staticText><reportElement x="152" y="16" width="90" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Totales:]]></text></staticText>
+            <textField pattern="#,##0.00"><reportElement x="242" y="16" width="110" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$P{TOTAL_ENTREGADO}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00"><reportElement x="512" y="16" width="110" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$P{TOTAL_COMISION}]]></textFieldExpression></textField>
+        </band>
+    </summary>
+</jasperReport>

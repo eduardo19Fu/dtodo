@@ -6,6 +6,16 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Pantalla y reporte de comisiones (Fase 3B)
+
+Cierra la Fase 3. Pantalla *Comisiones* (menú lateral, solo administrador) y reporte del año.
+
+- **Metas del año**: se editan en la pantalla (agregar, quitar, guardar, descartar cambios) y se pueden copiar de otro año cuando el año no tiene ninguna. En un año liquidado quedan de solo lectura.
+- **Avance y liquidación**: tabla por vendedor con fecha de alta, entregado, meta alcanzada, porcentaje, comisión, lo que falta para la siguiente meta y la casilla **Completó el año** (se habilita cuando el año termina). El total a pagar suma solo a los marcados. "Liquidar el año" pide confirmación con el total; no se puede liquidar con cambios de metas sin guardar, sin metas o antes de que termine el año, y la pantalla dice por qué. Un año liquidado muestra lo guardado, quién y cuándo, y "Deshacer liquidación" pide motivo.
+- **Reporte "Comisiones del año"** (PDF y Excel, `GET /api/comisiones/reporte?anio&formato`, solo `ROLE_ADMIN`): metas del año, estado (en curso, pendiente de liquidar o liquidado por quién y cuándo), una fila por vendedor y totales. Se descarga desde los botones de la pantalla de Comisiones, no desde *Reportes*, porque depende del año y de la liquidación y no de un período.
+- **Pruebas**: `ReporteComisionesServiceImplTest` genera PDF y Excel reales (metas, filas, Sí/No/Sin definir, año vacío), `comisiones.component.spec.ts` y `comision.service.spec.ts`, y la matriz de roles incluye el reporte.
+- **Base de datos**: sin cambios nuevos; requiere el script 13 de la 3A.
+
 ### Agregado — Cálculo y liquidación de comisiones de vendedores (Fase 3A, backend)
 
 Solo servidor y base de datos; la pantalla y el reporte vienen en la 3B.

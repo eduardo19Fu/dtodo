@@ -32,6 +32,7 @@ import { CreateSucursalComponent } from './components/sucursales/create-sucursal
 import { RutasComponent } from './components/rutas/rutas.component';
 import { PedidosComponent } from './components/pedidos/pedidos.component';
 import { AutorizacionesComponent } from './components/autorizaciones/autorizaciones.component';
+import { ComisionesComponent } from './components/comisiones/comisiones.component';
 import { DescuentosComponent } from './components/descuentos/descuentos.component';
 import { CreateRutaComponent } from './components/rutas/create-ruta/create-ruta.component';
 import { ProveedoresComponent } from './components/proveedores/proveedores.component';
@@ -126,6 +127,7 @@ const appRoutes: Routes = [
     },
 
     /****** MENUS DE RUTAS ******/
+    { path: 'comisiones/index', component: ComisionesComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN'] } },
     { path: 'autorizaciones/index', component: AutorizacionesComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN'] } },
     { path: 'pedidos/index', component: PedidosComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_BODEGA', 'ROLE_VENDEDOR', 'ROLE_REPARTIDOR'] } },
     { path: 'rutas/index', component: RutasComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN'] } },

@@ -158,6 +158,12 @@
         <span class="menu-label">Autorizaciones</span>
       </a>
 
+      <a *ngIf="coincide('comisiones', 'vendedores', 'metas', 'mayoristas') && authService.hasRole('ROLE_ADMIN')" [routerLink]="['/comisiones/index']"
+        class="menu-link" [class.active]="router.url.startsWith('/comisiones')" (click)="notificarNavegacion()" title="Comisiones">
+        <span class="menu-icon"><i class="fas fa-hand-holding-usd" aria-hidden="true"></i></span>
+        <span class="menu-label">Comisiones</span>
+      </a>
+
       <a *ngIf="coincide('descuentos', 'mayoristas', 'precio mayorista') && authService.hasRole('ROLE_ADMIN')" [routerLink]="['/descuentos/index']"
         class="menu-link" [class.active]="router.url.startsWith('/descuentos')" (click)="notificarNavegacion()" title="Descuentos">
         <span class="menu-icon"><i class="fas fa-tags" aria-hidden="true"></i></span>

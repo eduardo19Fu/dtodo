@@ -113,7 +113,7 @@ class VendedorSeguridadTest {
 
     @Test
     void lasComisionesSonSoloDelAdministrador() {
-        String[] metodos = { "metas", "guardarMetas", "copiarMetas", "avance", "liquidar", "deshacer" };
+        String[] metodos = { "metas", "guardarMetas", "copiarMetas", "avance", "liquidar", "deshacer", "reporte" };
         niegaAlVendedor(ComisionApiController.class, metodos);
         for (String metodo : metodos) {
             assertTrue(roles(ComisionApiController.class, metodo).equals(Arrays.asList("ROLE_ADMIN")),

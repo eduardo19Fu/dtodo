@@ -1,8 +1,11 @@
 package xyz.pangosoft.dtodo.controller;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -20,6 +23,7 @@ import xyz.pangosoft.dtodo.dto.AvanceComisionDto;
 import xyz.pangosoft.dtodo.dto.LiquidarComisionDto;
 import xyz.pangosoft.dtodo.dto.MetaComisionDto;
 import xyz.pangosoft.dtodo.service.IComisionService;
+import xyz.pangosoft.dtodo.service.IReporteComisionesService;
 
 /** Comisiones de los vendedores: metas, avance y liquidación del año. Solo el administrador. */
 @CrossOrigin(origins = { "http://localhost:4200", "https://dtodojalapa.xyz" })
@@ -30,6 +34,7 @@ import xyz.pangosoft.dtodo.service.IComisionService;
 public class ComisionApiController {
 
     private final IComisionService comisionService;
+    private final IReporteComisionesService reporteComisionesService;
 
     @Secured("ROLE_ADMIN")
     @GetMapping("/metas")
@@ -69,5 +74,22 @@ public class ComisionApiController {
     public ResponseEntity<AvanceComisionDto> deshacer(@RequestParam int anio, @RequestBody Map<String, String> cuerpo) {
         log.info("Deshaciendo la liquidación de comisiones del año {}", anio);
         return ResponseEntity.ok(comisionService.deshacerLiquidacion(anio, cuerpo.get("motivo")));
+    }
+
+    @Secured("ROLE_ADMIN")
+    @GetMapping("/reporte")
+    public ResponseEntity<byte[]> reporte(@RequestParam int anio, @RequestParam(defaultValue = "PDF") String formato) {
+        log.info("Generando reporte de comisiones. anio={}, formato={}", anio, formato);
+        byte[] contenido = reporteComisionesService.comisionesDelAnio(anio, formato);
+        boolean esPdf = !"XLSX".equalsIgnoreCase(formato);
+        String disposition = (esPdf ? "inline" : "attachment") + "; filename=\"comisiones_" + anio + (esPdf ? ".pdf" : ".xlsx") + "\"";
+        return ResponseEntity.ok()
+                .contentType(esPdf ? MediaType.APPLICATION_PDF
+                        : MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        new String(disposition.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1))
+                .header(HttpHeaders.CACHE_CONTROL, "no-store")
+                .contentLength(contenido.length)
+                .body(contenido);
     }
 }
