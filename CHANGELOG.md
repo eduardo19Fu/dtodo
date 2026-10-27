@@ -6,6 +6,15 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Corregido — Lectura pública de clientes (seguridad)
+
+`GET /api/clientes`, `/api/clientes/{id}` y `/api/clientes/page/**` estaban abiertas al público en `SecurityConfig` y sus métodos no tenían rol: cualquiera, sin iniciar sesión, podía leer todos los clientes (nombre, NIT, dirección, teléfono, ruta y datos de crédito). Eso también dejaba sin efecto el alcance por ruta del vendedor.
+
+- Se quitaron del acceso sin token y **todas** las lecturas de `ClienteApiController` declaran sus roles: administrador, cobrador, inventario y vendedor (este último limitado a sus rutas, como antes). Bodega y el futuro repartidor ya no leen clientes; la cantidad de NIT inválidos sigue siendo solo del administrador.
+- Las lecturas públicas de productos, marcas, tipos de producto y roles no cambian: no son datos de clientes. Las facturas ya estaban protegidas por rol en cada método.
+- **Pruebas**: `LecturaPublicaClientesTest` (con la seguridad real: sin token ninguna lectura de clientes responde, y toda lectura declara sus roles sin incluir a bodega ni al repartidor).
+- **Cuidado al desplegar**: el frontend envía el token en cada llamada, así que no debería notarse; si alguna pantalla anterior leía clientes sin iniciar sesión, dejará de funcionar.
+
 ### Agregado — Origen de los movimientos de inventario en el kardex y en el reporte de movimientos (Fase 2B, paso 3)
 
 Cierra la 2B. Solo reportes: sin script SQL ni cambios en la API.

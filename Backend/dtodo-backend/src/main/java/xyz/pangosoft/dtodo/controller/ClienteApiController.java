@@ -46,6 +46,7 @@ public class ClienteApiController {
 
 	private final IAmbitoVendedorService ambito;
 
+	@Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO", "ROLE_VENDEDOR"})
 	@GetMapping(value = "/clientes")
 	public ResponseEntity<List<ClienteDto>> listarClientes () {
 		log.info("Listando Clientes");
@@ -59,6 +60,7 @@ public class ClienteApiController {
 		return ResponseEntity.ok(clientes);
 	}
 
+	@Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO", "ROLE_VENDEDOR"})
 	@GetMapping(value = "/clientes/listado")
 	public ResponseEntity<Page<ClienteDto>> listarClientes(
 			@RequestParam(value = "page", defaultValue = "0") Integer page,
@@ -92,6 +94,7 @@ public class ClienteApiController {
 		}
 	}
 	
+	@Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO", "ROLE_VENDEDOR"})
 	@GetMapping(value = "/clientes/page/{page}")
 	public ResponseEntity<Page<Cliente>> listarClientesPaginados (@PathVariable("page") Integer page) {
 		log.info("Buscando clientes pagina: {}", page);
@@ -103,6 +106,7 @@ public class ClienteApiController {
 		return ResponseEntity.ok(listadoPaginado);
 	}
 
+	@Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO", "ROLE_VENDEDOR"})
 	@GetMapping(value = "/clientes/nombre/{name}")
 	public ResponseEntity<List<Cliente>> findByName(@PathVariable("name") String name) {
 		log.info("Buscando clientes con nombre: {}", name);
@@ -114,6 +118,7 @@ public class ClienteApiController {
 		return ResponseEntity.ok(listadoClientes);
 	}
 	
+	@Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO", "ROLE_VENDEDOR"})
 	@GetMapping(value = "/clientes/nit/{nit}")
 	public ResponseEntity<?> findByNit(@PathVariable("nit") String nit){
 		log.info("Buscando cliente con nit: {}", nit);
@@ -130,12 +135,14 @@ public class ClienteApiController {
 		return ResponseEntity.ok(serviceCliente.totalNitInvalidos());
 	}
 
+	@Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO", "ROLE_VENDEDOR"})
 	@GetMapping(value = "/clientes/codigo/{codigo}")
 	public ResponseEntity<Cliente> findByCodigo(@PathVariable("codigo") String codigo) {
 		log.info("Buscando cliente con código: {}", codigo);
 		return ResponseEntity.ok(ambito.limitarLectura(serviceCliente.findByCodigo(codigo)));
 	}
 
+	@Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO", "ROLE_VENDEDOR"})
 	@GetMapping(value = "/clientes/{id}")
 	public ResponseEntity<?> findById(@PathVariable("id") Integer id) {
 		log.info("Buscando cliente con ID: {}", id);
@@ -145,6 +152,7 @@ public class ClienteApiController {
 		return ResponseEntity.ok(cliente);
 	}
 
+	@Secured(value = {"ROLE_ADMIN", "ROLE_COBRADOR", "ROLE_INVENTARIO", "ROLE_VENDEDOR"})
 	@GetMapping(value = "/clientes/cantidad-clientes")
 	public ResponseEntity<Integer> getTotalClientes(){
 		log.info("Obteniendo cantidad de clientes");
