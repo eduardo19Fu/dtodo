@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import xyz.pangosoft.dtodo.dto.EntregaDto;
 import xyz.pangosoft.dtodo.dto.PedidoDetalleDto;
 import xyz.pangosoft.dtodo.dto.PedidoDto;
 import xyz.pangosoft.dtodo.error.exceptions.NotFoundException;
@@ -18,10 +19,13 @@ import xyz.pangosoft.dtodo.error.exceptions.ReglaNegocioException;
 import xyz.pangosoft.dtodo.model.Cliente;
 import xyz.pangosoft.dtodo.model.DetalleProforma;
 import xyz.pangosoft.dtodo.model.Proforma;
+import xyz.pangosoft.dtodo.model.ProformaEntrega;
+import xyz.pangosoft.dtodo.model.ProformaEntregaDetalle;
 import xyz.pangosoft.dtodo.model.ProformaEtapa;
 import xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum;
 import xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoProformaEnum;
+import xyz.pangosoft.dtodo.repository.IProformaEntregaRepository;
 import xyz.pangosoft.dtodo.repository.IProformaEtapaRepository;
 import xyz.pangosoft.dtodo.repository.IProformaRepository;
 import xyz.pangosoft.dtodo.service.IAmbitoVendedorService;
@@ -42,6 +46,7 @@ public class PedidoServiceImpl implements IPedidoService {
 
     private final IProformaRepository proformaRepository;
     private final IProformaEtapaRepository etapaRepository;
+    private final IProformaEntregaRepository entregaRepository;
     private final IAmbitoVendedorService ambito;
     private final IUsuarioService usuarioService;
     private final IProformaAuditoriaService auditoria;
@@ -128,6 +133,19 @@ public class PedidoServiceImpl implements IPedidoService {
     }
 
     @Override
+    public Proforma obtenerPedido(Long idProforma) {
+        return cargarPedido(idProforma);
+    }
+
+    @Transactional
+    @Override
+    public void cambiarEstado(Proforma pedido, EstadoPedidoEnum nuevo, String responsable, String motivo) {
+        pedido.setEstadoPedido(nuevo);
+        proformaRepository.save(pedido);
+        registrarEtapa(pedido.getIdProforma(), nuevo, limpiarResponsable(responsable), motivo);
+    }
+
+    @Override
     public void exigirEditable(Proforma proforma) {
         if (proforma != null && proforma.getEstadoPedido() != null && proforma.getEstadoPedido().entregado()) {
             throw new ReglaNegocioException("El pedido " + proforma.getNoProforma()
@@ -197,6 +215,10 @@ public class PedidoServiceImpl implements IPedidoService {
             dto.setTelefonoContacto(cliente.getTelefonoContacto());
         }
         dto.setRuta(proforma.getRuta() == null ? null : proforma.getRuta().getNombre());
+        if (proforma.getSucursal() != null) {
+            dto.setIdSucursal(proforma.getSucursal().getIdSucursal());
+            dto.setSucursal(proforma.getSucursal().getNombre());
+        }
         if (proforma.getUsuario() != null) {
             dto.setVendedor(((proforma.getUsuario().getPrimerNombre() == null ? "" : proforma.getUsuario().getPrimerNombre()) + " "
                     + (proforma.getUsuario().getApellido() == null ? "" : proforma.getUsuario().getApellido())).trim());
@@ -211,14 +233,55 @@ public class PedidoServiceImpl implements IPedidoService {
                             : linea.getProducto().getNombre()))
                     .forEach(linea -> {
                         PedidoDetalleDto.Linea fila = new PedidoDetalleDto.Linea();
+                        fila.setIdDetalle(linea.getIdDetalle());
                         fila.setCodigo(linea.getProducto().getCodProducto());
                         fila.setProducto(linea.getProducto().getNombre());
                         fila.setCantidad(linea.getCantidad());
                         fila.setObservacion(linea.getObservacion());
+                        int entregada = linea.getCantidadEntregada() == null ? 0 : linea.getCantidadEntregada();
+                        fila.setCantidadEntregada(entregada);
+                        fila.setPendiente(Math.max(0, (linea.getCantidad() == null ? 0 : linea.getCantidad()) - entregada));
                         dto.getLineas().add(fila);
                     });
         }
         dto.setEtapas(etapaRepository.findHistorial(proforma.getIdProforma()));
+        dto.setEntregas(armarEntregas(proforma));
         return dto;
+    }
+
+    private java.util.List<EntregaDto> armarEntregas(Proforma proforma) {
+        java.util.Map<Long, String> productos = new java.util.HashMap<>();
+        if (proforma.getItemsProforma() != null) {
+            proforma.getItemsProforma().stream().filter(linea -> linea != null && linea.getProducto() != null)
+                    .forEach(linea -> productos.put(linea.getIdDetalle(), linea.getProducto().getNombre()));
+        }
+        java.util.List<EntregaDto> entregas = new java.util.ArrayList<>();
+        for (ProformaEntrega entrega : entregaRepository.findByIdProformaOrderByFechaRegistroAscIdEntregaAsc(proforma.getIdProforma())) {
+            EntregaDto dto = new EntregaDto();
+            dto.setIdEntrega(entrega.getIdEntrega());
+            dto.setFechaEntrega(entrega.getFechaEntrega());
+            dto.setFechaRegistro(entrega.getFechaRegistro());
+            dto.setUsuario(entrega.getUsuario() == null ? null : ((entrega.getUsuario().getPrimerNombre() == null ? "" : entrega.getUsuario().getPrimerNombre()) + " "
+                    + (entrega.getUsuario().getApellido() == null ? "" : entrega.getUsuario().getApellido())).trim());
+            dto.setEntregadoPor(entrega.getEntregadoPor());
+            if (entrega.getSucursal() != null) {
+                dto.setIdSucursal(entrega.getSucursal().getIdSucursal());
+                dto.setSucursal(entrega.getSucursal().getNombre());
+            }
+            dto.setDescontadoAMano(entrega.isDescontadoAMano());
+            dto.setObservaciones(entrega.getObservaciones());
+            dto.setAnulada(entrega.isAnulada());
+            dto.setFechaAnulacion(entrega.getFechaAnulacion());
+            dto.setMotivoAnulacion(entrega.getMotivoAnulacion());
+            for (ProformaEntregaDetalle detalle : entrega.getDetalles()) {
+                EntregaDto.Linea fila = new EntregaDto.Linea();
+                fila.setIdDetalle(detalle.getIdDetalle());
+                fila.setProducto(productos.get(detalle.getIdDetalle()));
+                fila.setCantidad(detalle.getCantidad());
+                dto.getLineas().add(fila);
+            }
+            entregas.add(dto);
+        }
+        return entregas;
     }
 }

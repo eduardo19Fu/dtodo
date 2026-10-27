@@ -37,10 +37,49 @@ export class PedidoEtapaDto {
 }
 
 export class PedidoLineaDto {
+  idDetalle: number;
   codigo: string;
   producto: string;
   cantidad: number;
   observacion?: string | null;
+  cantidadEntregada: number;
+  /** Lo que falta por entregar. */
+  pendiente: number;
+}
+
+export class EntregaLineaDto {
+  idDetalle: number;
+  producto: string;
+  cantidad: number;
+}
+
+/** Una entrega del pedido; la anulada se conserva. */
+export class EntregaDto {
+  idEntrega: number;
+  /** yyyy-MM-dd: la fecha real de la entrega. */
+  fechaEntrega: string;
+  /** ISO local, sin zona: cuándo se registró. */
+  fechaRegistro: string;
+  usuario: string;
+  entregadoPor?: string | null;
+  idSucursal: number;
+  sucursal: string;
+  descontadoAMano: boolean;
+  observaciones?: string | null;
+  anulada: boolean;
+  fechaAnulacion?: string | null;
+  motivoAnulacion?: string | null;
+  lineas: EntregaLineaDto[] = [];
+}
+
+/** Lo que se envía para registrar una entrega. */
+export class EntregaSolicitudDto {
+  idSucursal: number;
+  fechaEntrega?: string | null;
+  entregadoPor?: string | null;
+  descontadoAMano = false;
+  observaciones?: string | null;
+  lineas: Array<{ idDetalle: number; cantidad: number }> = [];
 }
 
 export class PedidoDetalleDto {
@@ -58,6 +97,10 @@ export class PedidoDetalleDto {
   estadoPedido: EstadoPedido;
   estadoAutorizacion?: 'PENDIENTE' | 'APROBADA' | 'RECHAZADA' | null;
   observaciones?: string | null;
+  /** Sucursal de la proforma: la que se propone para descontar el inventario. */
+  idSucursal?: number | null;
+  sucursal?: string | null;
   lineas: PedidoLineaDto[] = [];
   etapas: PedidoEtapaDto[] = [];
+  entregas: EntregaDto[] = [];
 }

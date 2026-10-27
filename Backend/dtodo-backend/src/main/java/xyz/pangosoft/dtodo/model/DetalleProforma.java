@@ -43,6 +43,19 @@ public class DetalleProforma implements Serializable {
     @Column(nullable = false)
     private Integer cantidad;
     private Float descuento;
+
+    /** Unidades entregadas físicamente al cliente (suma de las entregas no anuladas). Las fija el servidor. */
+    @Builder.Default
+    @Column(nullable = false)
+    private Integer cantidadEntregada = 0;
+
+    /**
+     * Unidades que ya salieron del inventario por este pedido (por una entrega, una salida manual declarada en la
+     * entrega o la factura). Evita descontar dos veces. La fija el servidor.
+     */
+    @Builder.Default
+    @Column(nullable = false)
+    private Integer cantidadDescontada = 0;
     private BigDecimal nuevoPrecioVenta;
     private BigDecimal subTotal;
     private BigDecimal subTotalDescuento;

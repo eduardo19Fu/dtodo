@@ -29,25 +29,25 @@
                tp.tipo_producto AS categoria,
                CAST(inv.stock - COALESCE(SUM(CASE
                    WHEN mp.id_movimiento IS NULL THEN 0
-                   WHEN mp.tipo_movimiento IN ('COMPRA', 'ENTRADA', 'ANULACION_FACTURA', 'ANULACION_NOTA')
+                   WHEN mp.tipo_movimiento IN ('COMPRA', 'ENTRADA', 'ANULACION_FACTURA', 'ANULACION_NOTA', 'ANULACION_ENTREGA_PROFORMA')
                        THEN mp.cantidad
-                   WHEN mp.tipo_movimiento IN ('VENTA', 'SALIDA', 'ELIMINAR_COMPRA', 'ENTREGA_PRODUCTO_NOTA')
+                   WHEN mp.tipo_movimiento IN ('VENTA', 'SALIDA', 'ELIMINAR_COMPRA', 'ENTREGA_PRODUCTO_NOTA', 'ENTREGA_PROFORMA')
                        THEN -mp.cantidad
                    ELSE 0 END), 0) AS SIGNED) AS stock_corte,
                COALESCE(p.precio_compra, 0) AS precio_compra,
                CAST(inv.stock - COALESCE(SUM(CASE
                    WHEN mp.id_movimiento IS NULL THEN 0
-                   WHEN mp.tipo_movimiento IN ('COMPRA', 'ENTRADA', 'ANULACION_FACTURA', 'ANULACION_NOTA')
+                   WHEN mp.tipo_movimiento IN ('COMPRA', 'ENTRADA', 'ANULACION_FACTURA', 'ANULACION_NOTA', 'ANULACION_ENTREGA_PROFORMA')
                        THEN mp.cantidad
-                   WHEN mp.tipo_movimiento IN ('VENTA', 'SALIDA', 'ELIMINAR_COMPRA', 'ENTREGA_PRODUCTO_NOTA')
+                   WHEN mp.tipo_movimiento IN ('VENTA', 'SALIDA', 'ELIMINAR_COMPRA', 'ENTREGA_PRODUCTO_NOTA', 'ENTREGA_PROFORMA')
                        THEN -mp.cantidad
                    ELSE 0 END), 0) AS SIGNED) * COALESCE(p.precio_compra, 0) AS valor_costo,
                COALESCE(p.precio_venta, 0) AS precio_venta,
                CAST(inv.stock - COALESCE(SUM(CASE
                    WHEN mp.id_movimiento IS NULL THEN 0
-                   WHEN mp.tipo_movimiento IN ('COMPRA', 'ENTRADA', 'ANULACION_FACTURA', 'ANULACION_NOTA')
+                   WHEN mp.tipo_movimiento IN ('COMPRA', 'ENTRADA', 'ANULACION_FACTURA', 'ANULACION_NOTA', 'ANULACION_ENTREGA_PROFORMA')
                        THEN mp.cantidad
-                   WHEN mp.tipo_movimiento IN ('VENTA', 'SALIDA', 'ELIMINAR_COMPRA', 'ENTREGA_PRODUCTO_NOTA')
+                   WHEN mp.tipo_movimiento IN ('VENTA', 'SALIDA', 'ELIMINAR_COMPRA', 'ENTREGA_PRODUCTO_NOTA', 'ENTREGA_PROFORMA')
                        THEN -mp.cantidad
                    ELSE 0 END), 0) AS SIGNED) * COALESCE(p.precio_venta, 0) AS valor_venta
           FROM inventario_sucursal inv

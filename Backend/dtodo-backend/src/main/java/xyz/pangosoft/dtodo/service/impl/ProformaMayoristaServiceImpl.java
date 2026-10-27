@@ -75,6 +75,9 @@ public class ProformaMayoristaServiceImpl implements IProformaMayoristaService {
         if (proforma.getItemsProforma() != null) {
             for (DetalleProforma linea : proforma.getItemsProforma()) {
                 if (linea != null) {
+                    // Lo entregado y lo descontado lo fija el servidor: una edición nunca lo trae de la petición.
+                    linea.setCantidadEntregada(0);
+                    linea.setCantidadDescontada(0);
                     String producto = linea.getProducto() == null || linea.getProducto().getNombre() == null ? "una línea"
                             : linea.getProducto().getNombre();
                     linea.setObservacion(limpiar(linea.getObservacion(), MAX_OBSERVACION_LINEA,

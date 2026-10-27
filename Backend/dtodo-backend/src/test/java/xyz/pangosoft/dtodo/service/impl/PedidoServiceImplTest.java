@@ -31,6 +31,7 @@ import xyz.pangosoft.dtodo.model.Usuario;
 import xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum;
 import xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoProformaEnum;
+import xyz.pangosoft.dtodo.repository.IProformaEntregaRepository;
 import xyz.pangosoft.dtodo.repository.IProformaEtapaRepository;
 import xyz.pangosoft.dtodo.repository.IProformaRepository;
 import xyz.pangosoft.dtodo.service.IAmbitoVendedorService;
@@ -45,7 +46,8 @@ class PedidoServiceImplTest {
     private final IUsuarioService usuarioService = mock(IUsuarioService.class);
     private final IProformaAuditoriaService auditoria = mock(IProformaAuditoriaService.class);
     private final PedidoServiceImpl service =
-            new PedidoServiceImpl(proformaRepository, etapaRepository, ambito, usuarioService, auditoria);
+            new PedidoServiceImpl(proformaRepository, etapaRepository, mock(IProformaEntregaRepository.class), ambito,
+                    usuarioService, auditoria);
 
     @BeforeEach
     void sesion() {

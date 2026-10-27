@@ -55,4 +55,20 @@ describe('PedidoService', () => {
     expect(nota.request.params.get('fecha')).toBe('2026-10-28');
     expect(nota.request.responseType).toBe('blob');
   });
+
+  it('registra, anula y cierra una entrega, y pide las sucursales', () => {
+    service.registrarEntrega(7, { idSucursal: 1, descontadoAMano: false, lineas: [{ idDetalle: 1, cantidad: 4 }] }).subscribe();
+    const registro = http.expectOne(`${global.url}/pedidos/7/entregas`);
+    expect(registro.request.method).toBe('POST');
+    expect(registro.request.body.lineas).toEqual([{ idDetalle: 1, cantidad: 4 }]);
+
+    service.anularEntrega(7, 50, 'se registró de más').subscribe();
+    expect(http.expectOne(`${global.url}/pedidos/7/entregas/50/anular`).request.body).toEqual({ motivo: 'se registró de más' });
+
+    service.cerrarConLoEntregado(7, 'ya no se llevará').subscribe();
+    expect(http.expectOne(`${global.url}/pedidos/7/cerrar`).request.body).toEqual({ motivo: 'ya no se llevará' });
+
+    service.sucursales().subscribe();
+    expect(http.expectOne(`${global.url}/pedidos/sucursales`).request.method).toBe('GET');
+  });
 });

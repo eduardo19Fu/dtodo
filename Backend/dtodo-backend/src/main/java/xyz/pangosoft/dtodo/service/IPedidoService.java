@@ -42,6 +42,15 @@ public interface IPedidoService {
      */
     void reiniciarSiEditado(Proforma proforma, String motivoDeLaEdicion);
 
+    /** La proforma como pedido (entidad); 404 si no existe o no es un pedido mayorista. */
+    Proforma obtenerPedido(Long idProforma);
+
+    /**
+     * Pone el pedido en la etapa indicada y deja constancia en las etapas, con el responsable y el motivo opcionales.
+     * Lo usa la entrega, que decide a qué etapa pasa el pedido.
+     */
+    void cambiarEstado(Proforma pedido, EstadoPedidoEnum nuevo, String responsable, String motivo);
+
     /** 422 si el pedido ya se entregó (completo o en parte): ya no se modifica. */
     void exigirEditable(Proforma proforma);
 }

@@ -255,6 +255,7 @@ public class ProformaApiController {
                 : auditoriaService.motivoOpcional(motivo);
         if (mayorista) {
             autorizacionService.exigirSinFactura(proforma);
+            pedidoService.exigirEditable(proforma);
         }
         String resumen = auditoriaService.resumen(proforma);
         proformaService.delete(proforma);

@@ -30,15 +30,23 @@ public class PedidoDetalleDto {
     private EstadoAutorizacionEnum estadoAutorizacion;
     /** Observación general del pedido (cómo se empaca). */
     private String observaciones;
+    /** Sucursal de la proforma: la que se propone para descontar el inventario en la entrega. */
+    private Integer idSucursal;
+    private String sucursal;
     private List<Linea> lineas = new ArrayList<>();
     private List<PedidoEtapaDto> etapas = new ArrayList<>();
+    private List<EntregaDto> entregas = new ArrayList<>();
 
     @Data
     @NoArgsConstructor
     public static class Linea {
+        private Long idDetalle;
         private String codigo;
         private String producto;
         private Integer cantidad;
         private String observacion;
+        private Integer cantidadEntregada;
+        /** Lo que falta por entregar. */
+        private Integer pendiente;
     }
 }

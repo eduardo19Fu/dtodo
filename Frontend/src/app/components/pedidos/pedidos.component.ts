@@ -2,8 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import {
-  EstadoPedido, ETIQUETAS_ESTADO_PEDIDO, PedidoDetalleDto, PedidoDto
+  EntregaDto, EntregaSolicitudDto, EstadoPedido, ETIQUETAS_ESTADO_PEDIDO, PedidoDetalleDto, PedidoDto
 } from '../../dtos/pedido-dto';
+import { ReporteSelectorOpcionDto } from '../../dtos/reporte-selector-opcion-dto';
 import { AuthService } from '../../services/auth.service';
 import { PedidoService } from '../../services/pedido.service';
 
@@ -46,6 +47,17 @@ export class PedidosComponent implements OnInit {
   procesando: number = null;
   detalle: PedidoDetalleDto = null;
   cargandoDetalle = false;
+
+  /** Formulario de entrega abierto sobre el detalle. */
+  registrandoEntrega = false;
+  guardandoEntrega = false;
+  errorEntrega = '';
+  sucursales: ReporteSelectorOpcionDto[] = [];
+  entrega = { idSucursal: null as number, fechaEntrega: '', entregadoPor: '', descontadoAMano: false, observaciones: '' };
+  /** Cantidad a entregar por línea, por idDetalle. */
+  cantidades: { [idDetalle: number]: number } = {};
+  private abrirEntregaAlCargar = false;
+  private sucursalesCargadas = false;
 
   readonly estados: Array<{ codigo: EstadoPedido | ''; nombre: string }> = [
     { codigo: '', nombre: 'Por entregar' },
@@ -177,12 +189,18 @@ export class PedidosComponent implements OnInit {
     });
   }
 
-  verDetalle(pedido: PedidoDto): void {
+  verDetalle(pedido: PedidoDto, abrirEntrega = false): void {
     this.cargandoDetalle = true;
     this.detalle = null;
+    this.registrandoEntrega = false;
+    this.abrirEntregaAlCargar = abrirEntrega;
     this.pedidoService.detalle(pedido.idProforma).subscribe(detalle => {
       this.detalle = detalle;
       this.cargandoDetalle = false;
+      if (this.abrirEntregaAlCargar && this.puedeEntregarDetalle(detalle)) {
+        this.abrirEntrega();
+      }
+      this.abrirEntregaAlCargar = false;
     }, error => {
       this.cargandoDetalle = false;
       Swal.fire('No se pudo cargar el pedido', error.error?.message || 'Ha ocurrido un error inesperado', 'error');
@@ -191,6 +209,150 @@ export class PedidosComponent implements OnInit {
 
   cerrarDetalle(): void {
     this.detalle = null;
+    this.registrandoEntrega = false;
+  }
+
+  // ------------------------------------------------------------------ entrega
+
+  /** Administrador, bodega y vendedor (los suyos) registran la entrega de un pedido en ruta o con entrega parcial. */
+  puedeEntregar(pedido: PedidoDto): boolean {
+    return (this.puedeOperar || this.auth.hasRole('ROLE_VENDEDOR'))
+      && (pedido.estadoPedido === 'EN_RUTA' || pedido.estadoPedido === 'ENTREGADA_PARCIAL') && !this.bloqueadoPorAutorizacion(pedido);
+  }
+
+  puedeEntregarDetalle(detalle: PedidoDetalleDto): boolean {
+    return (this.puedeOperar || this.auth.hasRole('ROLE_VENDEDOR'))
+      && (detalle.estadoPedido === 'EN_RUTA' || detalle.estadoPedido === 'ENTREGADA_PARCIAL')
+      && detalle.estadoAutorizacion !== 'PENDIENTE' && detalle.estadoAutorizacion !== 'RECHAZADA';
+  }
+
+  get hoy(): string {
+    return this.formatoFecha(new Date());
+  }
+
+  /** La entrega puede ser de hasta 7 días atrás. */
+  get fechaMinimaEntrega(): string {
+    const fecha = new Date();
+    fecha.setDate(fecha.getDate() - 7);
+    return this.formatoFecha(fecha);
+  }
+
+  private formatoFecha(fecha: Date): string {
+    const dos = (n: number) => String(n).padStart(2, '0');
+    return `${fecha.getFullYear()}-${dos(fecha.getMonth() + 1)}-${dos(fecha.getDate())}`;
+  }
+
+  abrirEntrega(): void {
+    if (!this.detalle) {
+      return;
+    }
+    this.cargarSucursales();
+    this.errorEntrega = '';
+    this.entrega = { idSucursal: this.detalle.idSucursal || null, fechaEntrega: this.hoy, entregadoPor: '',
+      descontadoAMano: false, observaciones: '' };
+    this.cantidades = {};
+    this.detalle.lineas.forEach(linea => this.cantidades[linea.idDetalle] = linea.pendiente);
+    this.registrandoEntrega = true;
+  }
+
+  cancelarEntrega(): void {
+    this.registrandoEntrega = false;
+    this.errorEntrega = '';
+  }
+
+  private cargarSucursales(): void {
+    if (this.sucursalesCargadas) {
+      return;
+    }
+    this.sucursalesCargadas = true;
+    this.pedidoService.sucursales().subscribe(opciones => this.sucursales = opciones, () => this.sucursalesCargadas = false);
+  }
+
+  /** Lo que se va a entregar, o el primer problema que impide registrarlo. */
+  validarEntrega(): string {
+    if (!this.entrega.idSucursal) {
+      return 'Elige la sucursal de la que se descuenta el inventario.';
+    }
+    if (!this.entrega.fechaEntrega || this.entrega.fechaEntrega > this.hoy || this.entrega.fechaEntrega < this.fechaMinimaEntrega) {
+      return 'La fecha de entrega debe ser de hoy o de los últimos 7 días.';
+    }
+    let algunaEntregada = false;
+    for (const linea of this.detalle.lineas) {
+      const cantidad = Number(this.cantidades[linea.idDetalle]) || 0;
+      if (!Number.isInteger(cantidad) || cantidad < 0) {
+        return `La cantidad de ${linea.producto} no es válida.`;
+      }
+      if (cantidad > linea.pendiente) {
+        return `De ${linea.producto} solo quedan ${linea.pendiente} por entregar.`;
+      }
+      algunaEntregada = algunaEntregada || cantidad > 0;
+    }
+    return algunaEntregada ? '' : 'Indica la cantidad entregada de al menos un producto.';
+  }
+
+  confirmarEntrega(): void {
+    this.errorEntrega = this.validarEntrega();
+    if (this.errorEntrega || this.guardandoEntrega) {
+      return;
+    }
+    const solicitud: EntregaSolicitudDto = {
+      idSucursal: this.entrega.idSucursal,
+      fechaEntrega: this.entrega.fechaEntrega,
+      entregadoPor: this.entrega.entregadoPor.trim() || null,
+      descontadoAMano: this.entrega.descontadoAMano,
+      observaciones: this.entrega.observaciones.trim() || null,
+      lineas: this.detalle.lineas.map(linea => ({ idDetalle: linea.idDetalle, cantidad: Number(this.cantidades[linea.idDetalle]) || 0 }))
+        .filter(linea => linea.cantidad > 0)
+    };
+    this.guardandoEntrega = true;
+    this.pedidoService.registrarEntrega(this.detalle.idProforma, solicitud).subscribe(detalle => {
+      this.guardandoEntrega = false;
+      this.registrandoEntrega = false;
+      this.detalle = detalle;
+      this.cargar();
+    }, error => {
+      this.guardandoEntrega = false;
+      this.errorEntrega = error.error?.message || error.error?.mensaje || 'No fue posible registrar la entrega.';
+    });
+  }
+
+  /** Solo administrador: anula una entrega con motivo y reingresa lo que descontó. */
+  anularEntrega(entrega: EntregaDto): void {
+    this.pedirMotivo(`Anular la entrega #${entrega.idEntrega}`, 'Anular entrega').then(motivo => {
+      if (motivo) {
+        this.actualizarDetalle(this.pedidoService.anularEntrega(this.detalle.idProforma, entrega.idEntrega, motivo));
+      }
+    });
+  }
+
+  /** Solo administrador: da por entregado un pedido parcial aunque falte parte. */
+  cerrarPedido(): void {
+    this.pedirMotivo('Cerrar el pedido con lo entregado', 'Cerrar pedido').then(motivo => {
+      if (motivo) {
+        this.actualizarDetalle(this.pedidoService.cerrarConLoEntregado(this.detalle.idProforma, motivo));
+      }
+    });
+  }
+
+  private pedirMotivo(titulo: string, boton: string): Promise<string> {
+    return Swal.fire({
+      title: titulo,
+      input: 'textarea',
+      inputLabel: 'Motivo (obligatorio, queda en el historial)',
+      inputAttributes: { maxlength: '500' },
+      showCancelButton: true,
+      confirmButtonText: boton,
+      cancelButtonText: 'Cancelar',
+      inputValidator: valor => !valor || !valor.trim() ? 'Indica el motivo.' : null
+    }).then(resultado => resultado.isConfirmed ? String(resultado.value).trim() : null);
+  }
+
+  private actualizarDetalle(llamada: Observable<PedidoDetalleDto>): void {
+    llamada.subscribe(detalle => {
+      this.detalle = detalle;
+      this.cargar();
+    }, error => Swal.fire('No se pudo completar la operación',
+      error.error?.message || error.error?.mensaje || 'Ha ocurrido un error inesperado', 'error'));
   }
 
   imprimirPicking(pedido: PedidoDto): void {

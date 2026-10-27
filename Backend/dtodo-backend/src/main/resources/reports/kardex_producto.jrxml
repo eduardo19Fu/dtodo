@@ -41,6 +41,8 @@
                    WHEN 'ELIMINAR_COMPRA' THEN 'Anulación de compra'
                    WHEN 'ANULACION_NOTA' THEN 'Anulación de nota de crédito'
                    WHEN 'ENTREGA_PRODUCTO_NOTA' THEN 'Entrega de nota de crédito'
+                   WHEN 'ENTREGA_PROFORMA' THEN 'Entrega de pedido'
+                   WHEN 'ANULACION_ENTREGA_PROFORMA' THEN 'Anulación de entrega de pedido'
                    ELSE REPLACE(mp.tipo_movimiento, '_', ' ')
                END END AS movimiento,
                COALESCE(CASE mp.tipo_documento_origen
@@ -49,23 +51,24 @@
                    WHEN 'COMPRA' THEN CONCAT('Compra ', COALESCE(c.no_comprobante, CONCAT('#', c.id_compra)))
                    WHEN 'NOTA_CREDITO' THEN CONCAT('Nota de crédito #', nc.id_nota_credito)
                    WHEN 'DESPACHO_BODEGA' THEN CONCAT('Despacho de bodega #', mp.id_documento_origen)
+                   WHEN 'ENTREGA_PROFORMA' THEN CONCAT('Entrega de pedido #', mp.id_documento_origen)
                    ELSE CASE WHEN mp.tipo_movimiento IN ('ENTRADA', 'SALIDA')
                        THEN CONCAT('Ajuste manual #', mp.id_movimiento) END
                END, 'No registrado') AS documento,
                COALESCE(u.usuario, '') AS usuario,
                mp.stock_inicial,
                CAST(CASE
-                   WHEN mp.tipo_movimiento IN ('COMPRA', 'ENTRADA', 'ANULACION_FACTURA', 'ANULACION_NOTA')
+                   WHEN mp.tipo_movimiento IN ('COMPRA', 'ENTRADA', 'ANULACION_FACTURA', 'ANULACION_NOTA', 'ANULACION_ENTREGA_PROFORMA')
                    THEN mp.cantidad ELSE 0 END AS SIGNED) AS entrada,
                CAST(CASE
-                   WHEN mp.tipo_movimiento IN ('VENTA', 'SALIDA', 'ELIMINAR_COMPRA', 'ENTREGA_PRODUCTO_NOTA')
+                   WHEN mp.tipo_movimiento IN ('VENTA', 'SALIDA', 'ELIMINAR_COMPRA', 'ENTREGA_PRODUCTO_NOTA', 'ENTREGA_PROFORMA')
                    THEN mp.cantidad ELSE 0 END AS SIGNED) AS salida,
                CAST(mp.stock_inicial
                    + CASE
-                       WHEN mp.tipo_movimiento IN ('COMPRA', 'ENTRADA', 'ANULACION_FACTURA', 'ANULACION_NOTA')
+                       WHEN mp.tipo_movimiento IN ('COMPRA', 'ENTRADA', 'ANULACION_FACTURA', 'ANULACION_NOTA', 'ANULACION_ENTREGA_PROFORMA')
                        THEN mp.cantidad ELSE 0 END
                    - CASE
-                       WHEN mp.tipo_movimiento IN ('VENTA', 'SALIDA', 'ELIMINAR_COMPRA', 'ENTREGA_PRODUCTO_NOTA')
+                       WHEN mp.tipo_movimiento IN ('VENTA', 'SALIDA', 'ELIMINAR_COMPRA', 'ENTREGA_PRODUCTO_NOTA', 'ENTREGA_PROFORMA')
                        THEN mp.cantidad ELSE 0 END AS SIGNED) AS saldo
           FROM movimientos_producto mp
           LEFT JOIN usuarios u ON u.id_usuario = mp.id_usuario

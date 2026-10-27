@@ -24,7 +24,11 @@ import xyz.pangosoft.dtodo.dto.PedidoDetalleDto;
 import xyz.pangosoft.dtodo.dto.PedidoDto;
 import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
 import xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum;
+import xyz.pangosoft.dtodo.dto.EntregaSolicitudDto;
+import xyz.pangosoft.dtodo.dto.ReporteSelectorDto;
+import xyz.pangosoft.dtodo.service.IEntregaPedidoService;
 import xyz.pangosoft.dtodo.service.IPedidoDocumentoService;
+import xyz.pangosoft.dtodo.service.IReporteSelectorService;
 import xyz.pangosoft.dtodo.service.IPedidoService;
 
 /**
@@ -40,6 +44,8 @@ public class PedidoApiController {
 
     private final IPedidoService pedidoService;
     private final IPedidoDocumentoService documentoService;
+    private final IEntregaPedidoService entregaService;
+    private final IReporteSelectorService selectorService;
 
     @Secured({ "ROLE_ADMIN", "ROLE_BODEGA", "ROLE_VENDEDOR" })
     @GetMapping
@@ -72,6 +78,37 @@ public class PedidoApiController {
             @RequestBody Map<String, String> cuerpo) {
         log.info("Regresando de etapa el pedido {}", idProforma);
         return ResponseEntity.ok(pedidoService.retroceder(idProforma, cuerpo.get("motivo")));
+    }
+
+    /** Sucursales entre las que se elige de cuál se descuenta el inventario al entregar. */
+    @Secured({ "ROLE_ADMIN", "ROLE_BODEGA", "ROLE_VENDEDOR" })
+    @GetMapping("/sucursales")
+    public ResponseEntity<List<ReporteSelectorDto>> sucursales() {
+        return ResponseEntity.ok(selectorService.listarSucursales());
+    }
+
+    @Secured({ "ROLE_ADMIN", "ROLE_BODEGA", "ROLE_VENDEDOR" })
+    @PostMapping("/{idProforma}/entregas")
+    public ResponseEntity<PedidoDetalleDto> registrarEntrega(@PathVariable("idProforma") Long idProforma,
+            @RequestBody EntregaSolicitudDto solicitud) {
+        log.info("Registrando una entrega del pedido {}", idProforma);
+        return ResponseEntity.ok(entregaService.registrar(idProforma, solicitud));
+    }
+
+    @Secured("ROLE_ADMIN")
+    @PostMapping("/{idProforma}/entregas/{idEntrega}/anular")
+    public ResponseEntity<PedidoDetalleDto> anularEntrega(@PathVariable("idProforma") Long idProforma,
+            @PathVariable("idEntrega") Long idEntrega, @RequestBody Map<String, String> cuerpo) {
+        log.info("Anulando la entrega {} del pedido {}", idEntrega, idProforma);
+        return ResponseEntity.ok(entregaService.anular(idProforma, idEntrega, cuerpo.get("motivo")));
+    }
+
+    @Secured("ROLE_ADMIN")
+    @PostMapping("/{idProforma}/cerrar")
+    public ResponseEntity<PedidoDetalleDto> cerrarConLoEntregado(@PathVariable("idProforma") Long idProforma,
+            @RequestBody Map<String, String> cuerpo) {
+        log.info("Cerrando con lo entregado el pedido {}", idProforma);
+        return ResponseEntity.ok(entregaService.cerrarConLoEntregado(idProforma, cuerpo.get("motivo")));
     }
 
     @Secured({ "ROLE_ADMIN", "ROLE_BODEGA" })

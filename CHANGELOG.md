@@ -6,6 +6,21 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Entrega del pedido mayorista e inventario (Fase 2B, paso 1)
+
+Un pedido en ruta se entrega al cliente, completo o por partes, y la entrega descuenta el inventario de la sucursal que elige quien la registra. Todavía no cambia el comportamiento de la factura ni de su anulación (paso 2 de la 2B) ni agrega el origen al kardex (paso 3).
+
+- **Registrar la entrega** (`POST /api/pedidos/{id}/entregas`): administrador, bodega y vendedor (solo los suyos). El pedido debe estar `EN_RUTA` o `ENTREGADA_PARCIAL` y con el descuento autorizado. Se indica la sucursal de la que se descuenta (se propone la de la proforma), la **fecha real de entrega** (no futura, hasta 7 días atrás y no anterior a la emisión) —distinta de la fecha de registro, que pone el sistema—, quién entregó (texto opcional), observaciones y la cantidad por línea, sin pasar de lo pendiente.
+- **Descuento sin duplicar**: cada línea guarda lo entregado y lo ya descontado por este pedido. La entrega descuenta solo lo entregado que todavía no estaba descontado; una casilla "ya descontado a mano" (por entrega completa) la registra sin mover inventario. Movimiento nuevo `ENTREGA_PROFORMA`, con la entrega como documento de origen. Sin existencias en la sucursal elegida responde 422 con el producto y lo disponible, y no se registra nada.
+- **Etapas**: entregar todo deja el pedido `ENTREGADA`; entregar una parte, `ENTREGADA_PARCIAL`, y lo pendiente se entrega después sin repetir picking. El administrador puede **cerrar con lo entregado** un pedido parcial, con motivo, sin mover inventario.
+- **Anular una entrega** (solo administrador, motivo obligatorio): reingresa a la sucursal lo que esa entrega descontó, baja lo entregado y el pedido vuelve a `EN_RUTA` (o queda parcial si tiene otras entregas). Se conserva en el historial. Si el pedido tiene una factura vigente se pide anularla primero.
+- **Un pedido entregado no se edita ni se anula**; las ediciones siguen reiniciando un pedido aún no entregado.
+- **Pantalla Pedidos**: botón "Registrar entrega" en la fila y el detalle, con formulario (sucursal, fecha, quién entregó, cantidades, casilla, observaciones), lista de entregas con su anulación y "Cerrar con lo entregado".
+- **Base de datos** (`sql/mayoristas/10_create_entregas_pedido.sql`, **requerido antes del jar**; `99_rollback_mayoristas.sql` lo revierte menos los valores del ENUM): `cantidad_entregada` y `cantidad_descontada` en `proformas_detalle`, `proformas_entregas` y `proformas_entregas_detalle`. **`movimientos_producto.tipo_movimiento` es un ENUM de MySQL**: el script le agrega `ENTREGA_PROFORMA` y `ANULACION_ENTREGA_PROFORMA` leyendo la lista actual, sin repetir valores. También agrega `ENTREGA_PRODUCTO_NOTA`, que el código ya usaba para las notas de crédito pero no estaba en la lista de la base de desarrollo, así que entregar una nota de crédito allí fallaba al guardar.
+- **Reportes**: el kardex, el reporte de movimientos y la valorización clasifican los dos tipos nuevos como salida y entrada, y el kardex los nombra ("Entrega de pedido").
+- **Pruebas**: `EntregaPedidoServiceImplTest` (reglas), `EntregaPedidoIntegracionTest` (H2 con los servicios reales: el inventario queda exacto al entregar, por partes y al anular), matriz de roles y specs de `PedidosComponent` y `PedidoService`.
+- **Pendiente en la 2B**: que la factura descuente solo lo no descontado y que su anulación devuelva solo lo que descontó (paso 2), y la columna "Origen" del kardex y del reporte de movimientos (paso 3).
+
 ### Agregado — Etapas del pedido mayorista y documentos de bodega (Fase 2A)
 
 Una proforma mayorista es un pedido desde que se crea: bodega lo prepara, lo empaca y lo carga a ruta, con quién y cuándo de cada paso y los tres documentos impresos. No toca el inventario; la entrega que descuenta existencias llega en la 2B.

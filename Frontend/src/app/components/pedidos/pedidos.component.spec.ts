@@ -1,6 +1,6 @@
 import { of, throwError } from 'rxjs';
 
-import { PedidoDto } from '../../dtos/pedido-dto';
+import { PedidoDetalleDto, PedidoDto } from '../../dtos/pedido-dto';
 import { PedidosComponent } from './pedidos.component';
 import Swal from 'sweetalert2';
 
@@ -188,5 +188,178 @@ describe('PedidosComponent', () => {
 
     expect(fire).toHaveBeenCalled();
     expect(servicio.notaEnvio).not.toHaveBeenCalled();
+  });
+});
+
+describe('PedidosComponent - entrega', () => {
+  let servicio: any;
+  let component: PedidosComponent;
+
+  function auth(...roles: string[]): any {
+    return { hasRole: (rol: string) => roles.includes(rol) };
+  }
+
+  function detalle(valores: Partial<PedidoDetalleDto> = {}): PedidoDetalleDto {
+    return Object.assign(new PedidoDetalleDto(), {
+      idProforma: 7, noProforma: '123P', estadoPedido: 'EN_RUTA', idSucursal: 1,
+      lineas: [
+        { idDetalle: 1, codigo: 'A-1', producto: 'CUADERNO', cantidad: 10, cantidadEntregada: 0, pendiente: 10 },
+        { idDetalle: 2, codigo: 'B-2', producto: 'REGLA', cantidad: 5, cantidadEntregada: 0, pendiente: 5 }
+      ],
+      entregas: []
+    }, valores);
+  }
+
+  function pedido(valores: Partial<PedidoDto> = {}): PedidoDto {
+    return Object.assign(new PedidoDto(), { idProforma: 7, noProforma: '123P', estadoPedido: 'EN_RUTA', ruta: 'RUTA 1', idRuta: 1,
+      unidades: 15 }, valores);
+  }
+
+  async function esperar(): Promise<void> {
+    await Promise.resolve();
+    await Promise.resolve();
+  }
+
+  beforeEach(() => {
+    servicio = {
+      listar: jasmine.createSpy('listar').and.returnValue(of([])),
+      detalle: jasmine.createSpy('detalle').and.returnValue(of(detalle())),
+      sucursales: jasmine.createSpy('sucursales').and.returnValue(of([{ valor: 1, etiqueta: 'Central' }])),
+      registrarEntrega: jasmine.createSpy('registrarEntrega').and.returnValue(of(detalle({ estadoPedido: 'ENTREGADA' }))),
+      anularEntrega: jasmine.createSpy('anularEntrega').and.returnValue(of(detalle())),
+      cerrarConLoEntregado: jasmine.createSpy('cerrarConLoEntregado').and.returnValue(of(detalle({ estadoPedido: 'ENTREGADA' })))
+    };
+    component = new PedidosComponent(servicio, auth('ROLE_BODEGA'));
+    component.detalle = detalle();
+  });
+
+  it('bodega, el administrador y el vendedor registran entregas de pedidos en ruta o parciales', () => {
+    expect(component.puedeEntregar(pedido())).toBeTrue();
+    expect(component.puedeEntregar(pedido({ estadoPedido: 'ENTREGADA_PARCIAL' }))).toBeTrue();
+    expect(component.puedeEntregar(pedido({ estadoPedido: 'EMPACADA' }))).toBeFalse();
+    expect(component.puedeEntregar(pedido({ estadoPedido: 'ENTREGADA' }))).toBeFalse();
+    expect(component.puedeEntregar(pedido({ estadoAutorizacion: 'PENDIENTE' }))).toBeFalse();
+    expect(new PedidosComponent(servicio, auth('ROLE_VENDEDOR')).puedeEntregar(pedido())).toBeTrue();
+    expect(new PedidosComponent(servicio, auth('ROLE_COBRADOR')).puedeEntregar(pedido())).toBeFalse();
+  });
+
+  it('abrir la entrega propone la sucursal del pedido, hoy y todo lo pendiente', () => {
+    component.abrirEntrega();
+
+    expect(component.registrandoEntrega).toBeTrue();
+    expect(component.entrega.idSucursal).toBe(1);
+    expect(component.entrega.fechaEntrega).toBe(component.hoy);
+    expect(component.cantidades[1]).toBe(10);
+    expect(component.cantidades[2]).toBe(5);
+    expect(servicio.sucursales).toHaveBeenCalledTimes(1);
+
+    component.abrirEntrega();
+    expect(servicio.sucursales).toHaveBeenCalledTimes(1);
+  });
+
+  it('valida sucursal, fecha y cantidades antes de enviar', () => {
+    component.abrirEntrega();
+
+    component.entrega.idSucursal = null;
+    expect(component.validarEntrega()).toContain('sucursal');
+    component.entrega.idSucursal = 1;
+
+    component.entrega.fechaEntrega = '2000-01-01';
+    expect(component.validarEntrega()).toContain('fecha');
+    component.entrega.fechaEntrega = component.hoy;
+
+    component.cantidades[1] = 11;
+    expect(component.validarEntrega()).toContain('solo quedan 10');
+    component.cantidades[1] = -1;
+    expect(component.validarEntrega()).toContain('no es válida');
+
+    component.cantidades[1] = 0;
+    component.cantidades[2] = 0;
+    expect(component.validarEntrega()).toContain('al menos un producto');
+
+    component.cantidades[1] = 4;
+    expect(component.validarEntrega()).toBe('');
+  });
+
+  it('confirmar envía solo las líneas con cantidad y recarga la lista', () => {
+    component.abrirEntrega();
+    component.cantidades[1] = 4;
+    component.cantidades[2] = 0;
+    component.entrega.entregadoPor = ' David Aguilar ';
+    component.entrega.descontadoAMano = true;
+    component.entrega.observaciones = '';
+
+    component.confirmarEntrega();
+
+    expect(servicio.registrarEntrega).toHaveBeenCalledWith(7, {
+      idSucursal: 1, fechaEntrega: component.hoy, entregadoPor: 'David Aguilar', descontadoAMano: true, observaciones: null,
+      lineas: [{ idDetalle: 1, cantidad: 4 }]
+    });
+    expect(component.registrandoEntrega).toBeFalse();
+    expect(component.detalle.estadoPedido).toBe('ENTREGADA');
+    expect(servicio.listar).toHaveBeenCalled();
+  });
+
+  it('un error del servidor se muestra en el formulario y lo deja abierto', () => {
+    servicio.registrarEntrega.and.returnValue(throwError({ error: { message: 'No hay existencias suficientes de CUADERNO' } }));
+    component.abrirEntrega();
+
+    component.confirmarEntrega();
+
+    expect(component.errorEntrega).toContain('existencias');
+    expect(component.registrandoEntrega).toBeTrue();
+    expect(component.guardandoEntrega).toBeFalse();
+  });
+
+  it('con un dato inválido no llama al servidor', () => {
+    component.abrirEntrega();
+    component.cantidades[1] = 0;
+    component.cantidades[2] = 0;
+
+    component.confirmarEntrega();
+
+    expect(servicio.registrarEntrega).not.toHaveBeenCalled();
+    expect(component.errorEntrega).toBeTruthy();
+  });
+
+  it('desde la lista abre el detalle y el formulario de entrega', () => {
+    component.detalle = null;
+
+    component.verDetalle(pedido(), true);
+
+    expect(servicio.detalle).toHaveBeenCalledWith(7);
+    expect(component.registrandoEntrega).toBeTrue();
+  });
+
+  it('el administrador anula una entrega y cierra un pedido parcial con motivo', async () => {
+    component = new PedidosComponent(servicio, auth('ROLE_ADMIN'));
+    component.detalle = detalle({ estadoPedido: 'ENTREGADA_PARCIAL' });
+    spyOn(Swal, 'fire').and.callFake(((opciones: any) => opciones && opciones.input
+      ? Promise.resolve({ isConfirmed: true, value: ' se registró de más ' }) : Promise.resolve({ isConfirmed: true })) as any);
+
+    component.anularEntrega({ idEntrega: 50 } as any);
+    await esperar();
+    expect(servicio.anularEntrega).toHaveBeenCalledWith(7, 50, 'se registró de más');
+
+    component.cerrarPedido();
+    await esperar();
+    expect(servicio.cerrarConLoEntregado).toHaveBeenCalledWith(7, 'se registró de más');
+  });
+
+  it('si se cancela el motivo no se anula la entrega', async () => {
+    component = new PedidosComponent(servicio, auth('ROLE_ADMIN'));
+    component.detalle = detalle();
+    spyOn(Swal, 'fire').and.returnValue(Promise.resolve({ isConfirmed: false } as any));
+
+    component.anularEntrega({ idEntrega: 50 } as any);
+    await esperar();
+
+    expect(servicio.anularEntrega).not.toHaveBeenCalled();
+  });
+
+  it('la fecha mínima de entrega es hace 7 días', () => {
+    const minima = new Date(component.fechaMinimaEntrega + 'T00:00:00');
+    const hoy = new Date(component.hoy + 'T00:00:00');
+    expect(Math.round((hoy.getTime() - minima.getTime()) / 86400000)).toBe(7);
   });
 });

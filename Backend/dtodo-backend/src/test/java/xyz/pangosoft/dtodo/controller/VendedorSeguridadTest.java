@@ -122,4 +122,15 @@ class VendedorSeguridadTest {
             assertTrue(roles(PedidoApiController.class, metodo).contains("ROLE_BODEGA"), metodo + " debe permitir a bodega");
         }
     }
+
+    @Test
+    void laEntregaLaRegistranAdministradorBodegaYVendedorPeroAnularlaOCerrarEsDelAdministrador() {
+        permiteAlVendedor(PedidoApiController.class, "registrarEntrega", "sucursales");
+        niegaAlVendedor(PedidoApiController.class, "anularEntrega", "cerrarConLoEntregado");
+        assertTrue(roles(PedidoApiController.class, "registrarEntrega").contains("ROLE_BODEGA"), "bodega registra entregas");
+        assertTrue(roles(PedidoApiController.class, "anularEntrega").equals(Arrays.asList("ROLE_ADMIN")),
+                "anularEntrega es solo del administrador");
+        assertTrue(roles(PedidoApiController.class, "cerrarConLoEntregado").equals(Arrays.asList("ROLE_ADMIN")),
+                "cerrarConLoEntregado es solo del administrador");
+    }
 }

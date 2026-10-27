@@ -2,7 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-import { EstadoPedido, PedidoDetalleDto, PedidoDto } from '../dtos/pedido-dto';
+import { EntregaSolicitudDto, EstadoPedido, PedidoDetalleDto, PedidoDto } from '../dtos/pedido-dto';
+import { ReporteSelectorOpcionDto } from '../dtos/reporte-selector-opcion-dto';
 import { global } from './global';
 
 /**
@@ -47,6 +48,26 @@ export class PedidoService {
   /** Solo administrador; el motivo es obligatorio. */
   retroceder(idProforma: number, motivo: string): Observable<PedidoDetalleDto> {
     return this.http.post<PedidoDetalleDto>(`${this.url}/${idProforma}/retroceder`, { motivo });
+  }
+
+  /** Sucursales entre las que se elige de cuál se descuenta el inventario al entregar. */
+  sucursales(): Observable<ReporteSelectorOpcionDto[]> {
+    return this.http.get<ReporteSelectorOpcionDto[]>(`${this.url}/sucursales`);
+  }
+
+  /** El pedido debe estar en ruta o con entrega parcial. */
+  registrarEntrega(idProforma: number, solicitud: EntregaSolicitudDto): Observable<PedidoDetalleDto> {
+    return this.http.post<PedidoDetalleDto>(`${this.url}/${idProforma}/entregas`, solicitud);
+  }
+
+  /** Solo administrador; el motivo es obligatorio. Reingresa al inventario lo que la entrega descontó. */
+  anularEntrega(idProforma: number, idEntrega: number, motivo: string): Observable<PedidoDetalleDto> {
+    return this.http.post<PedidoDetalleDto>(`${this.url}/${idProforma}/entregas/${idEntrega}/anular`, { motivo });
+  }
+
+  /** Solo administrador: da por entregado un pedido parcial aunque falte parte; el motivo es obligatorio. */
+  cerrarConLoEntregado(idProforma: number, motivo: string): Observable<PedidoDetalleDto> {
+    return this.http.post<PedidoDetalleDto>(`${this.url}/${idProforma}/cerrar`, { motivo });
   }
 
   picking(idProforma: number): Observable<Blob> {
