@@ -1,5 +1,7 @@
--- Revierte el módulo de Clientes Mayoristas (pasos 01 a 10). Orden inverso a la creación.
+-- Revierte el módulo de Clientes Mayoristas (pasos 01 a 11). Orden inverso a la creación.
 -- ATENCIÓN: borra la información de rutas, los datos mayoristas de los clientes y los descuentos. Respaldar antes.
+ALTER TABLE facturas_detalle DROP COLUMN cantidad_descontada;
+
 -- Paso 10: los valores nuevos del ENUM de movimientos_producto (ENTREGA_PROFORMA...) se dejan: quitarlos fallaria si ya
 -- hay movimientos con ese tipo.
 DROP TABLE IF EXISTS proformas_entregas_detalle;

@@ -38,6 +38,12 @@ public class DetalleFactura implements Serializable {
 	private BigDecimal descuento;
 	private BigDecimal subTotalDescuento;
 
+	/**
+	 * Unidades que esta línea descontó del inventario; la fija el servidor. Nulo en las ventas que no vienen de un pedido
+	 * mayorista y en las facturas anteriores al control: se descontó y se devuelve la cantidad completa.
+	 */
+	private Integer cantidadDescontada;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "id_producto")
 	@JsonIgnoreProperties({ "movimientos", "hibernateLazyInitializer", "handler" })

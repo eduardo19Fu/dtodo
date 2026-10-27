@@ -20,6 +20,7 @@ import xyz.pangosoft.dtodo.model.Estado;
 import xyz.pangosoft.dtodo.model.Factura;
 import xyz.pangosoft.dtodo.model.Producto;
 import xyz.pangosoft.dtodo.model.Sucursal;
+import xyz.pangosoft.dtodo.model.enums.TipoMovimientoEnum;
 import xyz.pangosoft.dtodo.model.Usuario;
 import xyz.pangosoft.dtodo.repository.IFacturaRepository;
 import xyz.pangosoft.dtodo.repository.ITipoFacturaRepository;
@@ -27,6 +28,7 @@ import xyz.pangosoft.dtodo.service.ICertificadorService;
 import xyz.pangosoft.dtodo.service.ICorrelativoService;
 import xyz.pangosoft.dtodo.service.IEmisorService;
 import xyz.pangosoft.dtodo.service.IEstadoService;
+import xyz.pangosoft.dtodo.service.IInventarioFacturaPedidoService;
 import xyz.pangosoft.dtodo.service.IMovimientoProductoService;
 import xyz.pangosoft.dtodo.service.ITipoFacturaService;
 import xyz.pangosoft.dtodo.service.IUsuarioService;
@@ -61,7 +63,7 @@ class FacturaServiceImplTest {
                 repository, mock(ITipoFacturaRepository.class), mock(IEmisorService.class),
                 mock(IEstadoService.class), mock(ITipoFacturaService.class), mock(ICorrelativoService.class),
                 mock(ICertificadorService.class), mock(IMovimientoProductoService.class), mock(IUsuarioService.class),
-                mock(IFelService.class), mock(DataSource.class));
+                mock(IFelService.class), mock(IInventarioFacturaPedidoService.class), mock(DataSource.class));
         PageRequest pageable = PageRequest.of(0, 5);
         when(repository.findAllListadoDto(any(), any(), eq(7), eq(pageable))).thenReturn(Page.empty());
 
@@ -84,6 +86,7 @@ class FacturaServiceImplTest {
                 mock(IMovimientoProductoService.class),
                 mock(IUsuarioService.class),
                 mock(IFelService.class),
+                mock(IInventarioFacturaPedidoService.class),
                 mock(DataSource.class)
         );
         FacturaDto segunda = FacturaDto.builder().noFactura(200L).build();
@@ -105,7 +108,7 @@ class FacturaServiceImplTest {
                 repository, mock(ITipoFacturaRepository.class), mock(IEmisorService.class),
                 mock(IEstadoService.class), mock(ITipoFacturaService.class), mock(ICorrelativoService.class),
                 mock(ICertificadorService.class), mock(IMovimientoProductoService.class), mock(IUsuarioService.class),
-                mock(IFelService.class), mock(DataSource.class));
+                mock(IFelService.class), mock(IInventarioFacturaPedidoService.class), mock(DataSource.class));
         when(repository.getCantidadVentasPorUsuario(20)).thenReturn(3L);
 
         Integer total = service.totalVentas(20);
@@ -120,7 +123,7 @@ class FacturaServiceImplTest {
                 repository, mock(ITipoFacturaRepository.class), mock(IEmisorService.class),
                 mock(IEstadoService.class), mock(ITipoFacturaService.class), mock(ICorrelativoService.class),
                 mock(ICertificadorService.class), mock(IMovimientoProductoService.class), mock(IUsuarioService.class),
-                mock(IFelService.class), mock(DataSource.class));
+                mock(IFelService.class), mock(IInventarioFacturaPedidoService.class), mock(DataSource.class));
         when(repository.getCantidadVentas()).thenReturn(150);
 
         Integer total = service.totalVentas(null);
@@ -134,7 +137,7 @@ class FacturaServiceImplTest {
                 mock(IFacturaRepository.class), mock(ITipoFacturaRepository.class), mock(IEmisorService.class),
                 mock(IEstadoService.class), mock(ITipoFacturaService.class), mock(ICorrelativoService.class),
                 mock(ICertificadorService.class), mock(IMovimientoProductoService.class), mock(IUsuarioService.class),
-                mock(IFelService.class), mock(DataSource.class));
+                mock(IFelService.class), mock(IInventarioFacturaPedidoService.class), mock(DataSource.class));
 
         Emisor emisor = Emisor.builder().nit("12345678").nombreEmisor("Comercial De Todo").nombreComercial("De Todo").build();
         Sucursal sucursal = Sucursal.builder().idSucursal(2).nombre("Sucursal Norte").codigoEstablecimientoSat(3).build();
@@ -152,7 +155,7 @@ class FacturaServiceImplTest {
                 mock(IFacturaRepository.class), mock(ITipoFacturaRepository.class), mock(IEmisorService.class),
                 mock(IEstadoService.class), mock(ITipoFacturaService.class), mock(ICorrelativoService.class),
                 mock(ICertificadorService.class), mock(IMovimientoProductoService.class), mock(IUsuarioService.class),
-                mock(IFelService.class), mock(DataSource.class));
+                mock(IFelService.class), mock(IInventarioFacturaPedidoService.class), mock(DataSource.class));
 
         Emisor emisor = Emisor.builder().nit("12345678").nombreEmisor("Comercial De Todo").nombreComercial("De Todo").build();
 
@@ -169,6 +172,7 @@ class FacturaServiceImplTest {
     private final ICorrelativoService correlativoVenta = mock(ICorrelativoService.class);
     private final IMovimientoProductoService movimientosVenta = mock(IMovimientoProductoService.class);
     private final IFelService felVenta = mock(IFelService.class);
+    private final IInventarioFacturaPedidoService inventarioPedidoVenta = mock(IInventarioFacturaPedidoService.class);
 
     private FacturaServiceImpl servicioDeVenta() {
         IEstadoService estadoService = mock(IEstadoService.class);
@@ -189,6 +193,7 @@ class FacturaServiceImplTest {
         when(repoVenta.findLineasGuardadas(10L))
                 .thenReturn(Collections.singletonList(new Object[] {1, 2, BigDecimal.ZERO}));
 
+        when(inventarioPedidoVenta.planearVenta(any())).thenReturn(null);
         RespuestaFirma firma = new RespuestaFirma();
         firma.setResultado(true);
         firma.setArchivo("xml-firmado");
@@ -198,7 +203,7 @@ class FacturaServiceImplTest {
                 repoVenta, mock(ITipoFacturaRepository.class), emisorService,
                 estadoService, mock(ITipoFacturaService.class), correlativoVenta,
                 certificadorService, movimientosVenta, usuarioService,
-                felVenta, mock(DataSource.class));
+                felVenta, inventarioPedidoVenta, mock(DataSource.class));
     }
 
     private static Usuario cajero() {
@@ -389,5 +394,103 @@ class FacturaServiceImplTest {
         Factura resultado = service.facturaFel(venta);
 
         assertEquals("UUID-123", resultado.getCertificacionSat());
+    }
+
+    // ---------- Factura de un pedido mayorista: solo se descuenta lo que el pedido no había descontado ----------
+
+    @Test
+    void laFacturaDeUnPedidoMayoristaSoloExigeYDescuentaLoPlaneado() {
+        FacturaServiceImpl service = servicioDeVenta();
+        java.util.Map<Integer, Integer> plan = java.util.Collections.singletonMap(1, 0);
+        when(inventarioPedidoVenta.planearVenta(any())).thenReturn(plan);
+        when(felVenta.certificar(any(), any(), any(), eq("CERTIFICACION"))).thenReturn(certificacion(true));
+
+        Factura resultado = service.facturaFel(venta());
+
+        InOrder orden = inOrder(repoVenta, correlativoVenta, inventarioPedidoVenta, felVenta);
+        orden.verify(inventarioPedidoVenta).validarExistencias(eq(plan), any(), any());
+        orden.verify(repoVenta).saveAndFlush(any());
+        orden.verify(correlativoVenta).update(any());
+        orden.verify(inventarioPedidoVenta).descontarVenta(any(), any(), eq(plan));
+        orden.verify(felVenta).certificar(any(), any(), any(), eq("CERTIFICACION"));
+        verify(movimientosVenta, never()).validarStockDisponible(any(), any());
+        verify(movimientosVenta, never()).save(any());
+        assertEquals("UUID-123", resultado.getCertificacionSat());
+    }
+
+    @Test
+    void sinPedidoMayoristaLaFacturaDescuentaTodoComoSiempre() {
+        FacturaServiceImpl service = servicioDeVenta();
+        when(felVenta.certificar(any(), any(), any(), eq("CERTIFICACION"))).thenReturn(certificacion(true));
+
+        service.facturaFel(venta());
+
+        verify(movimientosVenta).validarStockDisponible(any(), any());
+        verify(movimientosVenta).save(any());
+        verify(inventarioPedidoVenta, never()).descontarVenta(any(), any(), any());
+    }
+
+    @Test
+    void lasCantidadesDescontadasQueTraeLaPeticionSeIgnoran() {
+        FacturaServiceImpl service = servicioDeVenta();
+        when(felVenta.certificar(any(), any(), any(), eq("CERTIFICACION"))).thenReturn(certificacion(true));
+        Factura venta = venta();
+        venta.getItemsFactura().get(0).setCantidadDescontada(99);
+
+        service.facturaFel(venta);
+
+        assertEquals(null, venta.getItemsFactura().get(0).getCantidadDescontada());
+    }
+
+    @Test
+    void sinExistenciasParaLoPlaneadoLaFacturaNoSeRegistraNiSeCertifica() {
+        FacturaServiceImpl service = servicioDeVenta();
+        when(inventarioPedidoVenta.planearVenta(any())).thenReturn(java.util.Collections.singletonMap(1, 2));
+        doThrow(new xyz.pangosoft.dtodo.error.exceptions.BadRequestException("Stock insuficiente para Agua", null))
+                .when(inventarioPedidoVenta).validarExistencias(any(), any(), any());
+
+        assertThrows(RuntimeException.class, () -> service.facturaFel(venta()));
+
+        verify(repoVenta, never()).saveAndFlush(any());
+        verify(felVenta, never()).certificar(any(), any(), any(), any());
+    }
+
+    // ---------- Anular la factura ----------
+
+    private Factura facturaCertificada() {
+        Factura factura = venta();
+        factura.setIdFactura(10L);
+        factura.setCertificacionSat("UUID-123");
+        factura.setFechaCertificacionSat("2026-09-28T10:00:00-06:00");
+        factura.setSucursal(Sucursal.builder().idSucursal(1).build());
+        when(repoVenta.findById(10L)).thenReturn(java.util.Optional.of(factura));
+        when(repoVenta.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(felVenta.certificar(any(), any(), any(), eq("ANULACION"))).thenReturn(certificacion(true));
+        return factura;
+    }
+
+    @Test
+    void anularLaFacturaDeUnPedidoMayoristaDevuelveSoloLoQueElServicioIndica() {
+        FacturaServiceImpl service = servicioDeVenta();
+        facturaCertificada();
+        when(inventarioPedidoVenta.devolverVenta(any(), any())).thenReturn(true);
+
+        Factura anulada = service.anularFacturaFel(10L, 7);
+
+        assertEquals("ANULADO", anulada.getEstado().getEstado());
+        verify(inventarioPedidoVenta).devolverVenta(any(), any());
+        verify(movimientosVenta, never()).save(any());
+    }
+
+    @Test
+    void anularUnaVentaQueNoEsDeUnPedidoDevuelveTodoComoSiempre() {
+        FacturaServiceImpl service = servicioDeVenta();
+        facturaCertificada();
+        when(inventarioPedidoVenta.devolverVenta(any(), any())).thenReturn(false);
+
+        service.anularFacturaFel(10L, 7);
+
+        verify(movimientosVenta).save(argThat(movimiento -> movimiento.getTipoMovimiento() == TipoMovimientoEnum.ANULACION_FACTURA
+                && movimiento.getCantidad() == 2));
     }
 }

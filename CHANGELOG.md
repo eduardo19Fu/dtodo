@@ -6,6 +6,18 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Cambiado — Inventario de la factura de un pedido mayorista (Fase 2B, paso 2)
+
+La entrega y la factura de un mismo pedido ya no descuentan dos veces. Solo aplica a una factura emitida desde un pedido mayorista (`id_proforma_origen` de una proforma mayorista); una venta directa o de una proforma minorista se comporta exactamente como antes.
+
+- **Emitir**: la factura descuenta, por producto, lo facturado menos lo que el pedido ya había descontado (por una entrega, una salida declarada "a mano" o una factura anterior). Si ya estaba todo descontado no hay movimiento. La validación de existencias exige solo lo que se va a descontar, no la cantidad completa. Lo que descontó cada línea queda en `facturas_detalle.cantidad_descontada`, y el pedido suma lo descontado a sus líneas.
+- **Anular**: la factura devuelve solo lo que ella descontó, menos lo que ya se entregó físicamente, que sigue fuera del inventario. Ejemplo: facturar 10, entregar 10 y anular la factura devuelve 0. Las facturas anteriores a este control (`cantidad_descontada` nulo) devuelven la cantidad completa, como siempre.
+- **Reemitir** una factura anulada de un pedido ya entregado no descuenta de nuevo.
+- **Seguridad**: lo descontado que trae la petición se ignora; lo fija el servidor. El inventario sigue siendo atómico con FEL: se descuenta antes de certificar y se revierte con la transacción.
+- **Base de datos** (`sql/mayoristas/11_facturas_detalle_cantidad_descontada.sql`, **requerido antes del jar**; el rollback lo revierte): una columna nula en `facturas_detalle`.
+- **Pruebas**: `InventarioFacturaPedidoServiceImplTest` (17 casos de la aritmética), `EntregaFacturaIntegracionTest` (H2 con los servicios reales: entregar y facturar, facturar y entregar, entrega parcial, anular, reemitir, descontado a mano y ventas normales; el inventario queda exacto en cada secuencia) y casos nuevos en `FacturaServiceImplTest` (el camino de pedido en emitir y en anular, y que la venta normal no cambia).
+- **Pendiente en la 2B**: la columna "Origen" del kardex y del reporte de movimientos (paso 3).
+
 ### Agregado — Entrega del pedido mayorista e inventario (Fase 2B, paso 1)
 
 Un pedido en ruta se entrega al cliente, completo o por partes, y la entrega descuenta el inventario de la sucursal que elige quien la registra. Todavía no cambia el comportamiento de la factura ni de su anulación (paso 2 de la 2B) ni agrega el origen al kardex (paso 3).

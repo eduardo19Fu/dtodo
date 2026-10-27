@@ -49,6 +49,7 @@ import xyz.pangosoft.dtodo.service.ICertificadorService;
 import xyz.pangosoft.dtodo.service.ICorrelativoService;
 import xyz.pangosoft.dtodo.service.IEmisorService;
 import xyz.pangosoft.dtodo.service.IEstadoService;
+import xyz.pangosoft.dtodo.service.IInventarioFacturaPedidoService;
 import xyz.pangosoft.dtodo.service.IMovimientoProductoService;
 import xyz.pangosoft.dtodo.service.ITipoFacturaService;
 import xyz.pangosoft.dtodo.service.IUsuarioService;
@@ -113,6 +114,7 @@ public class FacturaServiceImpl implements IFacturaService {
 	private final IMovimientoProductoService movimientoProductoService;
 	private final IUsuarioService usuarioService;
 	private final IFelService felService;
+	private final IInventarioFacturaPedidoService inventarioPedidoService;
 	protected final DataSource localDataSource;
 
 	@Override
@@ -412,7 +414,15 @@ public class FacturaServiceImpl implements IFacturaService {
 				log.info("********** Registrando nueva venta **********");
 				List<String> lineasSolicitadas = resumirLineasSolicitadas(factura.getItemsFactura());
 				log.info("Detalle recibido para factura {}-{}: {}", factura.getSerie(), factura.getNoFactura(), lineasSolicitadas);
-				movimientoProductoService.validarStockDisponible(factura.getItemsFactura(), sucursal);
+				// El control de existencias no cambia, salvo en la factura de un pedido mayorista: solo se exige lo que
+				// el pedido todavía no había descontado (la entrega ya lo sacó del inventario).
+				factura.getItemsFactura().forEach(item -> item.setCantidadDescontada(null));
+				Map<Integer, Integer> descuentoDelPedido = inventarioPedidoService.planearVenta(factura);
+				if (descuentoDelPedido == null) {
+					movimientoProductoService.validarStockDisponible(factura.getItemsFactura(), sucursal);
+				} else {
+					inventarioPedidoService.validarExistencias(descuentoDelPedido, sucursal, factura);
+				}
 
 				log.info("-----------> Iniciando Proceso de Certificación FEL");
 				documentoFel.setDatos_emisor(configurarDatosEmisor(emisor, sucursal));
@@ -435,7 +445,8 @@ public class FacturaServiceImpl implements IFacturaService {
 				// posterior falla, la excepción revierte la transacción completa y la BD queda como si la venta
 				// no hubiera ocurrido.
 				log.info("---------> Inserción de Factura en Base de Datos de Sistema");
-				newFactura = registrarFactura(factura, estado, totalImpuestos, tipoFactura, correlativo, estadoCorrFinalizado);
+				newFactura = registrarFactura(factura, estado, totalImpuestos, tipoFactura, correlativo, estadoCorrFinalizado,
+						descuentoDelPedido);
 				verificarLineasGuardadas(newFactura.getIdFactura(), lineasSolicitadas);
 
 				RespuestaFirma respuestaFirmaEmisor = procesoFirma(documentoFel, certificador);
@@ -598,7 +609,10 @@ public class FacturaServiceImpl implements IFacturaService {
 
 							// RECORRER ITEMS DE FACTURA ANULADA PARA DEVOLVER LAS EXISTENCIAS AL STOCK
 							// Se devuelve el stock a la sucursal donde se realizó la venta original, no a la del usuario que anula
-							actualizarExistenciasDeItems(voidFactura, usuario, TipoMovimientoEnum.ANULACION_FACTURA);
+							// La factura de un pedido mayorista devuelve solo lo que descontó, sin sacar de nuevo lo que ya se entregó.
+							if (!inventarioPedidoService.devolverVenta(voidFactura, usuario)) {
+								actualizarExistenciasDeItems(voidFactura, usuario, TipoMovimientoEnum.ANULACION_FACTURA);
+							}
 
 						} else {
 							log.error("No se pudo llevar acabo la anulación de la factura en la base de datos");
@@ -880,7 +894,7 @@ public class FacturaServiceImpl implements IFacturaService {
 	 * provisional que nunca llega a confirmarse: o se reemplaza con la certificación o se revierte.
 	 * */
 	private Factura registrarFactura(Factura factura, Estado estado, double totalImpuestos, TipoFactura tipoFactura,
-									 Correlativo correlativo, Estado estadoCorrFinalizado)
+									 Correlativo correlativo, Estado estadoCorrFinalizado, Map<Integer, Integer> descuentoDelPedido)
 	{
 		factura.setEstado(estado);
 		factura.setIva(new BigDecimal(totalImpuestos));
@@ -894,7 +908,11 @@ public class FacturaServiceImpl implements IFacturaService {
 		log.info("-----------> Actualizando correlativo");
 		cambiarCorrelativo(correlativo, estadoCorrFinalizado);
 
-		actualizarExistenciasDeItems(newFactura, newFactura.getUsuario(), TipoMovimientoEnum.VENTA);
+		if (descuentoDelPedido == null) {
+			actualizarExistenciasDeItems(newFactura, newFactura.getUsuario(), TipoMovimientoEnum.VENTA);
+		} else {
+			inventarioPedidoService.descontarVenta(newFactura, newFactura.getUsuario(), descuentoDelPedido);
+		}
 		repoFactura.flush();
 
 		log.info("******************** Factura Registrada en la Base de Datos (pendiente de certificar) ************************");
