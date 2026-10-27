@@ -6,6 +6,20 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Recibos de caja (Fase 4, paso 1)
+
+Abonos y depósitos de los clientes con número propio por sucursal. Todavía no mueven ningún saldo: el saldo del cliente y el control de crédito llegan en los pasos 2 y 3.
+
+- **Emisión**: los emiten el administrador y el cobrador desde su propia sucursal (el administrador puede elegir otra). Piden cliente, monto mayor que cero (hasta Q9,999,999.99), forma de pago (efectivo, depósito o transferencia; las dos últimas exigen referencia) y fecha de pago (hoy por defecto, nunca futura). Pueden indicar el pedido o la factura a la que pagan, que deben ser del cliente y no estar anulados; la pantalla de este paso aún no ofrece ese selector (llega con el saldo, en el paso 2), pero la API ya lo acepta.
+- **Numeración**: un correlativo por sucursal con la fila bloqueada al emitir, para que dos recibos simultáneos no repitan número. Se muestra como `S2-000015`. Una sucursal sin correlativo empieza en 1.
+- **Anulación**: solo el administrador, con motivo obligatorio; el recibo se conserva con quién, cuándo y por qué, y dejará de contar para el saldo. Un recibo no se anula dos veces.
+- **Alcance**: el cobrador solo lista, ve e imprime los recibos de su sucursal (los de otra responden 404); el administrador ve todas o filtra por sucursal. El vendedor y el repartidor no tienen acceso.
+- **Impresión**: PDF en media carta con número, sucursal, fecha, monto, cliente y NIT, concepto (pedido, factura o abono a la cuenta), forma de pago, referencia, quién emitió, línea de firma del cliente y la marca "RECIBO ANULADO" con el motivo cuando corresponde. No incluye el monto en letras.
+- **API** (`/api/recibos`): `GET /page/{page}` (filtros de sucursal, cliente, fechas y anulados; sin fechas, los últimos 30 días), `GET /{id}`, `POST`, `POST /{id}/anular`, `GET /{id}/imprimir`.
+- **Pantalla** *Recibos de caja* (menú lateral): formulario con búsqueda de cliente, lista con filtros, impresión y anulación. Al emitir se abre el PDF.
+- **Base de datos** (`sql/mayoristas/15_create_recibos_caja.sql`, **requerido antes del jar**; el rollback lo revierte): `recibos_caja` y `recibos_correlativos` (con una fila por cada sucursal existente).
+- **Pruebas**: `ReciboCajaServiceImplTest` (numeración, alcance por sucursal, validaciones, documentos del cliente, anulación), `ReciboCajaReporteTest` (la plantilla con su consulta real contra H2), la matriz de roles y los specs de la pantalla y el servicio.
+
 ### Cambiado — Código de cliente como UUID y comisión de quien ingresa a mitad de año
 
 - **Código de cliente**: ya no se escribe ni se propone el teléfono. El servidor asigna un **UUID** al crear el cliente; no se edita (lo que mande la petición se ignora), es único y sigue sirviendo para buscar. Un cliente anterior sin código lo recibe la próxima vez que se guarda. La pantalla del cliente lo muestra de solo lectura y se quitó "Usar el teléfono". Script `sql/mayoristas/14_codigo_cliente_uuid.sql` (**requerido antes del jar**; amplía la columna a 36 caracteres y asigna UUID a los mayoristas sin código; el rollback borra los UUID para volver a 30).

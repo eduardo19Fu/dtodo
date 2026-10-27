@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Recibo de caja (media carta). Plantilla escrita a mano en formato JasperReports 6.x; no abrir ni guardar con Jaspersoft Studio 7,
+     que cambia el formato y la librería del proyecto no lo entiende. -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="recibo_caja" pageWidth="612" pageHeight="396" orientation="Portrait"
+              whenNoDataType="AllSectionsNoDetail" columnWidth="572" leftMargin="20" rightMargin="20"
+              topMargin="18" bottomMargin="14"
+              uuid="a3f1c8d2-6b47-4e09-8d15-2c9e7b40f318">
+
+    <style name="Base" isDefault="true" fontName="DejaVu Sans" fontSize="9" forecolor="#23344D"/>
+    <style name="Etiqueta" style="Base" fontSize="8" forecolor="#66758A"/>
+    <style name="Valor" style="Base" fontSize="10" isBold="true"/>
+
+    <parameter name="ID_RECIBO" class="java.lang.Long"/>
+
+    <queryString language="SQL"><![CDATA[
+        SELECT r.numero AS numero,
+               r.id_sucursal AS id_sucursal,
+               s.nombre AS sucursal,
+               r.fecha_pago AS fecha_pago,
+               r.monto AS monto,
+               r.forma_pago AS forma_pago,
+               r.referencia AS referencia,
+               r.observaciones AS observaciones,
+               c.nombre AS cliente,
+               c.nombre_negocio AS negocio,
+               c.nit AS nit,
+               p.no_proforma AS no_proforma,
+               f.no_factura AS no_factura,
+               TRIM(CONCAT(COALESCE(u.primer_nombre, ''), ' ', COALESCE(u.apellido, ''))) AS emitido_por,
+               r.anulado AS anulado,
+               r.motivo_anulacion AS motivo_anulacion
+          FROM recibos_caja r
+          JOIN sucursales s ON s.id_sucursal = r.id_sucursal
+          JOIN clientes c ON c.id_cliente = r.id_cliente
+          JOIN usuarios u ON u.id_usuario = r.id_usuario
+          LEFT JOIN proformas p ON p.id_proforma = r.id_proforma
+          LEFT JOIN facturas f ON f.id_factura = r.id_factura
+         WHERE r.id_recibo = $P{ID_RECIBO}
+    ]]></queryString>
+
+    <field name="numero" class="java.lang.Long"/>
+    <field name="id_sucursal" class="java.lang.Integer"/>
+    <field name="sucursal" class="java.lang.String"/>
+    <field name="fecha_pago" class="java.sql.Date"/>
+    <field name="monto" class="java.math.BigDecimal"/>
+    <field name="forma_pago" class="java.lang.String"/>
+    <field name="referencia" class="java.lang.String"/>
+    <field name="observaciones" class="java.lang.String"/>
+    <field name="cliente" class="java.lang.String"/>
+    <field name="negocio" class="java.lang.String"/>
+    <field name="nit" class="java.lang.String"/>
+    <field name="no_proforma" class="java.lang.String"/>
+    <field name="no_factura" class="java.lang.Long"/>
+    <field name="emitido_por" class="java.lang.String"/>
+    <field name="anulado" class="java.lang.Boolean"/>
+    <field name="motivo_anulacion" class="java.lang.String"/>
+
+    <detail>
+        <band height="360">
+            <rectangle radius="6">
+                <reportElement x="90" y="0" width="482" height="48" forecolor="#1769D2" backcolor="#1769D2"/>
+            </rectangle>
+            <image scaleImage="RetainShape" hAlign="Center">
+                <reportElement x="0" y="0" width="72" height="48"/>
+                <imageExpression><![CDATA[this.getClass().getResourceAsStream("/static/images/reports-image/logo-dtodo.jpg")]]></imageExpression>
+            </image>
+            <staticText>
+                <reportElement x="90" y="0" width="300" height="48" forecolor="#FFFFFF" backcolor="#1769D2" mode="Opaque"/>
+                <textElement verticalAlignment="Middle"><font size="18" isBold="true"/><paragraph leftIndent="16"/></textElement>
+                <text><![CDATA[RECIBO DE CAJA]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="390" y="0" width="182" height="26" forecolor="#FFFFFF" backcolor="#1769D2" mode="Opaque"/>
+                <textElement textAlignment="Right" verticalAlignment="Bottom"><font size="13" isBold="true"/><paragraph rightIndent="14"/></textElement>
+                <textFieldExpression><![CDATA["No. S" + $F{id_sucursal} + "-" + String.format("%06d", $F{numero})]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="390" y="26" width="182" height="22" forecolor="#DCEBFF" backcolor="#1769D2" mode="Opaque"/>
+                <textElement textAlignment="Right" verticalAlignment="Top"><font size="8"/><paragraph rightIndent="14"/></textElement>
+                <textFieldExpression><![CDATA[$F{sucursal}]]></textFieldExpression>
+            </textField>
+
+            <staticText><reportElement style="Etiqueta" x="0" y="64" width="120" height="12"/><text><![CDATA[Fecha de pago]]></text></staticText>
+            <textField pattern="dd/MM/yyyy"><reportElement style="Valor" x="0" y="76" width="140" height="16"/><textFieldExpression><![CDATA[$F{fecha_pago}]]></textFieldExpression></textField>
+            <staticText><reportElement style="Etiqueta" x="400" y="64" width="172" height="12"/><textElement textAlignment="Right"/><text><![CDATA[Monto recibido]]></text></staticText>
+            <textField pattern="Q #,##0.00"><reportElement x="400" y="74" width="172" height="22" forecolor="#17233B"/><textElement textAlignment="Right"><font size="16" isBold="true"/></textElement><textFieldExpression><![CDATA[$F{monto}]]></textFieldExpression></textField>
+
+            <line><reportElement x="0" y="104" width="572" height="1" forecolor="#B9C9DC"/></line>
+
+            <staticText><reportElement style="Etiqueta" x="0" y="112" width="120" height="12"/><text><![CDATA[Recibimos de]]></text></staticText>
+            <textField isBlankWhenNull="true"><reportElement style="Valor" x="0" y="124" width="572" height="16"/><textFieldExpression><![CDATA[$F{cliente} + ($F{negocio} == null || $F{negocio}.isEmpty() ? "" : " · " + $F{negocio})]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Etiqueta" x="0" y="140" width="572" height="12"/><textFieldExpression><![CDATA[$F{nit} == null || $F{nit}.isEmpty() ? "" : "NIT: " + $F{nit}]]></textFieldExpression></textField>
+
+            <staticText><reportElement style="Etiqueta" x="0" y="164" width="200" height="12"/><text><![CDATA[Por concepto de]]></text></staticText>
+            <textField isBlankWhenNull="true"><reportElement style="Valor" x="0" y="176" width="572" height="16"/><textFieldExpression><![CDATA[($F{no_proforma} == null && $F{no_factura} == null) ? "Abono a la cuenta del cliente" : "Pago de" + ($F{no_proforma} == null ? "" : " pedido " + $F{no_proforma}) + ($F{no_factura} == null ? "" : " factura " + $F{no_factura})]]></textFieldExpression></textField>
+
+            <staticText><reportElement style="Etiqueta" x="0" y="204" width="120" height="12"/><text><![CDATA[Forma de pago]]></text></staticText>
+            <textField><reportElement style="Valor" x="0" y="216" width="200" height="16"/><textFieldExpression><![CDATA["EFECTIVO".equals($F{forma_pago}) ? "Efectivo" : ("DEPOSITO".equals($F{forma_pago}) ? "Depósito" : "Transferencia")]]></textFieldExpression></textField>
+            <staticText><reportElement style="Etiqueta" x="220" y="204" width="120" height="12"/><text><![CDATA[Referencia]]></text></staticText>
+            <textField isBlankWhenNull="true"><reportElement style="Valor" x="220" y="216" width="352" height="16"/><textFieldExpression><![CDATA[$F{referencia}]]></textFieldExpression></textField>
+
+            <textField isBlankWhenNull="true" isStretchWithOverflow="false">
+                <reportElement style="Base" x="0" y="244" width="572" height="26" forecolor="#53647A"/>
+                <textElement><font size="8" isItalic="true"/></textElement>
+                <textFieldExpression><![CDATA[$F{observaciones}]]></textFieldExpression>
+            </textField>
+
+            <line><reportElement x="40" y="318" width="200" height="1" forecolor="#23344D"/></line>
+            <textField isBlankWhenNull="true"><reportElement style="Etiqueta" x="40" y="321" width="200" height="12"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA["Emitió: " + $F{emitido_por}]]></textFieldExpression></textField>
+            <line><reportElement x="332" y="318" width="200" height="1" forecolor="#23344D"/></line>
+            <staticText><reportElement style="Etiqueta" x="332" y="321" width="200" height="12"/><textElement textAlignment="Center"/><text><![CDATA[Recibí conforme (cliente)]]></text></staticText>
+
+            <textField isBlankWhenNull="true">
+                <reportElement x="0" y="276" width="572" height="30" forecolor="#B42318">
+                    <printWhenExpression><![CDATA[$F{anulado}]]></printWhenExpression>
+                </reportElement>
+                <textElement textAlignment="Center" verticalAlignment="Middle"><font size="14" isBold="true"/></textElement>
+                <textFieldExpression><![CDATA["RECIBO ANULADO" + ($F{motivo_anulacion} == null ? "" : " · " + $F{motivo_anulacion})]]></textFieldExpression>
+            </textField>
+        </band>
+    </detail>
+</jasperReport>

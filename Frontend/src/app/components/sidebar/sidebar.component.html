@@ -158,6 +158,12 @@
         <span class="menu-label">Autorizaciones</span>
       </a>
 
+      <a *ngIf="coincide('recibos', 'caja', 'abonos', 'depositos', 'cobros') && (authService.hasRole('ROLE_ADMIN') || authService.hasRole('ROLE_COBRADOR'))" [routerLink]="['/recibos/index']"
+        class="menu-link" [class.active]="router.url.startsWith('/recibos')" (click)="notificarNavegacion()" title="Recibos de caja">
+        <span class="menu-icon"><i class="fas fa-receipt" aria-hidden="true"></i></span>
+        <span class="menu-label">Recibos de caja</span>
+      </a>
+
       <a *ngIf="coincide('comisiones', 'vendedores', 'metas', 'mayoristas') && authService.hasRole('ROLE_ADMIN')" [routerLink]="['/comisiones/index']"
         class="menu-link" [class.active]="router.url.startsWith('/comisiones')" (click)="notificarNavegacion()" title="Comisiones">
         <span class="menu-icon"><i class="fas fa-hand-holding-usd" aria-hidden="true"></i></span>

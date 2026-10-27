@@ -112,6 +112,17 @@ class VendedorSeguridadTest {
     }
 
     @Test
+    void losRecibosDeCajaLosEmitenAdministradorYCobradorYSoloElAdministradorAnula() {
+        String[] metodos = { "listar", "buscar", "emitir", "anular", "imprimir" };
+        niegaAlVendedor(ReciboCajaApiController.class, metodos);
+        for (String metodo : new String[] { "listar", "buscar", "emitir", "imprimir" }) {
+            assertTrue(roles(ReciboCajaApiController.class, metodo).equals(Arrays.asList("ROLE_ADMIN", "ROLE_COBRADOR")),
+                    metodo + " es del administrador y el cobrador");
+        }
+        assertTrue(roles(ReciboCajaApiController.class, "anular").equals(Arrays.asList("ROLE_ADMIN")), "anular es solo del administrador");
+    }
+
+    @Test
     void lasComisionesSonSoloDelAdministrador() {
         String[] metodos = { "metas", "guardarMetas", "copiarMetas", "avance", "liquidar", "deshacer", "reporte" };
         niegaAlVendedor(ComisionApiController.class, metodos);
@@ -162,7 +173,7 @@ class VendedorSeguridadTest {
     void elRepartidorNoLlegaANingunOtroControlador() throws Exception {
         for (Class<?> controlador : new Class<?>[] { ProformaApiController.class, FacturaApiController.class, ClienteApiController.class,
                 ProductoApiController.class, RutaApiController.class, DescuentoApiController.class,
-                AutorizacionProformaApiController.class, ReporteMayoristasApiController.class, ComisionApiController.class }) {
+                AutorizacionProformaApiController.class, ReporteMayoristasApiController.class, ComisionApiController.class, ReciboCajaApiController.class }) {
             for (Method metodo : controlador.getDeclaredMethods()) {
                 Secured secured = metodo.getAnnotation(Secured.class);
                 if (secured != null) {
