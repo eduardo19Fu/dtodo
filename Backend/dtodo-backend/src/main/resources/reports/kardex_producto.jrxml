@@ -52,9 +52,26 @@
                    WHEN 'NOTA_CREDITO' THEN CONCAT('Nota de crédito #', nc.id_nota_credito)
                    WHEN 'DESPACHO_BODEGA' THEN CONCAT('Despacho de bodega #', mp.id_documento_origen)
                    WHEN 'ENTREGA_PROFORMA' THEN CONCAT('Entrega de pedido #', mp.id_documento_origen)
+                   WHEN 'DEVOLUCION_BODEGA' THEN CONCAT('Devolución a bodega #', mp.id_documento_origen)
                    ELSE CASE WHEN mp.tipo_movimiento IN ('ENTRADA', 'SALIDA')
                        THEN CONCAT('Ajuste manual #', mp.id_movimiento) END
                END, 'No registrado') AS documento,
+               CASE
+                   WHEN mp.tipo_documento_origen = 'FACTURA' OR mp.tipo_movimiento IN ('VENTA', 'ANULACION_FACTURA')
+                       THEN 'Factura'
+                   WHEN mp.tipo_documento_origen = 'ENTREGA_PROFORMA'
+                       OR mp.tipo_movimiento IN ('ENTREGA_PROFORMA', 'ANULACION_ENTREGA_PROFORMA')
+                       THEN 'Entrega de pedido mayorista'
+                   WHEN mp.tipo_documento_origen = 'NOTA_CREDITO'
+                       OR mp.tipo_movimiento IN ('NOTA_CREDITO', 'ANULACION_NOTA', 'ENTREGA_PRODUCTO_NOTA')
+                       THEN 'Nota de crédito'
+                   WHEN mp.tipo_documento_origen = 'COMPRA' OR mp.tipo_movimiento IN ('COMPRA', 'ELIMINAR_COMPRA')
+                       THEN 'Compra'
+                   WHEN mp.tipo_documento_origen = 'DESPACHO_BODEGA' THEN 'Despacho de bodega'
+                   WHEN mp.tipo_documento_origen = 'DEVOLUCION_BODEGA' THEN 'Devolución a bodega'
+                   WHEN mp.tipo_movimiento IN ('ENTRADA', 'SALIDA') THEN 'Manual'
+                   ELSE 'No registrado'
+               END AS origen,
                COALESCE(u.usuario, '') AS usuario,
                mp.stock_inicial,
                CAST(CASE
@@ -87,6 +104,7 @@
     <field name="fecha" class="java.sql.Timestamp"/>
     <field name="movimiento" class="java.lang.String"/>
     <field name="documento" class="java.lang.String"/>
+    <field name="origen" class="java.lang.String"/>
     <field name="usuario" class="java.lang.String"/>
     <field name="stock_inicial" class="java.lang.Integer"/>
     <field name="entrada" class="java.lang.Integer"/>
@@ -173,7 +191,8 @@
             <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="120" y="0" width="65" height="34"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{numero}]]></textFieldExpression></textField>
             <textField isBlankWhenNull="true"><reportElement style="Cell" x="185" y="0" width="190" height="17"/><textElement><paragraph leftIndent="4"/></textElement><textFieldExpression><![CDATA[$F{movimiento}]]></textFieldExpression></textField>
             <textField isBlankWhenNull="true"><reportElement style="Cell" x="375" y="0" width="150" height="17"/><textElement><paragraph leftIndent="4"/></textElement><textFieldExpression><![CDATA[$F{usuario}]]></textFieldExpression></textField>
-            <textField isBlankWhenNull="true"><reportElement style="Cell" x="185" y="17" width="340" height="17"/><textElement><font size="7"/><paragraph leftIndent="4"/></textElement><textFieldExpression><![CDATA["Documento: " + $F{documento}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="185" y="17" width="190" height="17"/><textElement><font size="7"/><paragraph leftIndent="4"/></textElement><textFieldExpression><![CDATA["Documento: " + $F{documento}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="375" y="17" width="150" height="17"/><textElement><font size="7"/><paragraph leftIndent="4"/></textElement><textFieldExpression><![CDATA["Origen: " + $F{origen}]]></textFieldExpression></textField>
             <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="525" y="0" width="72" height="34"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{stock_inicial}]]></textFieldExpression></textField>
             <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="597" y="0" width="68" height="34"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{entrada}]]></textFieldExpression></textField>
             <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="665" y="0" width="68" height="34"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{salida}]]></textFieldExpression></textField>

@@ -30,6 +30,9 @@
                base.stock_inicial,
                base.entradas,
                base.salidas,
+               base.salidas_factura,
+               base.salidas_entrega,
+               base.salidas - base.salidas_factura - base.salidas_entrega AS salidas_otras,
                base.stock_inicial + base.entradas - base.salidas AS saldo_final
           FROM (
                 SELECT p.cod_producto AS codigo,
@@ -50,7 +53,11 @@
                            THEN mp.cantidad ELSE 0 END), 0) AS SIGNED) AS entradas,
                        CAST(COALESCE(SUM(CASE
                            WHEN mp.tipo_movimiento IN ('VENTA', 'SALIDA', 'ELIMINAR_COMPRA', 'ENTREGA_PRODUCTO_NOTA', 'ENTREGA_PROFORMA')
-                           THEN mp.cantidad ELSE 0 END), 0) AS SIGNED) AS salidas
+                           THEN mp.cantidad ELSE 0 END), 0) AS SIGNED) AS salidas,
+                       CAST(COALESCE(SUM(CASE WHEN mp.tipo_movimiento = 'VENTA' THEN mp.cantidad ELSE 0 END), 0) AS SIGNED)
+                           AS salidas_factura,
+                       CAST(COALESCE(SUM(CASE WHEN mp.tipo_movimiento = 'ENTREGA_PROFORMA' THEN mp.cantidad ELSE 0 END), 0) AS SIGNED)
+                           AS salidas_entrega
                   FROM inventario_sucursal inv
                   INNER JOIN productos p ON p.id_producto = inv.id_producto
                   INNER JOIN tipos_producto tp ON tp.id_tipo_producto = p.id_tipo_producto
@@ -71,6 +78,9 @@
     <field name="stock_inicial" class="java.lang.Long"/>
     <field name="entradas" class="java.lang.Long"/>
     <field name="salidas" class="java.lang.Long"/>
+    <field name="salidas_factura" class="java.lang.Long"/>
+    <field name="salidas_entrega" class="java.lang.Long"/>
+    <field name="salidas_otras" class="java.lang.Long"/>
     <field name="saldo_final" class="java.lang.Long"/>
 
     <variable name="CANTIDAD_PRODUCTOS" class="java.lang.Integer" calculation="Count">
@@ -117,32 +127,38 @@
             <staticText>
                 <reportElement x="0" y="54" width="802" height="14" forecolor="#66758A"/>
                 <textElement><font size="8" isItalic="true"/></textElement>
-                <text><![CDATA[Resume entradas, salidas y saldo por producto durante el período seleccionado.]]></text>
+                <text><![CDATA[Salidas separadas por origen: factura, entrega de pedido mayorista y otras. Las anulaciones cuentan como entradas.]]></text>
             </staticText>
         </band>
     </title>
 
     <columnHeader>
         <band height="28">
-            <staticText><reportElement style="Header" x="0" y="0" width="100" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Código]]></text></staticText>
-            <staticText><reportElement style="Header" x="100" y="0" width="240" height="28"/><text><![CDATA[Producto]]></text></staticText>
-            <staticText><reportElement style="Header" x="340" y="0" width="120" height="28"/><text><![CDATA[Categoría]]></text></staticText>
-            <staticText><reportElement style="Header" x="460" y="0" width="80" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Inicial]]></text></staticText>
-            <staticText><reportElement style="Header" x="540" y="0" width="80" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Entradas]]></text></staticText>
-            <staticText><reportElement style="Header" x="620" y="0" width="80" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Salidas]]></text></staticText>
-            <staticText><reportElement style="Header" x="700" y="0" width="92" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Saldo final]]></text></staticText>
+            <staticText><reportElement style="Header" x="0" y="0" width="70" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Código]]></text></staticText>
+            <staticText><reportElement style="Header" x="70" y="0" width="190" height="28"/><text><![CDATA[Producto]]></text></staticText>
+            <staticText><reportElement style="Header" x="260" y="0" width="90" height="28"/><text><![CDATA[Categoría]]></text></staticText>
+            <staticText><reportElement style="Header" x="350" y="0" width="62" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Inicial]]></text></staticText>
+            <staticText><reportElement style="Header" x="412" y="0" width="62" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Entradas]]></text></staticText>
+            <staticText><reportElement style="Header" x="474" y="0" width="62" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Salidas]]></text></staticText>
+            <staticText><reportElement style="Header" x="536" y="0" width="66" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Por factura]]></text></staticText>
+            <staticText><reportElement style="Header" x="602" y="0" width="66" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Por entrega de pedido]]></text></staticText>
+            <staticText><reportElement style="Header" x="668" y="0" width="66" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Otras salidas]]></text></staticText>
+            <staticText><reportElement style="Header" x="734" y="0" width="68" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Saldo final]]></text></staticText>
         </band>
     </columnHeader>
 
     <detail>
         <band height="24">
-            <textField isBlankWhenNull="true"><reportElement style="Cell" x="0" y="0" width="100" height="24"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA[$F{codigo}]]></textFieldExpression></textField>
-            <textField isBlankWhenNull="true"><reportElement style="Cell" x="100" y="0" width="240" height="24"/><textFieldExpression><![CDATA[$F{producto}]]></textFieldExpression></textField>
-            <textField isBlankWhenNull="true"><reportElement style="Cell" x="340" y="0" width="120" height="24"/><textFieldExpression><![CDATA[$F{categoria}]]></textFieldExpression></textField>
-            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="460" y="0" width="80" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{stock_inicial}]]></textFieldExpression></textField>
-            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="540" y="0" width="80" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{entradas}]]></textFieldExpression></textField>
-            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="620" y="0" width="80" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{salidas}]]></textFieldExpression></textField>
-            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="700" y="0" width="92" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{saldo_final}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="0" y="0" width="70" height="24"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA[$F{codigo}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="70" y="0" width="190" height="24"/><textFieldExpression><![CDATA[$F{producto}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="260" y="0" width="90" height="24"/><textFieldExpression><![CDATA[$F{categoria}]]></textFieldExpression></textField>
+            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="350" y="0" width="62" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{stock_inicial}]]></textFieldExpression></textField>
+            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="412" y="0" width="62" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{entradas}]]></textFieldExpression></textField>
+            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="474" y="0" width="62" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{salidas}]]></textFieldExpression></textField>
+            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="536" y="0" width="66" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{salidas_factura}]]></textFieldExpression></textField>
+            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="602" y="0" width="66" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{salidas_entrega}]]></textFieldExpression></textField>
+            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="668" y="0" width="66" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{salidas_otras}]]></textFieldExpression></textField>
+            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="734" y="0" width="68" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{saldo_final}]]></textFieldExpression></textField>
         </band>
     </detail>
 

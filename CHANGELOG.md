@@ -6,6 +6,17 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Origen de los movimientos de inventario en el kardex y en el reporte de movimientos (Fase 2B, paso 3)
+
+Cierra la 2B. Solo reportes: sin script SQL ni cambios en la API.
+
+- **Kardex de producto**: cada movimiento muestra su **origen** junto al documento: Factura, Entrega de pedido mayorista, Nota de crédito, Compra, Despacho de bodega, Devolución a bodega, Manual (entradas y salidas sin documento) o No registrado. Si el movimiento no guardó su documento, el origen sale del tipo (una venta sin documento es de factura). El documento ahora nombra también la entrega de pedido ("Entrega de pedido #77") y la devolución a bodega, que antes salía como "Ajuste manual".
+- **Movimientos y saldo de inventario**: las salidas se separan en tres columnas, **por factura**, **por entrega de pedido** y **otras salidas** (manuales, notas de crédito, compras anuladas); las anulaciones cuentan como entradas. Las columnas de entradas, salidas y saldo no cambian.
+- **Entregas en el saldo**: la entrega de pedido ya salía como salida y su anulación como entrada en el kardex, el reporte de movimientos y la valorización (paso 1); ahora además se nombran.
+- **Una sola entrega de pedido**: no se distingue entre "entrega de proforma" y "de proforma mayorista" porque solo los pedidos mayoristas se entregan.
+- **Pruebas**: `OrigenMovimientosReportesTest` ejecuta la consulta real de cada plantilla contra H2 en modo MySQL con todos los orígenes (incluido un tipo vacío de la carga histórica); las consultas también se corrieron contra MySQL con los datos de desarrollo.
+- **No incluido**: la lista de movimientos de la pantalla *Movimientos de producto* sigue mostrando el tipo técnico (por ejemplo `ENTREGA_PROFORMA`); la salida manual que declara su proforma (no hizo falta con la casilla "ya descontado a mano").
+
 ### Cambiado — Inventario de la factura de un pedido mayorista (Fase 2B, paso 2)
 
 La entrega y la factura de un mismo pedido ya no descuentan dos veces. Solo aplica a una factura emitida desde un pedido mayorista (`id_proforma_origen` de una proforma mayorista); una venta directa o de una proforma minorista se comporta exactamente como antes.

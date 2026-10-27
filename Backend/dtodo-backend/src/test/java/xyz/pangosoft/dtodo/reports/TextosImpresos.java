@@ -23,6 +23,11 @@ final class TextosImpresos {
         }
     }
 
+    /** Todos los textos impresos, en el orden en que salen. */
+    List<String> todos() {
+        return textos;
+    }
+
     boolean contiene(String fragmento) {
         return textos.stream().anyMatch(texto -> texto != null && texto.contains(fragmento));
     }
