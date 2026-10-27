@@ -1,5 +1,7 @@
 package xyz.pangosoft.dtodo.service.impl;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -26,6 +28,7 @@ import xyz.pangosoft.dtodo.model.ProformaEntrega;
 import xyz.pangosoft.dtodo.model.ProformaEntregaDetalle;
 import xyz.pangosoft.dtodo.model.Sucursal;
 import xyz.pangosoft.dtodo.model.Usuario;
+import xyz.pangosoft.dtodo.model.enums.CondicionPagoEnum;
 import xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum;
 import xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoMovimientoEnum;
@@ -39,7 +42,9 @@ import xyz.pangosoft.dtodo.service.IInventarioSucursalService;
 import xyz.pangosoft.dtodo.service.IMovimientoProductoService;
 import xyz.pangosoft.dtodo.service.IPedidoService;
 import xyz.pangosoft.dtodo.service.IProformaAuditoriaService;
+import xyz.pangosoft.dtodo.service.ISaldoClienteService;
 import xyz.pangosoft.dtodo.service.IUsuarioService;
+import xyz.pangosoft.dtodo.util.Utils;
 
 @Service
 @RequiredArgsConstructor
@@ -60,6 +65,7 @@ public class EntregaPedidoServiceImpl implements IEntregaPedidoService {
     private final IAmbitoVendedorService ambito;
     private final IUsuarioService usuarioService;
     private final IProformaAuditoriaService auditoria;
+    private final ISaldoClienteService saldoService;
 
     @Transactional
     @Override
@@ -80,6 +86,7 @@ public class EntregaPedidoServiceImpl implements IEntregaPedidoService {
         String entregadoPor = repartidor ? null : limpiar(solicitud.getEntregadoPor(), MAX_ENTREGADO_POR, "El nombre de quien entregó");
         String observaciones = limpiar(solicitud.getObservaciones(), MAX_OBSERVACIONES, "Las observaciones");
         Map<Long, Integer> cantidades = validarLineas(pedido, solicitud);
+        String notaDeCobro = exigirCobro(pedido, cantidades, solicitud, repartidor);
 
         // Lo que hay que sacar del inventario por línea: lo entregado que todavía no estaba descontado.
         Map<Long, Integer> cubiertas = new LinkedHashMap<>();
@@ -140,9 +147,44 @@ public class EntregaPedidoServiceImpl implements IEntregaPedidoService {
         }
 
         proformaRepository.save(pedido);
-        pedidoService.cambiarEstado(pedido, estadoSegunLoEntregado(pedido), entregadoPor,
-                observaciones == null ? null : "Entrega: " + observaciones);
+        String nota = observaciones == null ? null : "Entrega: " + observaciones;
+        if (notaDeCobro != null) {
+            nota = nota == null ? notaDeCobro : nota + ". " + notaDeCobro;
+        }
+        pedidoService.cambiarEstado(pedido, estadoSegunLoEntregado(pedido), entregadoPor, nota);
         return pedidoService.detalle(idProforma);
+    }
+
+    /**
+     * Un pedido de contado no se entrega sin cobrar: lo cobrado con recibos ligados al pedido debe cubrir lo ya entregado más
+     * lo de esta entrega. Solo el administrador puede entregar sin cobro y queda anotado en las etapas. Un pedido a crédito
+     * no se condiciona al pago (su límite se controla al confirmarlo).
+     *
+     * @return la nota para las etapas cuando se entregó sin cobro, o {@code null}
+     */
+    private String exigirCobro(Proforma pedido, Map<Long, Integer> cantidades, EntregaSolicitudDto solicitud, boolean repartidor) {
+        if (pedido.getCondicionPago() == CondicionPagoEnum.CREDITO) {
+            return null;
+        }
+        BigDecimal estaEntrega = BigDecimal.ZERO;
+        for (DetalleProforma linea : pedido.getItemsProforma()) {
+            Integer cantidad = cantidades.get(linea.getIdDetalle());
+            if (cantidad != null && linea.getCantidad() != null && linea.getCantidad() > 0 && linea.getSubTotalDescuento() != null) {
+                estaEntrega = estaEntrega.add(linea.getSubTotalDescuento().multiply(new BigDecimal(cantidad))
+                        .divide(new BigDecimal(linea.getCantidad()), 6, RoundingMode.HALF_UP));
+            }
+        }
+        BigDecimal necesario = saldoService.valorEntregado(pedido.getIdProforma()).add(estaEntrega).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal cobrado = saldoService.cobrado(pedido.getIdProforma());
+        if (cobrado.compareTo(necesario) >= 0) {
+            return null;
+        }
+        BigDecimal falta = necesario.subtract(cobrado);
+        if (solicitud.isEntregarSinPago() && !repartidor && Utils.esAdministrador()) {
+            return "Entregado sin cobrar Q" + falta + " (autorizado por el administrador)";
+        }
+        throw new ReglaNegocioException("El pedido " + pedido.getNoProforma() + " es de contado y falta cobrar Q" + falta
+                + ". Emita un recibo de caja ligado al pedido antes de entregar.");
     }
 
     @Transactional

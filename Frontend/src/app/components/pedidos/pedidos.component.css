@@ -116,3 +116,5 @@
 .entrega-cabecera { align-items: center; display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .entrega-meta, .entrega-lineas { color: #6c757d; display: block; font-size: 0.85rem; }
 .entregas-lista li em { display: block; font-size: 0.85rem; }
+
+.falta-cobro { background: #fff4e5; border-left: 3px solid #f0ad4e; padding: 0.4rem 0.6rem; }

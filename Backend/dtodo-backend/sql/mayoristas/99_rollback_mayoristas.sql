@@ -1,5 +1,8 @@
--- Revierte el módulo de Clientes Mayoristas (pasos 01 a 15). Orden inverso a la creación.
+-- Revierte el módulo de Clientes Mayoristas (pasos 01 a 16). Orden inverso a la creación.
 -- ATENCIÓN: borra la información de rutas, los datos mayoristas de los clientes y los descuentos. Respaldar antes.
+-- Paso 16
+ALTER TABLE proformas DROP COLUMN condicion_pago, DROP COLUMN dias_credito;
+
 -- Paso 15
 DROP TABLE IF EXISTS recibos_correlativos;
 DROP TABLE IF EXISTS recibos_caja;

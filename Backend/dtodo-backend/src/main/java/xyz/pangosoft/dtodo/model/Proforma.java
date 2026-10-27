@@ -26,6 +26,7 @@ import jakarta.validation.Valid;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import xyz.pangosoft.dtodo.model.enums.CondicionPagoEnum;
 import xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum;
 import xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoProformaEnum;
@@ -83,6 +84,17 @@ public class Proforma implements Serializable {
 
     /** Vigencia de la proforma mayorista: 15 días desde la emisión. */
     private LocalDate fechaVencimiento;
+
+    /**
+     * Cómo paga el cliente un pedido mayorista. Un pedido a crédito solo se acepta si el cliente tiene límite y días de
+     * crédito. Una proforma minorista es siempre de contado. Lo valida el servidor.
+     */
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private CondicionPagoEnum condicionPago = CondicionPagoEnum.CONTADO;
+
+    /** Los días de crédito del cliente cuando se hizo el pedido a crédito; los días corren desde la entrega. */
+    private Integer diasCredito;
 
     /** Fecha de entrega prometida, opcional. */
     private LocalDate fechaEntregaEstimada;

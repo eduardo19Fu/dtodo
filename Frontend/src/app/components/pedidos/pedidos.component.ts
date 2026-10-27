@@ -7,6 +7,8 @@ import {
 import { ReporteSelectorOpcionDto } from '../../dtos/reporte-selector-opcion-dto';
 import { AuthService } from '../../services/auth.service';
 import { PedidoService } from '../../services/pedido.service';
+import { SaldoService } from '../../services/saldo.service';
+import { PedidoSaldoDto } from '../../dtos/saldo-dto';
 
 import Swal from 'sweetalert2';
 
@@ -53,7 +55,8 @@ export class PedidosComponent implements OnInit {
   guardandoEntrega = false;
   errorEntrega = '';
   sucursales: ReporteSelectorOpcionDto[] = [];
-  entrega = { idSucursal: null as number, fechaEntrega: '', entregadoPor: '', descontadoAMano: false, observaciones: '' };
+  entrega = { idSucursal: null as number, fechaEntrega: '', entregadoPor: '', descontadoAMano: false, observaciones: '',
+    entregarSinPago: false };
   /** Cantidad a entregar por línea, por idDetalle. */
   cantidades: { [idDetalle: number]: number } = {};
   private abrirEntregaAlCargar = false;
@@ -67,7 +70,31 @@ export class PedidosComponent implements OnInit {
     { codigo: 'EN_RUTA', nombre: ETIQUETAS_ESTADO_PEDIDO.EN_RUTA }
   ];
 
-  constructor(private pedidoService: PedidoService, public auth: AuthService) { }
+  /** Cómo va el cobro del pedido abierto; solo lo consultan quienes pueden ver dinero. */
+  cobro: PedidoSaldoDto = null;
+
+  constructor(private pedidoService: PedidoService, public auth: AuthService, private saldoService: SaldoService) { }
+
+  /** Administrador, cobrador y vendedor ven el cobro; bodega y el repartidor no ven dinero. */
+  get puedeVerCobro(): boolean {
+    return this.auth.hasRole('ROLE_ADMIN') || this.auth.hasRole('ROLE_COBRADOR') || this.auth.hasRole('ROLE_VENDEDOR');
+  }
+
+  /** Lo que falta cobrar para poder entregar (solo en un pedido de contado). */
+  get faltaCobrar(): number {
+    if (!this.cobro || this.cobro.condicionPago !== 'CONTADO') {
+      return 0;
+    }
+    return Math.max(0, Math.round((Number(this.cobro.entregado) - Number(this.cobro.cobrado)) * 100) / 100);
+  }
+
+  private cargarCobro(detalle: PedidoDetalleDto): void {
+    this.cobro = null;
+    if (!this.puedeVerCobro) {
+      return;
+    }
+    this.saldoService.pedido(detalle.idProforma).subscribe(cobro => this.cobro = cobro, () => this.cobro = null);
+  }
 
   ngOnInit(): void {
     this.cargar();
@@ -251,6 +278,7 @@ export class PedidosComponent implements OnInit {
     this.abrirEntregaAlCargar = abrirEntrega;
     this.pedidoService.detalle(pedido.idProforma).subscribe(detalle => {
       this.detalle = detalle;
+      this.cargarCobro(detalle);
       this.cargandoDetalle = false;
       if (this.abrirEntregaAlCargar && this.puedeEntregarDetalle(detalle)) {
         this.abrirEntrega();
@@ -306,7 +334,7 @@ export class PedidosComponent implements OnInit {
     }
     this.errorEntrega = '';
     this.entrega = { idSucursal: this.detalle.idSucursal || null, fechaEntrega: this.hoy, entregadoPor: '',
-      descontadoAMano: false, observaciones: '' };
+      descontadoAMano: false, observaciones: '', entregarSinPago: false };
     this.cantidades = {};
     this.detalle.lineas.forEach(linea => this.cantidades[linea.idDetalle] = linea.pendiente);
     this.registrandoEntrega = true;
@@ -357,6 +385,7 @@ export class PedidosComponent implements OnInit {
       fechaEntrega: this.entrega.fechaEntrega,
       entregadoPor: this.esRepartidor ? null : this.entrega.entregadoPor.trim() || null,
       descontadoAMano: !this.esRepartidor && this.entrega.descontadoAMano,
+      entregarSinPago: this.esAdmin && this.entrega.entregarSinPago,
       observaciones: this.entrega.observaciones.trim() || null,
       lineas: this.detalle.lineas.map(linea => ({ idDetalle: linea.idDetalle, cantidad: Number(this.cantidades[linea.idDetalle]) || 0 }))
         .filter(linea => linea.cantidad > 0)

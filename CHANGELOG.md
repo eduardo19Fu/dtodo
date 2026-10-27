@@ -6,6 +6,17 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Condición de pago, saldo del cliente y entrega condicionada al cobro (Fase 4, paso 2)
+
+El control del límite de crédito al confirmar el pedido llega en el paso 3; la cobranza (antigüedad, estado de cuenta imprimible, alertas), en el 4.
+
+- **Condición de pago del pedido** (`CONTADO` o `CREDITO`): la proforma mayorista la lleva y la pantalla la ofrece. A crédito solo se acepta si el cliente tiene **límite y días de crédito**; si no, el servidor responde 422 y el pedido debe ser de contado. Los días del cliente quedan guardados en el pedido (un cambio posterior no altera los plazos ya pactados). Una proforma minorista es siempre de contado.
+- **Saldo del cliente** (`GET /api/saldos/clientes/{id}`): la deuda nace al **entregar**. Saldo = valor de lo entregado (entregas vigentes, a precio de línea con descuento) menos los recibos vigentes; un saldo negativo es dinero a favor del cliente (por ejemplo, un pago adelantado). Un recibo ligado a un pedido, o a una factura suya, paga ese pedido; los abonos sin pedido se aplican a lo más antiguo (por fecha de la primera entrega). También muestra el crédito disponible (límite menos el saldo pendiente) y, en pedidos a crédito, el vencimiento (primera entrega + días de crédito). `GET /api/saldos/pedidos/{id}` da lo mismo para un pedido. Lo consultan el administrador, el cobrador y el vendedor (solo sus clientes y pedidos); bodega y el repartidor no ven dinero.
+- **Entrega condicionada al cobro**: un pedido **de contado** no se entrega si lo cobrado con recibos ligados a él no cubre lo ya entregado más lo de esta entrega (responde 422 con lo que falta). Solo el **administrador** puede marcar "entregar aunque no esté cobrado"; queda anotado en las etapas del pedido, y el repartidor nunca puede. Un pedido a crédito no se condiciona al cobro.
+- **Pantallas**: la proforma mayorista trae el selector de condición de pago; el detalle del pedido muestra condición, lo cobrado y el aviso de lo que falta cobrar; el formulario de recibo muestra el estado de cuenta del cliente elegido y deja escoger el pedido al que paga (propone el monto que falta).
+- **Base de datos** (`sql/mayoristas/16_proformas_condicion_pago.sql`, **requerido antes del jar**; el rollback lo revierte): `proformas.condicion_pago` (CONTADO por defecto) y `proformas.dias_credito`.
+- **Pruebas**: `SaldoClienteServiceImplTest` (saldo, adelantos, factura, reparto de abonos, límite), `SaldoRepositoryTest` (las consultas contra H2), condición de pago en `ProformaMayoristaServiceImplTest`, el cobro en `EntregaPedidoServiceImplTest`, la matriz de roles y los specs de pedidos, recibos y saldo.
+
 ### Agregado — Recibos de caja (Fase 4, paso 1)
 
 Abonos y depósitos de los clientes con número propio por sucursal. Todavía no mueven ningún saldo: el saldo del cliente y el control de crédito llegan en los pasos 2 y 3.

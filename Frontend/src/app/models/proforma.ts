@@ -26,6 +26,10 @@ export class Proforma {
     observaciones?: string | null;
     /** Fecha de entrega estimada, yyyy-MM-dd. */
     fechaEntregaEstimada?: string | null;
+    /** Contado o crédito. A crédito solo si el cliente tiene límite y días de crédito; el servidor lo valida. */
+    condicionPago?: 'CONTADO' | 'CREDITO' = 'CONTADO';
+    /** Los días de crédito del cliente cuando se hizo el pedido a crédito. */
+    diasCredito?: number | null;
     /** Lo calcula el servidor: PENDIENTE si una línea pasa del tope de descuento; nulo si no necesita autorización. */
     estadoAutorizacion?: EstadoAutorizacion | null;
     /** Etapa del pedido (solo la mayorista): la fija el servidor. */

@@ -148,6 +148,14 @@
                 [min]="hoy" [(ngModel)]="proforma.fechaEntregaEstimada">
               <small>Vigencia: {{ vigenciaDiasMayorista }} días desde la emisión.</small>
             </div>
+            <div class="line-entry-field">
+              <label for="condicion-pago">Condición de pago</label>
+              <select id="condicion-pago" name="condicionPago" class="form-control" [(ngModel)]="proforma.condicionPago">
+                <option value="CONTADO">Contado (se cobra antes de entregar)</option>
+                <option value="CREDITO" [disabled]="!clienteConCredito">Crédito ({{ cliente.diasCredito || 0 }} días desde la entrega)</option>
+              </select>
+              <small *ngIf="!clienteConCredito">El cliente no tiene límite ni días de crédito: el pedido es de contado.</small>
+            </div>
             <div class="line-entry-field mayorista-observaciones">
               <label for="observaciones-generales">Observaciones del pedido</label>
               <textarea id="observaciones-generales" name="observaciones" class="form-control" rows="2"

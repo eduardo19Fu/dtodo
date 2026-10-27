@@ -21,6 +21,10 @@ public class EntregaSolicitudDto {
     /** Marcado: lo entregado ya se había descontado del inventario a mano, así que la entrega no lo descuenta. */
     private boolean descontadoAMano;
     private String observaciones;
+    /**
+     * Solo el administrador: entrega un pedido de contado aunque no esté cobrado. Queda anotado en las etapas del pedido.
+     */
+    private boolean entregarSinPago;
     private List<Linea> lineas = new ArrayList<>();
 
     @Data

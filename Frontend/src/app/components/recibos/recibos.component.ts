@@ -8,7 +8,9 @@ import { Sucursal } from '../../models/sucursal';
 import { AuthService } from '../../services/auth.service';
 import { ClienteService } from '../../services/cliente.service';
 import { ReciboCajaService } from '../../services/recibo-caja.service';
+import { SaldoService } from '../../services/saldo.service';
 import { SucursalService } from '../../services/sucursal.service';
+import { SaldoClienteDto } from '../../dtos/saldo-dto';
 
 import Swal from 'sweetalert2';
 
@@ -35,6 +37,9 @@ export class RecibosComponent implements OnInit, OnDestroy {
   busquedaCliente = '';
   clientesEncontrados: ClienteDto[] = [];
   clienteElegido: ClienteDto = null;
+  /** Estado de cuenta del cliente elegido, para ver su saldo y escoger el pedido al que paga. */
+  saldo: SaldoClienteDto = null;
+  idProformaElegida: number = null;
   monto: number = null;
   formaPago: FormaPagoRecibo = 'EFECTIVO';
   referencia = '';
@@ -67,7 +72,8 @@ export class RecibosComponent implements OnInit, OnDestroy {
     private reciboService: ReciboCajaService,
     private clienteService: ClienteService,
     private sucursalService: SucursalService,
-    public auth: AuthService
+    public auth: AuthService,
+    private saldoService: SaldoService
   ) { }
 
   ngOnInit(): void {
@@ -142,6 +148,8 @@ export class RecibosComponent implements OnInit, OnDestroy {
     this.busquedaCliente = '';
     this.clientesEncontrados = [];
     this.clienteElegido = null;
+    this.saldo = null;
+    this.idProformaElegida = null;
     this.monto = null;
     this.formaPago = 'EFECTIVO';
     this.referencia = '';
@@ -153,6 +161,8 @@ export class RecibosComponent implements OnInit, OnDestroy {
   onBuscarCliente(texto: string): void {
     this.busquedaCliente = texto;
     this.clienteElegido = null;
+    this.saldo = null;
+    this.idProformaElegida = null;
     this.clienteSubject.next((texto || '').trim());
   }
 
@@ -171,6 +181,24 @@ export class RecibosComponent implements OnInit, OnDestroy {
     this.clienteElegido = cliente;
     this.busquedaCliente = cliente.nombre;
     this.clientesEncontrados = [];
+    this.saldo = null;
+    this.idProformaElegida = null;
+    this.saldoService.cliente(cliente.idCliente).subscribe(saldo => {
+      if (this.clienteElegido && this.clienteElegido.idCliente === cliente.idCliente) {
+        this.saldo = saldo;
+      }
+    }, () => this.saldo = null);
+  }
+
+  /** Lo que falta cobrar de un pedido, para ofrecerlo como monto: lo entregado sin pagar o, si no se ha entregado, su total. */
+  sugerirMonto(idProforma: number): void {
+    const pedido = this.saldo && this.saldo.pedidos.find(p => p.idProforma === idProforma);
+    if (!pedido) {
+      return;
+    }
+    const porCobrar = pedido.condicionPago === 'CONTADO' && pedido.cobrado < pedido.total
+      ? Number(pedido.total) - Number(pedido.cobrado) : Number(pedido.pendiente);
+    this.monto = Math.max(0, Math.round(porCobrar * 100) / 100) || this.monto;
   }
 
   get pideReferencia(): boolean {
@@ -197,6 +225,7 @@ export class RecibosComponent implements OnInit, OnDestroy {
     }
     const solicitud: CrearReciboCajaDto = {
       idCliente: this.clienteElegido.idCliente,
+      idProforma: this.idProformaElegida || null,
       monto: Number(this.monto),
       formaPago: this.formaPago,
       referencia: this.referencia.trim() || null,

@@ -13,6 +13,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.Optional;
@@ -39,11 +40,16 @@ import xyz.pangosoft.dtodo.repository.IFacturaRepository;
 import xyz.pangosoft.dtodo.repository.IProformaEntregaRepository;
 import xyz.pangosoft.dtodo.repository.IProformaRepository;
 import xyz.pangosoft.dtodo.repository.ISucursalRepository;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import xyz.pangosoft.dtodo.model.enums.CondicionPagoEnum;
 import xyz.pangosoft.dtodo.service.IAmbitoVendedorService;
 import xyz.pangosoft.dtodo.service.IInventarioSucursalService;
 import xyz.pangosoft.dtodo.service.IMovimientoProductoService;
 import xyz.pangosoft.dtodo.service.IPedidoService;
 import xyz.pangosoft.dtodo.service.IProformaAuditoriaService;
+import xyz.pangosoft.dtodo.service.ISaldoClienteService;
 import xyz.pangosoft.dtodo.service.IUsuarioService;
 
 class EntregaPedidoServiceImplTest {
@@ -58,9 +64,10 @@ class EntregaPedidoServiceImplTest {
     private final IAmbitoVendedorService ambito = mock(IAmbitoVendedorService.class);
     private final IUsuarioService usuarioService = mock(IUsuarioService.class);
     private final IProformaAuditoriaService auditoria = mock(IProformaAuditoriaService.class);
+    private final ISaldoClienteService saldoService = mock(ISaldoClienteService.class);
     private final EntregaPedidoServiceImpl service = new EntregaPedidoServiceImpl(pedidoService, proformaRepository,
             entregaRepository, sucursalRepository, inventarioService, movimientoService, facturaRepository, ambito,
-            usuarioService, auditoria);
+            usuarioService, auditoria, saldoService);
 
     private final Sucursal central = Sucursal.builder().idSucursal(1).nombre("Central").build();
     private Proforma pedido;
@@ -91,6 +98,10 @@ class EntregaPedidoServiceImplTest {
         pedido.setNoProforma("123P");
         pedido.setEstadoPedido(EstadoPedidoEnum.EN_RUTA);
         pedido.setFechaEmision(new Date());
+        // Por defecto a crédito: la entrega no se condiciona al cobro. Las pruebas del contado lo cambian.
+        pedido.setCondicionPago(CondicionPagoEnum.CREDITO);
+        when(saldoService.valorEntregado(7L)).thenReturn(BigDecimal.ZERO);
+        when(saldoService.cobrado(7L)).thenReturn(BigDecimal.ZERO);
         cuadernos = linea(1L, 1, "CUADERNO", 10);
         reglas = linea(2L, 2, "REGLA", 5);
         pedido.getItemsProforma().add(cuadernos);
@@ -104,6 +115,7 @@ class EntregaPedidoServiceImplTest {
         DetalleProforma linea = new DetalleProforma();
         linea.setIdDetalle(idDetalle);
         linea.setCantidad(cantidad);
+        linea.setSubTotalDescuento(new BigDecimal(cantidad * 10 / (idDetalle == 1L ? 1 : 2)));
         linea.setProducto(Producto.builder().idProducto(idProducto).nombre(nombre).build());
         return linea;
     }
@@ -446,5 +458,87 @@ class EntregaPedidoServiceImplTest {
         assertThrows(NotFoundException.class, () -> service.registrar(7L, solicitud(1, 1)));
 
         verify(entregaRepository, never()).save(any());
+    }
+
+    // ------------------------------------------------------------------------------------------ cobro del contado
+
+    private void comoContado(String cobrado) {
+        pedido.setCondicionPago(CondicionPagoEnum.CONTADO);
+        when(saldoService.cobrado(7L)).thenReturn(new BigDecimal(cobrado));
+    }
+
+    private static void autenticar(String rol) {
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken("u", "x",
+                java.util.Collections.singletonList(new SimpleGrantedAuthority(rol))));
+    }
+
+    @org.junit.jupiter.api.AfterEach
+    void limpiarSeguridad() {
+        SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void unPedidoDeContadoSinCobrarNoSeEntrega() {
+        comoContado("0");
+
+        ReglaNegocioException error = assertThrows(ReglaNegocioException.class, () -> service.registrar(7L, solicitud(3, 2)));
+
+        assertTrue(error.getMessage().contains("falta cobrar Q40.00"), error.getMessage());
+        verify(entregaRepository, never()).save(any());
+    }
+
+    @Test
+    void unPedidoDeContadoCobradoSeEntregaYUnCobroParcialSoloCubreSuParte() {
+        comoContado("40.00");
+        service.registrar(7L, solicitud(3, 2));
+        verify(entregaRepository).save(any());
+
+        comoContado("39.99");
+        assertThrows(ReglaNegocioException.class, () -> service.registrar(7L, solicitud(3, 2)));
+    }
+
+    @Test
+    void loYaEntregadoCuentaContraLoCobrado() {
+        comoContado("50.00");
+        when(saldoService.valorEntregado(7L)).thenReturn(new BigDecimal("30.00"));
+
+        ReglaNegocioException error = assertThrows(ReglaNegocioException.class, () -> service.registrar(7L, solicitud(3, 2)));
+
+        assertTrue(error.getMessage().contains("falta cobrar Q20.00"), error.getMessage());
+    }
+
+    @Test
+    void soloElAdministradorEntregaSinCobroYQuedaAnotado() {
+        comoContado("0");
+        EntregaSolicitudDto sinPago = solicitud(3, 2);
+        sinPago.setEntregarSinPago(true);
+
+        autenticar("ROLE_BODEGA");
+        assertThrows(ReglaNegocioException.class, () -> service.registrar(7L, sinPago));
+
+        autenticar("ROLE_ADMIN");
+        service.registrar(7L, sinPago);
+
+        verify(entregaRepository).save(any());
+        verify(pedidoService).cambiarEstado(any(), any(), any(), org.mockito.ArgumentMatchers.contains("Entregado sin cobrar Q40.00"));
+    }
+
+    @Test
+    void elRepartidorNuncaEntregaSinCobro() {
+        comoContado("0");
+        when(ambito.esRepartidor()).thenReturn(true);
+        pedido.setSucursal(central);
+        EntregaSolicitudDto sinPago = solicitud(3, 2);
+        sinPago.setEntregarSinPago(true);
+        autenticar("ROLE_ADMIN");
+
+        assertThrows(ReglaNegocioException.class, () -> service.registrar(7L, sinPago));
+    }
+
+    @Test
+    void unPedidoACreditoNoSeCondicionaAlCobro() {
+        service.registrar(7L, solicitud(3, 2));
+
+        verify(saldoService, never()).cobrado(7L);
     }
 }

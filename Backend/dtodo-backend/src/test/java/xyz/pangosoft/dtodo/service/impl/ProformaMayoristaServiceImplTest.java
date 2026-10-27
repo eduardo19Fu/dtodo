@@ -186,4 +186,59 @@ class ProformaMayoristaServiceImplTest {
 
         assertEquals(false, proforma.isVencimientoAutorizado());
     }
+
+    // ------------------------------------------------------------------------------------------ condición de pago
+
+    private Cliente conCredito(String limite, Integer dias) {
+        Cliente cliente = cliente(TipoClienteEnum.MAYORISTA, new Ruta());
+        cliente.setLimiteCredito(limite == null ? null : new java.math.BigDecimal(limite));
+        cliente.setDiasCredito(dias);
+        return cliente;
+    }
+
+    @Test
+    void sinCondicionElPedidoEsDeContado() {
+        conCredito("5000", 30);
+        Proforma proforma = proforma(TipoProformaEnum.MAYORISTA);
+
+        service.preparar(proforma);
+
+        assertEquals(xyz.pangosoft.dtodo.model.enums.CondicionPagoEnum.CONTADO, proforma.getCondicionPago());
+        assertNull(proforma.getDiasCredito());
+    }
+
+    @Test
+    void aCreditoSoloConLimiteYDiasYGuardaLosDiasDelCliente() {
+        conCredito("5000", 30);
+        Proforma proforma = proforma(TipoProformaEnum.MAYORISTA);
+        proforma.setCondicionPago(xyz.pangosoft.dtodo.model.enums.CondicionPagoEnum.CREDITO);
+
+        service.preparar(proforma);
+
+        assertEquals(xyz.pangosoft.dtodo.model.enums.CondicionPagoEnum.CREDITO, proforma.getCondicionPago());
+        assertEquals(Integer.valueOf(30), proforma.getDiasCredito());
+    }
+
+    @Test
+    void aCreditoSinLimiteODiasSeRechaza() {
+        for (Object[] caso : new Object[][] { { null, 30 }, { "0", 30 }, { "5000", null }, { "5000", 0 }, { null, null } }) {
+            conCredito((String) caso[0], (Integer) caso[1]);
+            Proforma proforma = proforma(TipoProformaEnum.MAYORISTA);
+            proforma.setCondicionPago(xyz.pangosoft.dtodo.model.enums.CondicionPagoEnum.CREDITO);
+
+            assertThrows(ReglaNegocioException.class, () -> service.preparar(proforma), caso[0] + "/" + caso[1]);
+        }
+    }
+
+    @Test
+    void unaMinoristaSiempreEsDeContadoAunqueTraigaCredito() {
+        Proforma proforma = proforma(TipoProformaEnum.MINORISTA);
+        proforma.setCondicionPago(xyz.pangosoft.dtodo.model.enums.CondicionPagoEnum.CREDITO);
+        proforma.setDiasCredito(45);
+
+        service.preparar(proforma);
+
+        assertEquals(xyz.pangosoft.dtodo.model.enums.CondicionPagoEnum.CONTADO, proforma.getCondicionPago());
+        assertNull(proforma.getDiasCredito());
+    }
 }

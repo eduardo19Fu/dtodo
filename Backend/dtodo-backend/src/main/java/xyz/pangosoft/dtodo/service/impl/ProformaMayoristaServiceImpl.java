@@ -9,6 +9,7 @@ import xyz.pangosoft.dtodo.error.exceptions.ReglaNegocioException;
 import xyz.pangosoft.dtodo.model.Cliente;
 import xyz.pangosoft.dtodo.model.DetalleProforma;
 import xyz.pangosoft.dtodo.model.Proforma;
+import xyz.pangosoft.dtodo.model.enums.CondicionPagoEnum;
 import xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoClienteEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoDescuentoEnum;
@@ -62,8 +63,11 @@ public class ProformaMayoristaServiceImpl implements IProformaMayoristaService {
                         + "Para otro cliente use una proforma normal.");
             }
             proforma.setRuta(cliente.getRuta());
+            definirCondicionDePago(proforma, cliente);
         } else {
             proforma.setRuta(null);
+            proforma.setCondicionPago(CondicionPagoEnum.CONTADO);
+            proforma.setDiasCredito(null);
         }
         proforma.setTipoProforma(tipo);
         // La etapa del pedido la fija el servidor; nunca viene en la petición.
@@ -85,6 +89,26 @@ public class ProformaMayoristaServiceImpl implements IProformaMayoristaService {
                 }
             }
         }
+    }
+
+    /**
+     * Contado por defecto. A crédito solo si el cliente tiene límite y días de crédito; los días del cliente quedan en el
+     * pedido para que un cambio posterior no altere los plazos ya pactados.
+     */
+    static void definirCondicionDePago(Proforma proforma, Cliente cliente) {
+        CondicionPagoEnum condicion = proforma.getCondicionPago() == null ? CondicionPagoEnum.CONTADO : proforma.getCondicionPago();
+        if (condicion == CondicionPagoEnum.CREDITO) {
+            boolean conCredito = cliente.getLimiteCredito() != null && cliente.getLimiteCredito().signum() > 0
+                    && cliente.getDiasCredito() != null && cliente.getDiasCredito() > 0;
+            if (!conCredito) {
+                throw new ReglaNegocioException("El cliente " + cliente.getNombre()
+                        + " no tiene límite ni días de crédito: el pedido debe ser de contado.");
+            }
+            proforma.setDiasCredito(cliente.getDiasCredito());
+        } else {
+            proforma.setDiasCredito(null);
+        }
+        proforma.setCondicionPago(condicion);
     }
 
     /** Texto sin espacios sobrantes; vacío es nulo; más largo que el máximo se rechaza en lugar de cortarse. */

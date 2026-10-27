@@ -291,6 +291,8 @@ public class PedidoServiceImpl implements IPedidoService {
             dto.setIdRepartidor(proforma.getRepartidor().getIdUsuario());
             dto.setRepartidor(nombre(proforma.getRepartidor()));
         }
+        dto.setCondicionPago(proforma.getCondicionPago());
+        dto.setDiasCredito(proforma.getDiasCredito());
         dto.setObservaciones(proforma.getObservaciones());
         if (proforma.getItemsProforma() != null) {
             proforma.getItemsProforma().stream()

@@ -42,6 +42,27 @@
         <input type="date" id="fechaRecibo" class="form-control" [(ngModel)]="fechaPago" name="fechaPago" [max]="fechaPago">
       </div>
     </div>
+    <div class="saldo-cliente" *ngIf="saldo" role="status">
+      <div><span>Entregado</span><strong>{{saldo.entregado | currency: 'Q' : 'symbol'}}</strong></div>
+      <div><span>Abonado</span><strong>{{saldo.abonado | currency: 'Q' : 'symbol'}}</strong></div>
+      <div [class.a-favor]="saldo.saldo < 0">
+        <span>{{saldo.saldo < 0 ? 'A favor del cliente' : 'Saldo pendiente'}}</span>
+        <strong>{{(saldo.saldo < 0 ? -saldo.saldo : saldo.saldo) | currency: 'Q' : 'symbol'}}</strong>
+      </div>
+      <div *ngIf="saldo.limiteCredito != null">
+        <span>Crédito disponible</span><strong>{{saldo.disponible | currency: 'Q' : 'symbol'}} de {{saldo.limiteCredito | currency: 'Q' : 'symbol'}}</strong>
+      </div>
+    </div>
+    <div class="form-group" *ngIf="saldo">
+      <label for="pedidoRecibo">Paga a</label>
+      <select id="pedidoRecibo" class="form-control" [(ngModel)]="idProformaElegida" name="pedido" (ngModelChange)="sugerirMonto($event)">
+        <option [ngValue]="null">Abono a la cuenta (se aplica a lo más antiguo)</option>
+        <option *ngFor="let pedido of saldo.pedidos" [ngValue]="pedido.idProforma">
+          Pedido {{pedido.noProforma}} · {{pedido.condicionPago === 'CREDITO' ? 'crédito' : 'contado'}} · total {{pedido.total | currency: 'Q' : 'symbol'}} ·
+          cobrado {{pedido.cobrado | currency: 'Q' : 'symbol'}}<ng-container *ngIf="pedido.pendiente > 0"> · pendiente {{pedido.pendiente | currency: 'Q' : 'symbol'}}</ng-container>
+        </option>
+      </select>
+    </div>
     <div class="form-row">
       <div class="form-group col-md-3">
         <label for="formaRecibo">Forma de pago</label>

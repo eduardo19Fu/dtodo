@@ -7,6 +7,7 @@ import java.util.List;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import xyz.pangosoft.dtodo.model.enums.CondicionPagoEnum;
 import xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum;
 import xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum;
 
@@ -28,6 +29,8 @@ public class PedidoDetalleDto {
     private String vendedor;
     private EstadoPedidoEnum estadoPedido;
     private EstadoAutorizacionEnum estadoAutorizacion;
+    private CondicionPagoEnum condicionPago;
+    private Integer diasCredito;
     private Integer idRepartidor;
     private String repartidor;
     /** Observación general del pedido (cómo se empaca). */

@@ -11,6 +11,7 @@ describe('RecibosComponent', () => {
   let clientes: any;
   let sucursales: any;
   let auth: any;
+  let saldos: any;
   let component: RecibosComponent;
 
   function recibo(valores: Partial<ReciboCajaDto> = {}): ReciboCajaDto {
@@ -42,7 +43,8 @@ describe('RecibosComponent', () => {
     clientes = { getListado: jasmine.createSpy('getListado').and.returnValue(of({ content: [cliente()] })) };
     sucursales = { getSucursales: jasmine.createSpy('getSucursales').and.returnValue(of([])) };
     auth = { hasRole: (rol: string) => rol === 'ROLE_ADMIN' };
-    component = new RecibosComponent(recibos, clientes, sucursales, auth);
+    saldos = { cliente: jasmine.createSpy('cliente').and.returnValue(of({ idCliente: 5, saldo: 40, pedidos: [] })) };
+    component = new RecibosComponent(recibos, clientes, sucursales, auth, saldos);
     spyOn(window, 'open');
     spyOn(window.URL, 'createObjectURL').and.returnValue('blob:x');
   });
@@ -123,7 +125,7 @@ describe('RecibosComponent', () => {
     component.emitir();
 
     const enviado = recibos.emitir.calls.mostRecent().args[0];
-    expect(enviado).toEqual({ idCliente: 5, monto: 150, formaPago: 'TRANSFERENCIA', referencia: '998877', observaciones: null,
+    expect(enviado).toEqual({ idCliente: 5, idProforma: null, monto: 150, formaPago: 'TRANSFERENCIA', referencia: '998877', observaciones: null,
       fechaPago: '2026-10-20', idSucursal: 3 });
     expect(recibos.imprimir).toHaveBeenCalledWith(9);
     expect(component.formularioAbierto).toBeFalse();
@@ -172,5 +174,33 @@ describe('RecibosComponent', () => {
     component.imprimir(recibo());
 
     expect(window.open).toHaveBeenCalledWith('blob:x', '_blank');
+  });
+
+  it('al elegir el cliente trae su saldo y propone el monto del pedido de contado sin cobrar', () => {
+    saldos.cliente.and.returnValue(of({ idCliente: 5, saldo: 0, pedidos: [
+      { idProforma: 30, condicionPago: 'CONTADO', total: 500, cobrado: 200, pendiente: 0 },
+      { idProforma: 31, condicionPago: 'CREDITO', total: 900, cobrado: 0, pendiente: 120 }] }));
+
+    component.elegirCliente(cliente());
+    component.sugerirMonto(30);
+    expect(component.saldo.idCliente).toBe(5);
+    expect(component.monto).toBe(300);
+
+    component.sugerirMonto(31);
+    expect(component.monto).toBe(120);
+  });
+
+  it('manda el pedido elegido y lo olvida al cambiar de cliente', () => {
+    component.elegirCliente(cliente());
+    component.idProformaElegida = 30;
+    component.monto = 50;
+
+    component.emitir();
+    expect(recibos.emitir.calls.mostRecent().args[0].idProforma).toBe(30);
+
+    component.elegirCliente(cliente());
+    component.onBuscarCliente('otro');
+    expect(component.idProformaElegida).toBeNull();
+    expect(component.saldo).toBeNull();
   });
 });

@@ -111,6 +111,11 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
     return this.esClienteMayorista && !!this.cliente.ruta;
   }
 
+  /** El cliente puede comprar a crédito: tiene límite y días de crédito. */
+  get clienteConCredito(): boolean {
+    return !!this.cliente && Number(this.cliente.limiteCredito) > 0 && Number(this.cliente.diasCredito) > 0;
+  }
+
   readonly maxObservacionLinea = 255;
   readonly maxObservacionGeneral = 500;
   readonly vigenciaDiasMayorista = 15;
@@ -612,8 +617,11 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
       this.proforma.tipoProforma = 'MAYORISTA';
       this.proforma.observaciones = (this.proforma.observaciones || '').trim() || null;
       this.proforma.fechaEntregaEstimada = this.proforma.fechaEntregaEstimada || null;
+      // Sin crédito en el cliente el pedido es de contado, aunque antes se hubiera elegido crédito.
+      this.proforma.condicionPago = this.clienteConCredito && this.proforma.condicionPago === 'CREDITO' ? 'CREDITO' : 'CONTADO';
     } else {
       this.proforma.tipoProforma = 'MINORISTA';
+      this.proforma.condicionPago = 'CONTADO';
       this.proforma.observaciones = null;
       this.proforma.fechaEntregaEstimada = null;
       this.proforma.itemsProforma.forEach(item => item.observacion = null);
@@ -652,6 +660,8 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
           this.proforma.estadoPedido = response.estadoPedido;
           this.proforma.observaciones = response.observaciones;
           this.proforma.fechaEntregaEstimada = response.fechaEntregaEstimada;
+          this.proforma.condicionPago = response.condicionPago || 'CONTADO';
+          this.proforma.diasCredito = response.diasCredito;
           this.proforma.fechaVencimiento = response.fechaVencimiento;
 
 

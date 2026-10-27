@@ -160,7 +160,18 @@
         <div><span>Vendedor</span><strong>{{detalle.vendedor}}</strong></div>
         <div *ngIf="detalle.repartidor"><span>Piloto</span><strong>{{detalle.repartidor}}</strong></div>
         <div><span>Etapa</span><strong>{{etiquetaEstado(detalle.estadoPedido)}}</strong></div>
+        <div *ngIf="detalle.condicionPago">
+          <span>Pago</span>
+          <strong>
+            {{detalle.condicionPago === 'CREDITO' ? 'Crédito a ' + (detalle.diasCredito || 0) + ' días' : 'Contado'}}
+            <ng-container *ngIf="cobro"> · cobrado {{cobro.cobrado | currency: 'Q' : 'symbol'}}</ng-container>
+          </strong>
+        </div>
       </div>
+      <p *ngIf="cobro && faltaCobrar > 0" class="detalle-observacion falta-cobro">
+        <strong>Pedido de contado:</strong> falta cobrar {{faltaCobrar | currency: 'Q' : 'symbol'}} de lo entregado.
+        Emita un recibo de caja ligado a este pedido antes de entregar más.
+      </p>
 
       <p *ngIf="detalle.observaciones" class="detalle-observacion"><strong>Observaciones del pedido:</strong> {{detalle.observaciones}}</p>
 
@@ -230,6 +241,10 @@
           </table>
         </div>
 
+        <label class="entrega-casilla" *ngIf="esAdmin && detalle.condicionPago === 'CONTADO'">
+          <input type="checkbox" [(ngModel)]="entrega.entregarSinPago" name="entregaSinPago">
+          <span>Entregar aunque no esté cobrado (queda anotado en las etapas del pedido)</span>
+        </label>
         <label class="entrega-casilla" *ngIf="!esRepartidor">
           <input type="checkbox" [(ngModel)]="entrega.descontadoAMano" name="entregaMano">
           <span>El inventario de lo entregado ya se descontó a mano (la entrega no lo descontará otra vez)</span>

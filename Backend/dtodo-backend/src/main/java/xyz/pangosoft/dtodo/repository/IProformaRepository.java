@@ -21,6 +21,12 @@ import java.util.Optional;
 
 public interface IProformaRepository extends JpaRepository<Proforma, Long> {
 
+    /** Pedidos mayoristas vigentes (no anulados) de un cliente, del más antiguo al más reciente. */
+    @Query("select p from Proforma p where p.cliente.idCliente = :idCliente "
+            + "and p.tipoProforma = xyz.pangosoft.dtodo.model.enums.TipoProformaEnum.MAYORISTA "
+            + "and p.estadoPedido is not null and p.estado.estado <> 'ANULADO' order by p.idProforma")
+    List<Proforma> pedidosVigentesDelCliente(@Param("idCliente") Integer idCliente);
+
     /**
      * Factura que se muestra en el listado: la vigente (no anulada) y, si solo hubo anuladas, la última. Una
      * proforma puede tener varias facturas (anulada y reemitida); sin esto el listado repetiría la proforma.

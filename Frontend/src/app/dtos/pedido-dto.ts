@@ -82,6 +82,8 @@ export class EntregaSolicitudDto {
   entregadoPor?: string | null;
   descontadoAMano = false;
   observaciones?: string | null;
+  /** Entregar sin cobrar un pedido de contado: solo lo acepta el servidor si quien lo pide es administrador. */
+  entregarSinPago?: boolean;
   lineas: Array<{ idDetalle: number; cantidad: number }> = [];
 }
 
@@ -101,6 +103,8 @@ export class PedidoDetalleDto {
   estadoAutorizacion?: 'PENDIENTE' | 'APROBADA' | 'RECHAZADA' | null;
   idRepartidor?: number | null;
   repartidor?: string | null;
+  condicionPago?: 'CONTADO' | 'CREDITO' | null;
+  diasCredito?: number | null;
   observaciones?: string | null;
   /** Sucursal de la proforma: la que se propone para descontar el inventario. */
   idSucursal?: number | null;

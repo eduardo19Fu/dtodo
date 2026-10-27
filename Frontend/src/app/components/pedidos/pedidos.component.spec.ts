@@ -4,6 +4,12 @@ import { PedidoDetalleDto, PedidoDto } from '../../dtos/pedido-dto';
 import { PedidosComponent } from './pedidos.component';
 import Swal from 'sweetalert2';
 
+let saldoServicio: any;
+
+beforeEach(() => {
+  saldoServicio = { pedido: jasmine.createSpy('pedido').and.returnValue(of({ condicionPago: 'CONTADO', entregado: 100, cobrado: 40 })) };
+});
+
 describe('PedidosComponent', () => {
   let servicio: any;
   let component: PedidosComponent;
@@ -40,7 +46,7 @@ describe('PedidosComponent', () => {
       empaque: jasmine.createSpy('empaque').and.returnValue(of(new Blob(['x']))),
       notaEnvio: jasmine.createSpy('notaEnvio').and.returnValue(of(new Blob(['x'])))
     };
-    component = new PedidosComponent(servicio, auth('ROLE_BODEGA'));
+    component = new PedidosComponent(servicio, auth('ROLE_BODEGA'), saldoServicio);
   });
 
   it('agrupa los pedidos por ruta con sus unidades', () => {
@@ -93,11 +99,11 @@ describe('PedidosComponent', () => {
     expect(component.puedeAvanzar(pedido())).toBeTrue();
     expect(component.puedeRetroceder(pedido({ estadoPedido: 'EMPACADA' }))).toBeFalse();
 
-    const vendedor = new PedidosComponent(servicio, auth('ROLE_VENDEDOR'));
+    const vendedor = new PedidosComponent(servicio, auth('ROLE_VENDEDOR'), saldoServicio);
     expect(vendedor.puedeOperar).toBeFalse();
     expect(vendedor.puedeAvanzar(pedido())).toBeFalse();
 
-    const admin = new PedidosComponent(servicio, auth('ROLE_ADMIN'));
+    const admin = new PedidosComponent(servicio, auth('ROLE_ADMIN'), saldoServicio);
     expect(admin.puedeRetroceder(pedido({ estadoPedido: 'EMPACADA' }))).toBeTrue();
     expect(admin.puedeRetroceder(pedido({ estadoPedido: 'CONFIRMADA' }))).toBeFalse();
     expect(admin.puedeRetroceder(pedido({ estadoPedido: 'ENTREGADA' }))).toBeFalse();
@@ -150,7 +156,7 @@ describe('PedidosComponent', () => {
 
   it('retroceder pide el motivo y lo envía', async () => {
     responderSwal(' faltó un producto ');
-    component = new PedidosComponent(servicio, auth('ROLE_ADMIN'));
+    component = new PedidosComponent(servicio, auth('ROLE_ADMIN'), saldoServicio);
 
     component.retroceder(pedido({ estadoPedido: 'EMPACADA' }));
     await esperar();
@@ -229,7 +235,7 @@ describe('PedidosComponent - entrega', () => {
       anularEntrega: jasmine.createSpy('anularEntrega').and.returnValue(of(detalle())),
       cerrarConLoEntregado: jasmine.createSpy('cerrarConLoEntregado').and.returnValue(of(detalle({ estadoPedido: 'ENTREGADA' })))
     };
-    component = new PedidosComponent(servicio, auth('ROLE_BODEGA'));
+    component = new PedidosComponent(servicio, auth('ROLE_BODEGA'), saldoServicio);
     component.detalle = detalle();
   });
 
@@ -239,8 +245,8 @@ describe('PedidosComponent - entrega', () => {
     expect(component.puedeEntregar(pedido({ estadoPedido: 'EMPACADA' }))).toBeFalse();
     expect(component.puedeEntregar(pedido({ estadoPedido: 'ENTREGADA' }))).toBeFalse();
     expect(component.puedeEntregar(pedido({ estadoAutorizacion: 'PENDIENTE' }))).toBeFalse();
-    expect(new PedidosComponent(servicio, auth('ROLE_VENDEDOR')).puedeEntregar(pedido())).toBeTrue();
-    expect(new PedidosComponent(servicio, auth('ROLE_COBRADOR')).puedeEntregar(pedido())).toBeFalse();
+    expect(new PedidosComponent(servicio, auth('ROLE_VENDEDOR'), saldoServicio).puedeEntregar(pedido())).toBeTrue();
+    expect(new PedidosComponent(servicio, auth('ROLE_COBRADOR'), saldoServicio).puedeEntregar(pedido())).toBeFalse();
   });
 
   it('abrir la entrega propone la sucursal del pedido, hoy y todo lo pendiente', () => {
@@ -292,7 +298,8 @@ describe('PedidosComponent - entrega', () => {
     component.confirmarEntrega();
 
     expect(servicio.registrarEntrega).toHaveBeenCalledWith(7, {
-      idSucursal: 1, fechaEntrega: component.hoy, entregadoPor: 'David Aguilar', descontadoAMano: true, observaciones: null,
+      idSucursal: 1, fechaEntrega: component.hoy, entregadoPor: 'David Aguilar', descontadoAMano: true, entregarSinPago: false,
+      observaciones: null,
       lineas: [{ idDetalle: 1, cantidad: 4 }]
     });
     expect(component.registrandoEntrega).toBeFalse();
@@ -332,7 +339,7 @@ describe('PedidosComponent - entrega', () => {
   });
 
   it('el administrador anula una entrega y cierra un pedido parcial con motivo', async () => {
-    component = new PedidosComponent(servicio, auth('ROLE_ADMIN'));
+    component = new PedidosComponent(servicio, auth('ROLE_ADMIN'), saldoServicio);
     component.detalle = detalle({ estadoPedido: 'ENTREGADA_PARCIAL' });
     spyOn(Swal, 'fire').and.callFake(((opciones: any) => opciones && opciones.input
       ? Promise.resolve({ isConfirmed: true, value: ' se registró de más ' }) : Promise.resolve({ isConfirmed: true })) as any);
@@ -347,7 +354,7 @@ describe('PedidosComponent - entrega', () => {
   });
 
   it('si se cancela el motivo no se anula la entrega', async () => {
-    component = new PedidosComponent(servicio, auth('ROLE_ADMIN'));
+    component = new PedidosComponent(servicio, auth('ROLE_ADMIN'), saldoServicio);
     component.detalle = detalle();
     spyOn(Swal, 'fire').and.returnValue(Promise.resolve({ isConfirmed: false } as any));
 
@@ -396,7 +403,7 @@ describe('PedidosComponent - repartidor y piloto', () => {
   });
 
   it('cargar a ruta pide elegir el piloto y lo envía', async () => {
-    const component = new PedidosComponent(servicio, auth('ROLE_BODEGA'));
+    const component = new PedidosComponent(servicio, auth('ROLE_BODEGA'), saldoServicio);
     spyOn(Swal, 'fire').and.callFake(((opciones: any) => Promise.resolve({ isConfirmed: true, value: opciones.input === 'select' ? '22' : '' })) as any);
 
     component.avanzar(pedido());
@@ -407,7 +414,7 @@ describe('PedidosComponent - repartidor y piloto', () => {
   });
 
   it('si se cancela la elección del piloto el pedido no avanza', async () => {
-    const component = new PedidosComponent(servicio, auth('ROLE_BODEGA'));
+    const component = new PedidosComponent(servicio, auth('ROLE_BODEGA'), saldoServicio);
     spyOn(Swal, 'fire').and.returnValue(Promise.resolve({ isConfirmed: false } as any));
 
     component.avanzar(pedido());
@@ -418,7 +425,7 @@ describe('PedidosComponent - repartidor y piloto', () => {
 
   it('sin repartidores avisa y no avanza', async () => {
     servicio.repartidores.and.returnValue(of([]));
-    const component = new PedidosComponent(servicio, auth('ROLE_BODEGA'));
+    const component = new PedidosComponent(servicio, auth('ROLE_BODEGA'), saldoServicio);
     const fire = spyOn(Swal, 'fire').and.returnValue(Promise.resolve({ isConfirmed: true } as any));
 
     component.avanzar(pedido());
@@ -429,7 +436,7 @@ describe('PedidosComponent - repartidor y piloto', () => {
   });
 
   it('las demás etapas siguen sin pedir piloto', async () => {
-    const component = new PedidosComponent(servicio, auth('ROLE_BODEGA'));
+    const component = new PedidosComponent(servicio, auth('ROLE_BODEGA'), saldoServicio);
     spyOn(Swal, 'fire').and.returnValue(Promise.resolve({ isConfirmed: true, value: 'Irene' } as any));
 
     component.avanzar(pedido({ estadoPedido: 'CONFIRMADA' }));
@@ -440,11 +447,11 @@ describe('PedidosComponent - repartidor y piloto', () => {
   });
 
   it('bodega y el administrador cambian el piloto de un pedido en ruta', async () => {
-    const component = new PedidosComponent(servicio, auth('ROLE_BODEGA'));
+    const component = new PedidosComponent(servicio, auth('ROLE_BODEGA'), saldoServicio);
     expect(component.puedeCambiarPiloto(pedido({ estadoPedido: 'EN_RUTA' }))).toBeTrue();
     expect(component.puedeCambiarPiloto(pedido({ estadoPedido: 'ENTREGADA_PARCIAL' }))).toBeTrue();
     expect(component.puedeCambiarPiloto(pedido({ estadoPedido: 'EMPACADA' }))).toBeFalse();
-    expect(new PedidosComponent(servicio, auth('ROLE_REPARTIDOR')).puedeCambiarPiloto(pedido({ estadoPedido: 'EN_RUTA' }))).toBeFalse();
+    expect(new PedidosComponent(servicio, auth('ROLE_REPARTIDOR'), saldoServicio).puedeCambiarPiloto(pedido({ estadoPedido: 'EN_RUTA' }))).toBeFalse();
     spyOn(Swal, 'fire').and.callFake(((opciones: any) => Promise.resolve({ isConfirmed: true, value: '21' })) as any);
 
     component.cambiarPiloto(pedido({ estadoPedido: 'EN_RUTA' }));
@@ -454,7 +461,7 @@ describe('PedidosComponent - repartidor y piloto', () => {
   });
 
   it('el repartidor solo entrega: no opera etapas ni cambia el piloto ni retrocede', () => {
-    const component = new PedidosComponent(servicio, auth('ROLE_REPARTIDOR'));
+    const component = new PedidosComponent(servicio, auth('ROLE_REPARTIDOR'), saldoServicio);
     const enRuta = pedido({ estadoPedido: 'EN_RUTA' });
 
     expect(component.esRepartidor).toBeTrue();
@@ -466,7 +473,7 @@ describe('PedidosComponent - repartidor y piloto', () => {
   });
 
   it('el repartidor registra la entrega sin elegir sucursal ni usar la casilla', () => {
-    const component = new PedidosComponent(servicio, auth('ROLE_REPARTIDOR'));
+    const component = new PedidosComponent(servicio, auth('ROLE_REPARTIDOR'), saldoServicio);
     component.detalle = Object.assign(new PedidoDetalleDto(), { idProforma: 7, estadoPedido: 'EN_RUTA', idSucursal: 1,
       lineas: [{ idDetalle: 1, codigo: 'A', producto: 'CUADERNO', cantidad: 10, cantidadEntregada: 0, pendiente: 10 }], entregas: [] });
 
@@ -481,5 +488,46 @@ describe('PedidosComponent - repartidor y piloto', () => {
 
     expect(servicio.registrarEntrega).toHaveBeenCalledWith(7, jasmine.objectContaining({
       descontadoAMano: false, entregadoPor: null, lineas: [{ idDetalle: 1, cantidad: 10 }] }));
+  });
+
+  it('quien puede ver dinero consulta el cobro del pedido y bodega no', () => {
+    const admin = new PedidosComponent(servicio, auth('ROLE_ADMIN'), saldoServicio);
+    admin.verDetalle(pedido());
+    expect(saldoServicio.pedido).toHaveBeenCalledWith(7);
+    expect(admin.cobro.cobrado).toBe(40);
+
+    saldoServicio.pedido.calls.reset();
+    const bodega = new PedidosComponent(servicio, auth('ROLE_BODEGA'), saldoServicio);
+    bodega.verDetalle(pedido());
+    expect(saldoServicio.pedido).not.toHaveBeenCalled();
+    expect(bodega.cobro).toBeNull();
+  });
+
+  it('calcula lo que falta cobrar solo en un pedido de contado', () => {
+    const admin = new PedidosComponent(servicio, auth('ROLE_ADMIN'), saldoServicio);
+    admin.verDetalle(pedido());
+    expect(admin.faltaCobrar).toBe(60);
+
+    admin.cobro = { condicionPago: 'CREDITO', entregado: 100, cobrado: 0 } as any;
+    expect(admin.faltaCobrar).toBe(0);
+  });
+
+  it('solo el administrador manda entregar sin cobro', () => {
+    servicio.registrarEntrega = jasmine.createSpy('registrarEntrega').and.returnValue(of({ idProforma: 7, lineas: [], etapas: [] }));
+    const admin = new PedidosComponent(servicio, auth('ROLE_ADMIN'), saldoServicio);
+    const detalleAbierto = { idProforma: 7, lineas: [{ idDetalle: 1, producto: 'X', pendiente: 5 }] } as any;
+    admin.detalle = detalleAbierto;
+    admin.cantidades = { 1: 2 } as any;
+    admin.entrega = { idSucursal: 1, fechaEntrega: admin.hoy, entregadoPor: '', descontadoAMano: false, observaciones: '',
+      entregarSinPago: true };
+    admin.confirmarEntrega();
+    expect(servicio.registrarEntrega.calls.mostRecent().args[1].entregarSinPago).toBeTrue();
+
+    const bodega = new PedidosComponent(servicio, auth('ROLE_BODEGA'), saldoServicio);
+    bodega.detalle = detalleAbierto;
+    bodega.cantidades = { 1: 2 } as any;
+    bodega.entrega = { ...admin.entrega };
+    bodega.confirmarEntrega();
+    expect(servicio.registrarEntrega.calls.mostRecent().args[1].entregarSinPago).toBeFalse();
   });
 });

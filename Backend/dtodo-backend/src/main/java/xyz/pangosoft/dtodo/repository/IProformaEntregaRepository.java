@@ -25,6 +25,24 @@ public interface IProformaEntregaRepository extends JpaRepository<ProformaEntreg
     List<Object[]> entregadoDelPeriodo(@Param("tipo") TipoProformaEnum tipo, @Param("desde") LocalDate desde,
                                        @Param("hasta") LocalDate hasta);
 
+    /**
+     * Lo entregado en los pedidos mayoristas vigentes de un cliente, una fila por línea entregada: pedido, unidades
+     * entregadas, importe con descuento de la línea, unidades de la línea y fecha de entrega. Las entregas anuladas no cuentan.
+     */
+    @Query("select p.idProforma, ed.cantidad, l.subTotalDescuento, l.cantidad, e.fechaEntrega " +
+            "from ProformaEntrega e, ProformaEntregaDetalle ed, DetalleProforma l, Proforma p " +
+            "where ed.entrega = e and l.idDetalle = ed.idDetalle and p.idProforma = e.idProforma " +
+            "and e.anulada = false and p.tipoProforma = xyz.pangosoft.dtodo.model.enums.TipoProformaEnum.MAYORISTA " +
+            "and p.estado.estado <> 'ANULADO' and p.cliente.idCliente = :idCliente")
+    List<Object[]> entregadoDelCliente(@Param("idCliente") Integer idCliente);
+
+    /** Lo mismo para un solo pedido (para saber si ya está cobrado lo que se va a entregar). */
+    @Query("select p.idProforma, ed.cantidad, l.subTotalDescuento, l.cantidad, e.fechaEntrega " +
+            "from ProformaEntrega e, ProformaEntregaDetalle ed, DetalleProforma l, Proforma p " +
+            "where ed.entrega = e and l.idDetalle = ed.idDetalle and p.idProforma = e.idProforma " +
+            "and e.anulada = false and p.idProforma = :idProforma")
+    List<Object[]> entregadoDelPedido(@Param("idProforma") Long idProforma);
+
     /** Entregas de un pedido, de la más antigua a la más reciente (incluye las anuladas). */
     List<ProformaEntrega> findByIdProformaOrderByFechaRegistroAscIdEntregaAsc(Long idProforma);
 }
