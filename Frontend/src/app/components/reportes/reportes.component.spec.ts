@@ -4,10 +4,10 @@ import Swal from 'sweetalert2';
 import { ReportesComponent } from './reportes.component';
 
 describe('ReportesComponent', () => {
-  it('incluye los 22 reportes aprobados en el catálogo', () => {
+  it('incluye los 23 reportes aprobados en el catálogo', () => {
     const auth: any = { usuario: {}, hasRole: () => true };
     const component = new ReportesComponent(auth, {} as any);
-    expect(component.reportes.length).toBe(22);
+    expect(component.reportes.length).toBe(23);
   });
 
   it('no permite generar con un rango invertido', () => {
@@ -165,9 +165,9 @@ describe('ReportesComponent', () => {
       const mayoristas = component.reportes.filter(reporte => reporte.categoria === 'MAYORISTAS');
 
       expect(mayoristas.map(reporte => reporte.codigo)).toEqual(
-        ['MAYORISTAS_CLIENTES_RUTA', 'MAYORISTAS_SIN_COMPRAS', 'MAYORISTAS_PROFORMAS_VENDEDOR']);
+        ['MAYORISTAS_CLIENTES_RUTA', 'MAYORISTAS_SIN_COMPRAS', 'MAYORISTAS_PROFORMAS_VENDEDOR', 'MAYORISTAS_ENTREGADO']);
       expect(mayoristas.every(reporte => reporte.roles.length === 1 && reporte.roles[0] === 'ROLE_ADMIN')).toBeTrue();
-      expect(component.reportesPorCategoria('MAYORISTAS').length).toBe(3);
+      expect(component.reportesPorCategoria('MAYORISTAS').length).toBe(4);
 
       const cobrador: any = { usuario: {}, hasRole: (rol: string) => rol === 'ROLE_COBRADOR' };
       expect(new ReportesComponent(cobrador, {} as any).reportesPorCategoria('MAYORISTAS').length).toBe(0);
@@ -193,6 +193,31 @@ describe('ReportesComponent', () => {
 
       component.fechaFin = '2026-10-31';
       expect(component.puedeGenerar()).toBeTrue();
+    });
+
+    it('ventas entregadas pide período y deja la ruta y el vendedor opcionales', () => {
+      const servicio: any = {
+        listarRutasSelector: jasmine.createSpy('listarRutasSelector').and.returnValue(of([])),
+        listarUsuariosProformasSelector: jasmine.createSpy('listarUsuariosProformasSelector').and.returnValue(of([{ valor: 2, etiqueta: 'Luis Perez' }])),
+        generar: jasmine.createSpy('generar').and.returnValue(throwError({ error: { message: 'x' } }))
+      };
+      const component = new ReportesComponent(admin, servicio);
+      const reporte = component.reportes.find(item => item.codigo === 'MAYORISTAS_ENTREGADO');
+
+      component.seleccionarReporte(reporte);
+      expect(component.requiereFiltro('VENDEDOR_OPCIONAL')).toBeTrue();
+      expect(servicio.listarUsuariosProformasSelector).toHaveBeenCalled();
+      expect(component.opcionesUsuario.length).toBe(1);
+
+      component.fechaInicio = '2026-10-01';
+      component.fechaFin = '2026-10-31';
+      component.idUsuario = null;
+      expect(component.puedeGenerar()).toBeTrue();
+
+      spyOn(Swal, 'fire');
+      component.idUsuario = 2;
+      component.generar();
+      expect(servicio.generar).toHaveBeenCalledWith('MAYORISTAS_ENTREGADO', jasmine.objectContaining({ idUsuario: 2 }));
     });
 
     it('al elegir el reporte carga las rutas una sola vez y envía la ruta al generarlo', () => {

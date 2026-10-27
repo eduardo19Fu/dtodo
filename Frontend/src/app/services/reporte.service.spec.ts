@@ -56,4 +56,15 @@ describe('ReporteService - mayoristas', () => {
       { valor: 3, etiqueta: 'RUTA 3', detalle: 'Sin vendedor' }
     ]);
   });
+
+  it('ventas entregadas envía período, ruta y vendedor', () => {
+    service.generar('MAYORISTAS_ENTREGADO',
+      { fechaInicio: '2026-10-01', fechaFin: '2026-10-31', idRuta: 3, idUsuario: 2, formato: 'XLSX' }).subscribe();
+
+    const req = http.expectOne(r => r.url === `${global.url}/reportes/mayoristas/entregado`);
+    expect(req.request.params.get('idRuta')).toBe('3');
+    expect(req.request.params.get('idUsuario')).toBe('2');
+    expect(req.request.params.get('formato')).toBe('XLSX');
+    req.flush(new Blob());
+  });
 });

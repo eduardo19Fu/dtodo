@@ -103,8 +103,9 @@ class VendedorSeguridadTest {
 
     @Test
     void losReportesDeMayoristasSonSoloDelAdministrador() {
-        niegaAlVendedor(ReporteMayoristasApiController.class, "clientesPorRuta", "clientesSinCompras", "proformasPorVendedor");
-        for (String metodo : new String[] { "clientesPorRuta", "clientesSinCompras", "proformasPorVendedor" }) {
+        niegaAlVendedor(ReporteMayoristasApiController.class, "clientesPorRuta", "clientesSinCompras", "proformasPorVendedor",
+                "entregadoPorRutaYVendedor");
+        for (String metodo : new String[] { "clientesPorRuta", "clientesSinCompras", "proformasPorVendedor", "entregadoPorRutaYVendedor" }) {
             assertTrue(roles(ReporteMayoristasApiController.class, metodo).equals(Arrays.asList("ROLE_ADMIN")),
                     metodo + " es solo del administrador");
         }

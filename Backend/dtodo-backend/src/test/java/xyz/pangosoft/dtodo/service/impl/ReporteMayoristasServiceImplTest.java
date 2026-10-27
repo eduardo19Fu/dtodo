@@ -19,7 +19,8 @@ class ReporteMayoristasServiceImplTest {
 
     private final DataSource dataSource = mock(DataSource.class);
     private final ReporteMayoristasServiceImpl service =
-            new ReporteMayoristasServiceImpl(dataSource, mock(IRutaRepository.class));
+            new ReporteMayoristasServiceImpl(dataSource, mock(IRutaRepository.class),
+                    mock(xyz.pangosoft.dtodo.repository.IUsuarioRepository.class));
 
     @Test
     void elFormatoPorOmisionEsPdfYSoloSeAceptanPdfYXlsx() {
@@ -53,6 +54,10 @@ class ReporteMayoristasServiceImplTest {
         assertThrows(BadRequestException.class, () -> service.clientesPorRuta(1, "CSV"));
         assertThrows(BadRequestException.class, () -> service.clientesSinCompras(1, "2026-10-31", "2026-10-01", "PDF"));
         assertThrows(BadRequestException.class, () -> service.proformasPorVendedor(-5, "2026-10-01", "2026-10-31", "PDF"));
+
+        assertThrows(BadRequestException.class, () -> service.entregadoPorRutaYVendedor(null, 0, "2026-10-01", "2026-10-31", "PDF"));
+        assertThrows(BadRequestException.class, () -> service.entregadoPorRutaYVendedor(null, null, null, "2026-10-31", "PDF"));
+        assertThrows(BadRequestException.class, () -> service.entregadoPorRutaYVendedor(null, null, "2026-10-01", "2026-10-31", "CSV"));
 
         verifyNoInteractions(dataSource);
     }

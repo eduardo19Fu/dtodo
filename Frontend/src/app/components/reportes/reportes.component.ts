@@ -98,7 +98,10 @@ export class ReportesComponent implements OnInit, OnDestroy {
       ['FECHAS', 'RUTA'], ['ROLE_ADMIN'], true),
     this.reporte('MAYORISTAS_PROFORMAS_VENDEDOR', 'MAYORISTAS', 'Proformas por vendedor',
       'Proformas mayoristas generadas frente a las facturadas por cada vendedor.', 'fa-people-carry', ['PDF', 'XLSX'],
-      ['FECHAS', 'RUTA'], ['ROLE_ADMIN'], true)
+      ['FECHAS', 'RUTA'], ['ROLE_ADMIN'], true),
+    this.reporte('MAYORISTAS_ENTREGADO', 'MAYORISTAS', 'Ventas entregadas',
+      'Lo entregado a los clientes por ruta y vendedor, a precio de línea; una entrega parcial suma solo lo entregado.', 'fa-truck', ['PDF', 'XLSX'],
+      ['FECHAS', 'RUTA', 'VENDEDOR_OPCIONAL'], ['ROLE_ADMIN'], true)
   ];
 
   busquedaReportes = '';
@@ -222,7 +225,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
     if (reporte.filtros.includes('BODEGA') || reporte.filtros.includes('BODEGA_OPCIONAL')) {
       this.cargarBodegas();
     }
-    if (reporte.filtros.includes('USUARIO')) {
+    if (reporte.filtros.includes('USUARIO') || reporte.filtros.includes('VENDEDOR_OPCIONAL')) {
       this.cargarUsuarios(reporte.codigo);
     }
     if (reporte.filtros.includes('PROVEEDOR')) {
@@ -454,7 +457,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
   }
 
   private cargarUsuarios(codigo: string): void {
-    const esProformas = codigo === 'PROFORMAS_EMITIDAS' || codigo === 'CONVERSION_PROFORMAS';
+    const esProformas = codigo === 'PROFORMAS_EMITIDAS' || codigo === 'CONVERSION_PROFORMAS' || codigo === 'MAYORISTAS_ENTREGADO';
     const clave = codigo === 'CONVERSION_PROFORMAS'
       ? `proformas-${this.idSucursal || 'todas'}`
       : esProformas ? 'proformas' : `cajeros-${this.idSucursal || 'todas'}`;

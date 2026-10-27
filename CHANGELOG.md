@@ -6,6 +6,16 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Reporte de ventas entregadas por ruta y vendedor (Fase 2C)
+
+Cierra la Fase 2. Solo lectura, para el administrador, sin script SQL.
+
+- **Qué cuenta**: lo que realmente se entregó al cliente. Cada unidad entregada vale lo que cuesta en su línea del pedido, con descuento (`sub_total_descuento / cantidad`); una entrega parcial suma solo lo entregado, una entrega anulada no cuenta, y el período se toma por la **fecha real de entrega**, no por la de registro ni la de emisión. Solo pedidos mayoristas.
+- **Formato**: un solo reporte agrupado por ruta y, dentro de cada ruta, por vendedor, con pedidos, unidades y valor entregado, subtotal por ruta y total general. Filtros de período, ruta y vendedor (opcionales); PDF y Excel. En *Reportes*, categoría Mayoristas, "Ventas entregadas". `GET /api/reportes/mayoristas/entregado`, solo `ROLE_ADMIN`.
+- **Base de las comisiones**: la Fase 3 usará estos mismos datos (monto entregado por vendedor).
+- **Pruebas**: `EntregadoPorRutaVendedorReporteTest` ejecuta la consulta real contra H2 con entregas parciales, anuladas, de otro mes y de una proforma minorista; la consulta también se corrió contra MySQL. Más casos en la validación de filtros, la matriz de roles y los specs de reportes.
+- **A tener presente**: el valor sale del importe de línea del pedido guardado; una proforma anterior cuyo importe de línea se guardó con otra semántica (ver las líneas de proforma históricas con `sub_total` inconsistente) se valoraría mal. Los pedidos mayoristas son nuevos y no tienen ese problema.
+
 ### Agregado — Rol Repartidor y piloto del pedido (Fase 2C)
 
 Los pilotos entran con su propio usuario, ven solo los pedidos que se les asignaron y registran la entrega. Los reportes de lo entregado son el siguiente paso de la 2C.

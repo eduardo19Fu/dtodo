@@ -32,6 +32,7 @@ import net.sf.jasperreports.export.SimpleXlsxReportConfiguration;
 import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
 import xyz.pangosoft.dtodo.error.exceptions.ReportGenerationException;
 import xyz.pangosoft.dtodo.repository.IRutaRepository;
+import xyz.pangosoft.dtodo.repository.IUsuarioRepository;
 import xyz.pangosoft.dtodo.service.IReporteMayoristasService;
 
 @Service
@@ -42,11 +43,13 @@ public class ReporteMayoristasServiceImpl implements IReporteMayoristasService {
     static final String PLANTILLA_CLIENTES_RUTA = "/reports/mayoristas_clientes_ruta.jrxml";
     static final String PLANTILLA_SIN_COMPRAS = "/reports/mayoristas_clientes_sin_compras.jrxml";
     static final String PLANTILLA_PROFORMAS_VENDEDOR = "/reports/mayoristas_proformas_vendedor.jrxml";
+    static final String PLANTILLA_ENTREGADO = "/reports/mayoristas_entregado_ruta_vendedor.jrxml";
 
     private static final DateTimeFormatter FECHA_VISIBLE = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private final DataSource dataSource;
     private final IRutaRepository rutaRepository;
+    private final IUsuarioRepository usuarioRepository;
 
     @Override
     public byte[] clientesPorRuta(Integer idRuta, String formato) {
@@ -74,6 +77,23 @@ public class ReporteMayoristasServiceImpl implements IReporteMayoristasService {
         Map<String, Object> parametros = parametrosBase(idRuta, formatoValido);
         agregarPeriodo(parametros, rango);
         return generar(PLANTILLA_PROFORMAS_VENDEDOR, parametros, formatoValido, "Proformas por vendedor");
+    }
+
+    @Override
+    public byte[] entregadoPorRutaYVendedor(Integer idRuta, Integer idVendedor, String fechaInicio, String fechaFin, String formato) {
+        String formatoValido = validarFormato(formato);
+        validarRuta(idRuta);
+        if (idVendedor != null && idVendedor <= 0) {
+            throw new BadRequestException("El vendedor seleccionado no es válido.", null);
+        }
+        LocalDate[] rango = validarRango(fechaInicio, fechaFin);
+        Map<String, Object> parametros = parametrosBase(idRuta, formatoValido);
+        agregarPeriodo(parametros, rango);
+        parametros.put("ID_VENDEDOR", idVendedor);
+        parametros.put("VENDEDOR", idVendedor == null ? "Todos los vendedores"
+                : usuarioRepository.findById(idVendedor).map(usuario -> ((usuario.getPrimerNombre() == null ? "" : usuario.getPrimerNombre()) + " "
+                        + (usuario.getApellido() == null ? "" : usuario.getApellido())).trim()).orElse("Vendedor #" + idVendedor));
+        return generar(PLANTILLA_ENTREGADO, parametros, formatoValido, "Ventas entregadas");
     }
 
     private Map<String, Object> parametrosBase(Integer idRuta, String formato) {

@@ -133,6 +133,12 @@
           (despliegueChange)="alCambiarDespliegueSelector()">
         </app-reporte-selector>
 
+        <app-reporte-selector *ngIf="requiereFiltro('VENDEDOR_OPCIONAL')" etiqueta="Vendedor" icono="fa-user-tie"
+          [opciones]="opcionesUsuario" [(valor)]="idUsuario" textoVacio="Todos los vendedores"
+          detalleVacio="Sin filtro de vendedor" placeholderBusqueda="Buscar vendedor"
+          (despliegueChange)="alCambiarDespliegueSelector()">
+        </app-reporte-selector>
+
         <app-reporte-selector *ngIf="requiereFiltro('RUTA')" etiqueta="Ruta" icono="fa-route"
           [opciones]="opcionesRuta" [(valor)]="idRuta" textoVacio="Todas las rutas"
           detalleVacio="Sin filtro de ruta" placeholderBusqueda="Buscar ruta o vendedor"

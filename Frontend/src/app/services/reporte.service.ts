@@ -114,6 +114,8 @@ export class ReporteService {
         return { ruta: 'mayoristas/clientes-ruta', incluirUsuario: false, incluirOpciones: true };
       case 'MAYORISTAS_SIN_COMPRAS':
         return { ruta: 'mayoristas/clientes-sin-compras', incluirUsuario: false, incluirOpciones: true };
+      case 'MAYORISTAS_ENTREGADO':
+        return { ruta: 'mayoristas/entregado', incluirUsuario: true, incluirOpciones: true };
       case 'MAYORISTAS_PROFORMAS_VENDEDOR':
         return { ruta: 'mayoristas/proformas-vendedor', incluirUsuario: false, incluirOpciones: true };
       default:

@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Ventas entregadas por ruta y vendedor. Plantilla escrita a mano en formato JasperReports 6.x; no abrir ni guardar con Jaspersoft Studio 7,
+     que cambia el formato y la librería del proyecto no lo entiende. -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="mayoristas_entregado_ruta_vendedor" pageWidth="842" pageHeight="595" orientation="Landscape"
+              whenNoDataType="AllSectionsNoDetail" columnWidth="802" leftMargin="20" rightMargin="20"
+              topMargin="18" bottomMargin="18" isSummaryWithPageHeaderAndFooter="true"
+              uuid="a4d17c93-0b6e-4e52-9f38-2c5a8e1b7d04">
+    <property name="net.sf.jasperreports.export.xlsx.detect.cell.type" value="true"/>
+    <property name="net.sf.jasperreports.export.xlsx.remove.empty.space.between.rows" value="true"/>
+    <property name="net.sf.jasperreports.export.xlsx.white.page.background" value="false"/>
+
+    <style name="Base" isDefault="true" fontName="DejaVu Sans" fontSize="8" forecolor="#23344D"/>
+    <style name="Header" style="Base" mode="Opaque" backcolor="#1769D2" forecolor="#FFFFFF"
+           fontSize="8" isBold="true" vTextAlign="Middle"/>
+    <style name="Cell" style="Base" mode="Opaque" backcolor="#FFFFFF" vTextAlign="Middle">
+        <box><pen lineWidth="0.35" lineColor="#D9E3EF"/></box>
+    </style>
+    <style name="AlertCell" style="Cell" forecolor="#B42318" isBold="true"/>
+    <style name="GroupCell" style="Base" mode="Opaque" backcolor="#E8F0FB" forecolor="#17233B" isBold="true" vTextAlign="Middle"/>
+
+    <parameter name="ID_RUTA" class="java.lang.Integer"/>
+    <parameter name="RUTA" class="java.lang.String"/>
+    <parameter name="ID_VENDEDOR" class="java.lang.Integer"/>
+    <parameter name="VENDEDOR" class="java.lang.String"/>
+    <parameter name="FECHA_INICIO" class="java.sql.Timestamp"/>
+    <parameter name="FECHA_FIN_EXCLUSIVA" class="java.sql.Timestamp"/>
+    <parameter name="RANGO" class="java.lang.String"/>
+    <parameter name="FORMATO" class="java.lang.String"/>
+
+    <queryString language="SQL"><![CDATA[
+        SELECT COALESCE(r.nombre, 'Sin ruta') AS ruta,
+               TRIM(CONCAT(COALESCE(u.primer_nombre, ''), ' ', COALESCE(u.apellido, ''))) AS vendedor,
+               COUNT(DISTINCT p.id_proforma) AS pedidos,
+               CAST(SUM(ed.cantidad) AS SIGNED) AS unidades,
+               COALESCE(SUM(ed.cantidad * (l.sub_total_descuento / NULLIF(l.cantidad, 0))), 0) AS valor_entregado
+          FROM proformas_entregas e
+          INNER JOIN proformas_entregas_detalle ed ON ed.id_entrega = e.id_entrega
+          INNER JOIN proformas_detalle l ON l.id_detalle = ed.id_detalle
+          INNER JOIN proformas p ON p.id_proforma = e.id_proforma
+          INNER JOIN usuarios u ON u.id_usuario = p.id_usuario
+          LEFT JOIN rutas r ON r.id_ruta = p.id_ruta
+         WHERE e.anulada = 0
+           AND p.tipo_proforma = 'MAYORISTA'
+           AND p.id_estado != 4
+           AND e.fecha_entrega >= CAST($P{FECHA_INICIO} AS DATE)
+           AND e.fecha_entrega < CAST($P{FECHA_FIN_EXCLUSIVA} AS DATE)
+           AND ($P{ID_RUTA} IS NULL OR p.id_ruta = $P{ID_RUTA})
+           AND ($P{ID_VENDEDOR} IS NULL OR p.id_usuario = $P{ID_VENDEDOR})
+         GROUP BY r.id_ruta, r.nombre, u.id_usuario, u.primer_nombre, u.apellido
+         ORDER BY r.nombre, vendedor
+    ]]></queryString>
+
+    <field name="ruta" class="java.lang.String"/>
+    <field name="vendedor" class="java.lang.String"/>
+    <field name="pedidos" class="java.lang.Long"/>
+    <field name="unidades" class="java.lang.Long"/>
+    <field name="valor_entregado" class="java.math.BigDecimal"/>
+
+    <variable name="TOTAL_PEDIDOS" class="java.lang.Long" calculation="Sum">
+        <variableExpression><![CDATA[$F{pedidos}]]></variableExpression>
+        <initialValueExpression><![CDATA[Long.valueOf(0)]]></initialValueExpression>
+    </variable>
+    <variable name="TOTAL_UNIDADES" class="java.lang.Long" calculation="Sum">
+        <variableExpression><![CDATA[$F{unidades}]]></variableExpression>
+        <initialValueExpression><![CDATA[Long.valueOf(0)]]></initialValueExpression>
+    </variable>
+    <variable name="TOTAL_VALOR" class="java.math.BigDecimal" calculation="Sum">
+        <variableExpression><![CDATA[$F{valor_entregado}]]></variableExpression>
+        <initialValueExpression><![CDATA[java.math.BigDecimal.ZERO]]></initialValueExpression>
+    </variable>
+    <variable name="PEDIDOS_RUTA" class="java.lang.Long" resetType="Group" resetGroup="ruta" calculation="Sum">
+        <variableExpression><![CDATA[$F{pedidos}]]></variableExpression>
+        <initialValueExpression><![CDATA[Long.valueOf(0)]]></initialValueExpression>
+    </variable>
+    <variable name="UNIDADES_RUTA" class="java.lang.Long" resetType="Group" resetGroup="ruta" calculation="Sum">
+        <variableExpression><![CDATA[$F{unidades}]]></variableExpression>
+        <initialValueExpression><![CDATA[Long.valueOf(0)]]></initialValueExpression>
+    </variable>
+    <variable name="VALOR_RUTA" class="java.math.BigDecimal" resetType="Group" resetGroup="ruta" calculation="Sum">
+        <variableExpression><![CDATA[$F{valor_entregado}]]></variableExpression>
+        <initialValueExpression><![CDATA[java.math.BigDecimal.ZERO]]></initialValueExpression>
+    </variable>
+
+    <group name="ruta">
+        <groupExpression><![CDATA[$F{ruta}]]></groupExpression>
+        <groupHeader>
+            <band height="22">
+                <textField isBlankWhenNull="true">
+                    <reportElement style="GroupCell" x="0" y="2" width="802" height="20"/>
+                    <textElement><font size="9"/><paragraph leftIndent="6"/></textElement>
+                    <textFieldExpression><![CDATA["Ruta: " + $F{ruta}]]></textFieldExpression>
+                </textField>
+            </band>
+        </groupHeader>
+        <groupFooter>
+            <band height="20">
+                <textField pattern="#,##0">
+                    <reportElement x="300" y="3" width="120" height="14" forecolor="#53647A"/>
+                    <textElement textAlignment="Right"><font size="8" isBold="true"/></textElement>
+                    <textFieldExpression><![CDATA[$V{PEDIDOS_RUTA}]]></textFieldExpression>
+                </textField>
+                <textField pattern="#,##0">
+                    <reportElement x="420" y="3" width="150" height="14" forecolor="#53647A"/>
+                    <textElement textAlignment="Right"><font size="8" isBold="true"/></textElement>
+                    <textFieldExpression><![CDATA[$V{UNIDADES_RUTA}]]></textFieldExpression>
+                </textField>
+                <textField pattern="Q #,##0.00">
+                    <reportElement x="570" y="3" width="232" height="14" forecolor="#17233B"/>
+                    <textElement textAlignment="Right"><font size="8" isBold="true"/></textElement>
+                    <textFieldExpression><![CDATA[$V{VALOR_RUTA}]]></textFieldExpression>
+                </textField>
+                <staticText>
+                    <reportElement x="0" y="3" width="300" height="14" forecolor="#53647A"/>
+                    <textElement textAlignment="Right"><font size="8" isBold="true"/></textElement>
+                    <text><![CDATA[Subtotal de la ruta:]]></text>
+                </staticText>
+            </band>
+        </groupFooter>
+    </group>
+
+    <title>
+        <band height="72">
+            <rectangle radius="8">
+                <reportElement x="90" y="0" width="712" height="48" forecolor="#1769D2" backcolor="#1769D2"/>
+            </rectangle>
+            <image scaleImage="RetainShape" hAlign="Center">
+                <reportElement x="0" y="0" width="72" height="48"/>
+                <imageExpression><![CDATA[this.getClass().getResourceAsStream("/static/images/reports-image/logo-dtodo.jpg")]]></imageExpression>
+            </image>
+            <staticText>
+                <reportElement x="90" y="0" width="478" height="24" forecolor="#FFFFFF"
+                               backcolor="#1769D2" mode="Opaque"/>
+                <textElement verticalAlignment="Middle"><font size="16" isBold="true"/><paragraph leftIndent="18"/></textElement>
+                <text><![CDATA[Ventas entregadas por ruta y vendedor]]></text>
+            </staticText>
+            <textField isBlankWhenNull="true">
+                <reportElement x="90" y="24" width="478" height="24" forecolor="#DCEBFF"
+                               backcolor="#1769D2" mode="Opaque"/>
+                <textElement verticalAlignment="Middle"><font size="8"/><paragraph leftIndent="18"/></textElement>
+                <textFieldExpression><![CDATA[$P{RANGO} + " · " + ($P{RUTA} == null ? "todas las rutas" : $P{RUTA}) + " · " + ($P{VENDEDOR} == null ? "todos los vendedores" : $P{VENDEDOR})]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="568" y="0" width="234" height="24" forecolor="#FFFFFF"
+                               backcolor="#1769D2" mode="Opaque"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/><paragraph rightIndent="18"/></textElement>
+                <textFieldExpression><![CDATA[$P{RUTA}]]></textFieldExpression>
+            </textField>
+            <textField pattern="dd/MM/yyyy HH:mm">
+                <reportElement x="568" y="24" width="234" height="24" forecolor="#DCEBFF"
+                               backcolor="#1769D2" mode="Opaque"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="7"/><paragraph rightIndent="18"/></textElement>
+                <textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+            </textField>
+            <staticText>
+                <reportElement x="0" y="54" width="802" height="14" forecolor="#66758A"/>
+                <textElement><font size="8" isItalic="true"/></textElement>
+                <text><![CDATA[Solo lo entregado al cliente, por la fecha de entrega y a su precio de línea con descuento; una entrega parcial suma solo lo entregado y las anuladas no cuentan.]]></text>
+            </staticText>
+        </band>
+    </title>
+    <columnHeader>
+        <band height="28">
+            <staticText><reportElement style="Header" x="0" y="0" width="300" height="28"/><textElement textAlignment="Left"/><text><![CDATA[Vendedor]]></text></staticText>
+            <staticText><reportElement style="Header" x="300" y="0" width="120" height="28"/><textElement textAlignment="Right"/><text><![CDATA[Pedidos]]></text></staticText>
+            <staticText><reportElement style="Header" x="420" y="0" width="150" height="28"/><textElement textAlignment="Right"/><text><![CDATA[Unidades entregadas]]></text></staticText>
+            <staticText><reportElement style="Header" x="570" y="0" width="232" height="28"/><textElement textAlignment="Right"/><text><![CDATA[Valor entregado]]></text></staticText>
+        </band>
+    </columnHeader>
+    <detail>
+        <band height="24">
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="0" y="0" width="300" height="24"/><textElement textAlignment="Left"/><textFieldExpression><![CDATA[$F{vendedor}]]></textFieldExpression></textField>
+            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="300" y="0" width="120" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{pedidos}]]></textFieldExpression></textField>
+            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="420" y="0" width="150" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{unidades}]]></textFieldExpression></textField>
+            <textField pattern="Q #,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="570" y="0" width="232" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{valor_entregado}]]></textFieldExpression></textField>
+        </band>
+    </detail>
+
+    <pageFooter>
+        <band height="18">
+            <textField>
+                <reportElement x="642" y="2" width="115" height="14" forecolor="#7B8798">
+                    <printWhenExpression><![CDATA["PDF".equals($P{FORMATO})]]></printWhenExpression>
+                </reportElement>
+                <textElement textAlignment="Right"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+            <textField evaluationTime="Report">
+                <reportElement x="757" y="2" width="35" height="14" forecolor="#7B8798">
+                    <printWhenExpression><![CDATA["PDF".equals($P{FORMATO})]]></printWhenExpression>
+                </reportElement>
+                <textElement textAlignment="Left"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA[" de " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+        </band>
+    </pageFooter>
+
+    <summary>
+        <band height="52">
+            <line><reportElement x="0" y="8" width="802" height="1" forecolor="#B9C9DC"/></line>
+            <staticText>
+                <reportElement x="0" y="16" width="400" height="24" forecolor="#52647C" backcolor="#F4F8FC" mode="Opaque">
+                    <printWhenExpression><![CDATA[$V{REPORT_COUNT}.intValue() == 0]]></printWhenExpression>
+                </reportElement>
+                <box><pen lineWidth="0.5" lineColor="#D6E2F0"/></box>
+                <textElement verticalAlignment="Middle"><font size="9" isItalic="true"/></textElement>
+                <text><![CDATA[No hay entregas de pedidos mayoristas en el período seleccionado.]]></text>
+            </staticText>
+            <staticText><reportElement x="0" y="16" width="70" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Pedidos:]]></text></staticText>
+            <textField pattern="#,##0"><reportElement x="70" y="16" width="90" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_PEDIDOS} == null ? 0 : $V{TOTAL_PEDIDOS}]]></textFieldExpression></textField>
+            <staticText><reportElement x="220" y="16" width="90" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Unidades:]]></text></staticText>
+            <textField pattern="#,##0"><reportElement x="310" y="16" width="90" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_UNIDADES} == null ? 0 : $V{TOTAL_UNIDADES}]]></textFieldExpression></textField>
+            <staticText><reportElement x="440" y="16" width="120" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Total entregado:]]></text></staticText>
+            <textField pattern="Q #,##0.00"><reportElement x="560" y="16" width="90" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_VALOR}]]></textFieldExpression></textField>
+        </band>
+    </summary>
+</jasperReport>

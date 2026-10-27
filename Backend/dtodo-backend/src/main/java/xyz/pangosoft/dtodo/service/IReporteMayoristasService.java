@@ -16,6 +16,13 @@ public interface IReporteMayoristasService {
     byte[] clientesSinCompras(Integer idRuta, String fechaInicio, String fechaFin, String formato);
 
     /**
+     * Ventas entregadas por ruta y, dentro de cada ruta, por vendedor. Cuenta solo lo entregado al cliente: cada unidad
+     * entregada a su precio de línea con descuento, en la fecha real de la entrega. Una entrega parcial suma solo lo
+     * entregado y las entregas anuladas no cuentan. Ruta y vendedor son opcionales (nulos = todos).
+     */
+    byte[] entregadoPorRutaYVendedor(Integer idRuta, Integer idVendedor, String fechaInicio, String fechaFin, String formato);
+
+    /**
      * Proformas mayoristas generadas y facturadas por cada vendedor en el período. Facturada es tener una factura
      * vigente (no anulada), aunque se haya emitido después del período.
      */

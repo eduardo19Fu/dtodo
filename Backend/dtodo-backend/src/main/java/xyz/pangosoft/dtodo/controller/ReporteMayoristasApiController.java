@@ -51,6 +51,20 @@ public class ReporteMayoristasApiController {
     }
 
     @Secured("ROLE_ADMIN")
+    @GetMapping("/entregado")
+    public ResponseEntity<byte[]> entregadoPorRutaYVendedor(
+            @RequestParam(required = false) Integer idRuta,
+            @RequestParam(required = false) Integer idUsuario,
+            @RequestParam String fechaInicio,
+            @RequestParam String fechaFin,
+            @RequestParam(defaultValue = "PDF") String formato) {
+        log.info("Generando ventas entregadas por ruta y vendedor. ruta={}, vendedor={}, formato={}, periodo={}..{}",
+                idRuta, idUsuario, formato, fechaInicio, fechaFin);
+        byte[] reporte = reporteMayoristasService.entregadoPorRutaYVendedor(idRuta, idUsuario, fechaInicio, fechaFin, formato);
+        return archivo(reporte, formato, "mayoristas_entregado_" + fechaInicio + "_" + fechaFin);
+    }
+
+    @Secured("ROLE_ADMIN")
     @GetMapping("/proformas-vendedor")
     public ResponseEntity<byte[]> proformasPorVendedor(
             @RequestParam(required = false) Integer idRuta,
