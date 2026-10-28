@@ -326,6 +326,7 @@ public class MovimientoProductoServiceImpl implements IMovimientoProductoService
 				case ANULACION_FACTURA:
 				case ANULACION_NOTA:
 				case ANULACION_ENTREGA_PROFORMA:
+				case DEVOLUCION_CLIENTE:
 					log.debug("Operando suma al stock por operaciones de tipo COMPRA, ENTRADA");
 					inventario.setStock(tmpStock + movimientoProducto.getCantidad());
 					break;

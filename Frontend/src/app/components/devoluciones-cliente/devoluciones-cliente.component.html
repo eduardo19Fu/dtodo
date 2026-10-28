@@ -1,0 +1,262 @@
+<section class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-9">
+        <h1>{{title}}</h1>
+        <p class="listing-subtitle">
+          Lo que un cliente devuelve de lo ya entregado de un pedido mayorista. El valor devuelto baja lo que debe el cliente.
+        </p>
+        <br>
+        <button type="button" class="btn listing-page-action listing-primary-action" (click)="abrirFormulario()" *ngIf="!formularioAbierto">
+          <i class="fas fa-plus"></i> Nueva devolución
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="card listing-card" *ngIf="formularioAbierto">
+  <div class="card-header listing-card-header">Nueva devolución</div>
+  <div class="card-body">
+    <div class="listing-panel">
+      <div class="listing-fields-grid">
+        <div class="listing-field buscador listing-span-2">
+          <label for="clienteDevolucion">Cliente <span class="requerido">*</span></label>
+          <input type="text" id="clienteDevolucion" class="form-control" autocomplete="off" [value]="busquedaCliente"
+            (input)="onBuscarCliente($event.target.value)" placeholder="Nombre, NIT, teléfono o código del cliente mayorista">
+          <ul class="list-group resultados" *ngIf="clientesEncontrados.length > 0">
+            <li class="list-group-item list-group-item-action" *ngFor="let cliente of clientesEncontrados"
+              (click)="elegirCliente(cliente)" role="button">
+              <strong>{{cliente.nombre}}</strong>
+              <small class="d-block text-muted">
+                <span *ngIf="cliente.nombreNegocio">{{cliente.nombreNegocio}} · </span>NIT {{cliente.nit || '—'}}
+              </small>
+            </li>
+          </ul>
+          <small class="text-success" *ngIf="clienteElegido"><i class="fas fa-check-circle" aria-hidden="true"></i> Cliente elegido</small>
+        </div>
+
+        <div class="listing-field listing-span-2" *ngIf="clienteElegido">
+          <label for="pedidoDevolucion">Pedido <span class="requerido">*</span></label>
+          <select id="pedidoDevolucion" class="form-control" [ngModel]="idProformaElegida" (ngModelChange)="elegirPedido($event)"
+            name="pedido" [disabled]="cargandoPedidos">
+            <option [ngValue]="null" disabled>{{cargandoPedidos ? 'Cargando pedidos...' : pedidos.length === 0 ? 'Este cliente no tiene pedidos con entregas' : 'Elige el pedido'}}</option>
+            <option *ngFor="let pedido of pedidos" [ngValue]="pedido.idProforma">
+              Pedido {{pedido.noProforma}}<ng-container *ngIf="pedido.facturado"> · facturado</ng-container>
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <ng-container *ngIf="pedido">
+      <div class="listing-alert listing-alert-info" *ngIf="pedido.facturado" role="status">
+        <i class="fas fa-file-invoice" aria-hidden="true"></i>
+        <span class="listing-alert-text">
+          El pedido tiene la factura <strong>{{pedido.noFactura}}</strong>: la devolución debe ligarse a una nota de crédito.
+        </span>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover table-striped table-bordered table-sm listing-data-table">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th class="text-right">Entregado</th>
+              <th class="text-right">Ya devuelto</th>
+              <th class="text-right">Se puede devolver</th>
+              <th class="text-center">Devuelve</th>
+              <th>Destino</th>
+              <th class="text-right">Valor</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let linea of pedido.lineas" [class.is-muted]="linea.devolvible === 0">
+              <td data-label="Producto">
+                <strong>{{linea.producto}}</strong>
+                <small class="d-block text-muted" *ngIf="linea.codigo">{{linea.codigo}}</small>
+              </td>
+              <td data-label="Entregado" class="text-money">{{linea.entregada | number}}</td>
+              <td data-label="Ya devuelto" class="text-money">{{linea.devuelta | number}}</td>
+              <td data-label="Se puede devolver" class="text-money">{{linea.devolvible | number}}</td>
+              <td data-label="Devuelve" class="text-center">
+                <input type="number" min="0" step="1" [max]="linea.devolvible" class="form-control cantidad-devolucion"
+                  [(ngModel)]="cantidades[linea.idDetalle]" [name]="'cantidad-' + linea.idDetalle" [disabled]="linea.devolvible === 0"
+                  placeholder="0" [attr.aria-label]="'Cantidad que devuelve de ' + linea.producto">
+              </td>
+              <td data-label="Destino">
+                <select class="form-control destino-devolucion" [(ngModel)]="destinoDe[linea.idDetalle]" [name]="'destino-' + linea.idDetalle"
+                  [disabled]="linea.devolvible === 0" [attr.aria-label]="'Destino de ' + linea.producto">
+                  <option *ngFor="let destino of destinos" [value]="destino.valor">{{destino.etiqueta}}</option>
+                </select>
+              </td>
+              <td data-label="Valor" class="text-money">{{valorDeLinea(linea) | currency: 'Q' : 'symbol'}}</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="6">Valor devuelto (baja lo que debe el cliente)</td>
+              <td class="text-money">{{total | currency: 'Q' : 'symbol'}}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div class="listing-panel mt-3">
+        <div class="listing-fields-grid">
+          <div class="row listing-date-range listing-date-single">
+            <app-date-range-picker modo="fecha" [(fecha)]="fecha" etiquetaFecha="Fecha de la devolución" tema="notas"></app-date-range-picker>
+          </div>
+          <div class="listing-field" *ngIf="algunaReingresa">
+            <label for="sucursalDevolucion">Sucursal que recibe <span class="requerido">*</span></label>
+            <select id="sucursalDevolucion" class="form-control" [(ngModel)]="idSucursal" name="sucursal">
+              <option [ngValue]="null" disabled>Elige la sucursal</option>
+              <option *ngFor="let sucursal of sucursales" [ngValue]="sucursal.idSucursal">{{sucursal.nombre}}</option>
+            </select>
+          </div>
+          <div class="listing-field" *ngIf="pedido.facturado">
+            <label for="notaDevolucion">Nota de crédito <span class="requerido">*</span></label>
+            <select id="notaDevolucion" class="form-control" [(ngModel)]="idNotaCredito" name="nota">
+              <option [ngValue]="null" disabled>{{pedido.notasCredito.length === 0 ? 'No hay notas de crédito del pedido' : 'Elige la nota'}}</option>
+              <option *ngFor="let nota of pedido.notasCredito" [ngValue]="nota.idNotaCredito">
+                {{nota.descripcion}} · {{nota.total | currency: 'Q' : 'symbol'}}
+              </option>
+            </select>
+          </div>
+          <div class="listing-field listing-span-2">
+            <label for="motivoDevolucion">Motivo <span class="requerido">*</span></label>
+            <textarea id="motivoDevolucion" class="form-control" rows="2" maxlength="500" [(ngModel)]="motivo" name="motivo"
+              placeholder="Por qué devuelve el cliente"></textarea>
+            <small>{{motivo.length}}/500</small>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <p class="listing-note" *ngIf="faltante"><i class="fas fa-info-circle" aria-hidden="true"></i> {{faltante}}</p>
+    <div class="listing-actions">
+      <button type="button" class="btn listing-page-action listing-primary-action" (click)="registrar()" [disabled]="!!faltante || registrando">
+        <i class="fas fa-undo-alt"></i> Registrar devolución
+      </button>
+      <button type="button" class="btn listing-page-action listing-secondary-action" (click)="cancelarFormulario()" [disabled]="registrando">
+        Cancelar
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="card listing-card">
+  <div class="card-header listing-card-header">Devoluciones registradas</div>
+  <div class="card-body">
+    <div class="listing-filter-grid filtros-devoluciones">
+      <div class="listing-tile-cell">
+        <div class="row listing-date-range">
+          <app-date-range-picker [(fechaInicio)]="desde" [(fechaFin)]="hasta" tema="notas"></app-date-range-picker>
+        </div>
+      </div>
+      <div class="listing-tile-actions">
+        <button type="button" class="btn listing-page-action listing-primary-action" (click)="aplicarFiltros()">
+          <i class="fas fa-filter"></i> Filtrar
+        </button>
+        <button type="button" class="btn listing-page-action listing-secondary-action" (click)="limpiarFiltros()"
+          appTooltip="Quitar los filtros" aria-label="Quitar los filtros">
+          <i class="fas fa-eraser"></i>
+        </button>
+      </div>
+    </div>
+    <p class="listing-note">Sin fechas se muestran los últimos 90 días.<span *ngIf="!cargando"> · {{totalElementos}} {{totalElementos === 1 ? 'devolución' : 'devoluciones'}}</span></p>
+
+    <div *ngIf="errorCarga" class="listing-alert listing-alert-warning" role="alert">
+      <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+      <span class="listing-alert-text">No fue posible cargar las devoluciones.</span>
+      <button type="button" class="btn listing-page-action listing-secondary-action listing-compact" (click)="cargar(paginaActual)">
+        <i class="fas fa-redo"></i> Reintentar
+      </button>
+    </div>
+
+    <div *ngIf="cargando" class="text-center p-4">
+      <div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div>
+    </div>
+
+    <div *ngIf="!cargando && !errorCarga && devoluciones.length === 0" class="listing-empty-state">
+      <span class="listing-empty-icon" aria-hidden="true"><i class="fas fa-undo-alt"></i></span>
+      <div class="listing-empty-state-body">
+        <h5>No hay devoluciones</h5>
+        <p>No se encontraron devoluciones de clientes en el período indicado.</p>
+      </div>
+    </div>
+
+    <div class="table-responsive" *ngIf="devoluciones.length > 0">
+      <table class="table table-hover table-striped table-bordered table-sm listing-data-table">
+        <thead>
+          <tr>
+            <th>Devolución</th>
+            <th>Fecha</th>
+            <th>Cliente / pedido</th>
+            <th>Motivo</th>
+            <th class="text-right">Valor devuelto</th>
+            <th>Registró</th>
+            <th class="text-center">Detalle</th>
+          </tr>
+        </thead>
+        <tbody *ngFor="let devolucion of devoluciones; trackBy: trackDevolucion">
+          <tr>
+            <td data-label="Devolución">
+              <span class="listing-id-pill">#{{devolucion.idDevolucion}}</span>
+              <span *ngIf="devolucion.idNotaCredito" class="listing-status-pill listing-status-info d-block mt-1">Nota de crédito #{{devolucion.idNotaCredito}}</span>
+            </td>
+            <td data-label="Fecha">{{devolucion.fecha | date: 'dd/MM/yyyy'}}</td>
+            <td data-label="Cliente / pedido">
+              <strong>{{devolucion.cliente}}</strong>
+              <small class="d-block text-muted" *ngIf="devolucion.noProforma">Pedido {{devolucion.noProforma}}</small>
+            </td>
+            <td data-label="Motivo">{{devolucion.motivo}}</td>
+            <td data-label="Valor devuelto" class="text-money"><strong>{{devolucion.total | currency: 'Q' : 'symbol'}}</strong></td>
+            <td data-label="Registró">{{devolucion.usuario}}</td>
+            <td data-label="Detalle" class="text-center">
+              <div class="action-buttons d-flex justify-content-center">
+                <button type="button" class="btn btn-sm listing-table-action listing-action-view" (click)="alternarDetalle(devolucion)"
+                  [appTooltip]="abierta && abierta.idDevolucion === devolucion.idDevolucion ? 'Ocultar el detalle' : 'Ver el detalle'"
+                  [attr.aria-label]="'Ver el detalle de la devolución ' + devolucion.idDevolucion">
+                  <i class="fas" [ngClass]="abierta && abierta.idDevolucion === devolucion.idDevolucion ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          <tr class="fila-detalle" *ngIf="abierta && abierta.idDevolucion === devolucion.idDevolucion">
+            <td colspan="7">
+              <div class="detalle-devolucion">
+                <span *ngIf="abierta.sucursal" class="listing-status-pill listing-status-neutral">Recibe: {{abierta.sucursal}}</span>
+                <table class="table table-sm mb-0">
+                  <thead>
+                    <tr><th>Producto</th><th class="text-right">Cantidad</th><th>Destino</th><th class="text-right">Valor</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let linea of abierta.lineas">
+                      <td>{{linea.producto}}<small class="text-muted" *ngIf="linea.codigo"> · {{linea.codigo}}</small></td>
+                      <td class="text-right">{{linea.cantidad | number}}</td>
+                      <td>
+                        <span class="listing-status-pill" [ngClass]="linea.destino === 'REINGRESO' ? 'listing-status-success' : 'listing-status-warning'">
+                          {{etiquetaDestino(linea.destino)}}
+                        </span>
+                      </td>
+                      <td class="text-right">{{linea.valor | currency: 'Q' : 'symbol'}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <nav class="listing-pagination" *ngIf="!cargando && totalPaginas > 1" aria-label="Paginación de devoluciones">
+      <ul class="pagination justify-content-center mt-3 mb-0">
+        <li class="page-item" [ngClass]="{'disabled': isFirst}"><a class="page-link" href="javascript:void(0)" (click)="irPaginaAnterior()"><i class="fas fa-angle-left"></i></a></li>
+        <li class="page-item disabled"><span class="page-link">{{paginaActual + 1}} de {{totalPaginas}}</span></li>
+        <li class="page-item" [ngClass]="{'disabled': isLast}"><a class="page-link" href="javascript:void(0)" (click)="irPaginaSiguiente()"><i class="fas fa-angle-right"></i></a></li>
+      </ul>
+    </nav>
+  </div>
+</div>

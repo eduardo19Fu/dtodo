@@ -20,9 +20,11 @@ public class SaldoClienteDto {
     private Integer diasCredito;
     /** Valor de todo lo entregado en pedidos vigentes. */
     private BigDecimal entregado = BigDecimal.ZERO;
+    /** Valor de todo lo que el cliente devolvió de sus pedidos. */
+    private BigDecimal devuelto = BigDecimal.ZERO;
     /** Suma de los recibos vigentes (ligados o no a un pedido). */
     private BigDecimal abonado = BigDecimal.ZERO;
-    /** Entregado menos abonado. */
+    /** Entregado menos devuelto menos abonado. */
     private BigDecimal saldo = BigDecimal.ZERO;
     /** Lo que queda del límite de crédito (límite menos el saldo pendiente); nulo si el cliente no tiene límite. */
     private BigDecimal disponible;

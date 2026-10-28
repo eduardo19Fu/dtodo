@@ -57,6 +57,7 @@ import { AutorizacionesComponent } from './components/autorizaciones/autorizacio
 import { ComisionesComponent } from './components/comisiones/comisiones.component';
 import { RecibosComponent } from './components/recibos/recibos.component';
 import { CobranzaComponent } from './components/cobranza/cobranza.component';
+import { DevolucionesClienteComponent } from './components/devoluciones-cliente/devoluciones-cliente.component';
 import { DescuentosComponent } from './components/descuentos/descuentos.component';
 import { CreateRutaComponent } from './components/rutas/create-ruta/create-ruta.component';
 import { ProveedoresComponent } from './components/proveedores/proveedores.component';
@@ -138,6 +139,7 @@ import { ReporteSelectorComponent } from './components/reportes/reporte-selector
     ComisionesComponent,
     RecibosComponent,
     CobranzaComponent,
+    DevolucionesClienteComponent,
     DescuentosComponent,
     CreateRutaComponent,
     ProveedoresComponent,

@@ -12,6 +12,8 @@ public enum TipoMovimientoEnum {
     /** Salida por la entrega de un pedido mayorista al cliente. */
     ENTREGA_PROFORMA,
     /** Reingreso por anular una entrega de pedido mayorista. */
-    ANULACION_ENTREGA_PROFORMA;
+    ANULACION_ENTREGA_PROFORMA,
+    /** Reingreso al inventario de lo que un cliente devuelve de un pedido mayorista. */
+    DEVOLUCION_CLIENTE;
 
 }

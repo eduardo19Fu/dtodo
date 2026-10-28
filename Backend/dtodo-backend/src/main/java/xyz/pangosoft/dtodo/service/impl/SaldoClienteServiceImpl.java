@@ -21,6 +21,7 @@ import xyz.pangosoft.dtodo.model.Proforma;
 import xyz.pangosoft.dtodo.model.enums.CondicionPagoEnum;
 import xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum;
 import xyz.pangosoft.dtodo.repository.IClienteRepository;
+import xyz.pangosoft.dtodo.repository.IDevolucionClienteRepository;
 import xyz.pangosoft.dtodo.repository.IProformaEntregaRepository;
 import xyz.pangosoft.dtodo.repository.IProformaRepository;
 import xyz.pangosoft.dtodo.repository.IReciboCajaRepository;
@@ -35,6 +36,7 @@ public class SaldoClienteServiceImpl implements ISaldoClienteService {
     private final IProformaRepository proformaRepository;
     private final IProformaEntregaRepository entregaRepository;
     private final IReciboCajaRepository reciboRepository;
+    private final IDevolucionClienteRepository devolucionRepository;
     private final IAmbitoVendedorService ambito;
 
     @Transactional(readOnly = true)
@@ -44,7 +46,8 @@ public class SaldoClienteServiceImpl implements ISaldoClienteService {
                 .orElseThrow(() -> new NotFoundException("El cliente solicitado no se encuentra registrado."));
         ambito.exigirClienteEnAmbito(cliente);
         return calcular(cliente, proformaRepository.pedidosVigentesDelCliente(idCliente),
-                entregaRepository.entregadoDelCliente(idCliente), reciboRepository.abonosDelCliente(idCliente));
+                entregaRepository.entregadoDelCliente(idCliente), reciboRepository.abonosDelCliente(idCliente),
+                devolucionRepository.devueltoDelCliente(idCliente));
     }
 
     @Transactional(readOnly = true)
@@ -53,7 +56,8 @@ public class SaldoClienteServiceImpl implements ISaldoClienteService {
         Cliente cliente = clienteRepository.findById(idCliente)
                 .orElseThrow(() -> new NotFoundException("El cliente solicitado no se encuentra registrado."));
         SaldoClienteDto saldo = calcular(cliente, proformaRepository.pedidosVigentesDelCliente(idCliente),
-                entregaRepository.entregadoDelCliente(idCliente), reciboRepository.abonosDelCliente(idCliente));
+                entregaRepository.entregadoDelCliente(idCliente), reciboRepository.abonosDelCliente(idCliente),
+                devolucionRepository.devueltoDelCliente(idCliente));
         BigDecimal comprometido = saldo.getPedidos().stream()
                 .filter(p -> p.getCondicionPago() == CondicionPagoEnum.CREDITO && !p.getIdProforma().equals(idProformaExcluir))
                 .map(p -> p.getTotal().subtract(p.getEntregado()).max(BigDecimal.ZERO))
@@ -72,7 +76,8 @@ public class SaldoClienteServiceImpl implements ISaldoClienteService {
         dto.setEntregado(valor(entregas));
         dto.setPrimeraEntrega(primeraEntrega(entregas));
         dto.setCobrado(cobrado(idProforma));
-        dto.setPendiente(dto.getEntregado().subtract(dto.getCobrado()).max(BigDecimal.ZERO));
+        dto.setDevuelto(devuelto(idProforma));
+        dto.setPendiente(dto.getEntregado().subtract(dto.getDevuelto()).subtract(dto.getCobrado()).max(BigDecimal.ZERO));
         dto.setVencimiento(vencimiento(dto));
         return dto;
     }
@@ -80,7 +85,13 @@ public class SaldoClienteServiceImpl implements ISaldoClienteService {
     @Transactional(readOnly = true)
     @Override
     public BigDecimal valorEntregado(Long idProforma) {
-        return valor(entregaRepository.entregadoDelPedido(idProforma));
+        // Neto de lo devuelto: lo que el cliente devolvió ya no hay que cobrarlo.
+        return valor(entregaRepository.entregadoDelPedido(idProforma)).subtract(devuelto(idProforma)).max(BigDecimal.ZERO);
+    }
+
+    private BigDecimal devuelto(Long idProforma) {
+        BigDecimal devuelto = devolucionRepository.devueltoDelPedido(idProforma);
+        return (devuelto == null ? BigDecimal.ZERO : devuelto).setScale(2, RoundingMode.HALF_UP);
     }
 
     @Transactional(readOnly = true)
@@ -97,6 +108,21 @@ public class SaldoClienteServiceImpl implements ISaldoClienteService {
      * fecha de entrega). {@code abonos}: filas (pedido, pedido de origen de la factura, monto).
      */
     static SaldoClienteDto calcular(Cliente cliente, List<Proforma> pedidos, List<Object[]> entregas, List<Object[]> abonos) {
+        return calcular(cliente, pedidos, entregas, abonos, new ArrayList<>());
+    }
+
+    /**
+     * Igual, descontando lo que el cliente devolvió. {@code devoluciones}: filas (pedido, valor devuelto).
+     */
+    static SaldoClienteDto calcular(Cliente cliente, List<Proforma> pedidos, List<Object[]> entregas, List<Object[]> abonos,
+            List<Object[]> devoluciones) {
+        Map<Long, BigDecimal> devueltoPorPedido = new HashMap<>();
+        BigDecimal devueltoTotal = BigDecimal.ZERO;
+        for (Object[] fila : devoluciones) {
+            BigDecimal valor = (BigDecimal) fila[1];
+            devueltoTotal = devueltoTotal.add(valor);
+            devueltoPorPedido.merge((Long) fila[0], valor, BigDecimal::add);
+        }
         Map<Long, List<Object[]>> entregasPorPedido = new HashMap<>();
         for (Object[] fila : entregas) {
             entregasPorPedido.computeIfAbsent((Long) fila[0], id -> new ArrayList<>()).add(fila);
@@ -123,7 +149,8 @@ public class SaldoClienteServiceImpl implements ISaldoClienteService {
             dto.setEntregado(valor(deEstePedido));
             dto.setPrimeraEntrega(primeraEntrega(deEstePedido));
             dto.setCobrado(cobradoPorPedido.getOrDefault(pedido.getIdProforma(), BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP));
-            dto.setPendiente(dto.getEntregado().subtract(dto.getCobrado()).max(BigDecimal.ZERO));
+            dto.setDevuelto(devueltoPorPedido.getOrDefault(pedido.getIdProforma(), BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP));
+            dto.setPendiente(dto.getEntregado().subtract(dto.getDevuelto()).subtract(dto.getCobrado()).max(BigDecimal.ZERO));
             entregadoTotal = entregadoTotal.add(dto.getEntregado());
             lista.add(dto);
         }
@@ -155,7 +182,8 @@ public class SaldoClienteServiceImpl implements ISaldoClienteService {
         saldo.setDiasCredito(cliente.getDiasCredito());
         saldo.setEntregado(entregadoTotal.setScale(2, RoundingMode.HALF_UP));
         saldo.setAbonado(abonado.setScale(2, RoundingMode.HALF_UP));
-        saldo.setSaldo(saldo.getEntregado().subtract(saldo.getAbonado()));
+        saldo.setDevuelto(devueltoTotal.setScale(2, RoundingMode.HALF_UP));
+        saldo.setSaldo(saldo.getEntregado().subtract(saldo.getDevuelto()).subtract(saldo.getAbonado()));
         if (cliente.getLimiteCredito() != null) {
             saldo.setDisponible(cliente.getLimiteCredito().subtract(saldo.getSaldo().max(BigDecimal.ZERO)));
         }

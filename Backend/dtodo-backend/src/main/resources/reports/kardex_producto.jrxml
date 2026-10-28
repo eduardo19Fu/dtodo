@@ -43,6 +43,7 @@
                    WHEN 'ENTREGA_PRODUCTO_NOTA' THEN 'Entrega de nota de crédito'
                    WHEN 'ENTREGA_PROFORMA' THEN 'Entrega de pedido'
                    WHEN 'ANULACION_ENTREGA_PROFORMA' THEN 'Anulación de entrega de pedido'
+                   WHEN 'DEVOLUCION_CLIENTE' THEN 'Devolución de cliente'
                    ELSE REPLACE(mp.tipo_movimiento, '_', ' ')
                END END AS movimiento,
                COALESCE(CASE mp.tipo_documento_origen
@@ -53,6 +54,7 @@
                    WHEN 'DESPACHO_BODEGA' THEN CONCAT('Despacho de bodega #', mp.id_documento_origen)
                    WHEN 'ENTREGA_PROFORMA' THEN CONCAT('Entrega de pedido #', mp.id_documento_origen)
                    WHEN 'DEVOLUCION_BODEGA' THEN CONCAT('Devolución a bodega #', mp.id_documento_origen)
+                   WHEN 'DEVOLUCION_CLIENTE' THEN CONCAT('Devolución de cliente #', mp.id_documento_origen)
                    ELSE CASE WHEN mp.tipo_movimiento IN ('ENTRADA', 'SALIDA')
                        THEN CONCAT('Ajuste manual #', mp.id_movimiento) END
                END, 'No registrado') AS documento,
@@ -60,7 +62,7 @@
                    WHEN mp.tipo_documento_origen = 'FACTURA' OR mp.tipo_movimiento IN ('VENTA', 'ANULACION_FACTURA')
                        THEN 'Factura'
                    WHEN mp.tipo_documento_origen = 'ENTREGA_PROFORMA'
-                       OR mp.tipo_movimiento IN ('ENTREGA_PROFORMA', 'ANULACION_ENTREGA_PROFORMA')
+                       OR mp.tipo_movimiento IN ('ENTREGA_PROFORMA', 'ANULACION_ENTREGA_PROFORMA', 'DEVOLUCION_CLIENTE')
                        THEN 'Entrega de pedido mayorista'
                    WHEN mp.tipo_documento_origen = 'NOTA_CREDITO'
                        OR mp.tipo_movimiento IN ('NOTA_CREDITO', 'ANULACION_NOTA', 'ENTREGA_PRODUCTO_NOTA')
@@ -69,20 +71,21 @@
                        THEN 'Compra'
                    WHEN mp.tipo_documento_origen = 'DESPACHO_BODEGA' THEN 'Despacho de bodega'
                    WHEN mp.tipo_documento_origen = 'DEVOLUCION_BODEGA' THEN 'Devolución a bodega'
+                   WHEN mp.tipo_documento_origen = 'DEVOLUCION_CLIENTE' THEN 'Devolución de cliente'
                    WHEN mp.tipo_movimiento IN ('ENTRADA', 'SALIDA') THEN 'Manual'
                    ELSE 'No registrado'
                END AS origen,
                COALESCE(u.usuario, '') AS usuario,
                mp.stock_inicial,
                CAST(CASE
-                   WHEN mp.tipo_movimiento IN ('COMPRA', 'ENTRADA', 'ANULACION_FACTURA', 'ANULACION_NOTA', 'ANULACION_ENTREGA_PROFORMA')
+                   WHEN mp.tipo_movimiento IN ('COMPRA', 'ENTRADA', 'ANULACION_FACTURA', 'ANULACION_NOTA', 'ANULACION_ENTREGA_PROFORMA', 'DEVOLUCION_CLIENTE')
                    THEN mp.cantidad ELSE 0 END AS SIGNED) AS entrada,
                CAST(CASE
                    WHEN mp.tipo_movimiento IN ('VENTA', 'SALIDA', 'ELIMINAR_COMPRA', 'ENTREGA_PRODUCTO_NOTA', 'ENTREGA_PROFORMA')
                    THEN mp.cantidad ELSE 0 END AS SIGNED) AS salida,
                CAST(mp.stock_inicial
                    + CASE
-                       WHEN mp.tipo_movimiento IN ('COMPRA', 'ENTRADA', 'ANULACION_FACTURA', 'ANULACION_NOTA', 'ANULACION_ENTREGA_PROFORMA')
+                       WHEN mp.tipo_movimiento IN ('COMPRA', 'ENTRADA', 'ANULACION_FACTURA', 'ANULACION_NOTA', 'ANULACION_ENTREGA_PROFORMA', 'DEVOLUCION_CLIENTE')
                        THEN mp.cantidad ELSE 0 END
                    - CASE
                        WHEN mp.tipo_movimiento IN ('VENTA', 'SALIDA', 'ELIMINAR_COMPRA', 'ENTREGA_PRODUCTO_NOTA', 'ENTREGA_PROFORMA')

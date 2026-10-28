@@ -20,6 +20,9 @@ public interface INotaCreditoRepository extends JpaRepository<NotaCredito, Long>
 
     List<NotaCredito> findNotasByEstado(EstadoNotaCreditoEnum estado);
 
+    /** Las notas de crédito de un cliente que no tienen el estado indicado (por ejemplo, las que no están anuladas). */
+    List<NotaCredito> findByCliente_IdClienteAndEstadoNot(Integer idCliente, EstadoNotaCreditoEnum estado);
+
     /**
      * Verifica si ya existe una Nota de Crédito emitida sobre la Factura indicada
      * (independiente de su estado actual: PENDIENTE, ENTREGADO o ANULADO).

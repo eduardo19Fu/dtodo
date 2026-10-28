@@ -45,6 +45,7 @@
 
     <div class="listing-stats" *ngIf="saldo" role="status">
       <div class="listing-stat"><span>Entregado</span><strong>{{saldo.entregado | currency: 'Q' : 'symbol'}}</strong></div>
+      <div class="listing-stat" *ngIf="saldo.devuelto > 0"><span>Devuelto</span><strong>{{saldo.devuelto | currency: 'Q' : 'symbol'}}</strong></div>
       <div class="listing-stat"><span>Abonado</span><strong>{{saldo.abonado | currency: 'Q' : 'symbol'}}</strong></div>
       <div class="listing-stat" [ngClass]="saldo.saldo < 0 ? 'is-success' : saldo.saldo > 0 ? 'is-danger' : ''">
         <span>{{saldo.saldo < 0 ? 'A favor del cliente' : 'Saldo pendiente'}}</span>

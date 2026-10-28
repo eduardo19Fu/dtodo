@@ -1,0 +1,31 @@
+/* Los estilos de botones, campos, avisos y tablas son los compartidos de src/styles.css (listing-*). */
+.action-buttons { gap: 0.35rem; }
+
+/* La franja de filtros solo lleva el rango de fechas y las acciones. */
+.filtros-devoluciones { grid-template-columns: minmax(0, 2fr) auto; }
+
+.buscador { position: relative; }
+.resultados {
+  border-radius: 10px;
+  box-shadow: 0 10px 24px rgba(33, 61, 99, 0.16);
+  left: 0;
+  max-height: 16rem;
+  overflow-y: auto;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  z-index: 20;
+}
+.resultados .list-group-item { cursor: pointer; }
+
+input.cantidad-devolucion { height: 38px; margin: 0 auto; max-width: 96px; text-align: center; }
+select.destino-devolucion { height: 38px; min-width: 190px; }
+
+.fila-detalle td { background: #f8fafe !important; }
+.detalle-devolucion { display: flex; flex-direction: column; gap: 0.6rem; padding: 0.25rem 0.5rem; }
+.detalle-devolucion > .listing-status-pill { align-self: flex-start; }
+
+@media (max-width: 1199.98px) {
+  .filtros-devoluciones { grid-template-columns: minmax(0, 1fr); }
+  .filtros-devoluciones > .listing-tile-actions { justify-content: flex-end; }
+}

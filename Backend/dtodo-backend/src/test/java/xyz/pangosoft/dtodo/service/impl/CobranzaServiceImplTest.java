@@ -40,7 +40,9 @@ class CobranzaServiceImplTest {
     private final IProformaRepository proformas = mock(IProformaRepository.class);
     private final IProformaEntregaRepository entregas = mock(IProformaEntregaRepository.class);
     private final IReciboCajaRepository recibos = mock(IReciboCajaRepository.class);
-    private final CobranzaServiceImpl service = new CobranzaServiceImpl(clientes, proformas, entregas, recibos);
+    private final xyz.pangosoft.dtodo.repository.IDevolucionClienteRepository devolucionRepository =
+            mock(xyz.pangosoft.dtodo.repository.IDevolucionClienteRepository.class);
+    private final CobranzaServiceImpl service = new CobranzaServiceImpl(clientes, proformas, entregas, recibos, devolucionRepository);
 
     private final Ruta ruta1 = Ruta.builder().idRuta(1).nombre("RUTA 1").build();
     private final Ruta ruta2 = Ruta.builder().idRuta(2).nombre("RUTA 2").build();
@@ -246,5 +248,34 @@ class CobranzaServiceImplTest {
         when(clientes.findById(77)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class, () -> service.estadoDeCuenta(77));
+    }
+
+    @Test
+    void lasDevolucionesBajanLoQueDebeElClienteEnLaCobranza() {
+        Cliente ana = cliente(1, "Libreria Ana", ruta1);
+        datos(Arrays.asList(pedido(1, ana, CondicionPagoEnum.CREDITO, 30)),
+                filas(entrega(1, 1, "100.00", HOY.minusDays(40))), new ArrayList<>());
+        when(devolucionRepository.devueltoDeTodos()).thenReturn(Arrays.<Object[]>asList(new Object[] { 1, 1L, new BigDecimal("30.00") }));
+
+        CobranzaClienteDto fila = de(service.cuentasPorCobrar(null, false, HOY), 1);
+
+        assertEquals(new BigDecimal("70.00"), fila.getTotal());
+        assertEquals(new BigDecimal("70.00"), fila.getVencido1a30());
+    }
+
+    @Test
+    void laDevolucionApareceEnElEstadoDeCuentaComoAbono() {
+        xyz.pangosoft.dtodo.model.DevolucionCliente devolucion = xyz.pangosoft.dtodo.model.DevolucionCliente.builder().idDevolucion(3L)
+                .fecha(LocalDate.of(2026, 10, 10)).motivo("producto dañado").total(new BigDecimal("25.00")).build();
+
+        List<MovimientoEstadoCuentaDto> movimientos = CobranzaServiceImpl.armarEstadoDeCuenta(
+                Arrays.<Object[]>asList(lineaEntrega(10, 1, "P-1", LocalDate.of(2026, 10, 5), 10, "100.00", 10)),
+                new ArrayList<>(), Arrays.asList(devolucion));
+
+        assertEquals(2, movimientos.size());
+        assertEquals("Devolución #3", movimientos.get(1).getDocumento());
+        assertEquals("producto dañado", movimientos.get(1).getDetalle());
+        assertEquals(new BigDecimal("25.00"), movimientos.get(1).getAbono());
+        assertEquals(new BigDecimal("75.00"), movimientos.get(1).getSaldo());
     }
 }

@@ -12,5 +12,7 @@ public enum AccionAuditoriaEnum {
     /** Un administrador autorizó un pedido que pasa del límite de crédito del cliente. */
     AUTORIZACION_CREDITO,
     RECHAZO_CREDITO,
+    /** El administrador registró una devolución de lo entregado al cliente. */
+    DEVOLUCION_CLIENTE,
     CAMBIO_CLIENTE_FACTURA;
 }

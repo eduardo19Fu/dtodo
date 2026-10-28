@@ -187,7 +187,8 @@ class SaldoClienteServiceImplTest {
         IProformaRepository proformas = mock(IProformaRepository.class);
         IProformaEntregaRepository entregas = mock(IProformaEntregaRepository.class);
         IReciboCajaRepository recibos = mock(IReciboCajaRepository.class);
-        SaldoClienteServiceImpl service = new SaldoClienteServiceImpl(clientes, proformas, entregas, recibos, ambito);
+        SaldoClienteServiceImpl service = new SaldoClienteServiceImpl(clientes, proformas, entregas, recibos,
+                mock(xyz.pangosoft.dtodo.repository.IDevolucionClienteRepository.class), ambito);
         when(clientes.findById(77)).thenReturn(Optional.empty());
         when(clientes.findById(5)).thenReturn(Optional.of(cliente));
         when(proformas.pedidosVigentesDelCliente(5)).thenReturn(new ArrayList<>());
@@ -206,6 +207,7 @@ class SaldoClienteServiceImplTest {
         IProformaEntregaRepository entregas = mock(IProformaEntregaRepository.class);
         IReciboCajaRepository recibos = mock(IReciboCajaRepository.class);
         SaldoClienteServiceImpl service = new SaldoClienteServiceImpl(clientes, proformas, entregas, recibos,
+                mock(xyz.pangosoft.dtodo.repository.IDevolucionClienteRepository.class),
                 mock(IAmbitoVendedorService.class));
         when(clientes.findById(5)).thenReturn(Optional.of(cliente));
         // Pedido 1 (crédito, total 500): se entregaron 100 y se pagaron 30 => debe 70 y le faltan 400 por entregar.
@@ -229,6 +231,7 @@ class SaldoClienteServiceImplTest {
         IProformaEntregaRepository entregas = mock(IProformaEntregaRepository.class);
         IReciboCajaRepository recibos = mock(IReciboCajaRepository.class);
         SaldoClienteServiceImpl service = new SaldoClienteServiceImpl(clientes, proformas, entregas, recibos,
+                mock(xyz.pangosoft.dtodo.repository.IDevolucionClienteRepository.class),
                 mock(IAmbitoVendedorService.class));
         when(clientes.findById(5)).thenReturn(Optional.of(cliente));
         when(proformas.pedidosVigentesDelCliente(5)).thenReturn(new ArrayList<>());
@@ -236,5 +239,57 @@ class SaldoClienteServiceImplTest {
         when(recibos.abonosDelCliente(5)).thenReturn(filas(abono(null, null, "300.00")));
 
         assertEquals(new BigDecimal("0.00"), service.exposicionDeCredito(5, null));
+    }
+
+    // ------------------------------------------------------------------------------------------ devoluciones
+
+    /** Una devolución: pedido y valor devuelto. */
+    private static Object[] devuelto(long idPedido, String valor) {
+        return new Object[] { idPedido, new BigDecimal(valor) };
+    }
+
+    @Test
+    void loDevueltoBajaLoQueDebeElClienteYLoPendienteDelPedido() {
+        Proforma p = pedido(1, CondicionPagoEnum.CREDITO, EstadoPedidoEnum.ENTREGADA_PARCIAL);
+
+        SaldoClienteDto saldo = SaldoClienteServiceImpl.calcular(cliente, Arrays.asList(p),
+                filas(entregada(1, 10, "100.00", 10, LocalDate.of(2026, 10, 5))), filas(abono(1L, null, "30.00")),
+                filas(devuelto(1, "25.00")));
+
+        assertEquals(new BigDecimal("100.00"), saldo.getEntregado());
+        assertEquals(new BigDecimal("25.00"), saldo.getDevuelto());
+        assertEquals(new BigDecimal("30.00"), saldo.getAbonado());
+        assertEquals(new BigDecimal("45.00"), saldo.getSaldo());
+        assertEquals(new BigDecimal("45.00"), de(saldo, 1).getPendiente());
+        assertEquals(new BigDecimal("25.00"), de(saldo, 1).getDevuelto());
+        assertEquals(new BigDecimal("955.00"), saldo.getDisponible());
+    }
+
+    @Test
+    void unaDevolucionQueSaldaElPedidoLoDejaSinPendienteNiNegativo() {
+        Proforma p = pedido(1, CondicionPagoEnum.CREDITO, EstadoPedidoEnum.ENTREGADA);
+
+        SaldoClienteDto saldo = SaldoClienteServiceImpl.calcular(cliente, Arrays.asList(p),
+                filas(entregada(1, 10, "100.00", 10, LocalDate.of(2026, 10, 5))), new ArrayList<>(), filas(devuelto(1, "100.00")));
+
+        assertEquals(new BigDecimal("0.00"), saldo.getSaldo());
+        assertTrue(saldo.getPedidos().isEmpty(), "Un pedido entregado y saldado no se lista");
+    }
+
+    @Test
+    void elValorEntregadoDeUnPedidoEsNetoDeLoDevuelto() {
+        IClienteRepository clientes = mock(IClienteRepository.class);
+        IProformaEntregaRepository entregas = mock(IProformaEntregaRepository.class);
+        xyz.pangosoft.dtodo.repository.IDevolucionClienteRepository devoluciones =
+                mock(xyz.pangosoft.dtodo.repository.IDevolucionClienteRepository.class);
+        SaldoClienteServiceImpl service = new SaldoClienteServiceImpl(clientes, mock(IProformaRepository.class), entregas,
+                mock(IReciboCajaRepository.class), devoluciones, mock(IAmbitoVendedorService.class));
+        when(entregas.entregadoDelPedido(7L)).thenReturn(filas(entregada(7, 10, "100.00", 10, LocalDate.of(2026, 10, 5))));
+        when(devoluciones.devueltoDelPedido(7L)).thenReturn(new BigDecimal("30.00"));
+
+        assertEquals(new BigDecimal("70.00"), service.valorEntregado(7L));
+
+        when(devoluciones.devueltoDelPedido(7L)).thenReturn(new BigDecimal("500.00"));
+        assertEquals(new BigDecimal("0.00"), service.valorEntregado(7L).setScale(2));
     }
 }

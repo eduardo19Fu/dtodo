@@ -246,4 +246,52 @@ class SaldoRepositoryTest {
         assertEquals(1, reciboRepository.findByCliente_IdClienteAndAnuladoFalseOrderByFechaPagoAscIdReciboAsc(cliente.getIdCliente()).size());
         assertEquals(1, reciboRepository.findByCliente_IdClienteAndAnuladoFalseOrderByFechaPagoAscIdReciboAsc(otro.getIdCliente()).size());
     }
+
+    @Autowired
+    private IDevolucionClienteRepository devolucionRepository;
+
+    private xyz.pangosoft.dtodo.model.DevolucionCliente devolucion(Proforma deLaPedido, Cliente deCliente, LocalDate fecha, String... valores) {
+        xyz.pangosoft.dtodo.model.DevolucionCliente d = xyz.pangosoft.dtodo.model.DevolucionCliente.builder()
+                .idProforma(deLaPedido.getIdProforma()).cliente(deCliente).fecha(fecha).motivo("dañado").total(BigDecimal.ZERO)
+                .usuario(ana).fechaRegistro(LocalDateTime.now()).build();
+        for (String valor : valores) {
+            d.getDetalles().add(xyz.pangosoft.dtodo.model.DevolucionClienteDetalle.builder().devolucion(d).idDetalle(1L).cantidad(1)
+                    .destino(xyz.pangosoft.dtodo.model.enums.DestinoDevolucionEnum.REINGRESO).valor(new BigDecimal(valor)).build());
+        }
+        em.persist(d);
+        return d;
+    }
+
+    @Test
+    void lasConsultasDeDevolucionesSumanPorPedidoClienteYVendedor() {
+        base();
+        Proforma uno = pedido("1P", cliente, activo, TipoProformaEnum.MAYORISTA, EstadoPedidoEnum.ENTREGADA);
+        Proforma dos = pedido("2P", otro, activo, TipoProformaEnum.MAYORISTA, EstadoPedidoEnum.ENTREGADA);
+        em.flush();
+        devolucion(uno, cliente, LocalDate.of(2026, 10, 10), "10.00", "5.50");
+        devolucion(uno, cliente, LocalDate.of(2026, 11, 2), "4.50");
+        devolucion(dos, otro, LocalDate.of(2026, 10, 12), "7.00");
+        em.flush();
+
+        List<Object[]> delCliente = devolucionRepository.devueltoDelCliente(cliente.getIdCliente());
+        assertEquals(1, delCliente.size());
+        assertEquals(uno.getIdProforma(), delCliente.get(0)[0]);
+        assertEquals(0, new BigDecimal("20.00").compareTo((BigDecimal) delCliente.get(0)[1]));
+
+        assertEquals(2, devolucionRepository.devueltoDeTodos().size());
+        assertEquals(0, new BigDecimal("20.00").compareTo(devolucionRepository.devueltoDelPedido(uno.getIdProforma())));
+        assertEquals(0, BigDecimal.ZERO.compareTo(devolucionRepository.devueltoDelPedido(999L)));
+
+        // Octubre: Ana (vendedora de ambos pedidos) devolvió 15.50 + 7.00.
+        List<Object[]> octubre = devolucionRepository.devueltoDelPeriodoPorVendedor(LocalDate.of(2026, 10, 1), LocalDate.of(2026, 11, 1));
+        assertEquals(1, octubre.size());
+        assertEquals(ana.getIdUsuario(), octubre.get(0)[0]);
+        assertEquals(0, new BigDecimal("22.50").compareTo((BigDecimal) octubre.get(0)[1]));
+
+        assertEquals(2, devolucionRepository.findByCliente_IdClienteOrderByFechaAscIdDevolucionAsc(cliente.getIdCliente()).size());
+        assertEquals(1, devolucionRepository.buscar(otro.getIdCliente(), LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31),
+                org.springframework.data.domain.PageRequest.of(0, 10)).getTotalElements());
+        assertEquals(3, devolucionRepository.buscar(null, LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31),
+                org.springframework.data.domain.PageRequest.of(0, 10)).getTotalElements());
+    }
 }

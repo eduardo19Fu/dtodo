@@ -23,11 +23,13 @@ import xyz.pangosoft.dtodo.dto.PedidoSaldoDto;
 import xyz.pangosoft.dtodo.dto.SaldoClienteDto;
 import xyz.pangosoft.dtodo.error.exceptions.NotFoundException;
 import xyz.pangosoft.dtodo.model.Cliente;
+import xyz.pangosoft.dtodo.model.DevolucionCliente;
 import xyz.pangosoft.dtodo.model.Proforma;
 import xyz.pangosoft.dtodo.model.ReciboCaja;
 import xyz.pangosoft.dtodo.model.enums.CondicionPagoEnum;
 import xyz.pangosoft.dtodo.model.enums.FormaPagoReciboEnum;
 import xyz.pangosoft.dtodo.repository.IClienteRepository;
+import xyz.pangosoft.dtodo.repository.IDevolucionClienteRepository;
 import xyz.pangosoft.dtodo.repository.IProformaEntregaRepository;
 import xyz.pangosoft.dtodo.repository.IProformaRepository;
 import xyz.pangosoft.dtodo.repository.IReciboCajaRepository;
@@ -43,6 +45,7 @@ public class CobranzaServiceImpl implements ICobranzaService {
     private final IProformaRepository proformaRepository;
     private final IProformaEntregaRepository entregaRepository;
     private final IReciboCajaRepository reciboRepository;
+    private final IDevolucionClienteRepository devolucionRepository;
 
     @Transactional(readOnly = true)
     @Override
@@ -70,6 +73,12 @@ public class CobranzaServiceImpl implements ICobranzaService {
                     .add(Arrays.copyOfRange(fila, 1, fila.length));
         }
 
+        Map<Integer, List<Object[]>> devolucionesPorCliente = new HashMap<>();
+        for (Object[] fila : devolucionRepository.devueltoDeTodos()) {
+            devolucionesPorCliente.computeIfAbsent((Integer) fila[0], id -> new ArrayList<>())
+                    .add(Arrays.copyOfRange(fila, 1, fila.length));
+        }
+
         CobranzaDto cobranza = new CobranzaDto();
         cobranza.setFecha(hoy);
         for (Map.Entry<Integer, List<Proforma>> entrada : pedidosPorCliente.entrySet()) {
@@ -79,7 +88,8 @@ public class CobranzaServiceImpl implements ICobranzaService {
             }
             SaldoClienteDto saldo = SaldoClienteServiceImpl.calcular(cliente, entrada.getValue(),
                     entregasPorCliente.getOrDefault(entrada.getKey(), new ArrayList<>()),
-                    abonosPorCliente.getOrDefault(entrada.getKey(), new ArrayList<>()));
+                    abonosPorCliente.getOrDefault(entrada.getKey(), new ArrayList<>()),
+                    devolucionesPorCliente.getOrDefault(entrada.getKey(), new ArrayList<>()));
             CobranzaClienteDto fila = clasificar(cliente, saldo, hoy);
             if (fila.getTotal().signum() > 0 && (!soloVencidos || fila.getVencido().signum() > 0)) {
                 cobranza.getClientes().add(fila);
@@ -154,11 +164,18 @@ public class CobranzaServiceImpl implements ICobranzaService {
         clienteRepository.findById(idCliente)
                 .orElseThrow(() -> new NotFoundException("El cliente solicitado no se encuentra registrado."));
         return armarEstadoDeCuenta(entregaRepository.entregasDelClienteDetalle(idCliente),
-                reciboRepository.findByCliente_IdClienteAndAnuladoFalseOrderByFechaPagoAscIdReciboAsc(idCliente));
+                reciboRepository.findByCliente_IdClienteAndAnuladoFalseOrderByFechaPagoAscIdReciboAsc(idCliente),
+                devolucionRepository.findByCliente_IdClienteOrderByFechaAscIdDevolucionAsc(idCliente));
     }
 
     /** Las entregas (cargos) y los recibos (abonos) por fecha; en un mismo día el cargo va antes que el abono. */
     static List<MovimientoEstadoCuentaDto> armarEstadoDeCuenta(List<Object[]> lineasEntregadas, List<ReciboCaja> recibos) {
+        return armarEstadoDeCuenta(lineasEntregadas, recibos, new ArrayList<>());
+    }
+
+    /** Igual, con las devoluciones del cliente como abonos (bajan lo que debe). */
+    static List<MovimientoEstadoCuentaDto> armarEstadoDeCuenta(List<Object[]> lineasEntregadas, List<ReciboCaja> recibos,
+            List<DevolucionCliente> devoluciones) {
         // Una entrega puede tener varias líneas: se suman por entrega.
         Map<Long, List<Object[]>> porEntrega = new LinkedHashMap<>();
         Map<Long, Object[]> cabeceras = new HashMap<>();
@@ -185,6 +202,15 @@ public class CobranzaServiceImpl implements ICobranzaService {
             movimiento.setDetalle(detalleRecibo(recibo));
             movimiento.setAbono(recibo.getMonto());
             orden.add(new Object[] { recibo.getFechaPago(), 1, recibo.getIdRecibo(), movimiento });
+        }
+        for (DevolucionCliente devolucion : devoluciones) {
+            MovimientoEstadoCuentaDto movimiento = new MovimientoEstadoCuentaDto();
+            movimiento.setFecha(devolucion.getFecha());
+            movimiento.setDocumento("Devolución #" + devolucion.getIdDevolucion());
+            movimiento.setDetalle(devolucion.getMotivo() == null ? "Devolución de producto"
+                    : (devolucion.getMotivo().length() > 40 ? devolucion.getMotivo().substring(0, 40) + "…" : devolucion.getMotivo()));
+            movimiento.setAbono(devolucion.getTotal());
+            orden.add(new Object[] { devolucion.getFecha(), 1, devolucion.getIdDevolucion() + 1_000_000_000L, movimiento });
         }
         orden.sort(Comparator.comparing((Object[] o) -> (LocalDate) o[0]).thenComparing(o -> (Integer) o[1])
                 .thenComparing(o -> (Long) o[2]));

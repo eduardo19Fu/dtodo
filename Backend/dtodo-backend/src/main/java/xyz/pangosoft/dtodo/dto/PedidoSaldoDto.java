@@ -21,6 +21,8 @@ public class PedidoSaldoDto {
     private BigDecimal entregado = BigDecimal.ZERO;
     /** Lo cobrado con recibos vigentes ligados al pedido (directamente o por una factura suya). */
     private BigDecimal cobrado = BigDecimal.ZERO;
+    /** Valor de lo que el cliente devolvió de este pedido; baja lo que debe. */
+    private BigDecimal devuelto = BigDecimal.ZERO;
     /** Lo que se aplicó de los abonos sin pedido del cliente, del más antiguo al más reciente. */
     private BigDecimal aplicadoDeAbonos = BigDecimal.ZERO;
     /** Lo entregado que todavía no se paga. */

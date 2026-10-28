@@ -56,6 +56,13 @@ public class DetalleProforma implements Serializable {
     @Builder.Default
     @Column(nullable = false)
     private Integer cantidadDescontada = 0;
+
+    /**
+     * Unidades de lo entregado que el cliente devolvió. Lo devolvible es lo entregado menos esto. La fija el servidor.
+     */
+    @Builder.Default
+    @Column(nullable = false)
+    private Integer cantidadDevuelta = 0;
     private BigDecimal nuevoPrecioVenta;
     private BigDecimal subTotal;
     private BigDecimal subTotalDescuento;

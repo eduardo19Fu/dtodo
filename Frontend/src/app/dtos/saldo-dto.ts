@@ -11,6 +11,8 @@ export class PedidoSaldoDto {
   entregado: number;
   /** Lo cobrado con recibos ligados al pedido. */
   cobrado: number;
+  /** Valor de lo que el cliente devolvió de este pedido. */
+  devuelto: number;
   /** Lo que se aplicó de los abonos sin pedido del cliente. */
   aplicadoDeAbonos: number;
   /** Lo entregado que todavía no se paga. */
@@ -28,6 +30,8 @@ export class SaldoClienteDto {
   limiteCredito?: number | null;
   diasCredito?: number | null;
   entregado: number;
+  /** Valor de todo lo que el cliente devolvió. */
+  devuelto: number;
   abonado: number;
   saldo: number;
   /** Lo que queda del límite de crédito; nulo si el cliente no tiene límite. */

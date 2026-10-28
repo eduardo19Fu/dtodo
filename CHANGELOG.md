@@ -6,6 +6,21 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Devoluciones de clientes (Fase 5, paso 1)
+
+El administrador registra lo que un cliente devuelve de lo ya entregado de un pedido mayorista. Se registra y queda aprobada en un solo paso.
+
+- **Qué se devuelve**: por línea del pedido y en unidades enteras, hasta lo entregado menos lo ya devuelto. Cada línea va a **reingreso** al inventario de una sucursal (la del pedido o la que elija el administrador) o a **baja** por merma, que registra la devolución pero no mueve el inventario. Pide motivo obligatorio y una fecha no futura (hoy por defecto). El pedido se bloquea mientras se registra, para que dos devoluciones simultáneas de lo mismo no pasen de lo entregado.
+- **Pedido facturado**: si el pedido tiene una factura vigente, la devolución debe ligarse a una **nota de crédito** vigente del mismo cliente emitida sobre esa factura o sobre el pedido; la pantalla ofrece las que corresponden y elige sola la única que haya. Sin factura, la nota se ignora.
+- **Efecto en lo que debe el cliente**: el valor devuelto (unidades × importe de la línea con descuento / unidades de la línea) **baja el saldo** y lo pendiente del pedido, se ve como "Devuelto" en el estado de cuenta del recibo, entra en la cobranza (baja lo vencido) y en el control del límite de crédito, y aparece como abono en el estado de cuenta imprimible. Para el cobro de un pedido de contado cuenta lo entregado neto de lo devuelto.
+- **Inventario**: el reingreso es una entrada nueva (`DEVOLUCION_CLIENTE`) que aparece en el kardex ("Devolución de cliente #n"), el reporte de movimientos y la valorización.
+- **Historial**: deja constancia en el historial de auditoría del pedido (acción `DEVOLUCION_CLIENTE`) con el motivo y las líneas.
+- **API** (`/api/devoluciones-cliente`, solo `ROLE_ADMIN`): `GET /page/{page}` (cliente y fechas; sin fechas, 90 días), `GET /{id}`, `GET /clientes/{id}/pedidos` y `POST`.
+- **Pantalla** *Devoluciones de clientes* (menú lateral): formulario por pasos (cliente, pedido, cantidades y destino por línea, fecha con el selector del sistema, sucursal, nota de crédito y motivo) con el valor devuelto en vivo, y lista con detalle desplegable.
+- **Base de datos** (`sql/mayoristas/18_create_devoluciones_cliente.sql`, **requerido antes del jar**; el rollback lo revierte): `devoluciones_cliente`, `devoluciones_cliente_detalle`, `proformas_detalle.cantidad_devuelta` y el valor `DEVOLUCION_CLIENTE` del ENUM de `movimientos_producto` (solo si falta).
+- **No incluido**: anular una devolución (el reingreso no se revierte desde el sistema), y las comisiones todavía se calculan sobre lo entregado sin restar devoluciones.
+- **Pruebas**: `DevolucionClienteServiceImplTest` (cantidades, destinos, sucursal, fechas, motivo, pedido facturado y notas, pedidos devolubles), saldo y cobranza netos de devoluciones, las consultas contra H2, la matriz de roles y los specs de la pantalla y el servicio.
+
 ### Cambiado — Estilos de Comisiones, Recibos de caja, Cobranza y Autorizaciones
 
 Las pantallas nuevas usaban botones y campos de Bootstrap sin estilo y no cuadraban con el resto del sistema. Ahora usan el mismo lenguaje que los listados.
