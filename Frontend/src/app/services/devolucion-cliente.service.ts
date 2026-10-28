@@ -42,6 +42,11 @@ export class DevolucionClienteService {
     return this.http.get<PedidoDevolubleDto[]>(`${this.url}/clientes/${idCliente}/pedidos`);
   }
 
+  /** Anula una devolución con motivo: lo que reingresó sale de nuevo y vuelve a subir lo que debe el cliente. */
+  anular(idDevolucion: number, motivo: string): Observable<DevolucionClienteDto> {
+    return this.http.post<DevolucionClienteDto>(`${this.url}/${idDevolucion}/anular`, { motivo });
+  }
+
   registrar(devolucion: CrearDevolucionClienteDto): Observable<DevolucionClienteDto> {
     return this.http.post<DevolucionClienteDto>(this.url, devolucion);
   }

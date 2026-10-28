@@ -290,7 +290,7 @@ class SaldoRepositoryTest {
         assertEquals(ana.getIdUsuario(), octubre.get(0)[0]);
         assertEquals(0, new BigDecimal("22.50").compareTo((BigDecimal) octubre.get(0)[1]));
 
-        assertEquals(2, devolucionRepository.findByCliente_IdClienteOrderByFechaAscIdDevolucionAsc(cliente.getIdCliente()).size());
+        assertEquals(2, devolucionRepository.findByCliente_IdClienteAndAnuladaFalseOrderByFechaAscIdDevolucionAsc(cliente.getIdCliente()).size());
         assertEquals(1, devolucionRepository.buscar(otro.getIdCliente(), LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31),
                 org.springframework.data.domain.PageRequest.of(0, 10)).getTotalElements());
         assertEquals(3, devolucionRepository.buscar(null, LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31),
@@ -369,5 +369,27 @@ class SaldoRepositoryTest {
         Object[] deOctubre = filas.stream().filter(f -> LocalDate.of(2026, 10, 10).equals(f[1])).findFirst().get();
         assertEquals(ana.getIdUsuario(), deOctubre[0]);
         assertEquals(0, new BigDecimal("20.00").compareTo((BigDecimal) deOctubre[2]));
+    }
+
+    @Test
+    void unaDevolucionAnuladaDejaDeContarEnTodasLasSumas() {
+        base();
+        Proforma uno = pedido("1P", cliente, activo, TipoProformaEnum.MAYORISTA, EstadoPedidoEnum.ENTREGADA);
+        em.flush();
+        devolucion(uno, cliente, LocalDate.of(2026, 10, 10), "10.00");
+        xyz.pangosoft.dtodo.model.DevolucionCliente anulada = devolucion(uno, cliente, LocalDate.of(2026, 10, 11), "90.00");
+        anulada.setAnulada(true);
+        em.flush();
+
+        assertEquals(0, new BigDecimal("10.00").compareTo(devolucionRepository.devueltoDelPedido(uno.getIdProforma())));
+        assertEquals(0, new BigDecimal("10.00").compareTo((BigDecimal) devolucionRepository.devueltoDelCliente(cliente.getIdCliente()).get(0)[1]));
+        assertEquals(0, new BigDecimal("10.00").compareTo((BigDecimal) devolucionRepository.devueltoDeTodos().get(0)[2]));
+        assertEquals(0, new BigDecimal("10.00").compareTo((BigDecimal) devolucionRepository
+                .devueltoDelPeriodoPorVendedor(LocalDate.of(2026, 10, 1), LocalDate.of(2026, 11, 1)).get(0)[1]));
+        assertEquals(1, devolucionRepository.devueltoPorVendedorYFecha(LocalDate.of(2026, 10, 1), LocalDate.of(2026, 11, 1)).size());
+        assertEquals(1, devolucionRepository.findByCliente_IdClienteAndAnuladaFalseOrderByFechaAscIdDevolucionAsc(cliente.getIdCliente()).size());
+        // La lista sí las muestra, marcadas.
+        assertEquals(2, devolucionRepository.buscar(null, LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31),
+                org.springframework.data.domain.PageRequest.of(0, 10)).getTotalElements());
     }
 }

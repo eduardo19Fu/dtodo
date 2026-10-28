@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import xyz.pangosoft.dtodo.dto.CrearDevolucionClienteDto;
 import xyz.pangosoft.dtodo.dto.DevolucionClienteDto;
 import xyz.pangosoft.dtodo.dto.PedidoDevolubleDto;
+import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
 import xyz.pangosoft.dtodo.error.exceptions.NotFoundException;
 import xyz.pangosoft.dtodo.error.exceptions.ReglaNegocioException;
 import xyz.pangosoft.dtodo.model.DetalleProforma;
@@ -39,6 +40,7 @@ import xyz.pangosoft.dtodo.model.enums.EstadoNotaCreditoEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoDocumentoOrigenEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoMovimientoEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoProformaEnum;
+import xyz.pangosoft.dtodo.repository.IComisionLiquidacionRepository;
 import xyz.pangosoft.dtodo.repository.IDevolucionClienteRepository;
 import xyz.pangosoft.dtodo.repository.IFacturaRepository;
 import xyz.pangosoft.dtodo.repository.INotaCreditoRepository;
@@ -66,6 +68,7 @@ public class DevolucionClienteServiceImpl implements IDevolucionClienteService {
     private final IMovimientoProductoService movimientoService;
     private final IAmbitoVendedorService ambito;
     private final IUsuarioService usuarioService;
+    private final IComisionLiquidacionRepository comisionLiquidacionRepository;
     private final IProformaAuditoriaService auditoria;
 
     @Transactional
@@ -135,6 +138,72 @@ public class DevolucionClienteServiceImpl implements IDevolucionClienteService {
                 "Devolución #" + guardada.getIdDevolucion() + " por Q" + total + ": " + resumenDeLineas(guardada, lineasDelPedido));
         log.info("Devolución {} registrada del pedido {} por Q{}", guardada.getIdDevolucion(), pedido.getNoProforma(), total);
         return aDto(guardada, pedido, true);
+    }
+
+    @Transactional
+    @Override
+    public DevolucionClienteDto anular(Long idDevolucion, String motivo) {
+        String motivoLimpio = auditoria.motivoObligatorio(motivo, "anular una devolución");
+        DevolucionCliente devolucion = devolucionRepository.findById(idDevolucion)
+                .orElseThrow(() -> new NotFoundException("La devolución solicitada no se encuentra registrada."));
+        if (devolucion.isAnulada()) {
+            throw new ReglaNegocioException("La devolución " + idDevolucion + " ya está anulada.");
+        }
+        if (devolucion.getIdNotaCredito() != null) {
+            NotaCredito nota = notaCreditoRepository.findById(devolucion.getIdNotaCredito()).orElse(null);
+            if (nota != null && nota.getEstado() != EstadoNotaCreditoEnum.ANULADO) {
+                throw new ReglaNegocioException("La devolución está ligada a la nota de crédito " + nota.getIdNotaCredito()
+                        + ", que sigue vigente. Anule primero la nota de crédito.");
+            }
+        }
+        int anioDeLaDevolucion = devolucion.getFecha().getYear();
+        if (comisionLiquidacionRepository.existsByAnio(anioDeLaDevolucion)) {
+            throw new ReglaNegocioException("Las comisiones de " + anioDeLaDevolucion + " ya están liquidadas: deshaga la liquidación "
+                    + "antes de anular una devolución de ese año.");
+        }
+        Usuario usuario = usuarioDeLaSesion();
+
+        // El pedido se bloquea como al registrar; si ya no existe (proforma anulada) solo se revierte el resto.
+        Proforma pedido = facturaRepository.bloquearProforma(devolucion.getIdProforma()).orElse(null);
+        Map<Long, DetalleProforma> lineas = new HashMap<>();
+        if (pedido != null) {
+            pedido.getItemsProforma().forEach(l -> lineas.put(l.getIdDetalle(), l));
+        }
+        for (DevolucionClienteDetalle detalle : devolucion.getDetalles()) {
+            DetalleProforma linea = lineas.get(detalle.getIdDetalle());
+            if (linea != null) {
+                linea.setCantidadDevuelta(Math.max(0, valor(linea.getCantidadDevuelta()) - detalle.getCantidad()));
+            }
+            if (detalle.getDestino() == DestinoDevolucionEnum.REINGRESO && devolucion.getSucursal() != null && linea != null) {
+                try {
+                    // Lo que reingresó vuelve a salir: si ya no hay existencias, la anulación se rechaza completa.
+                    movimientoService.save(MovimientoProducto.builder()
+                            .cantidad(detalle.getCantidad())
+                            .tipoDocumentoOrigen(ORIGEN)
+                            .idDocumentoOrigen(devolucion.getIdDevolucion())
+                            .producto(linea.getProducto())
+                            .usuario(usuario)
+                            .sucursal(devolucion.getSucursal())
+                            .tipoMovimiento(TipoMovimientoEnum.ANULACION_DEVOLUCION_CLIENTE)
+                            .build());
+                } catch (BadRequestException exception) {
+                    throw new ReglaNegocioException("No se puede anular la devolución: " + exception.getMessage()
+                            + " Lo que reingresó ya salió de la sucursal.");
+                }
+            }
+        }
+        devolucion.setAnulada(true);
+        devolucion.setFechaAnulacion(LocalDateTime.now());
+        devolucion.setUsuarioAnulacion(usuario);
+        devolucion.setMotivoAnulacion(motivoLimpio);
+        devolucionRepository.save(devolucion);
+        if (pedido != null) {
+            proformaRepository.save(pedido);
+        }
+        auditoria.registrar(devolucion.getIdProforma(), AccionAuditoriaEnum.ANULACION_DEVOLUCION_CLIENTE, motivoLimpio,
+                "Devolución #" + idDevolucion + " por Q" + devolucion.getTotal() + " anulada.");
+        log.info("Devolución {} anulada", idDevolucion);
+        return aDto(devolucion, pedido, true);
     }
 
     private static void exigirPedidoDevoluble(Proforma pedido) {
@@ -332,6 +401,10 @@ public class DevolucionClienteServiceImpl implements IDevolucionClienteService {
         dto.setTotal(devolucion.getTotal());
         dto.setUsuario(nombreUsuario(devolucion.getUsuario()));
         dto.setFechaRegistro(devolucion.getFechaRegistro());
+        dto.setAnulada(devolucion.isAnulada());
+        dto.setFechaAnulacion(devolucion.getFechaAnulacion());
+        dto.setUsuarioAnulacion(nombreUsuario(devolucion.getUsuarioAnulacion()));
+        dto.setMotivoAnulacion(devolucion.getMotivoAnulacion());
         if (conLineas) {
             Map<Long, DetalleProforma> lineas = new HashMap<>();
             if (pedido != null) {

@@ -136,7 +136,7 @@ class VendedorSeguridadTest {
 
     @Test
     void lasDevolucionesDeClientesSonSoloDelAdministrador() {
-        String[] metodos = { "listar", "buscar", "pedidosDevolubles", "registrar" };
+        String[] metodos = { "listar", "buscar", "pedidosDevolubles", "registrar", "anular" };
         niegaAlVendedor(DevolucionClienteApiController.class, metodos);
         for (String metodo : metodos) {
             assertTrue(roles(DevolucionClienteApiController.class, metodo).equals(Arrays.asList("ROLE_ADMIN")),

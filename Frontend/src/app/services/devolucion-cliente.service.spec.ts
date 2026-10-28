@@ -35,6 +35,15 @@ describe('DevolucionClienteService', () => {
     expect(http.expectOne(`${base}/9`).request.method).toBe('GET');
   });
 
+  it('anula una devolución enviando el motivo', () => {
+    servicio.anular(9, 'por error').subscribe();
+
+    const req = http.expectOne(`${base}/9/anular`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ motivo: 'por error' });
+    req.flush({});
+  });
+
   it('registra la devolución con lo que se manda', () => {
     servicio.registrar({ idProforma: 7, motivo: 'dañado', lineas: [{ idDetalle: 1, cantidad: 2, destino: 'REINGRESO' }] }).subscribe();
 

@@ -52,7 +52,7 @@
                            WHEN mp.tipo_movimiento IN ('COMPRA', 'ENTRADA', 'ANULACION_FACTURA', 'ANULACION_NOTA', 'ANULACION_ENTREGA_PROFORMA', 'DEVOLUCION_CLIENTE')
                            THEN mp.cantidad ELSE 0 END), 0) AS SIGNED) AS entradas,
                        CAST(COALESCE(SUM(CASE
-                           WHEN mp.tipo_movimiento IN ('VENTA', 'SALIDA', 'ELIMINAR_COMPRA', 'ENTREGA_PRODUCTO_NOTA', 'ENTREGA_PROFORMA')
+                           WHEN mp.tipo_movimiento IN ('VENTA', 'SALIDA', 'ELIMINAR_COMPRA', 'ENTREGA_PRODUCTO_NOTA', 'ENTREGA_PROFORMA', 'ANULACION_DEVOLUCION_CLIENTE')
                            THEN mp.cantidad ELSE 0 END), 0) AS SIGNED) AS salidas,
                        CAST(COALESCE(SUM(CASE WHEN mp.tipo_movimiento = 'VENTA' THEN mp.cantidad ELSE 0 END), 0) AS SIGNED)
                            AS salidas_factura,

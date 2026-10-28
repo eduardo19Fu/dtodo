@@ -49,5 +49,10 @@ export class DevolucionClienteDto {
   total: number;
   usuario: string;
   fechaRegistro: string;
+  /** Una devolución anulada se conserva y deja de contar. */
+  anulada: boolean;
+  fechaAnulacion?: string | null;
+  usuarioAnulacion?: string | null;
+  motivoAnulacion?: string | null;
   lineas: Array<{ idDetalle: number; codigo?: string | null; producto: string; cantidad: number; destino: DestinoDevolucion; valor: number }> = [];
 }

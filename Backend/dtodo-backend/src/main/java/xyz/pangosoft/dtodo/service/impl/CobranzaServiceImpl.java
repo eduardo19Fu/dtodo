@@ -165,7 +165,7 @@ public class CobranzaServiceImpl implements ICobranzaService {
                 .orElseThrow(() -> new NotFoundException("El cliente solicitado no se encuentra registrado."));
         return armarEstadoDeCuenta(entregaRepository.entregasDelClienteDetalle(idCliente),
                 reciboRepository.findByCliente_IdClienteAndAnuladoFalseOrderByFechaPagoAscIdReciboAsc(idCliente),
-                devolucionRepository.findByCliente_IdClienteOrderByFechaAscIdDevolucionAsc(idCliente));
+                devolucionRepository.findByCliente_IdClienteAndAnuladaFalseOrderByFechaAscIdDevolucionAsc(idCliente));
     }
 
     /** Las entregas (cargos) y los recibos (abonos) por fecha; en un mismo día el cargo va antes que el abono. */

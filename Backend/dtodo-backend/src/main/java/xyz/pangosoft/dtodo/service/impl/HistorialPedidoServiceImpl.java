@@ -120,6 +120,10 @@ public class HistorialPedidoServiceImpl implements IHistorialPedidoService {
                 categoria = Categoria.DEVOLUCION;
                 titulo = "Devolución de cliente";
                 break;
+            case ANULACION_DEVOLUCION_CLIENTE:
+                categoria = Categoria.ANULACION;
+                titulo = "Devolución anulada";
+                break;
             case CAMBIO_CLIENTE_FACTURA:
                 categoria = Categoria.FACTURA;
                 titulo = "Cliente cambiado al facturar";

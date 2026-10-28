@@ -6,6 +6,18 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Anular una devolución de cliente
+
+El administrador puede anular una devolución registrada, con motivo obligatorio. La devolución se conserva (quién, cuándo y por qué) y deja de contar.
+
+- **Qué revierte**: lo devolvible de cada línea vuelve a subir y el valor devuelto vuelve a sumarse a lo que debe el cliente (saldo, cobranza, control de crédito, estado de cuenta). Lo que había **reingresado** al inventario sale de nuevo con un movimiento nuevo (`ANULACION_DEVOLUCION_CLIENTE`, visible en el kardex como "Anulación de devolución de cliente"); lo que se dio de baja nunca entró, así que no se toca. Si la sucursal ya no tiene esas existencias, se rechaza la anulación completa con el mensaje de stock insuficiente.
+- **Cuándo no se puede**: si la devolución está ligada a una nota de crédito que sigue vigente (hay que anular primero la nota), si ya está anulada, o si las **comisiones del año de la devolución ya están liquidadas** (hay que deshacer antes la liquidación, porque las devoluciones son parte de la base de la comisión). Una devolución anulada ya no resta en las comisiones, las ventas netas del tablero ni la cobranza.
+- **Historial**: queda en la línea de tiempo del pedido como "Devolución anulada", con el motivo.
+- **API**: `POST /api/devoluciones-cliente/{id}/anular` con `{ "motivo": ... }`, solo `ROLE_ADMIN`.
+- **Pantalla**: botón de anular por fila, marca "Anulada" y, en el detalle, quién la anuló, cuándo y por qué.
+- **Base de datos** (`sql/mayoristas/20_anular_devoluciones_cliente.sql`, **requerido antes del jar**; el rollback lo revierte): columnas de anulación en `devoluciones_cliente` y el valor del ENUM de `movimientos_producto` (solo si falta).
+- **Pruebas**: restauración de lo devolvible, salida del inventario solo de lo que reingresó, motivo, doble anulación, nota de crédito vigente y anulada, año liquidado, stock insuficiente, pedido inexistente, las consultas que excluyen las anuladas contra H2, la matriz de roles y los specs.
+
 ### Cambiado — Las comisiones son netas de devoluciones
 
 La comisión de un vendedor se calcula sobre **lo entregado menos lo que los clientes devolvieron**, como las ventas del tablero de indicadores.
@@ -51,7 +63,7 @@ El administrador registra lo que un cliente devuelve de lo ya entregado de un pe
 - **API** (`/api/devoluciones-cliente`, solo `ROLE_ADMIN`): `GET /page/{page}` (cliente y fechas; sin fechas, 90 días), `GET /{id}`, `GET /clientes/{id}/pedidos` y `POST`.
 - **Pantalla** *Devoluciones de clientes* (menú lateral): formulario por pasos (cliente, pedido, cantidades y destino por línea, fecha con el selector del sistema, sucursal, nota de crédito y motivo) con el valor devuelto en vivo, y lista con detalle desplegable.
 - **Base de datos** (`sql/mayoristas/18_create_devoluciones_cliente.sql`, **requerido antes del jar**; el rollback lo revierte): `devoluciones_cliente`, `devoluciones_cliente_detalle`, `proformas_detalle.cantidad_devuelta` y el valor `DEVOLUCION_CLIENTE` del ENUM de `movimientos_producto` (solo si falta).
-- **No incluido**: anular una devolución (el reingreso no se revierte desde el sistema), y las comisiones todavía se calculan sobre lo entregado sin restar devoluciones.
+- **No incluido**: anular una devolución (se agregó después, ver más arriba).
 - **Pruebas**: `DevolucionClienteServiceImplTest` (cantidades, destinos, sucursal, fechas, motivo, pedido facturado y notas, pedidos devolubles), saldo y cobranza netos de devoluciones, las consultas contra H2, la matriz de roles y los specs de la pantalla y el servicio.
 
 ### Cambiado — Estilos de Comisiones, Recibos de caja, Cobranza y Autorizaciones

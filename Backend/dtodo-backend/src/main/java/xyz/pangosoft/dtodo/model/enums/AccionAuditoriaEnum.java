@@ -14,5 +14,7 @@ public enum AccionAuditoriaEnum {
     RECHAZO_CREDITO,
     /** El administrador registró una devolución de lo entregado al cliente. */
     DEVOLUCION_CLIENTE,
+    /** El administrador anuló una devolución de cliente. */
+    ANULACION_DEVOLUCION_CLIENTE,
     CAMBIO_CLIENTE_FACTURA;
 }

@@ -314,6 +314,7 @@ public class MovimientoProductoServiceImpl implements IMovimientoProductoService
 				case ELIMINAR_COMPRA:
 				case ENTREGA_PRODUCTO_NOTA:
 				case ENTREGA_PROFORMA:
+				case ANULACION_DEVOLUCION_CLIENTE:
 					log.debug("Operando salidas al stock por operaciones de tipo VENTA, SALIDA");
 					if (tmpStock < movimientoProducto.getCantidad()) {
 						throw stockInsuficiente(

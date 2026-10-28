@@ -303,6 +303,30 @@ export class DevolucionesClienteComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** Anula la devolución con motivo; lo que reingresó sale de nuevo y vuelve a subir lo que debe el cliente. */
+  anular(devolucion: DevolucionClienteDto): void {
+    Swal.fire({
+      title: `Anular la devolución #${devolucion.idDevolucion}`,
+      text: 'Lo que reingresó al inventario sale de nuevo y el valor vuelve a sumarse a lo que debe el cliente.',
+      input: 'textarea',
+      inputLabel: 'Motivo (obligatorio, queda registrado)',
+      inputAttributes: { maxlength: '500' },
+      showCancelButton: true,
+      confirmButtonText: 'Anular',
+      cancelButtonText: 'Cancelar',
+      inputValidator: valor => !valor || !valor.trim() ? 'Indica el motivo.' : null
+    }).then(resultado => {
+      if (!resultado.isConfirmed) {
+        return;
+      }
+      this.devolucionService.anular(devolucion.idDevolucion, String(resultado.value).trim()).subscribe(() => {
+        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Devolución anulada', showConfirmButton: false, timer: 2500 });
+        this.abierta = null;
+        this.cargar(this.paginaActual);
+      }, error => Swal.fire('No se pudo anular', this.mensaje(error), 'error'));
+    });
+  }
+
   etiquetaDestino(destino: DestinoDevolucion): string {
     return destino === 'REINGRESO' ? 'Reingreso' : 'Baja';
   }

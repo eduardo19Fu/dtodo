@@ -68,6 +68,14 @@ public class DevolucionClienteApiController {
         return ResponseEntity.ok(devolucionService.registrar(solicitud));
     }
 
+    @Secured("ROLE_ADMIN")
+    @PostMapping("/{idDevolucion}/anular")
+    public ResponseEntity<DevolucionClienteDto> anular(@PathVariable("idDevolucion") Long idDevolucion,
+            @RequestBody java.util.Map<String, String> cuerpo) {
+        log.info("Anulando la devolución de cliente {}", idDevolucion);
+        return ResponseEntity.ok(devolucionService.anular(idDevolucion, cuerpo.get("motivo")));
+    }
+
     private static LocalDate parsearFecha(String fecha) {
         if (fecha == null || fecha.trim().isEmpty()) {
             return null;

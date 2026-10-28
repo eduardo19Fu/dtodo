@@ -66,8 +66,10 @@ class DevolucionClienteServiceImplTest {
     private final IAmbitoVendedorService ambito = mock(IAmbitoVendedorService.class);
     private final IUsuarioService usuarios = mock(IUsuarioService.class);
     private final IProformaAuditoriaService auditoria = mock(IProformaAuditoriaService.class);
+    private final xyz.pangosoft.dtodo.repository.IComisionLiquidacionRepository comisiones =
+            mock(xyz.pangosoft.dtodo.repository.IComisionLiquidacionRepository.class);
     private final DevolucionClienteServiceImpl service = new DevolucionClienteServiceImpl(devoluciones, proformas, facturas, notas,
-            sucursales, movimientos, ambito, usuarios, auditoria);
+            sucursales, movimientos, ambito, usuarios, comisiones, auditoria);
 
     private final Sucursal central = Sucursal.builder().idSucursal(1).nombre("Central").build();
     private final Sucursal norte = Sucursal.builder().idSucursal(2).nombre("Norte").build();
@@ -393,5 +395,113 @@ class DevolucionClienteServiceImplTest {
         assertThrows(NotFoundException.class, () -> service.buscar(77L));
         assertThrows(ReglaNegocioException.class, () -> service.listar(null, LocalDate.now(), LocalDate.now().minusDays(1),
                 org.springframework.data.domain.PageRequest.of(0, 10)));
+    }
+
+    // ------------------------------------------------------------------------------------------ anular
+
+    /** Una devolución vigente de 3 cuadernos (reingreso a Central) y 2 reglas (baja), ya registrada sobre el pedido. */
+    private DevolucionCliente registrada() {
+        cuadernos.setCantidadDevuelta(3);
+        reglas.setCantidadDevuelta(2);
+        DevolucionCliente d = DevolucionCliente.builder().idDevolucion(50L).idProforma(7L).cliente(cliente).sucursal(central)
+                .fecha(LocalDate.of(2026, 10, 10)).motivo("dañado").total(new BigDecimal("40.00"))
+                .usuario(Usuario.builder().idUsuario(9).primerNombre("Irene").apellido("Ortega").build()).build();
+        d.getDetalles().add(xyz.pangosoft.dtodo.model.DevolucionClienteDetalle.builder().devolucion(d).idDetalle(1L).cantidad(3)
+                .destino(xyz.pangosoft.dtodo.model.enums.DestinoDevolucionEnum.REINGRESO).valor(new BigDecimal("30.00")).build());
+        d.getDetalles().add(xyz.pangosoft.dtodo.model.DevolucionClienteDetalle.builder().devolucion(d).idDetalle(2L).cantidad(2)
+                .destino(xyz.pangosoft.dtodo.model.enums.DestinoDevolucionEnum.BAJA).valor(new BigDecimal("10.00")).build());
+        when(devoluciones.findById(50L)).thenReturn(Optional.of(d));
+        return d;
+    }
+
+    @Test
+    void anularRestauraLoDevolvibleSacaDeNuevoLoQueReingresoYDejaConstancia() {
+        DevolucionCliente d = registrada();
+
+        DevolucionClienteDto dto = service.anular(50L, "  se registró por error ");
+
+        assertTrue(dto.isAnulada());
+        assertEquals("se registró por error", dto.getMotivoAnulacion());
+        assertEquals("Irene Ortega", dto.getUsuarioAnulacion());
+        assertTrue(d.isAnulada());
+        assertTrue(d.getFechaAnulacion() != null);
+        assertEquals(Integer.valueOf(0), cuadernos.getCantidadDevuelta());
+        assertEquals(Integer.valueOf(0), reglas.getCantidadDevuelta());
+        verify(devoluciones).save(d);
+        verify(proformas).save(pedido);
+
+        ArgumentCaptor<MovimientoProducto> captor = ArgumentCaptor.forClass(MovimientoProducto.class);
+        verify(movimientos).save(captor.capture());   // solo lo que reingresó; la baja nunca entró al inventario
+        MovimientoProducto salida = captor.getValue();
+        assertEquals(TipoMovimientoEnum.ANULACION_DEVOLUCION_CLIENTE, salida.getTipoMovimiento());
+        assertEquals(Integer.valueOf(3), salida.getCantidad());
+        assertEquals(central, salida.getSucursal());
+        assertEquals(Long.valueOf(50), salida.getIdDocumentoOrigen());
+        verify(auditoria).registrar(eq(7L), eq(AccionAuditoriaEnum.ANULACION_DEVOLUCION_CLIENTE), eq("se registró por error"), any());
+    }
+
+    @Test
+    void anularPideMotivoYNoAceptaUnaDevolucionAnuladaOInexistente() {
+        DevolucionCliente d = registrada();
+
+        assertThrows(ReglaNegocioException.class, () -> service.anular(50L, " "));
+        assertThrows(NotFoundException.class, () -> service.anular(77L, "motivo"));
+        verify(devoluciones, never()).save(any());
+
+        d.setAnulada(true);
+        ReglaNegocioException error = assertThrows(ReglaNegocioException.class, () -> service.anular(50L, "otra vez"));
+        assertTrue(error.getMessage().contains("ya está anulada"));
+    }
+
+    @Test
+    void conUnaNotaDeCreditoVigenteNoSeAnulaPeroConLaNotaAnuladaSi() {
+        DevolucionCliente d = registrada();
+        d.setIdNotaCredito(4L);
+        NotaCredito vigente = nota(4, cliente, EstadoNotaCreditoEnum.ENTREGADO, TipoDocumentoOrigenEnum.FACTURA);
+
+        ReglaNegocioException error = assertThrows(ReglaNegocioException.class, () -> service.anular(50L, "motivo"));
+        assertTrue(error.getMessage().contains("Anule primero la nota de crédito"));
+        verify(movimientos, never()).save(any());
+
+        vigente.setEstado(EstadoNotaCreditoEnum.ANULADO);
+        assertTrue(service.anular(50L, "motivo").isAnulada());
+    }
+
+    @Test
+    void siLasComisionesDelAnioYaEstanLiquidadasNoSeAnula() {
+        registrada();
+        when(comisiones.existsByAnio(2026)).thenReturn(true);
+
+        ReglaNegocioException error = assertThrows(ReglaNegocioException.class, () -> service.anular(50L, "motivo"));
+
+        assertTrue(error.getMessage().contains("ya están liquidadas"), error.getMessage());
+        verify(devoluciones, never()).save(any());
+        verify(movimientos, never()).save(any());
+    }
+
+    @Test
+    void siLoQueReingresoYaSalioDeLaSucursalSeRechazaLaAnulacion() {
+        DevolucionCliente d = registrada();
+        when(movimientos.save(any())).thenThrow(new xyz.pangosoft.dtodo.error.exceptions.BadRequestException(
+                "Stock insuficiente para CUADERNO. Disponible: 1, solicitado: 3.", null));
+
+        ReglaNegocioException error = assertThrows(ReglaNegocioException.class, () -> service.anular(50L, "motivo"));
+
+        assertTrue(error.getMessage().contains("Stock insuficiente"), error.getMessage());
+        assertFalse(d.isAnulada());
+        verify(devoluciones, never()).save(any());
+    }
+
+    @Test
+    void siElPedidoYaNoExisteIgualSeAnulaLaDevolucion() {
+        DevolucionCliente d = registrada();
+        when(facturas.bloquearProforma(7L)).thenReturn(Optional.empty());
+
+        DevolucionClienteDto dto = service.anular(50L, "motivo");
+
+        assertTrue(dto.isAnulada());
+        assertTrue(d.isAnulada());
+        verify(movimientos, never()).save(any());   // sin la línea no se sabe qué producto sacar: queda para ajuste manual
+        verify(proformas, never()).save(any());
     }
 }

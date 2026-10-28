@@ -26,6 +26,10 @@ public class DevolucionClienteDto {
     private BigDecimal total;
     private String usuario;
     private LocalDateTime fechaRegistro;
+    private boolean anulada;
+    private LocalDateTime fechaAnulacion;
+    private String usuarioAnulacion;
+    private String motivoAnulacion;
     private List<Linea> lineas = new ArrayList<>();
 
     @Data

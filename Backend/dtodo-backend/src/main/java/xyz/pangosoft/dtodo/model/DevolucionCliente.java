@@ -32,7 +32,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@ToString(exclude = { "cliente", "sucursal", "usuario", "detalles" })
+@ToString(exclude = { "cliente", "sucursal", "usuario", "usuarioAnulacion", "detalles" })
 @Entity
 @Table(name = "devoluciones_cliente")
 public class DevolucionCliente implements Serializable {
@@ -68,6 +68,17 @@ public class DevolucionCliente implements Serializable {
     private Usuario usuario;
 
     private LocalDateTime fechaRegistro;
+
+    /** Una devolución anulada se conserva y deja de contar para el saldo, lo devolvible y las comisiones. */
+    private boolean anulada;
+
+    private LocalDateTime fechaAnulacion;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_usuario_anulacion")
+    private Usuario usuarioAnulacion;
+
+    private String motivoAnulacion;
 
     @Builder.Default
     @OneToMany(mappedBy = "devolucion", cascade = CascadeType.ALL, orphanRemoval = true)

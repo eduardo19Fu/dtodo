@@ -1,5 +1,9 @@
--- Revierte el módulo de Clientes Mayoristas (pasos 01 a 19). Orden inverso a la creación.
+-- Revierte el módulo de Clientes Mayoristas (pasos 01 a 20). Orden inverso a la creación.
 -- ATENCIÓN: borra la información de rutas, los datos mayoristas de los clientes y los descuentos. Respaldar antes.
+-- Paso 20: el valor ANULACION_DEVOLUCION_CLIENTE del ENUM de movimientos_producto se conserva (quitarlo falla si ya se usó).
+ALTER TABLE devoluciones_cliente DROP FOREIGN KEY fk_devcli_usuario_anula;
+ALTER TABLE devoluciones_cliente DROP COLUMN anulada, DROP COLUMN fecha_anulacion, DROP COLUMN id_usuario_anulacion, DROP COLUMN motivo_anulacion;
+
 -- Paso 19
 ALTER TABLE comisiones_liquidaciones DROP COLUMN monto_devuelto;
 

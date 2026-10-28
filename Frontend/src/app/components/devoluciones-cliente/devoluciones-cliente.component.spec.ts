@@ -45,7 +45,8 @@ describe('DevolucionesClienteComponent', () => {
       getListado: jasmine.createSpy('getListado').and.returnValue(of(pagina([devolucion()]))),
       buscar: jasmine.createSpy('buscar').and.returnValue(of(devolucion())),
       pedidosDevolubles: jasmine.createSpy('pedidosDevolubles').and.returnValue(of([pedido()])),
-      registrar: jasmine.createSpy('registrar').and.returnValue(of(devolucion()))
+      registrar: jasmine.createSpy('registrar').and.returnValue(of(devolucion())),
+      anular: jasmine.createSpy('anular').and.returnValue(of(devolucion()))
     };
     clientes = { getListado: jasmine.createSpy('getListado').and.returnValue(of({ content: [cliente()] })) };
     sucursales = { getSucursales: jasmine.createSpy('getSucursales').and.returnValue(of([{ idSucursal: 1, nombre: 'Central' }])) };
@@ -199,5 +200,31 @@ describe('DevolucionesClienteComponent', () => {
 
     expect(component.desde).toBe('');
     expect(devoluciones.getListado).toHaveBeenCalledWith(0, 10, { desde: '', hasta: '' });
+  });
+
+  it('anular pide el motivo, lo manda limpio y recarga la lista; cancelar no llama', async () => {
+    spyOn(Swal, 'fire').and.returnValue(Promise.resolve({ isConfirmed: false }) as any);
+    component.anular(devolucion());
+    await esperar();
+    expect(devoluciones.anular).not.toHaveBeenCalled();
+
+    (Swal.fire as jasmine.Spy).and.callFake(((opciones: any) => opciones && opciones.input
+      ? Promise.resolve({ isConfirmed: true, value: '  por error ' }) : Promise.resolve({ isConfirmed: true })) as any);
+    component.anular(devolucion());
+    await esperar();
+
+    expect(devoluciones.anular).toHaveBeenCalledWith(50, 'por error');
+    expect(devoluciones.getListado).toHaveBeenCalled();
+  });
+
+  it('si el servidor rechaza la anulación muestra el mensaje', async () => {
+    devoluciones.anular.and.returnValue(throwError({ error: { message: 'Anule primero la nota de crédito.' } }));
+    const fire = spyOn(Swal, 'fire').and.callFake(((opciones: any) => opciones && opciones.input
+      ? Promise.resolve({ isConfirmed: true, value: 'motivo' }) : Promise.resolve({ isConfirmed: true })) as any);
+
+    component.anular(devolucion());
+    await esperar();
+
+    expect(fire).toHaveBeenCalledWith('No se pudo anular', 'Anule primero la nota de crédito.', 'error');
   });
 });

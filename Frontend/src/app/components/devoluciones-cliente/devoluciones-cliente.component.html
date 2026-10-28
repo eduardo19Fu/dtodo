@@ -200,9 +200,10 @@
           </tr>
         </thead>
         <tbody *ngFor="let devolucion of devoluciones; trackBy: trackDevolucion">
-          <tr>
+          <tr [class.is-muted]="devolucion.anulada">
             <td data-label="Devolución">
               <span class="listing-id-pill">#{{devolucion.idDevolucion}}</span>
+              <span *ngIf="devolucion.anulada" class="listing-status-pill listing-status-danger d-block mt-1">Anulada</span>
               <span *ngIf="devolucion.idNotaCredito" class="listing-status-pill listing-status-info d-block mt-1">Nota de crédito #{{devolucion.idNotaCredito}}</span>
             </td>
             <td data-label="Fecha">{{devolucion.fecha | date: 'dd/MM/yyyy'}}</td>
@@ -220,6 +221,11 @@
                   [attr.aria-label]="'Ver el detalle de la devolución ' + devolucion.idDevolucion">
                   <i class="fas" [ngClass]="abierta && abierta.idDevolucion === devolucion.idDevolucion ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
                 </button>
+                <button type="button" class="btn btn-sm listing-table-action listing-action-delete" (click)="anular(devolucion)"
+                  *ngIf="!devolucion.anulada" appTooltip="Anular la devolución"
+                  [attr.aria-label]="'Anular la devolución ' + devolucion.idDevolucion">
+                  <i class="fas fa-ban"></i>
+                </button>
               </div>
             </td>
           </tr>
@@ -227,6 +233,12 @@
             <td colspan="7">
               <div class="detalle-devolucion">
                 <span *ngIf="abierta.sucursal" class="listing-status-pill listing-status-neutral">Recibe: {{abierta.sucursal}}</span>
+                <div *ngIf="abierta.anulada" class="listing-alert listing-alert-danger mb-0" role="status">
+                  <i class="fas fa-ban" aria-hidden="true"></i>
+                  <span class="listing-alert-text">
+                    Anulada el {{abierta.fechaAnulacion | date: 'dd/MM/yyyy HH:mm'}} por {{abierta.usuarioAnulacion}}: {{abierta.motivoAnulacion}}
+                  </span>
+                </div>
                 <table class="table table-sm mb-0">
                   <thead>
                     <tr><th>Producto</th><th class="text-right">Cantidad</th><th>Destino</th><th class="text-right">Valor</th></tr>
