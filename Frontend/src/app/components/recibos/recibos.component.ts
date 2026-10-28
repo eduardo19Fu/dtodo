@@ -130,6 +130,15 @@ export class RecibosComponent implements OnInit, OnDestroy {
     this.cargar(0);
   }
 
+  /** Quita todos los filtros y vuelve a la lista por defecto (los últimos 30 días). */
+  limpiarFiltros(): void {
+    this.desde = '';
+    this.hasta = '';
+    this.idSucursalFiltro = null;
+    this.incluirAnulados = false;
+    this.cargar(0);
+  }
+
   irPaginaAnterior(): void { if (!this.isFirst) { this.cargar(this.paginaActual - 1); } }
   irPaginaSiguiente(): void { if (!this.isLast) { this.cargar(this.paginaActual + 1); } }
 

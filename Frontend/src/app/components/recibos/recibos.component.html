@@ -109,23 +109,46 @@
 <div class="card listing-card">
   <div class="card-header listing-card-header">Recibos emitidos</div>
   <div class="card-body">
-    <div class="listing-filter-bar">
-      <div class="row listing-date-range">
-        <app-date-range-picker [(fechaInicio)]="desde" [(fechaFin)]="hasta" tema="ventas"></app-date-range-picker>
+    <div class="listing-filter-grid">
+      <div class="listing-tile-cell">
+        <div class="row listing-date-range">
+          <app-date-range-picker [(fechaInicio)]="desde" [(fechaFin)]="hasta" tema="ventas"></app-date-range-picker>
+        </div>
       </div>
-      <div class="listing-field" *ngIf="esAdmin && sucursales.length > 0">
-        <label for="sucursalFiltro">Sucursal</label>
-        <select id="sucursalFiltro" class="form-control" [(ngModel)]="idSucursalFiltro" name="sucursalFiltro">
-          <option [ngValue]="null">Todas</option>
-          <option *ngFor="let sucursal of sucursales" [ngValue]="sucursal.idSucursal">{{sucursal.nombre}}</option>
-        </select>
+
+      <div class="listing-tile-cell" *ngIf="esAdmin && sucursales.length > 0">
+        <label class="listing-tile-label" for="sucursalFiltro">Sucursal</label>
+        <div class="listing-tile">
+          <span class="listing-tile-icon" aria-hidden="true"><i class="fas fa-store"></i></span>
+          <span class="listing-tile-copy">
+            <small>Emitidos en</small>
+            <select id="sucursalFiltro" class="listing-tile-select" [(ngModel)]="idSucursalFiltro" name="sucursalFiltro">
+              <option [ngValue]="null">Todas las sucursales</option>
+              <option *ngFor="let sucursal of sucursales" [ngValue]="sucursal.idSucursal">{{sucursal.nombre}}</option>
+            </select>
+          </span>
+        </div>
       </div>
-      <label class="listing-check" for="anuladosRecibo">
-        <input type="checkbox" id="anuladosRecibo" [(ngModel)]="incluirAnulados" name="anulados"> Con anulados
-      </label>
-      <div class="listing-actions">
-        <button type="button" class="btn listing-page-action listing-secondary-action listing-compact" (click)="aplicarFiltros()">
+
+      <div class="listing-tile-cell">
+        <span class="listing-tile-label">Estado</span>
+        <label class="listing-tile listing-tile-toggle" for="anuladosRecibo">
+          <span class="listing-tile-icon" aria-hidden="true"><i class="fas fa-ban"></i></span>
+          <span class="listing-tile-copy">
+            <small>Anulados</small>
+            <strong>{{incluirAnulados ? 'Incluidos' : 'Ocultos'}}</strong>
+          </span>
+          <input type="checkbox" class="listing-switch" id="anuladosRecibo" [(ngModel)]="incluirAnulados" name="anulados">
+        </label>
+      </div>
+
+      <div class="listing-tile-actions">
+        <button type="button" class="btn listing-page-action listing-primary-action" (click)="aplicarFiltros()">
           <i class="fas fa-filter"></i> Filtrar
+        </button>
+        <button type="button" class="btn listing-page-action listing-secondary-action" (click)="limpiarFiltros()"
+          appTooltip="Quitar los filtros" aria-label="Quitar los filtros">
+          <i class="fas fa-eraser"></i>
         </button>
       </div>
     </div>

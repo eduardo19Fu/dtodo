@@ -18,6 +18,8 @@ Las pantallas nuevas usaban botones y campos de Bootstrap sin estilo y no cuadra
 
 - **Selector de fechas del sistema**: los campos de fecha que habían quedado como `<input type="date">` nativo usan ahora `app-date-range-picker`, como el resto de pantallas: filtros y fecha de pago de *Recibos de caja*, filtros y fecha de entrega de *Pedidos*, y la fecha de entrega estimada de la proforma mayorista. El servidor sigue validando las fechas (no futura, hasta 7 días atrás en las entregas).
 
+- **Franja de filtros de *Recibos emitidos***: los controles quedaban desalineados (alturas y etiquetas distintas). Ahora son fichas que comparten la anatomía del selector de fechas (cuadro de icono, rótulo en mayúsculas pequeñas y valor) y la misma altura, en una cuadrícula con las etiquetas arriba y los bordes inferiores alineados: rango de fechas, sucursal, interruptor de anulados y las acciones *Filtrar* y *Quitar filtros* (nuevo). Los estilos (`listing-filter-grid`, `listing-tile*`, `listing-switch`) quedan en `styles.css` para reutilizarlos; los campos de formulario `listing-field` miden 50 px como el selector de fechas.
+
 ### Corregido — Columna `descontado_a_mano` de las entregas
 
 `ProformaEntrega.descontadoAMano` se traducía a la columna `descontadoamano` (la estrategia de nombres de Spring no separa la «A» aislada), pero el script 10 crea `descontado_a_mano`: registrar una entrega habría fallado en una base real. Las pruebas con H2 no lo detectaron porque H2 crea la columna con el mismo nombre que Hibernate; lo encontró el verificador de esquema al arrancar el backend en local. Ahora la columna se mapea de forma explícita.

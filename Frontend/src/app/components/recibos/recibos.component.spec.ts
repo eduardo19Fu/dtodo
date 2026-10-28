@@ -203,4 +203,19 @@ describe('RecibosComponent', () => {
     expect(component.idProformaElegida).toBeNull();
     expect(component.saldo).toBeNull();
   });
+
+  it('limpiar los filtros vuelve a la lista por defecto', () => {
+    component.desde = '2026-10-01';
+    component.hasta = '2026-10-31';
+    component.idSucursalFiltro = 2;
+    component.incluirAnulados = true;
+
+    component.limpiarFiltros();
+
+    expect(component.desde).toBe('');
+    expect(component.hasta).toBe('');
+    expect(component.idSucursalFiltro).toBeNull();
+    expect(component.incluirAnulados).toBeFalse();
+    expect(recibos.getListado).toHaveBeenCalledWith(0, 10, { idSucursal: null, idCliente: null, desde: '', hasta: '', incluirAnulados: false });
+  });
 });
