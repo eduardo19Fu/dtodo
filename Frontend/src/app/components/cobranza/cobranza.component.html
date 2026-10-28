@@ -44,30 +44,53 @@
 <div class="card listing-card">
   <div class="card-header listing-card-header">Cuentas por cobrar</div>
   <div class="card-body">
-    <div class="listing-filter-bar">
-      <div class="listing-field">
-        <label for="busquedaCobranza">Cliente</label>
-        <input type="text" id="busquedaCobranza" class="form-control" [(ngModel)]="busqueda" name="busqueda"
-          placeholder="Nombre o negocio" autocomplete="off">
+    <div class="listing-filter-grid">
+      <div class="listing-tile-cell">
+        <label class="listing-tile-label" for="busquedaCobranza">Cliente</label>
+        <div class="listing-tile">
+          <span class="listing-tile-icon" aria-hidden="true"><i class="fas fa-search"></i></span>
+          <span class="listing-tile-copy">
+            <small>Buscar por</small>
+            <input type="text" id="busquedaCobranza" class="listing-tile-input" [(ngModel)]="busqueda" name="busqueda"
+              placeholder="Nombre o negocio" autocomplete="off">
+          </span>
+        </div>
       </div>
-      <div class="listing-field">
-        <label for="rutaCobranza">Ruta</label>
-        <select id="rutaCobranza" class="form-control" [(ngModel)]="idRuta" name="ruta">
-          <option value="">Todas las rutas</option>
-          <option *ngFor="let ruta of rutas" [ngValue]="ruta.idRuta">{{ruta.nombre}}</option>
-        </select>
+
+      <div class="listing-tile-cell">
+        <label class="listing-tile-label" for="rutaCobranza">Ruta</label>
+        <div class="listing-tile">
+          <span class="listing-tile-icon" aria-hidden="true"><i class="fas fa-route"></i></span>
+          <span class="listing-tile-copy">
+            <small>Clientes de</small>
+            <select id="rutaCobranza" class="listing-tile-select" [(ngModel)]="idRuta" name="ruta">
+              <option value="">Todas las rutas</option>
+              <option *ngFor="let ruta of rutas" [ngValue]="ruta.idRuta">{{ruta.nombre}}</option>
+            </select>
+          </span>
+        </div>
       </div>
-      <label class="listing-check" for="vencidosCobranza">
-        <input type="checkbox" id="vencidosCobranza" [(ngModel)]="soloVencidos" name="vencidos"> Solo vencidos
-      </label>
-      <div class="listing-actions">
-        <button type="button" class="btn listing-page-action listing-secondary-action listing-compact" (click)="descargarReporte('PDF')"
+
+      <div class="listing-tile-cell">
+        <span class="listing-tile-label">Saldo</span>
+        <label class="listing-tile listing-tile-toggle" for="vencidosCobranza">
+          <span class="listing-tile-icon" aria-hidden="true"><i class="fas fa-exclamation-triangle"></i></span>
+          <span class="listing-tile-copy">
+            <small>Mostrar</small>
+            <strong>{{soloVencidos ? 'Solo vencidos' : 'Todo lo pendiente'}}</strong>
+          </span>
+          <input type="checkbox" class="listing-switch" id="vencidosCobranza" [(ngModel)]="soloVencidos" name="vencidos">
+        </label>
+      </div>
+
+      <div class="listing-tile-actions">
+        <button type="button" class="btn listing-page-action listing-secondary-action" (click)="descargarReporte('PDF')"
           [disabled]="generando || !cobranza">
-          <i class="fas fa-file-pdf" aria-hidden="true"></i> PDF
+          <i class="fas fa-file-pdf"></i> PDF
         </button>
-        <button type="button" class="btn listing-page-action listing-secondary-action listing-compact" (click)="descargarReporte('XLSX')"
+        <button type="button" class="btn listing-page-action listing-secondary-action" (click)="descargarReporte('XLSX')"
           [disabled]="generando || !cobranza">
-          <i class="fas fa-file-excel" aria-hidden="true"></i> Excel
+          <i class="fas fa-file-excel"></i> Excel
         </button>
       </div>
     </div>
