@@ -16,6 +16,8 @@ Las pantallas nuevas usaban botones y campos de Bootstrap sin estilo y no cuadra
 - **Cobranza**: aviso rojo de vencidos con botón, tarjetas con los tramos de antigüedad, filtros en barra, píldoras de atraso y estado vacío.
 - **Autorizaciones**: botones Aprobar / Rechazar / Autorizar con el estilo compartido, contadores como píldoras y estados vacíos.
 
+- **Selector de fechas del sistema**: los campos de fecha que habían quedado como `<input type="date">` nativo usan ahora `app-date-range-picker`, como el resto de pantallas: filtros y fecha de pago de *Recibos de caja*, filtros y fecha de entrega de *Pedidos*, y la fecha de entrega estimada de la proforma mayorista. El servidor sigue validando las fechas (no futura, hasta 7 días atrás en las entregas).
+
 ### Corregido — Columna `descontado_a_mano` de las entregas
 
 `ProformaEntrega.descontadoAMano` se traducía a la columna `descontadoamano` (la estrategia de nombres de Spring no separa la «A» aislada), pero el script 10 crea `descontado_a_mano`: registrar una entrega habría fallado en una base real. Las pruebas con H2 no lo detectaron porque H2 crea la columna con el mismo nombre que Hibernate; lo encontró el verificador de esquema al arrancar el backend en local. Ahora la columna se mapea de forma explícita.

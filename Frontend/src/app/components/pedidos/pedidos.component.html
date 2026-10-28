@@ -29,14 +29,10 @@
           <option *ngFor="let ruta of rutas" [ngValue]="ruta.idRuta">{{ruta.nombre}}</option>
         </select>
       </label>
-      <label class="filtro">
-        <span>Emitidos desde</span>
-        <input type="date" class="form-control form-control-sm" [(ngModel)]="fechaInicio" (ngModelChange)="cargar()" name="desde">
-      </label>
-      <label class="filtro">
-        <span>Hasta</span>
-        <input type="date" class="form-control form-control-sm" [(ngModel)]="fechaFin" (ngModelChange)="cargar()" name="hasta">
-      </label>
+      <div class="row listing-date-range">
+        <app-date-range-picker [(fechaInicio)]="fechaInicio" [(fechaFin)]="fechaFin" tema="proformas"
+          (fechaInicioChange)="cargar()" (fechaFinChange)="cargar()"></app-date-range-picker>
+      </div>
       <button type="button" class="btn btn-sm btn-outline-secondary filtro-boton" (click)="cargar()">
         <i class="fas fa-sync-alt" aria-hidden="true"></i> Actualizar
       </button>
@@ -217,11 +213,9 @@
               <option *ngFor="let sucursal of sucursales" [ngValue]="sucursal.valor">{{sucursal.etiqueta}}</option>
             </select>
           </label>
-          <label>
-            <span>Fecha de entrega</span>
-            <input type="date" class="form-control form-control-sm" [(ngModel)]="entrega.fechaEntrega" name="entregaFecha"
-              [min]="fechaMinimaEntrega" [max]="hoy">
-          </label>
+          <div class="row listing-date-range listing-date-single">
+            <app-date-range-picker modo="fecha" [(fecha)]="entrega.fechaEntrega" etiquetaFecha="Fecha de entrega" tema="proformas"></app-date-range-picker>
+          </div>
           <label *ngIf="!esRepartidor">
             <span>Entregó (opcional)</span>
             <input type="text" class="form-control form-control-sm" [(ngModel)]="entrega.entregadoPor" name="entregaPor"

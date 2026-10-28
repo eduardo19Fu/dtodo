@@ -1297,3 +1297,42 @@ select.page-size-select:focus {
     grid-column: auto;
   }
 }
+
+/* Selector de fechas del sistema (app-date-range-picker) dentro de las barras de filtros y los formularios de gestión.
+   El componente pinta columnas de Bootstrap; aquí se ajustan a un contenedor .row propio. */
+.listing-date-range {
+  flex: 1 1 440px;
+  margin: 0;
+  min-width: 0;
+}
+
+.listing-date-range .date-picker-column {
+  flex: 0 0 50%;
+  margin-bottom: 0 !important;
+  max-width: 50%;
+  padding: 0 8px 0 0;
+}
+
+.listing-date-range .date-picker-column-end {
+  padding: 0;
+}
+
+.listing-date-range.listing-date-single {
+  flex: 1 1 220px;
+  max-width: 340px;
+}
+
+.listing-date-range.listing-date-single .date-picker-column {
+  flex: 0 0 100%;
+  max-width: 100%;
+  padding: 0;
+}
+
+@media (max-width: 575.98px) {
+  .listing-date-range .date-picker-column {
+    flex: 0 0 100%;
+    margin-bottom: 8px !important;
+    max-width: 100%;
+    padding: 0;
+  }
+}

@@ -143,9 +143,10 @@
 
           <div class="mayorista-extra" *ngIf="esProformaMayorista">
             <div class="line-entry-field">
-              <label for="fecha-entrega">Fecha de entrega estimada</label>
-              <input id="fecha-entrega" name="fechaEntregaEstimada" type="date" class="form-control"
-                [min]="hoy" [(ngModel)]="proforma.fechaEntregaEstimada">
+              <div class="row listing-date-range listing-date-single">
+                <app-date-range-picker modo="fecha" [(fecha)]="proforma.fechaEntregaEstimada" etiquetaFecha="Fecha de entrega estimada"
+                  tema="proformas"></app-date-range-picker>
+              </div>
               <small>Vigencia: {{ vigenciaDiasMayorista }} días desde la emisión.</small>
             </div>
             <div class="line-entry-field">

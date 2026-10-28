@@ -37,9 +37,8 @@
           <label for="montoRecibo">Monto (Q) <span class="requerido">*</span></label>
           <input type="number" id="montoRecibo" class="form-control" min="0" step="0.01" [(ngModel)]="monto" name="monto" placeholder="0.00">
         </div>
-        <div class="listing-field">
-          <label for="fechaRecibo">Fecha de pago</label>
-          <input type="date" id="fechaRecibo" class="form-control" [(ngModel)]="fechaPago" name="fechaPago" [max]="hoyIso">
+        <div class="row listing-date-range listing-date-single">
+          <app-date-range-picker modo="fecha" [(fecha)]="fechaPago" etiquetaFecha="Fecha de pago" tema="ventas"></app-date-range-picker>
         </div>
       </div>
     </div>
@@ -111,13 +110,8 @@
   <div class="card-header listing-card-header">Recibos emitidos</div>
   <div class="card-body">
     <div class="listing-filter-bar">
-      <div class="listing-field">
-        <label for="desdeRecibo">Desde</label>
-        <input type="date" id="desdeRecibo" class="form-control" [(ngModel)]="desde" name="desde">
-      </div>
-      <div class="listing-field">
-        <label for="hastaRecibo">Hasta</label>
-        <input type="date" id="hastaRecibo" class="form-control" [(ngModel)]="hasta" name="hasta">
+      <div class="row listing-date-range">
+        <app-date-range-picker [(fechaInicio)]="desde" [(fechaFin)]="hasta" tema="ventas"></app-date-range-picker>
       </div>
       <div class="listing-field" *ngIf="esAdmin && sucursales.length > 0">
         <label for="sucursalFiltro">Sucursal</label>
