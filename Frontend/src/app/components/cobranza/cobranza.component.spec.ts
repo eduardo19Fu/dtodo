@@ -95,9 +95,9 @@ describe('CobranzaComponent', () => {
 
   it('marca la severidad según los días de atraso', () => {
     expect(component.claseAtraso(fila({ diasMaxAtraso: 0 }))).toBe('');
-    expect(component.claseAtraso(fila({ diasMaxAtraso: 12 }))).toBe('atraso-leve');
-    expect(component.claseAtraso(fila({ diasMaxAtraso: 45 }))).toBe('atraso-medio');
-    expect(component.claseAtraso(fila({ diasMaxAtraso: 61 }))).toBe('atraso-grave');
+    expect(component.claseAtraso(fila({ diasMaxAtraso: 12 }))).toBe('row-severity-low');
+    expect(component.claseAtraso(fila({ diasMaxAtraso: 45 }))).toBe('row-severity-mid');
+    expect(component.claseAtraso(fila({ diasMaxAtraso: 61 }))).toBe('row-severity-high');
   });
 
   it('el reporte manda la ruta y el filtro de vencidos del servidor', () => {

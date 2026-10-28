@@ -75,15 +75,15 @@ export class CobranzaComponent implements OnInit {
     return !!this.cobranza && this.cobranza.clientesConVencido > 0;
   }
 
-  /** Severidad de la fila según el atraso: más de 60 días, hasta 60 o hasta 30. */
+  /** Marca la fila según el atraso: más de 60 días, hasta 60 o hasta 30. */
   claseAtraso(cliente: CobranzaClienteDto): string {
     if (cliente.diasMaxAtraso > 60) {
-      return 'atraso-grave';
+      return 'row-severity-high';
     }
     if (cliente.diasMaxAtraso > 30) {
-      return 'atraso-medio';
+      return 'row-severity-mid';
     }
-    return cliente.diasMaxAtraso > 0 ? 'atraso-leve' : '';
+    return cliente.diasMaxAtraso > 0 ? 'row-severity-low' : '';
   }
 
   descargarReporte(formato: 'PDF' | 'XLSX'): void {

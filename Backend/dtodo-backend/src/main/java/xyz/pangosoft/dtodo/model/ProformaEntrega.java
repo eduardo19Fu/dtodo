@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -62,6 +63,8 @@ public class ProformaEntrega implements Serializable {
     private LocalDateTime fechaRegistro;
 
     /** El inventario de lo entregado ya se había descontado a mano: la entrega no lo descuenta otra vez. */
+    // Nombre explícito: la estrategia de nombres de Spring no separa la «A» aislada y daría «descontadoamano».
+    @Column(name = "descontado_a_mano")
     private boolean descontadoAMano;
 
     private String observaciones;

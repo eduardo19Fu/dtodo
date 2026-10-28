@@ -6,6 +6,24 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Cambiado — Estilos de Comisiones, Recibos de caja, Cobranza y Autorizaciones
+
+Las pantallas nuevas usaban botones y campos de Bootstrap sin estilo y no cuadraban con el resto del sistema. Ahora usan el mismo lenguaje que los listados.
+
+- **Estilos compartidos** (`src/styles.css`, clases `listing-*`): botones de página (primario, secundario, destructivo, compacto, fantasma), botones de tabla con icono y tooltip, barra de filtros, campos etiquetados (mismo borde, radio y foco que la búsqueda de los listados), casillas, tarjetas de resumen, avisos de página, estados vacíos, píldoras de estado y tabla de datos con encabezado oscuro, pie de totales, marca de severidad por fila y vista móvil en tarjetas.
+- **Comisiones**: selector de año con botones de icono, metas en filas con número y campos compartidos, resumen de entregado y a pagar, píldoras para el porcentaje, la situación y "Completó el año".
+- **Recibos de caja**: botón primario en la cabecera, formulario en paneles, estado de cuenta del cliente en tarjetas, píldoras de forma de pago y de anulado, acciones con icono.
+- **Cobranza**: aviso rojo de vencidos con botón, tarjetas con los tramos de antigüedad, filtros en barra, píldoras de atraso y estado vacío.
+- **Autorizaciones**: botones Aprobar / Rechazar / Autorizar con el estilo compartido, contadores como píldoras y estados vacíos.
+
+### Corregido — Columna `descontado_a_mano` de las entregas
+
+`ProformaEntrega.descontadoAMano` se traducía a la columna `descontadoamano` (la estrategia de nombres de Spring no separa la «A» aislada), pero el script 10 crea `descontado_a_mano`: registrar una entrega habría fallado en una base real. Las pruebas con H2 no lo detectaron porque H2 crea la columna con el mismo nombre que Hibernate; lo encontró el verificador de esquema al arrancar el backend en local. Ahora la columna se mapea de forma explícita.
+
+### Agregado — Arranque local
+
+`.claude/launch.json` incluye el backend (`.claude/run-backend.cmd`, perfil `dev`, JDK 21) además del frontend.
+
 ### Agregado — Cobranza: cuentas por cobrar, estado de cuenta y alertas de vencidos (Fase 4, paso 4)
 
 Cierra la Fase 4. Sin script SQL nuevo.

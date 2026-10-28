@@ -1,20 +1,22 @@
 <section class="content-header">
   <div class="container-fluid">
-    <div class="row mb-2">
+    <div class="row mb-2 align-items-end">
       <div class="col-sm-8">
         <h1>{{title}}</h1>
-        <p class="comisiones-subtitle">
+        <p class="listing-subtitle">
           Porcentaje plano sobre todo lo entregado en el año, según la meta más alta alcanzada. Solo cobra quien completó el año.
         </p>
       </div>
       <div class="col-sm-4">
         <div class="selector-anio">
-          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="cambiarAnio(-1)" [disabled]="cargando" aria-label="Año anterior">
-            <i class="fas fa-chevron-left" aria-hidden="true"></i>
+          <button type="button" class="btn btn-sm listing-table-action listing-action-view" (click)="cambiarAnio(-1)" [disabled]="cargando"
+            aria-label="Año anterior" appTooltip="Año anterior">
+            <i class="fas fa-chevron-left"></i>
           </button>
-          <strong class="anio">{{anio}}</strong>
-          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="cambiarAnio(1)" [disabled]="cargando" aria-label="Año siguiente">
-            <i class="fas fa-chevron-right" aria-hidden="true"></i>
+          <span class="anio-actual">{{anio}}</span>
+          <button type="button" class="btn btn-sm listing-table-action listing-action-view" (click)="cambiarAnio(1)" [disabled]="cargando"
+            aria-label="Año siguiente" appTooltip="Año siguiente">
+            <i class="fas fa-chevron-right"></i>
           </button>
         </div>
       </div>
@@ -22,91 +24,114 @@
   </div>
 </section>
 
-<div *ngIf="errorCarga" class="alert alert-warning" role="alert">
-  No fue posible cargar las comisiones.
-  <button type="button" class="btn btn-sm btn-outline-dark ml-2" (click)="cargar()">Reintentar</button>
+<div *ngIf="errorCarga" class="listing-alert listing-alert-warning" role="alert">
+  <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+  <span class="listing-alert-text">No fue posible cargar las comisiones.</span>
+  <button type="button" class="btn listing-page-action listing-secondary-action listing-compact" (click)="cargar()">
+    <i class="fas fa-redo"></i> Reintentar
+  </button>
 </div>
 
-<div *ngIf="avance && liquidado" class="alert alert-success d-flex flex-wrap align-items-center" role="status">
-  <span class="mr-auto">
-    <i class="fas fa-lock" aria-hidden="true"></i>
+<div *ngIf="avance && liquidado" class="listing-alert listing-alert-success" role="status">
+  <i class="fas fa-lock" aria-hidden="true"></i>
+  <span class="listing-alert-text">
     Año liquidado el {{avance.fechaLiquidacion | date: 'dd/MM/yyyy HH:mm'}}<span *ngIf="avance.liquidadoPor"> por {{avance.liquidadoPor}}</span>.
     Lo que ves es lo que se guardó.
   </span>
-  <button type="button" class="btn btn-sm btn-outline-danger" (click)="deshacer()" [disabled]="trabajando">
-    <i class="fas fa-undo" aria-hidden="true"></i> Deshacer liquidación
+  <button type="button" class="btn listing-page-action listing-danger-action listing-compact" (click)="deshacer()" [disabled]="trabajando">
+    <i class="fas fa-undo"></i> Deshacer liquidación
   </button>
 </div>
 
 <div class="card listing-card">
   <div class="card-header listing-card-header">Metas del año {{anio}}</div>
   <div class="card-body">
-    <p *ngIf="metas.length === 0 && !liquidado" class="nota">Este año no tiene metas. Agrégalas o cópialas de otro año.</p>
-    <p *ngIf="metas.length === 0 && liquidado" class="nota">Este año se liquidó sin metas guardadas.</p>
+    <p class="listing-note" *ngIf="metas.length === 0 && !liquidado">Este año no tiene metas. Agrégalas o cópialas de otro año.</p>
+    <p class="listing-note" *ngIf="metas.length === 0 && liquidado">Este año se liquidó sin metas guardadas.</p>
 
-    <div class="metas">
+    <div class="listing-panel" *ngIf="metas.length > 0">
       <div class="meta" *ngFor="let meta of metas; let i = index">
-        <label class="meta-campo">
-          Desde (Q entregados)
-          <input type="number" class="form-control form-control-sm" min="0" step="1000" [(ngModel)]="meta.montoMinimo"
-            [name]="'monto' + i" [disabled]="liquidado" />
-        </label>
-        <label class="meta-campo">
-          Porcentaje (%)
-          <input type="number" class="form-control form-control-sm" min="0" max="100" step="0.25" [(ngModel)]="meta.porcentaje"
-            [name]="'porcentaje' + i" [disabled]="liquidado" />
-        </label>
-        <button type="button" class="btn btn-sm btn-outline-danger" (click)="quitarMeta(i)" *ngIf="!liquidado"
-          [attr.aria-label]="'Quitar la meta ' + (i + 1)">
-          <i class="fas fa-trash" aria-hidden="true"></i>
+        <span class="meta-numero">{{i + 1}}</span>
+        <div class="listing-field">
+          <label [for]="'monto' + i">Desde (Q entregados)</label>
+          <input type="number" class="form-control" min="0" step="1000" [(ngModel)]="meta.montoMinimo" [id]="'monto' + i"
+            [name]="'monto' + i" [disabled]="liquidado">
+        </div>
+        <div class="listing-field">
+          <label [for]="'porcentaje' + i">Porcentaje (%)</label>
+          <input type="number" class="form-control" min="0" max="100" step="0.25" [(ngModel)]="meta.porcentaje" [id]="'porcentaje' + i"
+            [name]="'porcentaje' + i" [disabled]="liquidado">
+        </div>
+        <button type="button" class="btn btn-sm listing-table-action listing-action-delete" (click)="quitarMeta(i)" *ngIf="!liquidado"
+          [attr.aria-label]="'Quitar la meta ' + (i + 1)" appTooltip="Quitar la meta">
+          <i class="fas fa-trash"></i>
         </button>
       </div>
     </div>
 
-    <div class="acciones mt-2" *ngIf="!liquidado">
-      <button type="button" class="btn btn-sm btn-outline-primary" (click)="agregarMeta()" [disabled]="trabajando">
-        <i class="fas fa-plus" aria-hidden="true"></i> Agregar meta
+    <div class="listing-actions" *ngIf="!liquidado">
+      <button type="button" class="btn listing-page-action listing-secondary-action listing-compact" (click)="agregarMeta()" [disabled]="trabajando">
+        <i class="fas fa-plus"></i> Agregar meta
       </button>
-      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="copiarMetas()" [disabled]="trabajando || metas.length > 0">
-        <i class="fas fa-copy" aria-hidden="true"></i> Copiar de otro año
+      <button type="button" class="btn listing-page-action listing-secondary-action listing-compact" (click)="copiarMetas()"
+        [disabled]="trabajando || metas.length > 0">
+        <i class="fas fa-copy"></i> Copiar de otro año
       </button>
-      <button type="button" class="btn btn-sm btn-success" (click)="guardarMetas()" [disabled]="trabajando || !metasModificadas">
-        <i class="fas fa-save" aria-hidden="true"></i> Guardar metas
+      <button type="button" class="btn listing-page-action listing-primary-action listing-compact" (click)="guardarMetas()"
+        [disabled]="trabajando || !metasModificadas">
+        <i class="fas fa-save"></i> Guardar metas
       </button>
-      <button type="button" class="btn btn-sm btn-link" (click)="descartarCambios()" *ngIf="metasModificadas">Descartar cambios</button>
+      <button type="button" class="btn listing-page-action listing-ghost-action listing-compact" (click)="descartarCambios()" *ngIf="metasModificadas">
+        Descartar cambios
+      </button>
     </div>
-    <p class="nota mt-2 mb-0">Cada meta pide un monto y un porcentaje mayores que la anterior.</p>
+    <p class="listing-note mt-2 mb-0">Cada meta pide un monto y un porcentaje mayores que la anterior.</p>
+  </div>
+</div>
+
+<div class="listing-stats" *ngIf="avance && avance.filas.length > 0">
+  <div class="listing-stat"><span>Entregado en el año</span><strong>{{avance.totalEntregado | currency: 'Q' : 'symbol'}}</strong></div>
+  <div class="listing-stat is-success">
+    <span>{{liquidado ? 'Comisión liquidada' : 'A pagar a los marcados'}}</span>
+    <strong>{{(liquidado ? avance.totalComision : totalAPagar) | currency: 'Q' : 'symbol'}}</strong>
+    <small *ngIf="!liquidado">{{cantidadMarcados}} {{cantidadMarcados === 1 ? 'vendedor marcado' : 'vendedores marcados'}}</small>
   </div>
 </div>
 
 <div class="card listing-card">
-  <div class="card-header listing-card-header">
-    {{liquidado ? 'Comisiones liquidadas' : 'Avance de los vendedores'}}
-    <span class="contador" *ngIf="avance">{{avance.filas.length}}</span>
-  </div>
+  <div class="card-header listing-card-header">{{liquidado ? 'Comisiones liquidadas' : 'Avance de los vendedores'}}</div>
   <div class="card-body">
-    <div *ngIf="cargando" class="estado-vacio">Cargando...</div>
-    <div *ngIf="!cargando && avance && avance.filas.length === 0" class="estado-vacio">No hay vendedores para este año.</div>
+    <div *ngIf="cargando" class="text-center p-4">
+      <div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div>
+    </div>
 
-    <div *ngIf="avance && avance.filas.length > 0" class="table-responsive">
-      <table class="table table-sm comisiones-table">
+    <div *ngIf="!cargando && avance && avance.filas.length === 0" class="listing-empty-state">
+      <span class="listing-empty-icon" aria-hidden="true"><i class="fas fa-hand-holding-usd"></i></span>
+      <div class="listing-empty-state-body">
+        <h5>No hay vendedores para este año</h5>
+        <p>Aquí aparecen los vendedores activos y quienes hayan entregado en el año.</p>
+      </div>
+    </div>
+
+    <div class="table-responsive" *ngIf="avance && avance.filas.length > 0">
+      <table class="table table-hover table-striped table-bordered table-sm listing-data-table">
         <thead>
           <tr>
             <th>Vendedor</th>
             <th>Alta</th>
             <th class="text-right">Entregado</th>
             <th class="text-right">Meta alcanzada</th>
-            <th class="text-right">%</th>
+            <th class="text-center">%</th>
             <th class="text-right">{{liquidado ? 'Comisión' : 'Comisión si completó'}}</th>
             <th class="text-right">Falta p/ siguiente</th>
             <th class="text-center">Completó el año</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let fila of avance.filas; trackBy: trackFila" [class.sin-cobro]="liquidado && !fila.completoAnio">
+          <tr *ngFor="let fila of avance.filas; trackBy: trackFila" [class.is-muted]="liquidado && !fila.completoAnio">
             <td data-label="Vendedor">
               <strong>{{fila.vendedor}}</strong>
-              <small *ngIf="!fila.activo" class="d-block text-muted">Usuario inactivo</small>
+              <span *ngIf="!fila.activo" class="listing-status-pill listing-status-neutral ml-1">Inactivo</span>
               <small *ngIf="fila.situacion === 'BLOQUE'" class="d-block text-info">
                 Ingresó el {{fila.periodoDesde | date: 'dd/MM/yyyy'}}: se le paga todo lo entregado desde su ingreso.
               </small>
@@ -115,44 +140,50 @@
               </small>
             </td>
             <td data-label="Alta">{{fila.fechaAlta ? (fila.fechaAlta | date: 'dd/MM/yyyy') : '—'}}</td>
-            <td data-label="Entregado" class="text-right">{{fila.montoEntregado | currency: 'Q' : 'symbol'}}</td>
-            <td data-label="Meta alcanzada" class="text-right">{{fila.metaAlcanzada ? (fila.metaAlcanzada | currency: 'Q' : 'symbol') : '—'}}</td>
-            <td data-label="%" class="text-right">{{fila.porcentaje}} %</td>
-            <td data-label="Comisión" class="text-right"><strong>{{fila.comision | currency: 'Q' : 'symbol'}}</strong></td>
-            <td data-label="Falta p/ siguiente" class="text-right">{{fila.faltaParaSiguiente ? (fila.faltaParaSiguiente | currency: 'Q' : 'symbol') : '—'}}</td>
+            <td data-label="Entregado" class="text-money">{{fila.montoEntregado | currency: 'Q' : 'symbol'}}</td>
+            <td data-label="Meta alcanzada" class="text-money">{{fila.metaAlcanzada ? (fila.metaAlcanzada | currency: 'Q' : 'symbol') : '—'}}</td>
+            <td data-label="%" class="text-center">
+              <span class="listing-status-pill" [ngClass]="fila.porcentaje > 0 ? 'listing-status-primary' : 'listing-status-neutral'">{{fila.porcentaje}} %</span>
+            </td>
+            <td data-label="Comisión" class="text-money"><strong>{{fila.comision | currency: 'Q' : 'symbol'}}</strong></td>
+            <td data-label="Falta p/ siguiente" class="text-money">{{fila.faltaParaSiguiente ? (fila.faltaParaSiguiente | currency: 'Q' : 'symbol') : '—'}}</td>
             <td data-label="Completó el año" class="text-center">
-              <ng-container *ngIf="liquidado">{{fila.completoAnio ? 'Sí' : 'No'}}</ng-container>
-              <input *ngIf="!liquidado" type="checkbox" [(ngModel)]="completaron[fila.idVendedor]" [name]="'completo' + fila.idVendedor"
-                [disabled]="!avance.anioTerminado || fila.situacion === 'PENDIENTE'" [attr.aria-label]="'Completó el año ' + fila.vendedor" />
+              <span *ngIf="liquidado" class="listing-status-pill" [ngClass]="fila.completoAnio ? 'listing-status-success' : 'listing-status-neutral'">
+                {{fila.completoAnio ? 'Sí' : 'No'}}
+              </span>
+              <label class="listing-check justify-content-center" *ngIf="!liquidado">
+                <input type="checkbox" [(ngModel)]="completaron[fila.idVendedor]" [name]="'completo' + fila.idVendedor"
+                  [disabled]="!avance.anioTerminado || fila.situacion === 'PENDIENTE'" [attr.aria-label]="'Completó el año ' + fila.vendedor">
+              </label>
             </td>
           </tr>
         </tbody>
         <tfoot>
           <tr>
-            <td colspan="2"><strong>Totales</strong></td>
-            <td class="text-right"><strong>{{avance.totalEntregado | currency: 'Q' : 'symbol'}}</strong></td>
+            <td colspan="2">Totales</td>
+            <td class="text-money">{{avance.totalEntregado | currency: 'Q' : 'symbol'}}</td>
             <td colspan="2"></td>
-            <td class="text-right"><strong>{{liquidado ? (avance.totalComision | currency: 'Q' : 'symbol') : (totalAPagar | currency: 'Q' : 'symbol')}}</strong></td>
+            <td class="text-money">{{(liquidado ? avance.totalComision : totalAPagar) | currency: 'Q' : 'symbol'}}</td>
             <td colspan="2" class="text-muted">{{liquidado ? 'total liquidado' : 'a pagar a los marcados'}}</td>
           </tr>
         </tfoot>
       </table>
     </div>
 
-    <p *ngIf="avance && !liquidado && !avance.anioTerminado" class="nota">
+    <p *ngIf="avance && !liquidado && !avance.anioTerminado" class="listing-note mt-2">
       La columna de comisión muestra lo que cobraría cada vendedor si completa el año. Las casillas se habilitan cuando el año termina.
     </p>
-    <p *ngIf="motivoSinLiquidar" class="nota">{{motivoSinLiquidar}}</p>
+    <p *ngIf="motivoSinLiquidar" class="listing-note mt-2">{{motivoSinLiquidar}}</p>
 
-    <div class="acciones mt-2" *ngIf="avance">
-      <button type="button" class="btn btn-primary" (click)="liquidar()" *ngIf="!liquidado" [disabled]="!puedeLiquidar">
-        <i class="fas fa-check-double" aria-hidden="true"></i> Liquidar el año
+    <div class="listing-actions mt-3" *ngIf="avance">
+      <button type="button" class="btn listing-page-action listing-primary-action" (click)="liquidar()" *ngIf="!liquidado" [disabled]="!puedeLiquidar">
+        <i class="fas fa-check-double"></i> Liquidar el año
       </button>
-      <button type="button" class="btn btn-outline-secondary" (click)="descargar('PDF')" [disabled]="trabajando">
-        <i class="fas fa-file-pdf" aria-hidden="true"></i> Reporte PDF
+      <button type="button" class="btn listing-page-action listing-secondary-action" (click)="descargar('PDF')" [disabled]="trabajando">
+        <i class="fas fa-file-pdf"></i> Reporte PDF
       </button>
-      <button type="button" class="btn btn-outline-secondary" (click)="descargar('XLSX')" [disabled]="trabajando">
-        <i class="fas fa-file-excel" aria-hidden="true"></i> Reporte Excel
+      <button type="button" class="btn listing-page-action listing-secondary-action" (click)="descargar('XLSX')" [disabled]="trabajando">
+        <i class="fas fa-file-excel"></i> Reporte Excel
       </button>
     </div>
   </div>

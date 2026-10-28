@@ -96,6 +96,11 @@ export class RecibosComponent implements OnInit, OnDestroy {
     return this.auth.hasRole('ROLE_ADMIN');
   }
 
+  /** Hoy en formato yyyy-MM-dd, el máximo de la fecha de pago. */
+  get hoyIso(): string {
+    return this.hoy();
+  }
+
   private hoy(): string {
     const ahora = new Date();
     const mes = String(ahora.getMonth() + 1).padStart(2, '0');

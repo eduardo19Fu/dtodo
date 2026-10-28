@@ -1,33 +1,43 @@
 <section class="content-header">
   <div class="container-fluid">
     <div class="row mb-2">
-      <div class="col-sm-8">
+      <div class="col-sm-9">
         <h1>{{title}}</h1>
-        <p class="autorizaciones-subtitle">
-          Descuentos de proformas mayoristas que pasan del tope y proformas vencidas que esperan una decisión.
+        <p class="listing-subtitle">
+          Descuentos de proformas mayoristas que pasan del tope, pedidos a crédito que pasan del límite del cliente y proformas
+          vencidas que esperan una decisión.
         </p>
       </div>
     </div>
   </div>
 </section>
 
-<div *ngIf="errorCarga" class="alert alert-warning" role="alert">
-  No fue posible cargar toda la bandeja.
-  <button type="button" class="btn btn-sm btn-outline-dark ml-2" (click)="cargar()">Reintentar</button>
+<div *ngIf="errorCarga" class="listing-alert listing-alert-warning" role="alert">
+  <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+  <span class="listing-alert-text">No fue posible cargar toda la bandeja.</span>
+  <button type="button" class="btn listing-page-action listing-secondary-action listing-compact" (click)="cargar()">
+    <i class="fas fa-redo"></i> Reintentar
+  </button>
 </div>
 
 <div class="card listing-card">
   <div class="card-header listing-card-header">
-    Descuentos por autorizar <span class="contador">{{pendientes.length}}</span>
+    Descuentos por autorizar <span class="listing-status-pill listing-status-primary ml-2">{{pendientes.length}}</span>
   </div>
   <div class="card-body">
-    <div *ngIf="cargando" class="estado-vacio">Cargando...</div>
-    <div *ngIf="!cargando && pendientes.length === 0" class="estado-vacio">
-      <i class="fas fa-check-circle" aria-hidden="true"></i> No hay descuentos pendientes.
+    <div *ngIf="cargando" class="text-center p-4">
+      <div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div>
+    </div>
+    <div *ngIf="!cargando && pendientes.length === 0" class="listing-empty-state">
+      <span class="listing-empty-icon" aria-hidden="true"><i class="fas fa-check"></i></span>
+      <div class="listing-empty-state-body">
+        <h5>No hay descuentos pendientes</h5>
+        <p>Todos los descuentos de proformas mayoristas están dentro del tope o ya tienen decisión.</p>
+      </div>
     </div>
 
     <div *ngIf="pendientes.length > 0" class="table-responsive">
-      <table class="table table-sm autorizaciones-table">
+      <table class="table table-hover table-striped table-bordered table-sm listing-data-table">
         <thead>
           <tr>
             <th>No. proforma</th>
@@ -35,7 +45,7 @@
             <th>Cliente / ruta</th>
             <th>Vendedor</th>
             <th class="text-right">Total</th>
-            <th class="text-right">Descuento máx.</th>
+            <th class="text-center">Descuento máx.</th>
             <th class="text-center">Decisión</th>
           </tr>
         </thead>
@@ -48,19 +58,19 @@
               <small *ngIf="proforma.ruta" class="d-block text-muted">{{proforma.ruta}}</small>
             </td>
             <td data-label="Vendedor">{{proforma.vendedor}}</td>
-            <td data-label="Total" class="text-right">{{proforma.total | currency: 'Q' : 'symbol'}}</td>
-            <td data-label="Descuento máx." class="text-right"><span class="descuento-alto">{{proforma.descuentoMaximo}} %</span></td>
+            <td data-label="Total" class="text-money">{{proforma.total | currency: 'Q' : 'symbol'}}</td>
+            <td data-label="Descuento máx." class="text-center"><span class="listing-status-pill listing-status-danger">{{proforma.descuentoMaximo}} %</span></td>
             <td data-label="Decisión" class="text-center">
-              <div class="acciones">
-                <button type="button" class="btn btn-sm btn-success" (click)="aprobar(proforma)"
+              <div class="listing-actions justify-content-center">
+                <button type="button" class="btn listing-page-action listing-primary-action listing-compact" (click)="aprobar(proforma)"
                   [disabled]="resolviendo === proforma.idProforma"
                   [attr.aria-label]="'Aprobar el descuento de la proforma ' + proforma.noProforma">
-                  <i class="fas fa-check" aria-hidden="true"></i> Aprobar
+                  <i class="fas fa-check"></i> Aprobar
                 </button>
-                <button type="button" class="btn btn-sm btn-outline-danger" (click)="rechazar(proforma)"
+                <button type="button" class="btn listing-page-action listing-danger-action listing-compact" (click)="rechazar(proforma)"
                   [disabled]="resolviendo === proforma.idProforma"
                   [attr.aria-label]="'Rechazar el descuento de la proforma ' + proforma.noProforma">
-                  <i class="fas fa-times" aria-hidden="true"></i> Rechazar
+                  <i class="fas fa-times"></i> Rechazar
                 </button>
               </div>
             </td>
@@ -73,19 +83,23 @@
 
 <div class="card listing-card">
   <div class="card-header listing-card-header">
-    Pedidos que pasan del límite de crédito <span class="contador">{{credito.length}}</span>
+    Pedidos que pasan del límite de crédito <span class="listing-status-pill listing-status-primary ml-2">{{credito.length}}</span>
   </div>
   <div class="card-body">
-    <p class="nota">
+    <p class="listing-note">
       Un pedido a crédito pasa del límite cuando, sumado a lo que el cliente ya debe y a sus otros pedidos a crédito por entregar,
       supera su límite. No se prepara, entrega ni factura hasta que un administrador lo autorice.
     </p>
-    <div *ngIf="!cargando && credito.length === 0" class="estado-vacio">
-      <i class="fas fa-check-circle" aria-hidden="true"></i> No hay pedidos pendientes por crédito.
+    <div *ngIf="!cargando && credito.length === 0" class="listing-empty-state">
+      <span class="listing-empty-icon" aria-hidden="true"><i class="fas fa-check"></i></span>
+      <div class="listing-empty-state-body">
+        <h5>No hay pedidos pendientes por crédito</h5>
+        <p>Ningún pedido a crédito pasa del límite de su cliente.</p>
+      </div>
     </div>
 
     <div *ngIf="credito.length > 0" class="table-responsive">
-      <table class="table table-sm autorizaciones-table">
+      <table class="table table-hover table-striped table-bordered table-sm listing-data-table">
         <thead>
           <tr>
             <th>No. proforma</th>
@@ -93,7 +107,7 @@
             <th>Vendedor</th>
             <th class="text-right">Total</th>
             <th class="text-right">Límite</th>
-            <th class="text-right">Pasa por</th>
+            <th class="text-center">Pasa por</th>
             <th class="text-center">Decisión</th>
           </tr>
         </thead>
@@ -105,20 +119,20 @@
               <small *ngIf="proforma.ruta" class="d-block text-muted">{{proforma.ruta}}</small>
             </td>
             <td data-label="Vendedor">{{proforma.vendedor}}</td>
-            <td data-label="Total" class="text-right">{{proforma.total | currency: 'Q' : 'symbol'}}</td>
-            <td data-label="Límite" class="text-right">{{proforma.limiteCredito | currency: 'Q' : 'symbol'}}</td>
-            <td data-label="Pasa por" class="text-right"><span class="descuento-alto">{{proforma.excesoCredito | currency: 'Q' : 'symbol'}}</span></td>
+            <td data-label="Total" class="text-money">{{proforma.total | currency: 'Q' : 'symbol'}}</td>
+            <td data-label="Límite" class="text-money">{{proforma.limiteCredito | currency: 'Q' : 'symbol'}}</td>
+            <td data-label="Pasa por" class="text-center"><span class="listing-status-pill listing-status-danger">{{proforma.excesoCredito | currency: 'Q' : 'symbol'}}</span></td>
             <td data-label="Decisión" class="text-center">
-              <div class="acciones">
-                <button type="button" class="btn btn-sm btn-success" (click)="aprobarCredito(proforma)"
+              <div class="listing-actions justify-content-center">
+                <button type="button" class="btn listing-page-action listing-primary-action listing-compact" (click)="aprobarCredito(proforma)"
                   [disabled]="resolviendo === proforma.idProforma"
                   [attr.aria-label]="'Autorizar el crédito del pedido ' + proforma.noProforma">
-                  <i class="fas fa-check" aria-hidden="true"></i> Autorizar
+                  <i class="fas fa-check"></i> Autorizar
                 </button>
-                <button type="button" class="btn btn-sm btn-outline-danger" (click)="rechazarCredito(proforma)"
+                <button type="button" class="btn listing-page-action listing-danger-action listing-compact" (click)="rechazarCredito(proforma)"
                   [disabled]="resolviendo === proforma.idProforma"
                   [attr.aria-label]="'Rechazar el crédito del pedido ' + proforma.noProforma">
-                  <i class="fas fa-times" aria-hidden="true"></i> Rechazar
+                  <i class="fas fa-times"></i> Rechazar
                 </button>
               </div>
             </td>
@@ -131,16 +145,20 @@
 
 <div class="card listing-card">
   <div class="card-header listing-card-header">
-    Proformas vencidas sin facturar <span class="contador">{{vencidas.length}}</span>
+    Proformas vencidas sin facturar <span class="listing-status-pill listing-status-primary ml-2">{{vencidas.length}}</span>
   </div>
   <div class="card-body">
-    <p class="nota">Una proforma mayorista vence a los 15 días. Para facturarla hace falta que un administrador lo autorice.</p>
-    <div *ngIf="!cargando && vencidas.length === 0" class="estado-vacio">
-      <i class="fas fa-check-circle" aria-hidden="true"></i> No hay proformas vencidas por autorizar.
+    <p class="listing-note">Una proforma mayorista vence a los 15 días. Para facturarla hace falta que un administrador lo autorice.</p>
+    <div *ngIf="!cargando && vencidas.length === 0" class="listing-empty-state">
+      <span class="listing-empty-icon" aria-hidden="true"><i class="fas fa-check"></i></span>
+      <div class="listing-empty-state-body">
+        <h5>No hay proformas vencidas por autorizar</h5>
+        <p>Todas las proformas vigentes están dentro de su plazo o ya se facturaron.</p>
+      </div>
     </div>
 
     <div *ngIf="vencidas.length > 0" class="table-responsive">
-      <table class="table table-sm autorizaciones-table">
+      <table class="table table-hover table-striped table-bordered table-sm listing-data-table">
         <thead>
           <tr>
             <th>No. proforma</th>
@@ -163,12 +181,12 @@
               {{proforma.fechaVencimiento | date: 'dd/MM/yyyy'}}
               <small class="d-block text-muted">hace {{diasVencida(proforma)}} {{diasVencida(proforma) === 1 ? 'día' : 'días'}}</small>
             </td>
-            <td data-label="Total" class="text-right">{{proforma.total | currency: 'Q' : 'symbol'}}</td>
+            <td data-label="Total" class="text-money">{{proforma.total | currency: 'Q' : 'symbol'}}</td>
             <td data-label="Decisión" class="text-center">
-              <button type="button" class="btn btn-sm btn-primary" (click)="autorizarVencida(proforma)"
+              <button type="button" class="btn listing-page-action listing-primary-action listing-compact" (click)="autorizarVencida(proforma)"
                 [disabled]="resolviendo === proforma.idProforma"
                 [attr.aria-label]="'Autorizar facturar la proforma vencida ' + proforma.noProforma">
-                <i class="fas fa-unlock" aria-hidden="true"></i> Autorizar facturar
+                <i class="fas fa-unlock"></i> Autorizar facturar
               </button>
             </td>
           </tr>

@@ -1,13 +1,12 @@
 <section class="content-header">
   <div class="container-fluid">
     <div class="row mb-2">
-      <div class="col-sm-8">
+      <div class="col-sm-9">
         <h1>{{title}}</h1>
-        <p class="recibos-subtitle">Abonos y depósitos de los clientes. Cada sucursal numera sus recibos.</p>
-      </div>
-      <div class="col-sm-4 text-sm-right">
-        <button type="button" class="btn btn-primary" (click)="abrirFormulario()" *ngIf="!formularioAbierto">
-          <i class="fas fa-plus" aria-hidden="true"></i> Nuevo recibo
+        <p class="listing-subtitle">Abonos y depósitos de los clientes. Cada sucursal numera sus recibos.</p>
+        <br>
+        <button type="button" class="btn listing-page-action listing-primary-action" (click)="abrirFormulario()" *ngIf="!formularioAbierto">
+          <i class="fas fa-plus"></i> Nuevo recibo
         </button>
       </div>
     </div>
@@ -17,126 +16,149 @@
 <div class="card listing-card" *ngIf="formularioAbierto">
   <div class="card-header listing-card-header">Nuevo recibo</div>
   <div class="card-body">
-    <div class="form-row">
-      <div class="form-group col-md-6 buscador">
-        <label for="clienteRecibo">Cliente</label>
-        <input type="text" id="clienteRecibo" class="form-control" autocomplete="off" [value]="busquedaCliente"
-          (input)="onBuscarCliente($event.target.value)" placeholder="Nombre, NIT, teléfono o código">
-        <ul class="list-group resultados" *ngIf="clientesEncontrados.length > 0">
-          <li class="list-group-item list-group-item-action" *ngFor="let cliente of clientesEncontrados"
-            (click)="elegirCliente(cliente)" role="button">
-            <strong>{{cliente.nombre}}</strong>
-            <small class="d-block text-muted">
-              <span *ngIf="cliente.nombreNegocio">{{cliente.nombreNegocio}} · </span>NIT {{cliente.nit || '—'}}
-            </small>
-          </li>
-        </ul>
-        <small class="text-success" *ngIf="clienteElegido"><i class="fas fa-check" aria-hidden="true"></i> Cliente elegido</small>
-      </div>
-      <div class="form-group col-md-3">
-        <label for="montoRecibo">Monto (Q)</label>
-        <input type="number" id="montoRecibo" class="form-control" min="0" step="0.01" [(ngModel)]="monto" name="monto">
-      </div>
-      <div class="form-group col-md-3">
-        <label for="fechaRecibo">Fecha de pago</label>
-        <input type="date" id="fechaRecibo" class="form-control" [(ngModel)]="fechaPago" name="fechaPago" [max]="fechaPago">
+    <div class="listing-panel">
+      <div class="listing-fields-grid">
+        <div class="listing-field buscador listing-span-2">
+          <label for="clienteRecibo">Cliente <span class="requerido">*</span></label>
+          <input type="text" id="clienteRecibo" class="form-control" autocomplete="off" [value]="busquedaCliente"
+            (input)="onBuscarCliente($event.target.value)" placeholder="Nombre, NIT, teléfono o código">
+          <ul class="list-group resultados" *ngIf="clientesEncontrados.length > 0">
+            <li class="list-group-item list-group-item-action" *ngFor="let cliente of clientesEncontrados"
+              (click)="elegirCliente(cliente)" role="button">
+              <strong>{{cliente.nombre}}</strong>
+              <small class="d-block text-muted">
+                <span *ngIf="cliente.nombreNegocio">{{cliente.nombreNegocio}} · </span>NIT {{cliente.nit || '—'}}
+              </small>
+            </li>
+          </ul>
+          <small class="text-success" *ngIf="clienteElegido"><i class="fas fa-check-circle" aria-hidden="true"></i> Cliente elegido</small>
+        </div>
+        <div class="listing-field">
+          <label for="montoRecibo">Monto (Q) <span class="requerido">*</span></label>
+          <input type="number" id="montoRecibo" class="form-control" min="0" step="0.01" [(ngModel)]="monto" name="monto" placeholder="0.00">
+        </div>
+        <div class="listing-field">
+          <label for="fechaRecibo">Fecha de pago</label>
+          <input type="date" id="fechaRecibo" class="form-control" [(ngModel)]="fechaPago" name="fechaPago" [max]="hoyIso">
+        </div>
       </div>
     </div>
-    <div class="saldo-cliente" *ngIf="saldo" role="status">
-      <div><span>Entregado</span><strong>{{saldo.entregado | currency: 'Q' : 'symbol'}}</strong></div>
-      <div><span>Abonado</span><strong>{{saldo.abonado | currency: 'Q' : 'symbol'}}</strong></div>
-      <div [class.a-favor]="saldo.saldo < 0">
+
+    <div class="listing-stats" *ngIf="saldo" role="status">
+      <div class="listing-stat"><span>Entregado</span><strong>{{saldo.entregado | currency: 'Q' : 'symbol'}}</strong></div>
+      <div class="listing-stat"><span>Abonado</span><strong>{{saldo.abonado | currency: 'Q' : 'symbol'}}</strong></div>
+      <div class="listing-stat" [ngClass]="saldo.saldo < 0 ? 'is-success' : saldo.saldo > 0 ? 'is-danger' : ''">
         <span>{{saldo.saldo < 0 ? 'A favor del cliente' : 'Saldo pendiente'}}</span>
         <strong>{{(saldo.saldo < 0 ? -saldo.saldo : saldo.saldo) | currency: 'Q' : 'symbol'}}</strong>
       </div>
-      <div *ngIf="saldo.limiteCredito != null">
-        <span>Crédito disponible</span><strong>{{saldo.disponible | currency: 'Q' : 'symbol'}} de {{saldo.limiteCredito | currency: 'Q' : 'symbol'}}</strong>
+      <div class="listing-stat" *ngIf="saldo.limiteCredito != null">
+        <span>Crédito disponible</span><strong>{{saldo.disponible | currency: 'Q' : 'symbol'}}</strong>
+        <small>de {{saldo.limiteCredito | currency: 'Q' : 'symbol'}}</small>
       </div>
     </div>
-    <div class="form-group" *ngIf="saldo">
-      <label for="pedidoRecibo">Paga a</label>
-      <select id="pedidoRecibo" class="form-control" [(ngModel)]="idProformaElegida" name="pedido" (ngModelChange)="sugerirMonto($event)">
-        <option [ngValue]="null">Abono a la cuenta (se aplica a lo más antiguo)</option>
-        <option *ngFor="let pedido of saldo.pedidos" [ngValue]="pedido.idProforma">
-          Pedido {{pedido.noProforma}} · {{pedido.condicionPago === 'CREDITO' ? 'crédito' : 'contado'}} · total {{pedido.total | currency: 'Q' : 'symbol'}} ·
-          cobrado {{pedido.cobrado | currency: 'Q' : 'symbol'}}<ng-container *ngIf="pedido.pendiente > 0"> · pendiente {{pedido.pendiente | currency: 'Q' : 'symbol'}}</ng-container>
-        </option>
-      </select>
-    </div>
-    <div class="form-row">
-      <div class="form-group col-md-3">
-        <label for="formaRecibo">Forma de pago</label>
-        <select id="formaRecibo" class="form-control" [(ngModel)]="formaPago" name="formaPago">
-          <option *ngFor="let forma of formas" [value]="forma.valor">{{forma.etiqueta}}</option>
-        </select>
+
+    <div class="listing-panel">
+      <div class="listing-fields-grid">
+        <div class="listing-field listing-span-2" *ngIf="saldo">
+          <label for="pedidoRecibo">Paga a</label>
+          <select id="pedidoRecibo" class="form-control" [(ngModel)]="idProformaElegida" name="pedido" (ngModelChange)="sugerirMonto($event)">
+            <option [ngValue]="null">Abono a la cuenta (se aplica a lo más antiguo)</option>
+            <option *ngFor="let pedido of saldo.pedidos" [ngValue]="pedido.idProforma">
+              Pedido {{pedido.noProforma}} · {{pedido.condicionPago === 'CREDITO' ? 'crédito' : 'contado'}} · total {{pedido.total | currency: 'Q' : 'symbol'}} ·
+              cobrado {{pedido.cobrado | currency: 'Q' : 'symbol'}}<ng-container *ngIf="pedido.pendiente > 0"> · pendiente {{pedido.pendiente | currency: 'Q' : 'symbol'}}</ng-container>
+            </option>
+          </select>
+        </div>
+        <div class="listing-field">
+          <label for="formaRecibo">Forma de pago</label>
+          <select id="formaRecibo" class="form-control" [(ngModel)]="formaPago" name="formaPago">
+            <option *ngFor="let forma of formas" [value]="forma.valor">{{forma.etiqueta}}</option>
+          </select>
+        </div>
+        <div class="listing-field">
+          <label for="referenciaRecibo">Referencia <span class="requerido" *ngIf="pideReferencia">*</span></label>
+          <input type="text" id="referenciaRecibo" class="form-control" maxlength="100" [(ngModel)]="referencia" name="referencia"
+            placeholder="No. de boleta o transferencia">
+        </div>
+        <div class="listing-field" *ngIf="esAdmin && sucursales.length > 0">
+          <label for="sucursalRecibo">Sucursal</label>
+          <select id="sucursalRecibo" class="form-control" [(ngModel)]="idSucursalEmision" name="sucursal">
+            <option [ngValue]="null">La mía</option>
+            <option *ngFor="let sucursal of sucursales" [ngValue]="sucursal.idSucursal">{{sucursal.nombre}}</option>
+          </select>
+        </div>
+        <div class="listing-field listing-span-2">
+          <label for="observacionesRecibo">Observaciones</label>
+          <input type="text" id="observacionesRecibo" class="form-control" maxlength="255" [(ngModel)]="observaciones" name="observaciones"
+            placeholder="Opcional">
+        </div>
       </div>
-      <div class="form-group col-md-4">
-        <label for="referenciaRecibo">Referencia <small *ngIf="pideReferencia" class="text-danger">(obligatoria)</small></label>
-        <input type="text" id="referenciaRecibo" class="form-control" maxlength="100" [(ngModel)]="referencia" name="referencia"
-          placeholder="No. de boleta o transferencia">
-      </div>
-      <div class="form-group col-md-5" *ngIf="esAdmin && sucursales.length > 0">
-        <label for="sucursalRecibo">Sucursal</label>
-        <select id="sucursalRecibo" class="form-control" [(ngModel)]="idSucursalEmision" name="sucursal">
-          <option [ngValue]="null">La mía</option>
-          <option *ngFor="let sucursal of sucursales" [ngValue]="sucursal.idSucursal">{{sucursal.nombre}}</option>
-        </select>
-      </div>
     </div>
-    <div class="form-group">
-      <label for="observacionesRecibo">Observaciones</label>
-      <input type="text" id="observacionesRecibo" class="form-control" maxlength="255" [(ngModel)]="observaciones" name="observaciones">
-    </div>
-    <p class="nota" *ngIf="faltante">{{faltante}}</p>
-    <div class="acciones">
-      <button type="button" class="btn btn-success" (click)="emitir()" [disabled]="!!faltante || emitiendo">
-        <i class="fas fa-receipt" aria-hidden="true"></i> Emitir e imprimir
+
+    <p class="listing-note" *ngIf="faltante"><i class="fas fa-info-circle" aria-hidden="true"></i> {{faltante}}</p>
+    <div class="listing-actions">
+      <button type="button" class="btn listing-page-action listing-primary-action" (click)="emitir()" [disabled]="!!faltante || emitiendo">
+        <i class="fas fa-receipt"></i> Emitir e imprimir
       </button>
-      <button type="button" class="btn btn-link" (click)="cancelarFormulario()" [disabled]="emitiendo">Cancelar</button>
+      <button type="button" class="btn listing-page-action listing-secondary-action" (click)="cancelarFormulario()" [disabled]="emitiendo">
+        Cancelar
+      </button>
     </div>
   </div>
 </div>
 
 <div class="card listing-card">
-  <div class="card-header listing-card-header">
-    Recibos emitidos <span class="contador" *ngIf="!cargando">{{totalElementos}}</span>
-  </div>
+  <div class="card-header listing-card-header">Recibos emitidos</div>
   <div class="card-body">
-    <div class="form-row filtros">
-      <div class="form-group col-md-3">
+    <div class="listing-filter-bar">
+      <div class="listing-field">
         <label for="desdeRecibo">Desde</label>
-        <input type="date" id="desdeRecibo" class="form-control form-control-sm" [(ngModel)]="desde" name="desde">
+        <input type="date" id="desdeRecibo" class="form-control" [(ngModel)]="desde" name="desde">
       </div>
-      <div class="form-group col-md-3">
+      <div class="listing-field">
         <label for="hastaRecibo">Hasta</label>
-        <input type="date" id="hastaRecibo" class="form-control form-control-sm" [(ngModel)]="hasta" name="hasta">
+        <input type="date" id="hastaRecibo" class="form-control" [(ngModel)]="hasta" name="hasta">
       </div>
-      <div class="form-group col-md-3" *ngIf="esAdmin && sucursales.length > 0">
+      <div class="listing-field" *ngIf="esAdmin && sucursales.length > 0">
         <label for="sucursalFiltro">Sucursal</label>
-        <select id="sucursalFiltro" class="form-control form-control-sm" [(ngModel)]="idSucursalFiltro" name="sucursalFiltro">
+        <select id="sucursalFiltro" class="form-control" [(ngModel)]="idSucursalFiltro" name="sucursalFiltro">
           <option [ngValue]="null">Todas</option>
           <option *ngFor="let sucursal of sucursales" [ngValue]="sucursal.idSucursal">{{sucursal.nombre}}</option>
         </select>
       </div>
-      <div class="form-group col-md-3 d-flex align-items-end">
-        <div class="custom-control custom-checkbox mr-3">
-          <input type="checkbox" class="custom-control-input" id="anuladosRecibo" [(ngModel)]="incluirAnulados" name="anulados">
-          <label class="custom-control-label" for="anuladosRecibo">Con anulados</label>
-        </div>
-        <button type="button" class="btn btn-sm btn-outline-primary" (click)="aplicarFiltros()">Filtrar</button>
+      <label class="listing-check" for="anuladosRecibo">
+        <input type="checkbox" id="anuladosRecibo" [(ngModel)]="incluirAnulados" name="anulados"> Con anulados
+      </label>
+      <div class="listing-actions">
+        <button type="button" class="btn listing-page-action listing-secondary-action listing-compact" (click)="aplicarFiltros()">
+          <i class="fas fa-filter"></i> Filtrar
+        </button>
       </div>
     </div>
-    <p class="nota">Sin fechas se muestran los últimos 30 días.</p>
+    <p class="listing-note">Sin fechas se muestran los últimos 30 días.<span *ngIf="!cargando"> · {{totalElementos}} {{totalElementos === 1 ? 'recibo' : 'recibos'}}</span></p>
 
-    <div *ngIf="errorCarga" class="alert alert-warning" role="alert">
-      No fue posible cargar los recibos.
-      <button type="button" class="btn btn-sm btn-outline-dark ml-2" (click)="cargar(paginaActual)">Reintentar</button>
+    <div *ngIf="errorCarga" class="listing-alert listing-alert-warning" role="alert">
+      <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+      <span class="listing-alert-text">No fue posible cargar los recibos.</span>
+      <button type="button" class="btn listing-page-action listing-secondary-action listing-compact" (click)="cargar(paginaActual)">
+        <i class="fas fa-redo"></i> Reintentar
+      </button>
     </div>
-    <div *ngIf="cargando" class="estado-vacio">Cargando...</div>
-    <div *ngIf="!cargando && !errorCarga && recibos.length === 0" class="estado-vacio">No hay recibos para estos filtros.</div>
+
+    <div *ngIf="cargando" class="text-center p-4">
+      <div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div>
+    </div>
+
+    <div *ngIf="!cargando && !errorCarga && recibos.length === 0" class="listing-empty-state">
+      <span class="listing-empty-icon" aria-hidden="true"><i class="fas fa-receipt"></i></span>
+      <div class="listing-empty-state-body">
+        <h5>No hay recibos</h5>
+        <p>No se encontraron recibos con los filtros indicados.</p>
+      </div>
+    </div>
 
     <div class="table-responsive" *ngIf="recibos.length > 0">
-      <table class="table table-sm recibos-table">
+      <table class="table table-hover table-striped table-bordered table-sm listing-data-table">
         <thead>
           <tr>
             <th>Recibo</th>
@@ -149,33 +171,36 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let recibo of recibos; trackBy: trackRecibo" [class.anulado]="recibo.anulado">
+          <tr *ngFor="let recibo of recibos; trackBy: trackRecibo" [class.is-muted]="recibo.anulado">
             <td data-label="Recibo">
               <span class="listing-id-pill">{{recibo.numeroVisible}}</span>
               <small class="d-block text-muted">{{recibo.sucursal}}</small>
-              <small class="d-block text-danger" *ngIf="recibo.anulado">Anulado: {{recibo.motivoAnulacion}}</small>
+              <span *ngIf="recibo.anulado" class="listing-status-pill listing-status-danger mt-1" [title]="recibo.motivoAnulacion">Anulado</span>
             </td>
             <td data-label="Fecha de pago">{{recibo.fechaPago | date: 'dd/MM/yyyy'}}</td>
             <td data-label="Cliente">
-              {{recibo.cliente}}
+              <strong>{{recibo.cliente}}</strong>
               <small class="d-block text-muted" *ngIf="recibo.noProforma">Pedido {{recibo.noProforma}}</small>
               <small class="d-block text-muted" *ngIf="recibo.noFactura">Factura {{recibo.noFactura}}</small>
             </td>
             <td data-label="Forma de pago">
-              {{etiquetaForma(recibo.formaPago)}}
+              <span class="listing-status-pill"
+                [ngClass]="recibo.formaPago === 'EFECTIVO' ? 'listing-status-success' : recibo.formaPago === 'DEPOSITO' ? 'listing-status-primary' : 'listing-status-info'">
+                {{etiquetaForma(recibo.formaPago)}}
+              </span>
               <small class="d-block text-muted" *ngIf="recibo.referencia">Ref. {{recibo.referencia}}</small>
             </td>
-            <td data-label="Monto" class="text-right"><strong>{{recibo.monto | currency: 'Q' : 'symbol'}}</strong></td>
+            <td data-label="Monto" class="text-money"><strong>{{recibo.monto | currency: 'Q' : 'symbol'}}</strong></td>
             <td data-label="Emitió">{{recibo.usuario}}</td>
             <td data-label="Acciones" class="text-center">
-              <div class="acciones justify-content-center">
-                <button type="button" class="btn btn-sm btn-outline-secondary" (click)="imprimir(recibo)"
-                  [attr.aria-label]="'Imprimir el recibo ' + recibo.numeroVisible">
-                  <i class="fas fa-print" aria-hidden="true"></i>
+              <div class="action-buttons d-flex justify-content-center">
+                <button type="button" class="btn btn-sm listing-table-action listing-action-view" (click)="imprimir(recibo)"
+                  appTooltip="Imprimir el recibo" [attr.aria-label]="'Imprimir el recibo ' + recibo.numeroVisible">
+                  <i class="fas fa-print"></i>
                 </button>
-                <button type="button" class="btn btn-sm btn-outline-danger" (click)="anular(recibo)" *ngIf="esAdmin && !recibo.anulado"
-                  [attr.aria-label]="'Anular el recibo ' + recibo.numeroVisible">
-                  <i class="fas fa-ban" aria-hidden="true"></i>
+                <button type="button" class="btn btn-sm listing-table-action listing-action-delete" (click)="anular(recibo)" *ngIf="esAdmin && !recibo.anulado"
+                  appTooltip="Anular el recibo" [attr.aria-label]="'Anular el recibo ' + recibo.numeroVisible">
+                  <i class="fas fa-ban"></i>
                 </button>
               </div>
             </td>

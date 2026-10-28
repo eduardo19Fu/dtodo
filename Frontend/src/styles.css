@@ -934,3 +934,366 @@ select.page-size-select:focus {
     justify-content: space-between;
   }
 }
+
+/* ==========================================================================
+   Patrón compartido de pantallas de gestión (comisiones, recibos, cobranza, autorizaciones):
+   botones, filtros, campos, resúmenes, avisos y tablas con el mismo lenguaje visual que los listados.
+   ========================================================================== */
+.listing-subtitle {
+  color: #607087;
+  margin: 0.25rem 0 0;
+  max-width: 780px;
+}
+
+.listing-note {
+  color: #6b7c93;
+  font-size: 0.86rem;
+  margin: 0 0 0.85rem;
+}
+
+.listing-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+/* Variante compacta y variante destructiva de los botones de página. */
+.btn.listing-page-action.listing-compact {
+  font-size: 0.84rem;
+  min-height: 36px;
+  padding: 0.45rem 0.85rem;
+}
+
+.btn.listing-danger-action {
+  background: #fff;
+  border: 1px solid #efbcbc;
+  color: #b83232;
+}
+
+.btn.listing-danger-action:hover,
+.btn.listing-danger-action:focus {
+  background: #fdeeee;
+  border-color: #d98383;
+  box-shadow: 0 6px 14px rgba(184, 50, 50, 0.14);
+  color: #9d2424;
+  transform: translateY(-1px);
+}
+
+.btn.listing-ghost-action {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #5d7088;
+}
+
+.btn.listing-ghost-action:hover,
+.btn.listing-ghost-action:focus {
+  background: #eef3f9;
+  color: #24344d;
+}
+
+/* Barra de filtros y panel de formulario dentro de una tarjeta. */
+.listing-filter-bar,
+.listing-panel {
+  background: #f8fafe;
+  border: 1px solid #e1e8f1;
+  border-radius: 12px;
+  box-shadow: 0 5px 16px rgba(33, 61, 99, 0.07);
+  margin-bottom: 14px;
+  padding: 14px 16px;
+}
+
+.listing-filter-bar {
+  align-items: flex-end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+}
+
+.listing-filter-bar > .listing-field {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+
+.listing-filter-bar > .listing-actions {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+/* Campo etiquetado: etiqueta en negrita y control con el mismo borde, radio y foco que la búsqueda de los listados. */
+.listing-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin: 0;
+  min-width: 0;
+}
+
+.listing-field > label,
+.listing-field > .listing-field-label {
+  color: #27364b;
+  font-size: 13px !important;
+  font-weight: 700;
+  margin: 0;
+}
+
+.listing-field .form-control,
+.listing-field select.form-control {
+  background-color: #fff;
+  border: 1px solid #cbd6e4;
+  border-radius: 8px;
+  color: #24344d;
+  height: 40px;
+  padding: 0.5rem 0.75rem;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  width: 100%;
+}
+
+.listing-field textarea.form-control {
+  height: auto;
+  min-height: 84px;
+}
+
+.listing-field .form-control:focus {
+  border-color: #4a8ddd;
+  box-shadow: 0 0 0 3px rgba(18, 104, 211, 0.12);
+  outline: 0;
+}
+
+.listing-field .form-control:disabled,
+.listing-field .form-control[readonly] {
+  background-color: #f1f4f8;
+  color: #7a8aa0;
+}
+
+.listing-field .form-control::placeholder {
+  color: #9aa8bb;
+}
+
+.listing-field > small {
+  color: #6b7c93;
+  font-size: 12px;
+}
+
+.listing-fields-grid {
+  display: grid;
+  gap: 14px 16px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.listing-fields-grid .listing-span-2 {
+  grid-column: span 2;
+}
+
+/* Casilla con etiqueta. */
+.listing-check {
+  align-items: center;
+  color: #27364b;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 14px;
+  font-weight: 650;
+  gap: 0.55rem;
+  margin: 0;
+}
+
+.listing-check input {
+  accent-color: #0d6efd;
+  cursor: pointer;
+  height: 17px;
+  width: 17px;
+}
+
+.listing-check input:disabled {
+  cursor: not-allowed;
+}
+
+/* Resumen en tarjetas pequeñas. */
+.listing-stats {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
+  margin-bottom: 14px;
+}
+
+.listing-stat {
+  background: #fff;
+  border: 1px solid #e1e8f1;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(33, 61, 99, 0.06);
+  padding: 0.75rem 0.95rem;
+}
+
+.listing-stat > span {
+  color: #5d7088;
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.listing-stat > strong {
+  color: #172b47;
+  display: block;
+  font-size: 1.2rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.35;
+}
+
+.listing-stat > small {
+  color: #6b7c93;
+  display: block;
+  font-size: 12px;
+}
+
+.listing-stat.is-danger {
+  background: #fffafa;
+  border-color: #f3c6c6;
+}
+
+.listing-stat.is-danger > strong {
+  color: #bd3434;
+}
+
+.listing-stat.is-success > strong {
+  color: #147a4b;
+}
+
+/* Avisos de página. */
+.listing-alert {
+  align-items: center;
+  border: 1px solid;
+  border-radius: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.92rem;
+  gap: 0.55rem 0.8rem;
+  margin-bottom: 14px;
+  padding: 0.8rem 1.1rem;
+}
+
+.listing-alert > i {
+  font-size: 1.05rem;
+}
+
+.listing-alert .listing-alert-text {
+  flex: 1 1 260px;
+}
+
+.listing-alert-danger {
+  background: #fde9e9;
+  border-color: #f3c6c6;
+  color: #8f2525;
+}
+
+.listing-alert-success {
+  background: #e5f6ed;
+  border-color: #bfe3cf;
+  color: #146c43;
+}
+
+.listing-alert-warning {
+  background: #fff3d6;
+  border-color: #f1d89a;
+  color: #7d5200;
+}
+
+.listing-alert-info {
+  background: #e8f1fd;
+  border-color: #c4d9f3;
+  color: #1559ad;
+}
+
+/* Tabla de datos de las pantallas de gestión: encabezado oscuro como los catálogos, pie de totales y vista móvil en tarjetas. */
+.listing-data-table {
+  margin: 0;
+  width: 100%;
+}
+
+.listing-data-table thead th {
+  background: #343a40;
+  border-color: #454d55;
+  color: #fff;
+  font-size: 0.83rem;
+  font-weight: 600;
+  line-height: 1.2;
+  padding: 0.7rem 0.6rem;
+  vertical-align: middle;
+}
+
+.listing-data-table tbody td {
+  color: #343a40;
+  font-size: 0.88rem;
+  line-height: 1.3;
+  padding: 0.6rem;
+  vertical-align: middle;
+}
+
+.listing-data-table tfoot td {
+  background: #eef3f9;
+  color: #172b47;
+  font-size: 0.88rem;
+  font-weight: 700;
+  padding: 0.65rem 0.6rem;
+}
+
+.listing-data-table .text-money {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.listing-data-table tr.is-muted td {
+  color: #8a949e;
+}
+
+.listing-data-table .row-severity-low { box-shadow: inset 4px 0 0 #f0ad4e; }
+.listing-data-table .row-severity-mid { box-shadow: inset 4px 0 0 #fd7e14; }
+.listing-data-table .row-severity-high { background: #fdf3f4 !important; box-shadow: inset 4px 0 0 #b83232; }
+
+@media (max-width: 767.98px) {
+  .listing-data-table thead {
+    display: none;
+  }
+
+  .listing-data-table,
+  .listing-data-table tbody,
+  .listing-data-table tfoot,
+  .listing-data-table tr,
+  .listing-data-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .listing-data-table tr {
+    border-bottom: 2px solid #dee2e6;
+    padding: 0.5rem 0;
+  }
+
+  .listing-data-table td {
+    align-items: center;
+    border: 0 !important;
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    padding: 0.3rem 0.5rem !important;
+    text-align: right !important;
+  }
+
+  .listing-data-table td::before {
+    color: #6c7a8d;
+    content: attr(data-label);
+    flex: 0 0 auto;
+    font-weight: 650;
+    text-align: left;
+  }
+
+  .listing-filter-bar > .listing-actions {
+    margin-left: 0;
+  }
+
+  .listing-fields-grid .listing-span-2 {
+    grid-column: auto;
+  }
+}
