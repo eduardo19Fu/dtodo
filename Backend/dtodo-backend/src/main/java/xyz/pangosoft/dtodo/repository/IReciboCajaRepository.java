@@ -22,6 +22,14 @@ public interface IReciboCajaRepository extends JpaRepository<ReciboCaja, Long> {
             + "where r.cliente.idCliente = :idCliente and r.anulado = false")
     List<Object[]> abonosDelCliente(@Param("idCliente") Integer idCliente);
 
+    /** Los recibos vigentes de todos los clientes: cliente, pedido, pedido de origen de la factura y monto. */
+    @Query("select r.cliente.idCliente, pr.idProforma, f.idProformaOrigen, r.monto from ReciboCaja r "
+            + "left join r.proforma pr left join r.factura f where r.anulado = false")
+    List<Object[]> abonosDeTodos();
+
+    /** Los recibos vigentes de un cliente, del más antiguo al más reciente. */
+    List<ReciboCaja> findByCliente_IdClienteAndAnuladoFalseOrderByFechaPagoAscIdReciboAsc(Integer idCliente);
+
     /** Lo cobrado, con recibos vigentes, directamente a un pedido (ligados a él o a una factura suya). */
     @Query("select coalesce(sum(r.monto), 0) from ReciboCaja r left join r.proforma pr left join r.factura f "
             + "where r.anulado = false and (pr.idProforma = :idProforma or (pr is null and f.idProformaOrigen = :idProforma))")

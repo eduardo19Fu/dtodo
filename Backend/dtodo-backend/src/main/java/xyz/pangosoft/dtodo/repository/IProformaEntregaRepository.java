@@ -36,6 +36,25 @@ public interface IProformaEntregaRepository extends JpaRepository<ProformaEntreg
             "and p.estado.estado <> 'ANULADO' and p.cliente.idCliente = :idCliente")
     List<Object[]> entregadoDelCliente(@Param("idCliente") Integer idCliente);
 
+    /** Lo entregado en todos los pedidos mayoristas vigentes: cliente seguido de las mismas columnas de {@link #entregadoDelCliente}. */
+    @Query("select p.cliente.idCliente, p.idProforma, ed.cantidad, l.subTotalDescuento, l.cantidad, e.fechaEntrega " +
+            "from ProformaEntrega e, ProformaEntregaDetalle ed, DetalleProforma l, Proforma p " +
+            "where ed.entrega = e and l.idDetalle = ed.idDetalle and p.idProforma = e.idProforma " +
+            "and e.anulada = false and p.tipoProforma = xyz.pangosoft.dtodo.model.enums.TipoProformaEnum.MAYORISTA " +
+            "and p.estado.estado <> 'ANULADO'")
+    List<Object[]> entregadoDeTodos();
+
+    /**
+     * Las entregas vigentes de un cliente línea por línea, para su estado de cuenta: entrega, pedido, número del pedido, fecha
+     * de entrega, unidades entregadas, importe de la línea y unidades de la línea.
+     */
+    @Query("select e.idEntrega, p.idProforma, p.noProforma, e.fechaEntrega, ed.cantidad, l.subTotalDescuento, l.cantidad " +
+            "from ProformaEntrega e, ProformaEntregaDetalle ed, DetalleProforma l, Proforma p " +
+            "where ed.entrega = e and l.idDetalle = ed.idDetalle and p.idProforma = e.idProforma " +
+            "and e.anulada = false and p.tipoProforma = xyz.pangosoft.dtodo.model.enums.TipoProformaEnum.MAYORISTA " +
+            "and p.estado.estado <> 'ANULADO' and p.cliente.idCliente = :idCliente")
+    List<Object[]> entregasDelClienteDetalle(@Param("idCliente") Integer idCliente);
+
     /** Lo mismo para un solo pedido (para saber si ya está cobrado lo que se va a entregar). */
     @Query("select p.idProforma, ed.cantidad, l.subTotalDescuento, l.cantidad, e.fechaEntrega " +
             "from ProformaEntrega e, ProformaEntregaDetalle ed, DetalleProforma l, Proforma p " +

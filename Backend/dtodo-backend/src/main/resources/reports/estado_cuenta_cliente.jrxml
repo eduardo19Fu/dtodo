@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Estado de cuenta de un cliente mayorista. Plantilla escrita a mano en formato JasperReports 6.x; no abrir ni guardar con
+     Jaspersoft Studio 7, que cambia el formato y la librería del proyecto no lo entiende. Se llena con una lista de
+     MovimientoEstadoCuentaDto, no con SQL. -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="estado_cuenta_cliente" pageWidth="612" pageHeight="792" orientation="Portrait"
+              whenNoDataType="AllSectionsNoDetail" columnWidth="572" leftMargin="20" rightMargin="20"
+              topMargin="18" bottomMargin="18" isSummaryWithPageHeaderAndFooter="true"
+              uuid="c4a82e19-73d5-4b0f-a6e8-1d9f5037b2c6">
+
+    <style name="Base" isDefault="true" fontName="DejaVu Sans" fontSize="8" forecolor="#23344D"/>
+    <style name="Header" style="Base" mode="Opaque" backcolor="#1769D2" forecolor="#FFFFFF"
+           fontSize="8" isBold="true" vTextAlign="Middle"/>
+    <style name="Cell" style="Base" mode="Opaque" backcolor="#FFFFFF" vTextAlign="Middle">
+        <box><pen lineWidth="0.35" lineColor="#D9E3EF"/></box>
+    </style>
+    <style name="Etiqueta" style="Base" fontSize="7" forecolor="#66758A"/>
+    <style name="Valor" style="Base" fontSize="9" isBold="true"/>
+
+    <parameter name="CLIENTE" class="java.lang.String"/>
+    <parameter name="NIT" class="java.lang.String"/>
+    <parameter name="CODIGO" class="java.lang.String"/>
+    <parameter name="LIMITE" class="java.lang.String"/>
+    <parameter name="DIAS_CREDITO" class="java.lang.String"/>
+    <parameter name="FECHA" class="java.lang.String"/>
+    <parameter name="SALDO" class="java.math.BigDecimal"/>
+
+    <field name="fechaTexto" class="java.lang.String"/>
+    <field name="documento" class="java.lang.String"/>
+    <field name="detalle" class="java.lang.String"/>
+    <field name="cargo" class="java.math.BigDecimal"/>
+    <field name="abono" class="java.math.BigDecimal"/>
+    <field name="saldo" class="java.math.BigDecimal"/>
+
+    <title>
+        <band height="112">
+            <rectangle radius="8">
+                <reportElement x="90" y="0" width="482" height="48" forecolor="#1769D2" backcolor="#1769D2"/>
+            </rectangle>
+            <image scaleImage="RetainShape" hAlign="Center">
+                <reportElement x="0" y="0" width="72" height="48"/>
+                <imageExpression><![CDATA[this.getClass().getResourceAsStream("/static/images/reports-image/logo-dtodo.jpg")]]></imageExpression>
+            </image>
+            <staticText>
+                <reportElement x="90" y="0" width="300" height="48" forecolor="#FFFFFF" backcolor="#1769D2" mode="Opaque"/>
+                <textElement verticalAlignment="Middle"><font size="16" isBold="true"/><paragraph leftIndent="18"/></textElement>
+                <text><![CDATA[Estado de cuenta]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="390" y="0" width="182" height="48" forecolor="#DCEBFF" backcolor="#1769D2" mode="Opaque"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="8"/><paragraph rightIndent="18"/></textElement>
+                <textFieldExpression><![CDATA["Al " + $P{FECHA}]]></textFieldExpression>
+            </textField>
+
+            <staticText><reportElement style="Etiqueta" x="0" y="58" width="100" height="10"/><text><![CDATA[Cliente]]></text></staticText>
+            <textField isBlankWhenNull="true"><reportElement style="Valor" x="0" y="68" width="360" height="14"/><textFieldExpression><![CDATA[$P{CLIENTE}]]></textFieldExpression></textField>
+            <staticText><reportElement style="Etiqueta" x="380" y="58" width="100" height="10"/><text><![CDATA[NIT]]></text></staticText>
+            <textField isBlankWhenNull="true"><reportElement style="Valor" x="380" y="68" width="192" height="14"/><textFieldExpression><![CDATA[$P{NIT}]]></textFieldExpression></textField>
+            <staticText><reportElement style="Etiqueta" x="0" y="86" width="100" height="10"/><text><![CDATA[Código]]></text></staticText>
+            <textField isBlankWhenNull="true"><reportElement style="Valor" x="0" y="96" width="260" height="14"/><textFieldExpression><![CDATA[$P{CODIGO}]]></textFieldExpression></textField>
+            <staticText><reportElement style="Etiqueta" x="380" y="86" width="100" height="10"/><text><![CDATA[Límite · días de crédito]]></text></staticText>
+            <textField isBlankWhenNull="true"><reportElement style="Valor" x="380" y="96" width="192" height="14"/><textFieldExpression><![CDATA[$P{LIMITE} + " · " + $P{DIAS_CREDITO}]]></textFieldExpression></textField>
+        </band>
+    </title>
+    <columnHeader>
+        <band height="22">
+            <staticText><reportElement style="Header" x="0" y="0" width="60" height="22"/><textElement textAlignment="Left"><paragraph leftIndent="4"/></textElement><text><![CDATA[Fecha]]></text></staticText>
+            <staticText><reportElement style="Header" x="60" y="0" width="120" height="22"/><textElement textAlignment="Left"><paragraph leftIndent="4"/></textElement><text><![CDATA[Documento]]></text></staticText>
+            <staticText><reportElement style="Header" x="180" y="0" width="152" height="22"/><textElement textAlignment="Left"><paragraph leftIndent="4"/></textElement><text><![CDATA[Detalle]]></text></staticText>
+            <staticText><reportElement style="Header" x="332" y="0" width="80" height="22"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><text><![CDATA[Cargo]]></text></staticText>
+            <staticText><reportElement style="Header" x="412" y="0" width="80" height="22"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><text><![CDATA[Abono]]></text></staticText>
+            <staticText><reportElement style="Header" x="492" y="0" width="80" height="22"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><text><![CDATA[Saldo]]></text></staticText>
+        </band>
+    </columnHeader>
+    <detail>
+        <band height="20">
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="0" y="0" width="60" height="20"/><textElement textAlignment="Left"><paragraph leftIndent="4"/></textElement><textFieldExpression><![CDATA[$F{fechaTexto}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="60" y="0" width="120" height="20"/><textElement textAlignment="Left"><paragraph leftIndent="4"/></textElement><textFieldExpression><![CDATA[$F{documento}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="180" y="0" width="152" height="20"/><textElement textAlignment="Left"><paragraph leftIndent="4"/></textElement><textFieldExpression><![CDATA[$F{detalle}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="332" y="0" width="80" height="20"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{cargo}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="412" y="0" width="80" height="20"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{abono}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="492" y="0" width="80" height="20"/><textElement textAlignment="Right"><font isBold="true"/><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{saldo}]]></textFieldExpression></textField>
+        </band>
+    </detail>
+
+    <summary>
+        <band height="84">
+            <line><reportElement x="0" y="8" width="572" height="1" forecolor="#B9C9DC"/></line>
+            <staticText><reportElement x="332" y="16" width="160" height="22" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><text><![CDATA[Saldo al día:]]></text></staticText>
+            <textField pattern="Q #,##0.00"><reportElement x="492" y="16" width="80" height="22" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="10" isBold="true"/></textElement><textFieldExpression><![CDATA[$P{SALDO}]]></textFieldExpression></textField>
+            <staticText>
+                <reportElement x="0" y="44" width="572" height="24" forecolor="#52647C" backcolor="#F4F8FC" mode="Opaque">
+                    <printWhenExpression><![CDATA[$V{REPORT_COUNT} == null || $V{REPORT_COUNT}.intValue() == 0]]></printWhenExpression>
+                </reportElement>
+                <box><pen lineWidth="0.5" lineColor="#D6E2F0"/></box>
+                <textElement verticalAlignment="Middle"><font size="9" isItalic="true"/></textElement>
+                <text><![CDATA[Este cliente no tiene entregas ni recibos registrados.]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="0" y="70" width="572" height="12" forecolor="#7B8798"/>
+                <textElement><font size="7" isItalic="true"/></textElement>
+                <text><![CDATA[Cargo: valor de lo entregado. Abono: recibo de caja. Un saldo negativo es dinero a favor del cliente.]]></text>
+            </staticText>
+        </band>
+    </summary>
+</jasperReport>

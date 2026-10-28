@@ -211,4 +211,39 @@ class SaldoRepositoryTest {
         assertEquals(0, new BigDecimal("250.00").compareTo(lista.get(0).getExcesoCredito()));
         assertEquals(0, new BigDecimal("1000.00").compareTo(lista.get(0).getLimiteCredito()));
     }
+
+    @Test
+    void lasConsultasParaTodosLosClientesTraenElClienteYLasDelDetalleLasEntregasLinea() {
+        base();
+        Proforma uno = pedido("1P", cliente, activo, TipoProformaEnum.MAYORISTA, EstadoPedidoEnum.EN_RUTA);
+        Proforma dos = pedido("2P", otro, activo, TipoProformaEnum.MAYORISTA, EstadoPedidoEnum.EN_RUTA);
+        Proforma minorista = pedido("3P", cliente, activo, TipoProformaEnum.MINORISTA, null);
+        em.flush();
+        entrega(uno, 4, LocalDate.of(2026, 10, 5), false);
+        entrega(dos, 2, LocalDate.of(2026, 10, 6), false);
+        entrega(uno, 1, LocalDate.of(2026, 10, 7), true);
+        entrega(minorista, 3, LocalDate.of(2026, 10, 8), false);
+        recibo(cliente, uno, null, "10.00", false);
+        recibo(otro, null, null, "5.00", false);
+        recibo(otro, null, null, "99.00", true);
+        em.flush();
+
+        List<Object[]> todas = entregaRepository.entregadoDeTodos();
+        assertEquals(2, todas.size());
+        assertTrue(todas.stream().anyMatch(f -> cliente.getIdCliente().equals(f[0]) && uno.getIdProforma().equals(f[1])));
+        assertTrue(todas.stream().anyMatch(f -> otro.getIdCliente().equals(f[0]) && dos.getIdProforma().equals(f[1])));
+
+        List<Object[]> abonos = reciboRepository.abonosDeTodos();
+        assertEquals(2, abonos.size());
+
+        List<Object[]> detalle = entregaRepository.entregasDelClienteDetalle(cliente.getIdCliente());
+        assertEquals(1, detalle.size());
+        assertEquals("1P", detalle.get(0)[2]);
+        assertEquals(LocalDate.of(2026, 10, 5), detalle.get(0)[3]);
+        assertEquals(4, ((Number) detalle.get(0)[4]).intValue());
+
+        assertEquals(2, proformaRepository.pedidosVigentes().size());
+        assertEquals(1, reciboRepository.findByCliente_IdClienteAndAnuladoFalseOrderByFechaPagoAscIdReciboAsc(cliente.getIdCliente()).size());
+        assertEquals(1, reciboRepository.findByCliente_IdClienteAndAnuladoFalseOrderByFechaPagoAscIdReciboAsc(otro.getIdCliente()).size());
+    }
 }

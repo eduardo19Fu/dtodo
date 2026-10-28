@@ -1,0 +1,120 @@
+<section class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-8">
+        <h1>{{title}}</h1>
+        <p class="cobranza-subtitle">
+          Lo que deben los clientes mayoristas, según cuánto lleva vencido cada pedido. Un pedido vence cuando pasan los días de
+          crédito desde su primera entrega.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div *ngIf="errorCarga" class="alert alert-warning" role="alert">
+  No fue posible cargar la cobranza.
+  <button type="button" class="btn btn-sm btn-outline-dark ml-2" (click)="cargar()">Reintentar</button>
+</div>
+
+<div *ngIf="hayVencidos" class="alert alert-danger alerta-vencidos" role="alert">
+  <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+  <strong>{{cobranza.clientesConVencido}}</strong>
+  {{cobranza.clientesConVencido === 1 ? 'cliente tiene' : 'clientes tienen'}} saldo vencido por
+  <strong>{{cobranza.vencido | currency: 'Q' : 'symbol'}}</strong>.
+  <button type="button" class="btn btn-sm btn-outline-light ml-2" (click)="soloVencidos = true" *ngIf="!soloVencidos">Ver solo vencidos</button>
+</div>
+
+<div class="card listing-card">
+  <div class="card-header listing-card-header">
+    Cuentas por cobrar <span class="contador" *ngIf="cobranza">{{clientes.length}}</span>
+  </div>
+  <div class="card-body">
+    <div class="form-row filtros">
+      <div class="form-group col-md-4">
+        <label for="busquedaCobranza">Cliente</label>
+        <input type="text" id="busquedaCobranza" class="form-control form-control-sm" [(ngModel)]="busqueda" name="busqueda"
+          placeholder="Nombre o negocio" autocomplete="off">
+      </div>
+      <div class="form-group col-md-3">
+        <label for="rutaCobranza">Ruta</label>
+        <select id="rutaCobranza" class="form-control form-control-sm" [(ngModel)]="idRuta" name="ruta">
+          <option value="">Todas</option>
+          <option *ngFor="let ruta of rutas" [ngValue]="ruta.idRuta">{{ruta.nombre}}</option>
+        </select>
+      </div>
+      <div class="form-group col-md-2 d-flex align-items-end">
+        <div class="custom-control custom-checkbox">
+          <input type="checkbox" class="custom-control-input" id="vencidosCobranza" [(ngModel)]="soloVencidos" name="vencidos">
+          <label class="custom-control-label" for="vencidosCobranza">Solo vencidos</label>
+        </div>
+      </div>
+      <div class="form-group col-md-3 d-flex align-items-end justify-content-md-end acciones">
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="descargarReporte('PDF')" [disabled]="generando || !cobranza">
+          <i class="fas fa-file-pdf" aria-hidden="true"></i> PDF
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="descargarReporte('XLSX')" [disabled]="generando || !cobranza">
+          <i class="fas fa-file-excel" aria-hidden="true"></i> Excel
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="cargando" class="estado-vacio">Cargando...</div>
+    <div *ngIf="!cargando && !errorCarga && clientes.length === 0" class="estado-vacio">
+      <i class="fas fa-check-circle" aria-hidden="true"></i> No hay clientes con saldo pendiente para estos filtros.
+    </div>
+
+    <div class="table-responsive" *ngIf="clientes.length > 0">
+      <table class="table table-sm cobranza-table">
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Ruta</th>
+            <th class="text-right">Por vencer</th>
+            <th class="text-right">Vencido 1-30</th>
+            <th class="text-right">Vencido 31-60</th>
+            <th class="text-right">Vencido +60</th>
+            <th class="text-right">Total vencido</th>
+            <th class="text-right">Total</th>
+            <th class="text-center">Atraso</th>
+            <th class="text-center">Estado de cuenta</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let cliente of clientes; trackBy: trackCliente" [ngClass]="claseAtraso(cliente)">
+            <td data-label="Cliente">
+              <strong>{{cliente.cliente}}</strong>
+              <small *ngIf="cliente.negocio" class="d-block text-muted">{{cliente.negocio}}</small>
+            </td>
+            <td data-label="Ruta">{{cliente.ruta || '—'}}</td>
+            <td data-label="Por vencer" class="text-right">{{cliente.porVencer | currency: 'Q' : 'symbol'}}</td>
+            <td data-label="Vencido 1-30" class="text-right">{{cliente.vencido1a30 | currency: 'Q' : 'symbol'}}</td>
+            <td data-label="Vencido 31-60" class="text-right">{{cliente.vencido31a60 | currency: 'Q' : 'symbol'}}</td>
+            <td data-label="Vencido +60" class="text-right">{{cliente.vencidoMasDe60 | currency: 'Q' : 'symbol'}}</td>
+            <td data-label="Total vencido" class="text-right"><strong class="monto-vencido">{{cliente.vencido | currency: 'Q' : 'symbol'}}</strong></td>
+            <td data-label="Total" class="text-right"><strong>{{cliente.total | currency: 'Q' : 'symbol'}}</strong></td>
+            <td data-label="Atraso" class="text-center">{{cliente.diasMaxAtraso > 0 ? cliente.diasMaxAtraso + ' días' : '—'}}</td>
+            <td data-label="Estado de cuenta" class="text-center">
+              <button type="button" class="btn btn-sm btn-outline-primary" (click)="estadoDeCuenta(cliente)" [disabled]="generando"
+                [attr.aria-label]="'Imprimir el estado de cuenta de ' + cliente.cliente">
+                <i class="fas fa-print" aria-hidden="true"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="2"><strong>Totales</strong></td>
+            <td class="text-right"><strong>{{totales.porVencer | currency: 'Q' : 'symbol'}}</strong></td>
+            <td class="text-right"><strong>{{totales.vencido1a30 | currency: 'Q' : 'symbol'}}</strong></td>
+            <td class="text-right"><strong>{{totales.vencido31a60 | currency: 'Q' : 'symbol'}}</strong></td>
+            <td class="text-right"><strong>{{totales.vencidoMasDe60 | currency: 'Q' : 'symbol'}}</strong></td>
+            <td class="text-right"><strong class="monto-vencido">{{totales.vencido | currency: 'Q' : 'symbol'}}</strong></td>
+            <td class="text-right"><strong>{{totales.total | currency: 'Q' : 'symbol'}}</strong></td>
+            <td colspan="2"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</div>

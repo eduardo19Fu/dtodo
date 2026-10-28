@@ -21,6 +21,11 @@ import java.util.Optional;
 
 public interface IProformaRepository extends JpaRepository<Proforma, Long> {
 
+    /** Todos los pedidos mayoristas vigentes (no anulados), del más antiguo al más reciente. */
+    @Query("select p from Proforma p where p.tipoProforma = xyz.pangosoft.dtodo.model.enums.TipoProformaEnum.MAYORISTA "
+            + "and p.estadoPedido is not null and p.estado.estado <> 'ANULADO' order by p.idProforma")
+    List<Proforma> pedidosVigentes();
+
     /** Pedidos mayoristas vigentes (no anulados) de un cliente, del más antiguo al más reciente. */
     @Query("select p from Proforma p where p.cliente.idCliente = :idCliente "
             + "and p.tipoProforma = xyz.pangosoft.dtodo.model.enums.TipoProformaEnum.MAYORISTA "

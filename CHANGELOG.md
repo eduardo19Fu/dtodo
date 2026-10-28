@@ -6,6 +6,19 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Cobranza: cuentas por cobrar, estado de cuenta y alertas de vencidos (Fase 4, paso 4)
+
+Cierra la Fase 4. Sin script SQL nuevo.
+
+- **Cuentas por cobrar** (`GET /api/cobranza/saldos`): una fila por cliente con deuda, repartida por antigüedad en *por vencer*, *vencido 1-30*, *31-60* y *más de 60 días*, con el total vencido, el total y los días de atraso del pedido más vencido. Un pedido a crédito vence cuando pasan sus días de crédito desde la **primera entrega**; uno de contado entregado sin cobrar (por autorización del administrador) vence el día de la entrega. El día del vencimiento todavía no cuenta como vencido. Lo que se debe de cada pedido sale del mismo cálculo del saldo: los recibos ligados al pedido lo pagan y los abonos sin pedido pagan primero lo más antiguo. Los clientes van de mayor a menor vencido; uno al día no aparece.
+- **Alertas**: la pantalla muestra una franja roja con cuántos clientes tienen saldo vencido y por cuánto (de toda la cartera, sin importar los filtros) y un botón para ver solo los vencidos; las filas se marcan según el atraso (hasta 30, hasta 60 y más de 60 días).
+- **Pantalla** *Cobranza* (menú lateral, administrador y cobrador): filtros por cliente, ruta y solo vencidos, totales de lo que se está viendo, y por fila la impresión del estado de cuenta.
+- **Reporte "Cuentas por cobrar"** (PDF y Excel, `GET /api/cobranza/saldos/reporte`): las mismas columnas con totales, respetando los filtros de ruta y solo vencidos.
+- **Estado de cuenta imprimible** (`GET /api/cobranza/clientes/{id}/estado-cuenta`): las entregas vigentes (cargos) y los recibos vigentes (abonos) del cliente por fecha, con el saldo corrido, sus datos, su límite y sus días de crédito. En un mismo día el cargo va antes que el abono; un saldo negativo es dinero a favor.
+- **Roles**: solo `ROLE_ADMIN` y `ROLE_COBRADOR`.
+- **Pruebas**: `CobranzaServiceImplTest` (tramos y bordes de antigüedad, contado vencido al entregar, abonos que pagan lo más antiguo, filtros, orden, estado de cuenta), `ReporteCobranzaServiceImplTest` (genera el Excel y los PDF reales), las consultas contra H2, la matriz de roles y los specs de la pantalla y el servicio.
+- **No incluido**: aviso en el menú lateral ni envío de recordatorios; la alerta se ve al abrir *Cobranza*.
+
 ### Agregado — Control del límite de crédito de los clientes (Fase 4, paso 3)
 
 Un pedido a crédito que pasa del límite del cliente queda bloqueado hasta que un administrador lo autorice.
