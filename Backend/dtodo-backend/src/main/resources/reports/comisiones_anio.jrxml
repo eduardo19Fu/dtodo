@@ -24,11 +24,15 @@
     <parameter name="ESTADO" class="java.lang.String"/>
     <parameter name="METAS" class="java.lang.String"/>
     <parameter name="TOTAL_ENTREGADO" class="java.math.BigDecimal"/>
+    <parameter name="TOTAL_DEVUELTO" class="java.math.BigDecimal"/>
+    <parameter name="TOTAL_NETO" class="java.math.BigDecimal"/>
     <parameter name="TOTAL_COMISION" class="java.math.BigDecimal"/>
     <parameter name="LIQUIDADO" class="java.lang.Boolean"/>
 
     <field name="vendedor" class="java.lang.String"/>
     <field name="montoEntregado" class="java.math.BigDecimal"/>
+    <field name="montoDevuelto" class="java.math.BigDecimal"/>
+    <field name="montoNeto" class="java.math.BigDecimal"/>
     <field name="metaAlcanzada" class="java.math.BigDecimal"/>
     <field name="porcentaje" class="java.math.BigDecimal"/>
     <field name="comision" class="java.math.BigDecimal"/>
@@ -67,30 +71,34 @@
             <staticText>
                 <reportElement x="0" y="68" width="802" height="14" forecolor="#66758A"/>
                 <textElement><font size="8" isItalic="true"/></textElement>
-                <text><![CDATA[Porcentaje plano sobre todo lo entregado según la meta más alta alcanzada. Solo cobra quien completó el año.]]></text>
+                <text><![CDATA[Porcentaje plano sobre lo entregado menos lo devuelto (base) según la meta más alta alcanzada. Solo cobra quien completó el año.]]></text>
             </staticText>
         </band>
     </title>
     <columnHeader>
         <band height="28">
-            <staticText><reportElement style="Header" x="0" y="0" width="242" height="28"/><textElement textAlignment="Left"/><text><![CDATA[Vendedor]]></text></staticText>
-            <staticText><reportElement style="Header" x="242" y="0" width="110" height="28"/><textElement textAlignment="Right"/><text><![CDATA[Entregado]]></text></staticText>
-            <staticText><reportElement style="Header" x="352" y="0" width="110" height="28"/><textElement textAlignment="Right"/><text><![CDATA[Meta alcanzada]]></text></staticText>
-            <staticText><reportElement style="Header" x="462" y="0" width="50" height="28"/><textElement textAlignment="Right"/><text><![CDATA[%]]></text></staticText>
-            <staticText><reportElement style="Header" x="512" y="0" width="110" height="28"/><textElement textAlignment="Right"/><text><![CDATA[Comisión]]></text></staticText>
-            <staticText><reportElement style="Header" x="622" y="0" width="110" height="28"/><textElement textAlignment="Right"/><text><![CDATA[Falta p/ siguiente]]></text></staticText>
-            <staticText><reportElement style="Header" x="732" y="0" width="70" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Completó el año]]></text></staticText>
+            <staticText><reportElement style="Header" x="0" y="0" width="172" height="28"/><textElement textAlignment="Left"/><text><![CDATA[Vendedor]]></text></staticText>
+            <staticText><reportElement style="Header" x="172" y="0" width="88" height="28"/><textElement textAlignment="Right"/><text><![CDATA[Entregado]]></text></staticText>
+            <staticText><reportElement style="Header" x="260" y="0" width="78" height="28"/><textElement textAlignment="Right"/><text><![CDATA[Devuelto]]></text></staticText>
+            <staticText><reportElement style="Header" x="338" y="0" width="88" height="28"/><textElement textAlignment="Right"/><text><![CDATA[Base (neto)]]></text></staticText>
+            <staticText><reportElement style="Header" x="426" y="0" width="88" height="28"/><textElement textAlignment="Right"/><text><![CDATA[Meta alcanzada]]></text></staticText>
+            <staticText><reportElement style="Header" x="514" y="0" width="45" height="28"/><textElement textAlignment="Right"/><text><![CDATA[%]]></text></staticText>
+            <staticText><reportElement style="Header" x="559" y="0" width="92" height="28"/><textElement textAlignment="Right"/><text><![CDATA[Comisión]]></text></staticText>
+            <staticText><reportElement style="Header" x="651" y="0" width="85" height="28"/><textElement textAlignment="Right"/><text><![CDATA[Falta p/ siguiente]]></text></staticText>
+            <staticText><reportElement style="Header" x="736" y="0" width="66" height="28"/><textElement textAlignment="Center"/><text><![CDATA[Completó el año]]></text></staticText>
         </band>
     </columnHeader>
     <detail>
         <band height="22">
-            <textField isBlankWhenNull="true"><reportElement style="Cell" x="0" y="0" width="242" height="22"/><textElement textAlignment="Left"><paragraph leftIndent="4"/></textElement><textFieldExpression><![CDATA[$F{vendedor}]]></textFieldExpression></textField>
-            <textField pattern="#,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="242" y="0" width="110" height="22"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{montoEntregado}]]></textFieldExpression></textField>
-            <textField pattern="#,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="352" y="0" width="110" height="22"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{metaAlcanzada}]]></textFieldExpression></textField>
-            <textField pattern="#,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="462" y="0" width="50" height="22"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{porcentaje}]]></textFieldExpression></textField>
-            <textField pattern="#,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="512" y="0" width="110" height="22"/><textElement textAlignment="Right"><font isBold="true"/><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{comision}]]></textFieldExpression></textField>
-            <textField pattern="#,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="622" y="0" width="110" height="22"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{faltaParaSiguiente}]]></textFieldExpression></textField>
-            <textField isBlankWhenNull="true"><reportElement style="Cell" x="732" y="0" width="70" height="22"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA[$F{completoAnio} == null ? "Sin definir" : ($F{completoAnio} ? "Sí" : "No")]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="0" y="0" width="172" height="22"/><textElement textAlignment="Left"><paragraph leftIndent="4"/></textElement><textFieldExpression><![CDATA[$F{vendedor}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="172" y="0" width="88" height="22"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{montoEntregado}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="260" y="0" width="78" height="22"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{montoDevuelto}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="338" y="0" width="88" height="22"/><textElement textAlignment="Right"><font isBold="true"/><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{montoNeto}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="426" y="0" width="88" height="22"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{metaAlcanzada}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="514" y="0" width="45" height="22"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{porcentaje}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="559" y="0" width="92" height="22"/><textElement textAlignment="Right"><font isBold="true"/><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{comision}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="651" y="0" width="85" height="22"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{faltaParaSiguiente}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="736" y="0" width="66" height="22"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA[$F{completoAnio} == null ? "Sin definir" : ($F{completoAnio} ? "Sí" : "No")]]></textFieldExpression></textField>
         </band>
     </detail>
 
@@ -124,9 +132,11 @@
                 <textElement verticalAlignment="Middle"><font size="9" isItalic="true"/></textElement>
                 <text><![CDATA[No hay vendedores para este año.]]></text>
             </staticText>
-            <staticText><reportElement x="152" y="16" width="90" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Totales:]]></text></staticText>
-            <textField pattern="#,##0.00"><reportElement x="242" y="16" width="110" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$P{TOTAL_ENTREGADO}]]></textFieldExpression></textField>
-            <textField pattern="#,##0.00"><reportElement x="512" y="16" width="110" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$P{TOTAL_COMISION}]]></textFieldExpression></textField>
+            <staticText><reportElement x="82" y="16" width="90" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Totales:]]></text></staticText>
+            <textField pattern="#,##0.00"><reportElement x="172" y="16" width="88" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$P{TOTAL_ENTREGADO}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00"><reportElement x="260" y="16" width="78" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$P{TOTAL_DEVUELTO}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00"><reportElement x="338" y="16" width="88" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$P{TOTAL_NETO}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00"><reportElement x="559" y="16" width="92" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$P{TOTAL_COMISION}]]></textFieldExpression></textField>
         </band>
     </summary>
 </jasperReport>

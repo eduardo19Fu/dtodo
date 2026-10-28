@@ -33,6 +33,12 @@ public interface IDevolucionClienteRepository extends JpaRepository<DevolucionCl
             + "where p.idProforma = d.idProforma and d.fecha >= :desde and d.fecha < :hasta group by p.usuario.idUsuario")
     List<Object[]> devueltoDelPeriodoPorVendedor(@Param("desde") LocalDate desde, @Param("hasta") LocalDate hasta);
 
+    /** Lo devuelto por vendedor del pedido y fecha de la devolución, para restarlo de lo entregado en cada período de comisión. */
+    @Query("select p.usuario.idUsuario, d.fecha, sum(l.valor) from DevolucionClienteDetalle l join l.devolucion d, Proforma p "
+            + "where p.idProforma = d.idProforma and d.fecha >= :desde and d.fecha < :hasta "
+            + "group by p.usuario.idUsuario, d.fecha")
+    List<Object[]> devueltoPorVendedorYFecha(@Param("desde") LocalDate desde, @Param("hasta") LocalDate hasta);
+
     List<DevolucionCliente> findByCliente_IdClienteOrderByFechaAscIdDevolucionAsc(Integer idCliente);
 
     List<DevolucionCliente> findByIdProformaOrderByFechaRegistroAscIdDevolucionAsc(Long idProforma);

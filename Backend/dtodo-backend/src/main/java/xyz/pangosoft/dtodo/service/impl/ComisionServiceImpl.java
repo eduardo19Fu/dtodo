@@ -29,6 +29,7 @@ import xyz.pangosoft.dtodo.model.enums.TipoProformaEnum;
 import xyz.pangosoft.dtodo.repository.IComisionDeshechaRepository;
 import xyz.pangosoft.dtodo.repository.IComisionLiquidacionRepository;
 import xyz.pangosoft.dtodo.repository.IComisionMetaRepository;
+import xyz.pangosoft.dtodo.repository.IDevolucionClienteRepository;
 import xyz.pangosoft.dtodo.repository.IProformaEntregaRepository;
 import xyz.pangosoft.dtodo.repository.IUsuarioRepository;
 import xyz.pangosoft.dtodo.service.IAmbitoVendedorService;
@@ -50,6 +51,7 @@ public class ComisionServiceImpl implements IComisionService {
     private final IComisionLiquidacionRepository liquidacionRepository;
     private final IComisionDeshechaRepository deshechaRepository;
     private final IProformaEntregaRepository entregaRepository;
+    private final IDevolucionClienteRepository devolucionRepository;
     private final IUsuarioRepository usuarioRepository;
     private final IUsuarioService usuarioService;
     private final IAmbitoVendedorService ambito;
@@ -150,6 +152,8 @@ public class ComisionServiceImpl implements IComisionService {
         for (FilaComisionDto fila : filasEnVivo(anio, metas)) {
             avance.getFilas().add(fila);
             avance.setTotalEntregado(avance.getTotalEntregado().add(fila.getMontoEntregado()));
+            avance.setTotalDevuelto(avance.getTotalDevuelto().add(fila.getMontoDevuelto()));
+            avance.setTotalNeto(avance.getTotalNeto().add(fila.getMontoNeto()));
             avance.setTotalComision(avance.getTotalComision().add(fila.getComision()));
         }
         return avance;
@@ -168,12 +172,17 @@ public class ComisionServiceImpl implements IComisionService {
             fila.setActivo(liquidacion.getVendedor().isEnabled());
             marcarSituacion(fila, liquidacion.getVendedor(), liquidacion.getAnio());
             fila.setMontoEntregado(liquidacion.getMontoEntregado());
+            BigDecimal devuelto = liquidacion.getMontoDevuelto() == null ? BigDecimal.ZERO : liquidacion.getMontoDevuelto();
+            fila.setMontoDevuelto(devuelto);
+            fila.setMontoNeto(neto(liquidacion.getMontoEntregado(), devuelto));
             fila.setMetaAlcanzada(liquidacion.getMontoMeta());
             fila.setPorcentaje(liquidacion.getPorcentaje());
             fila.setComision(liquidacion.getComision());
             fila.setCompletoAnio(liquidacion.isCompletoAnio());
             avance.getFilas().add(fila);
             avance.setTotalEntregado(avance.getTotalEntregado().add(liquidacion.getMontoEntregado()));
+            avance.setTotalDevuelto(avance.getTotalDevuelto().add(fila.getMontoDevuelto()));
+            avance.setTotalNeto(avance.getTotalNeto().add(fila.getMontoNeto()));
             avance.setTotalComision(avance.getTotalComision().add(liquidacion.getComision()));
         });
         return avance;
@@ -191,6 +200,8 @@ public class ComisionServiceImpl implements IComisionService {
             }
         }
         Map<Integer, BigDecimal> entregado = entregadoPorVendedor(entregas, vendedores, anio);
+        Map<Integer, BigDecimal> devuelto = devueltoPorVendedor(
+                devolucionRepository.devueltoPorVendedorYFecha(LocalDate.of(anio - 1, 1, 1), LocalDate.of(anio + 1, 1, 1)), vendedores, anio);
         List<FilaComisionDto> filas = new ArrayList<>();
         for (Usuario vendedor : vendedores.values()) {
             if (ingresoDespuesDe(vendedor, anio)) {
@@ -203,11 +214,15 @@ public class ComisionServiceImpl implements IComisionService {
             fila.setActivo(vendedor.isEnabled());
             marcarSituacion(fila, vendedor, anio);
             BigDecimal monto = entregado.getOrDefault(vendedor.getIdUsuario(), BigDecimal.ZERO);
+            BigDecimal restado = devuelto.getOrDefault(vendedor.getIdUsuario(), BigDecimal.ZERO);
             fila.setMontoEntregado(monto);
-            aplicarNivel(fila, monto, metas);
+            fila.setMontoDevuelto(restado);
+            fila.setMontoNeto(neto(monto, restado));
+            // El nivel se alcanza y la comisión se calcula sobre lo entregado menos lo devuelto.
+            aplicarNivel(fila, fila.getMontoNeto(), metas);
             filas.add(fila);
         }
-        filas.sort(Comparator.comparing(FilaComisionDto::getMontoEntregado).reversed().thenComparing(FilaComisionDto::getVendedor));
+        filas.sort(Comparator.comparing(FilaComisionDto::getMontoNeto).reversed().thenComparing(FilaComisionDto::getVendedor));
         return filas;
     }
 
@@ -244,6 +259,29 @@ public class ComisionServiceImpl implements IComisionService {
     private static void marcarSituacion(FilaComisionDto fila, Usuario vendedor, int anio) {
         fila.setSituacion(situacion(vendedor, anio));
         fila.setPeriodoDesde(periodoDesde(vendedor, anio));
+    }
+
+    /** Entregado menos devuelto, nunca menos de cero. */
+    static BigDecimal neto(BigDecimal entregado, BigDecimal devuelto) {
+        return entregado.subtract(devuelto).max(BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * Lo devuelto por vendedor desde el inicio de su período de comisión (la misma fecha desde la que cuenta lo entregado). Una
+     * devolución de un año posterior no cuenta, y una de lo entregado el año anterior resta en el año en que se devuelve.
+     */
+    static Map<Integer, BigDecimal> devueltoPorVendedor(List<Object[]> devoluciones, Map<Integer, Usuario> vendedores, int anio) {
+        Map<Integer, BigDecimal> total = new HashMap<>();
+        for (Object[] fila : devoluciones) {
+            Integer idVendedor = (Integer) fila[0];
+            Usuario vendedor = vendedores.get(idVendedor);
+            LocalDate fecha = (LocalDate) fila[1];
+            if (vendedor == null || fecha == null || fecha.isBefore(periodoDesde(vendedor, anio)) || fecha.getYear() > anio) {
+                continue;
+            }
+            total.merge(idVendedor, ((BigDecimal) fila[2]).setScale(2, RoundingMode.HALF_UP), BigDecimal::add);
+        }
+        return total;
     }
 
     /** El nivel más alto cuya meta se alcanzó; el porcentaje es plano sobre todo lo entregado. */
@@ -351,6 +389,7 @@ public class ComisionServiceImpl implements IComisionService {
                     .anio(anio)
                     .vendedor(usuarioService.findById(fila.getIdVendedor()))
                     .montoEntregado(fila.getMontoEntregado())
+                    .montoDevuelto(fila.getMontoDevuelto())
                     .montoMeta(completo ? fila.getMetaAlcanzada() : null)
                     .porcentaje(completo ? fila.getPorcentaje() : BigDecimal.ZERO)
                     .comision(completo ? fila.getComision() : BigDecimal.ZERO)
@@ -377,7 +416,7 @@ public class ComisionServiceImpl implements IComisionService {
             throw new ReglaNegocioException("No se pudo identificar al usuario de la sesión.");
         }
         String resumen = liquidadas.stream()
-                .map(l -> nombre(l.getVendedor()) + ": entregado Q" + l.getMontoEntregado() + ", comisión Q" + l.getComision()
+                .map(l -> nombre(l.getVendedor()) + ": entregado Q" + l.getMontoEntregado() + ", devuelto Q" + l.getMontoDevuelto() + ", comisión Q" + l.getComision()
                         + (l.isCompletoAnio() ? "" : " (no completó el año)"))
                 .collect(Collectors.joining("; "));
         deshechaRepository.save(ComisionDeshecha.builder().anio(anio).usuario(usuarioService.findById(idUsuario)).motivo(motivoLimpio)

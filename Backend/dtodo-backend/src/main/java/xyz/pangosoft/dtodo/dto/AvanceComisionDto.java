@@ -24,5 +24,7 @@ public class AvanceComisionDto {
     private List<MetaComisionDto> metas = new ArrayList<>();
     private List<FilaComisionDto> filas = new ArrayList<>();
     private BigDecimal totalEntregado = BigDecimal.ZERO;
+    private BigDecimal totalDevuelto = BigDecimal.ZERO;
+    private BigDecimal totalNeto = BigDecimal.ZERO;
     private BigDecimal totalComision = BigDecimal.ZERO;
 }

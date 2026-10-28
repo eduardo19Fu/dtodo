@@ -10,7 +10,7 @@ describe('ComisionesComponent', () => {
 
   function fila(valores: Partial<FilaComisionDto> = {}): FilaComisionDto {
     return Object.assign(new FilaComisionDto(), {
-      idVendedor: 1, vendedor: 'Ana Lopez', activo: true, montoEntregado: 750000, metaAlcanzada: 700000, porcentaje: 1,
+      idVendedor: 1, vendedor: 'Ana Lopez', activo: true, montoEntregado: 750000, montoDevuelto: 0, montoNeto: 750000, metaAlcanzada: 700000, porcentaje: 1,
       comision: 7500
     }, valores);
   }
@@ -20,7 +20,7 @@ describe('ComisionesComponent', () => {
       anio: 2025, anioTerminado: true, liquidado: false,
       metas: [{ montoMinimo: 300000, porcentaje: 0.5 }, { montoMinimo: 700000, porcentaje: 1 }],
       filas: [fila(), fila({ idVendedor: 2, vendedor: 'Luis Perez', comision: 1500, porcentaje: 0.5 })],
-      totalEntregado: 1000000, totalComision: 0
+      totalEntregado: 1000000, totalDevuelto: 0, totalNeto: 1000000, totalComision: 0
     }, valores);
   }
 

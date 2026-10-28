@@ -50,12 +50,14 @@ class ComisionServiceImplTest {
     private final IComisionLiquidacionRepository liquidacionRepository = mock(IComisionLiquidacionRepository.class);
     private final IComisionDeshechaRepository deshechaRepository = mock(IComisionDeshechaRepository.class);
     private final IProformaEntregaRepository entregaRepository = mock(IProformaEntregaRepository.class);
+    private final xyz.pangosoft.dtodo.repository.IDevolucionClienteRepository devolucionRepository =
+            mock(xyz.pangosoft.dtodo.repository.IDevolucionClienteRepository.class);
     private final IUsuarioRepository usuarioRepository = mock(IUsuarioRepository.class);
     private final IUsuarioService usuarioService = mock(IUsuarioService.class);
     private final IAmbitoVendedorService ambito = mock(IAmbitoVendedorService.class);
     private final IProformaAuditoriaService auditoria = mock(IProformaAuditoriaService.class);
     private final ComisionServiceImpl service = new ComisionServiceImpl(metaRepository, liquidacionRepository, deshechaRepository,
-            entregaRepository, usuarioRepository, usuarioService, ambito, auditoria);
+            entregaRepository, devolucionRepository, usuarioRepository, usuarioService, ambito, auditoria);
 
     private final int pasado = LocalDate.now().getYear() - 1;
     private final Usuario ana = Usuario.builder().idUsuario(1).primerNombre("Ana").apellido("Lopez").enabled(true)
@@ -464,5 +466,102 @@ class ComisionServiceImplTest {
         assertThrows(ReglaNegocioException.class, () -> service.deshacerLiquidacion(pasado, "motivo"));
 
         verify(deshechaRepository, never()).save(any());
+    }
+
+    // ------------------------------------------------------------------------------------------ netas de devoluciones
+
+    private static Object[] devueltoEl(LocalDate fecha, int idVendedor, String valor) {
+        return new Object[] { idVendedor, fecha, new BigDecimal(valor) };
+    }
+
+    private void devuelto(Object[]... filas) {
+        when(devolucionRepository.devueltoPorVendedorYFecha(any(), any())).thenReturn(new ArrayList<>(Arrays.asList(filas)));
+    }
+
+    @Test
+    void laComisionSeCalculaSobreLoEntregadoMenosLoDevuelto() {
+        // Entregó Q750,000 (nivel de 700k = 1 %) y le devolvieron Q100,000: la base es 650,000 (nivel de 300k = 0.5 %).
+        entregado(entregada(1, 1, "750000.00", 1));
+        devuelto(devueltoEl(LocalDate.of(pasado, 8, 1), 1, "100000.00"));
+
+        FilaComisionDto fila = fila(service.avance(pasado), 1);
+
+        assertEquals(new BigDecimal("750000.00"), fila.getMontoEntregado());
+        assertEquals(new BigDecimal("100000.00"), fila.getMontoDevuelto());
+        assertEquals(new BigDecimal("650000.00"), fila.getMontoNeto());
+        assertEquals(new BigDecimal("300000.00"), fila.getMetaAlcanzada());
+        assertEquals(new BigDecimal("0.50"), fila.getPorcentaje());
+        assertEquals(new BigDecimal("3250.00"), fila.getComision());
+        assertEquals(new BigDecimal("50000.00"), fila.getFaltaParaSiguiente());
+    }
+
+    @Test
+    void laBaseNuncaEsNegativaYLosTotalesSumanLasTresColumnas() {
+        entregado(entregada(1, 1, "500.00", 1), entregada(2, 1, "1000.00", 1));
+        devuelto(devueltoEl(LocalDate.of(pasado, 3, 1), 1, "800.00"), devueltoEl(LocalDate.of(pasado, 4, 1), 2, "250.00"));
+
+        AvanceComisionDto avance = service.avance(pasado);
+
+        assertEquals(new BigDecimal("0.00"), fila(avance, 1).getMontoNeto());
+        assertEquals(new BigDecimal("0.00"), fila(avance, 1).getComision().setScale(2));
+        assertEquals(new BigDecimal("750.00"), fila(avance, 2).getMontoNeto());
+        assertEquals(new BigDecimal("1500.00"), avance.getTotalEntregado());
+        assertEquals(new BigDecimal("1050.00"), avance.getTotalDevuelto());
+        assertEquals(new BigDecimal("750.00"), avance.getTotalNeto());
+    }
+
+    @Test
+    void soloRestanLasDevolucionesDelPeriodoDelVendedor() {
+        Usuario nuevo = Usuario.builder().idUsuario(3).primerNombre("Nuevo").apellido("Vendedor").enabled(true)
+                .fechaRegistro(LocalDate.of(pasado - 1, 7, 1).atTime(9, 0)).build();
+        when(usuarioService.findById(3)).thenReturn(nuevo);
+        when(usuarioRepository.findVendedoresActivos()).thenReturn(Arrays.asList(ana, nuevo));
+        entregado(entregadaEl(LocalDate.of(pasado, 3, 1), 3, 1, "1000.00", 1), entregada(1, 1, "1000.00", 1));
+        devuelto(devueltoEl(LocalDate.of(pasado - 1, 3, 1), 3, "700.00"),   // antes de su ingreso: no resta
+                devueltoEl(LocalDate.of(pasado - 1, 9, 1), 3, "100.00"),   // desde su ingreso: resta
+                devueltoEl(LocalDate.of(pasado, 5, 1), 3, "50.00"),
+                devueltoEl(LocalDate.of(pasado + 1, 1, 5), 3, "999.00"),   // de un año posterior: no resta
+                devueltoEl(LocalDate.of(pasado - 1, 6, 1), 1, "300.00"),   // un vendedor de año completo: el año anterior no resta
+                devueltoEl(LocalDate.of(pasado, 6, 1), 1, "20.00"));
+
+        AvanceComisionDto avance = service.avance(pasado);
+
+        assertEquals(new BigDecimal("150.00"), fila(avance, 3).getMontoDevuelto());
+        assertEquals(new BigDecimal("850.00"), fila(avance, 3).getMontoNeto());
+        assertEquals(new BigDecimal("20.00"), fila(avance, 1).getMontoDevuelto());
+        assertEquals(new BigDecimal("980.00"), fila(avance, 1).getMontoNeto());
+    }
+
+    @Test
+    void liquidarGuardaLoDevueltoYElAnioLiquidadoNoSeRecalcula() {
+        entregado(entregada(1, 1, "800000.00", 1));
+        devuelto(devueltoEl(LocalDate.of(pasado, 8, 1), 1, "150000.00"));
+
+        service.liquidar(pasado, decision(1));
+
+        ComisionLiquidacion deAna = liquidadas().stream().filter(l -> l.getVendedor().getIdUsuario() == 1).findFirst().get();
+        assertEquals(new BigDecimal("800000.00"), deAna.getMontoEntregado());
+        assertEquals(new BigDecimal("150000.00"), deAna.getMontoDevuelto());
+        assertEquals(new BigDecimal("300000.00"), deAna.getMontoMeta());
+        assertEquals(new BigDecimal("3250.00"), deAna.getComision());      // 650,000 x 0.5 %
+    }
+
+    @Test
+    void unAnioLiquidadoMuestraLoDevueltoGuardadoYLasLiquidacionesAnterioresTraenCero() {
+        ComisionLiquidacion conDevolucion = ComisionLiquidacion.builder().anio(pasado).vendedor(ana)
+                .montoEntregado(new BigDecimal("800000.00")).montoDevuelto(new BigDecimal("150000.00")).montoMeta(new BigDecimal("300000.00"))
+                .porcentaje(new BigDecimal("0.50")).comision(new BigDecimal("3250.00")).completoAnio(true).usuario(irene)
+                .fecha(LocalDateTime.of(2027, 1, 5, 9, 0)).build();
+        ComisionLiquidacion anterior = ComisionLiquidacion.builder().anio(pasado).vendedor(luis).montoEntregado(new BigDecimal("1000.00"))
+                .comision(BigDecimal.ZERO).completoAnio(false).usuario(irene).fecha(LocalDateTime.of(2027, 1, 5, 9, 0)).build();
+        when(liquidacionRepository.findByAnio(pasado)).thenReturn(Arrays.asList(conDevolucion, anterior));
+
+        AvanceComisionDto avance = service.avance(pasado);
+
+        assertEquals(new BigDecimal("650000.00"), fila(avance, 1).getMontoNeto());
+        assertEquals(new BigDecimal("150000.00"), fila(avance, 1).getMontoDevuelto());
+        assertEquals(new BigDecimal("1000.00"), fila(avance, 2).getMontoNeto());
+        assertEquals(new BigDecimal("0"), fila(avance, 2).getMontoDevuelto());
+        assertEquals(new BigDecimal("651000.00"), avance.getTotalNeto());
     }
 }

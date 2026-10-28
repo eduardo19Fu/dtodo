@@ -56,6 +56,8 @@ public class ReporteComisionesServiceImpl implements IReporteComisionesService {
         parametros.put("ESTADO", estado(avance));
         parametros.put("METAS", metas(avance.getMetas()));
         parametros.put("TOTAL_ENTREGADO", avance.getTotalEntregado());
+        parametros.put("TOTAL_DEVUELTO", avance.getTotalDevuelto());
+        parametros.put("TOTAL_NETO", avance.getTotalNeto());
         parametros.put("TOTAL_COMISION", avance.getTotalComision());
         parametros.put("LIQUIDADO", avance.isLiquidado());
         return generar(parametros, avance, formatoValido);

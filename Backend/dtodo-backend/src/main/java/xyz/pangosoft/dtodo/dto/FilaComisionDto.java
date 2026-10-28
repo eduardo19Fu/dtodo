@@ -16,7 +16,12 @@ public class FilaComisionDto {
     /** Cuándo se creó su usuario: ayuda al administrador a decidir si completó el año. */
     private LocalDateTime fechaAlta;
     private boolean activo;
+    /** Lo entregado en el período del vendedor, sin restar devoluciones. */
     private BigDecimal montoEntregado = BigDecimal.ZERO;
+    /** Lo que los clientes devolvieron en ese período. */
+    private BigDecimal montoDevuelto = BigDecimal.ZERO;
+    /** Entregado menos devuelto, nunca menos de cero: la base sobre la que se alcanza una meta y se calcula la comisión. */
+    private BigDecimal montoNeto = BigDecimal.ZERO;
     /** Monto mínimo de la meta alcanzada; nulo si no alcanzó ninguna. */
     private BigDecimal metaAlcanzada;
     /** Porcentaje de la meta alcanzada, 0 si no alcanzó ninguna. */

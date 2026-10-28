@@ -6,6 +6,17 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Cambiado — Las comisiones son netas de devoluciones
+
+La comisión de un vendedor se calcula sobre **lo entregado menos lo que los clientes devolvieron**, como las ventas del tablero de indicadores.
+
+- **Base de la comisión**: entregado menos devuelto, nunca menos de cero. Sobre esa base se alcanza la meta y se calcula el porcentaje plano; lo que falta para la siguiente meta también se mide contra ella. Por ejemplo, con metas 300k/700k/1M/2M, quien entregó Q750,000 y tuvo Q100,000 en devoluciones queda en la meta de 300k (0.50 %) sobre Q650,000, es decir Q3,250, y no en la de 700k.
+- **Qué devoluciones restan**: las de los pedidos del vendedor, por la fecha de la devolución, dentro del mismo período que cuenta lo entregado (desde el 1 de enero del año o, para quien ingresó el año anterior, desde su ingreso). Una devolución de lo entregado en un año anterior resta en el año en que se hace; una de un año posterior no cuenta.
+- **Liquidación**: guarda lo devuelto junto a lo entregado (`comisiones_liquidaciones.monto_devuelto`), así un año liquidado muestra cómo se calculó y no se recalcula. Las liquidaciones anteriores quedan con devuelto 0. Al deshacer una liquidación el resumen también lo anota.
+- **Pantalla y reporte**: la tabla muestra *Entregado*, *Devuelto* y *Base (neto)*, y la tarjeta de resumen la base de comisión con su desglose; el reporte PDF y Excel trae las mismas columnas y totales.
+- **Base de datos** (`sql/mayoristas/19_comisiones_monto_devuelto.sql`, **requerido antes del jar**; el rollback lo revierte): `comisiones_liquidaciones.monto_devuelto`.
+- **Pruebas**: base neta y cambio de meta, base nunca negativa y totales, devoluciones solo del período de cada vendedor (antes del ingreso, año posterior, año anterior), liquidación que guarda lo devuelto, año liquidado con y sin devuelto guardado, la consulta contra H2 y el reporte con las columnas nuevas.
+
 ### Agregado — Tablero de indicadores (Fase 5, paso 3)
 
 Cierra la Fase 5 y el plan de clientes mayoristas. Sin script SQL; solo el administrador.

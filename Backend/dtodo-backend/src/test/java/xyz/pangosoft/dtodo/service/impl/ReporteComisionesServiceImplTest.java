@@ -37,6 +37,8 @@ class ReporteComisionesServiceImplTest {
         ana.setIdVendedor(1);
         ana.setVendedor("Ana Lopez");
         ana.setMontoEntregado(new BigDecimal("750000.00"));
+        ana.setMontoDevuelto(new BigDecimal("50000.00"));
+        ana.setMontoNeto(new BigDecimal("700000.00"));
         ana.setMetaAlcanzada(new BigDecimal("700000.00"));
         ana.setPorcentaje(new BigDecimal("1.00"));
         ana.setComision(new BigDecimal("7500.00"));
@@ -59,6 +61,8 @@ class ReporteComisionesServiceImplTest {
         avance.setFilas(Arrays.asList(ana, luis));
         avance.setTotalEntregado(new BigDecimal("750000.00"));
         avance.setTotalComision(new BigDecimal("7500.00"));
+        avance.setTotalDevuelto(new BigDecimal("50000.00"));
+        avance.setTotalNeto(new BigDecimal("700000.00"));
         return avance;
     }
 
@@ -96,6 +100,10 @@ class ReporteComisionesServiceImplTest {
         assertTrue(texto.contains("Año liquidado el 05/01/2027 por Irene Ortega"), texto);
         assertTrue(texto.contains("Q300,000 → 0.5 %"), texto);
         assertTrue(texto.contains("Ana Lopez"), texto);
+        assertTrue(texto.contains("Devuelto"), texto);
+        assertTrue(texto.contains("Base (neto)"), texto);
+        assertTrue(texto.contains("50,000.00"), texto);
+        assertTrue(texto.contains("700,000.00"), texto);
         assertTrue(texto.contains("7,500.00"), texto);
         assertTrue(texto.contains("Sí"), texto);
         assertTrue(texto.contains("No"), texto);

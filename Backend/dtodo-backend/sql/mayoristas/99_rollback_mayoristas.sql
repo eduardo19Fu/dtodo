@@ -1,5 +1,8 @@
--- Revierte el módulo de Clientes Mayoristas (pasos 01 a 18). Orden inverso a la creación.
+-- Revierte el módulo de Clientes Mayoristas (pasos 01 a 19). Orden inverso a la creación.
 -- ATENCIÓN: borra la información de rutas, los datos mayoristas de los clientes y los descuentos. Respaldar antes.
+-- Paso 19
+ALTER TABLE comisiones_liquidaciones DROP COLUMN monto_devuelto;
+
 -- Paso 18: los movimientos DEVOLUCION_CLIENTE ya registrados se conservan (el valor del ENUM de movimientos_producto no se quita).
 DROP TABLE IF EXISTS devoluciones_cliente_detalle;
 DROP TABLE IF EXISTS devoluciones_cliente;

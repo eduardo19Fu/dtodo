@@ -11,7 +11,12 @@ export class FilaComisionDto {
   /** Cuándo se creó su usuario. */
   fechaAlta?: string | null;
   activo: boolean;
+  /** Lo entregado en el período del vendedor, sin restar devoluciones. */
   montoEntregado: number;
+  /** Lo que los clientes devolvieron en ese período. */
+  montoDevuelto: number;
+  /** Entregado menos devuelto, nunca menos de cero: la base de la meta y de la comisión. */
+  montoNeto: number;
   metaAlcanzada?: number | null;
   porcentaje: number;
   comision: number;
@@ -35,6 +40,8 @@ export class AvanceComisionDto {
   metas: MetaComisionDto[];
   filas: FilaComisionDto[];
   totalEntregado: number;
+  totalDevuelto: number;
+  totalNeto: number;
   totalComision: number;
 }
 

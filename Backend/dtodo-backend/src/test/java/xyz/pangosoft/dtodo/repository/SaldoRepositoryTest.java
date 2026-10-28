@@ -351,4 +351,23 @@ class SaldoRepositoryTest {
         Object[] tarde = filas.stream().filter(f -> enPartes.getIdProforma().equals(f[1])).findFirst().get();
         assertEquals(LocalDate.of(2026, 10, 25), tarde[3]);
     }
+
+    @Test
+    void lasDevolucionesPorVendedorYFechaSeAgrupanPorDia() {
+        base();
+        Proforma uno = pedido("1P", cliente, activo, TipoProformaEnum.MAYORISTA, EstadoPedidoEnum.ENTREGADA);
+        em.flush();
+        devolucion(uno, cliente, LocalDate.of(2026, 10, 10), "10.00", "5.50");
+        devolucion(uno, cliente, LocalDate.of(2026, 10, 10), "4.50");
+        devolucion(uno, cliente, LocalDate.of(2026, 12, 20), "7.00");
+        devolucion(uno, cliente, LocalDate.of(2027, 1, 3), "99.00");
+        em.flush();
+
+        List<Object[]> filas = devolucionRepository.devueltoPorVendedorYFecha(LocalDate.of(2026, 1, 1), LocalDate.of(2027, 1, 1));
+
+        assertEquals(2, filas.size());
+        Object[] deOctubre = filas.stream().filter(f -> LocalDate.of(2026, 10, 10).equals(f[1])).findFirst().get();
+        assertEquals(ana.getIdUsuario(), deOctubre[0]);
+        assertEquals(0, new BigDecimal("20.00").compareTo((BigDecimal) deOctubre[2]));
+    }
 }

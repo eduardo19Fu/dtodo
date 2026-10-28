@@ -4,7 +4,8 @@
       <div class="col-sm-8">
         <h1>{{title}}</h1>
         <p class="listing-subtitle">
-          Porcentaje plano sobre todo lo entregado en el año, según la meta más alta alcanzada. Solo cobra quien completó el año.
+          Porcentaje plano sobre lo entregado en el año menos lo que los clientes devolvieron, según la meta más alta alcanzada. Solo cobra quien
+          completó el año.
         </p>
       </div>
       <div class="col-sm-4">
@@ -85,12 +86,15 @@
         Descartar cambios
       </button>
     </div>
-    <p class="listing-note mt-2 mb-0">Cada meta pide un monto y un porcentaje mayores que la anterior.</p>
+    <p class="listing-note mt-2 mb-0">Cada meta pide un monto y un porcentaje mayores que la anterior. Las metas se alcanzan con lo entregado menos lo devuelto.</p>
   </div>
 </div>
 
 <div class="listing-stats" *ngIf="avance && avance.filas.length > 0">
-  <div class="listing-stat"><span>Entregado en el año</span><strong>{{avance.totalEntregado | currency: 'Q' : 'symbol'}}</strong></div>
+  <div class="listing-stat">
+    <span>Base de comisión</span><strong>{{avance.totalNeto | currency: 'Q' : 'symbol'}}</strong>
+    <small>{{avance.totalEntregado | currency: 'Q' : 'symbol'}} entregado − {{avance.totalDevuelto | currency: 'Q' : 'symbol'}} devuelto</small>
+  </div>
   <div class="listing-stat is-success">
     <span>{{liquidado ? 'Comisión liquidada' : 'A pagar a los marcados'}}</span>
     <strong>{{(liquidado ? avance.totalComision : totalAPagar) | currency: 'Q' : 'symbol'}}</strong>
@@ -120,6 +124,8 @@
             <th>Vendedor</th>
             <th>Alta</th>
             <th class="text-right">Entregado</th>
+            <th class="text-right">Devuelto</th>
+            <th class="text-right">Base (neto)</th>
             <th class="text-right">Meta alcanzada</th>
             <th class="text-center">%</th>
             <th class="text-right">{{liquidado ? 'Comisión' : 'Comisión si completó'}}</th>
@@ -141,6 +147,8 @@
             </td>
             <td data-label="Alta">{{fila.fechaAlta ? (fila.fechaAlta | date: 'dd/MM/yyyy') : '—'}}</td>
             <td data-label="Entregado" class="text-money">{{fila.montoEntregado | currency: 'Q' : 'symbol'}}</td>
+            <td data-label="Devuelto" class="text-money">{{fila.montoDevuelto | currency: 'Q' : 'symbol'}}</td>
+            <td data-label="Base (neto)" class="text-money"><strong>{{fila.montoNeto | currency: 'Q' : 'symbol'}}</strong></td>
             <td data-label="Meta alcanzada" class="text-money">{{fila.metaAlcanzada ? (fila.metaAlcanzada | currency: 'Q' : 'symbol') : '—'}}</td>
             <td data-label="%" class="text-center">
               <span class="listing-status-pill" [ngClass]="fila.porcentaje > 0 ? 'listing-status-primary' : 'listing-status-neutral'">{{fila.porcentaje}} %</span>
@@ -162,6 +170,8 @@
           <tr>
             <td colspan="2">Totales</td>
             <td class="text-money">{{avance.totalEntregado | currency: 'Q' : 'symbol'}}</td>
+            <td class="text-money">{{avance.totalDevuelto | currency: 'Q' : 'symbol'}}</td>
+            <td class="text-money">{{avance.totalNeto | currency: 'Q' : 'symbol'}}</td>
             <td colspan="2"></td>
             <td class="text-money">{{(liquidado ? avance.totalComision : totalAPagar) | currency: 'Q' : 'symbol'}}</td>
             <td colspan="2" class="text-muted">{{liquidado ? 'total liquidado' : 'a pagar a los marcados'}}</td>

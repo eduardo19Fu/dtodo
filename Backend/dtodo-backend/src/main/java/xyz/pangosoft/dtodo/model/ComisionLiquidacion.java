@@ -40,7 +40,12 @@ public class ComisionLiquidacion implements Serializable {
     @JoinColumn(name = "id_vendedor")
     private Usuario vendedor;
 
+    /** Lo entregado de los pedidos del vendedor en el período de su comisión (sin restar devoluciones). */
     private BigDecimal montoEntregado;
+
+    /** Lo que los clientes devolvieron en ese período; la comisión se calcula sobre lo entregado menos esto. */
+    @Builder.Default
+    private BigDecimal montoDevuelto = BigDecimal.ZERO;
 
     /** Monto mínimo de la meta alcanzada; nulo si no alcanzó ninguna o no completó el año. */
     private BigDecimal montoMeta;
