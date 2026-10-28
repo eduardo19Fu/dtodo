@@ -30,7 +30,7 @@ CREATE TABLE devoluciones_cliente (
     id_proforma BIGINT NOT NULL,
     id_cliente INT NOT NULL,
     id_sucursal INT NULL,
-    id_nota_credito BIGINT NULL,
+    id_nota_credito INT NULL,
     fecha DATE NOT NULL,
     motivo VARCHAR(500) NOT NULL,
     total DECIMAL(12,2) NOT NULL,
