@@ -44,7 +44,8 @@ describe('PedidosComponent', () => {
       retroceder: jasmine.createSpy('retroceder').and.returnValue(of({})),
       picking: jasmine.createSpy('picking').and.returnValue(of(new Blob(['x']))),
       empaque: jasmine.createSpy('empaque').and.returnValue(of(new Blob(['x']))),
-      notaEnvio: jasmine.createSpy('notaEnvio').and.returnValue(of(new Blob(['x'])))
+      notaEnvio: jasmine.createSpy('notaEnvio').and.returnValue(of(new Blob(['x']))),
+      historial: jasmine.createSpy('historial').and.returnValue(of([{ fecha: '2026-10-05T09:00:00', categoria: 'CREACION', titulo: 'Pedido creado' }]))
     };
     component = new PedidosComponent(servicio, auth('ROLE_BODEGA'), saldoServicio);
   });
@@ -194,6 +195,43 @@ describe('PedidosComponent', () => {
 
     expect(fire).toHaveBeenCalled();
     expect(servicio.notaEnvio).not.toHaveBeenCalled();
+  });
+
+  it('el historial se trae la primera vez, se puede ocultar y no se vuelve a pedir', () => {
+    component.detalle = { idProforma: 7, lineas: [], etapas: [] } as any;
+
+    component.alternarHistorial();
+    expect(component.historialAbierto).toBeTrue();
+    expect(servicio.historial).toHaveBeenCalledWith(7);
+    expect(component.historial.length).toBe(1);
+
+    component.alternarHistorial();
+    expect(component.historialAbierto).toBeFalse();
+    component.alternarHistorial();
+    expect(servicio.historial).toHaveBeenCalledTimes(1);
+
+    component.cerrarDetalle();
+    expect(component.historial).toBeNull();
+    expect(component.historialAbierto).toBeFalse();
+  });
+
+  it('si el historial falla lo indica y deja reintentar', () => {
+    servicio.historial.and.returnValue(throwError({ status: 500 }));
+    component.detalle = { idProforma: 7, lineas: [], etapas: [] } as any;
+
+    component.alternarHistorial();
+
+    expect(component.errorHistorial).toBeTrue();
+    expect(component.cargandoHistorial).toBeFalse();
+    expect(component.historial).toBeNull();
+  });
+
+  it('el repartidor no ve el historial y cada hecho tiene su icono', () => {
+    const repartidor = new PedidosComponent(servicio, auth('ROLE_REPARTIDOR'), saldoServicio);
+    expect(repartidor.puedeVerHistorial).toBeFalse();
+    expect(component.puedeVerHistorial).toBeTrue();
+    expect(component.iconoHistorial('ENTREGA')).toBe('fa-truck');
+    expect(component.iconoHistorial('DEVOLUCION')).toBe('fa-undo-alt');
   });
 });
 

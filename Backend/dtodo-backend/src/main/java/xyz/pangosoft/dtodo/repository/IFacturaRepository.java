@@ -30,6 +30,9 @@ public interface IFacturaRepository extends JpaRepository<Factura, Long> {
 
     List<Factura> findByFechaBetween(Date iniDate, Date endDate);
 
+    /** Todas las facturas emitidas de una proforma, también las anuladas, de la más antigua a la más reciente. */
+    List<Factura> findByIdProformaOrigenOrderByIdFactura(Long idProformaOrigen);
+
     Optional<Factura> findFacturaByNoFactura(Long noFactura);
 
     /** Nombre del estado ANULADO: una factura anulada ya no cuenta para la proforma, que se puede volver a facturar. */

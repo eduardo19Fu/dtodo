@@ -116,3 +116,18 @@ export class PedidoDetalleDto {
   etapas: PedidoEtapaDto[] = [];
   entregas: EntregaDto[] = [];
 }
+
+export type CategoriaHistorial = 'CREACION' | 'EDICION' | 'AUTORIZACION' | 'ETAPA' | 'ENTREGA' | 'DEVOLUCION' | 'FACTURA' | 'RECIBO' | 'ANULACION';
+
+/** Un hecho de la línea de tiempo de un pedido: quién hizo qué y cuándo. No lleva importes. */
+export class HistorialEventoDto {
+  fecha: string;
+  categoria: CategoriaHistorial;
+  titulo: string;
+  usuario?: string | null;
+  /** Nombre de quien lo hizo cuando no tiene usuario. */
+  responsable?: string | null;
+  motivo?: string | null;
+  /** Texto largo opcional (por ejemplo, el antes y el después de una edición). */
+  detalle?: string | null;
+}

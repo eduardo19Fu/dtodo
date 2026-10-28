@@ -6,6 +6,16 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Historial del pedido: línea de tiempo (Fase 5, paso 2)
+
+En el detalle de cada pedido, el botón **Ver el historial completo** muestra quién creó, editó, autorizó, preparó, empacó, cargó, entregó, devolvió y facturó, y cuándo, de lo más antiguo a lo más reciente. Sin script SQL.
+
+- **Qué junta**: las etapas (con su responsable cuando quien lo hizo no tiene usuario), el historial de auditoría (creación, ediciones con el antes y el después, autorizaciones y rechazos de descuento, de vencimiento y de crédito, devoluciones, cambios de cliente al facturar), las entregas (unidades, fecha real, quién entregó, y su anulación), las facturas emitidas (también las anuladas) y los recibos ligados al pedido (y su anulación). Cada hecho lleva el motivo cuando lo tiene.
+- **Sin importes**: la línea de tiempo no muestra montos, así que bodega y el vendedor la ven sin ver dinero.
+- **Quién la ve**: administrador, bodega y vendedor (solo sus pedidos; el servidor responde 404 con los de otro). El repartidor no, porque trae el historial de auditoría. `GET /api/pedidos/{id}/historial`.
+- **Pantalla**: línea vertical con un icono y color por clase de hecho (creación, edición, autorización, etapa, entrega, devolución, factura, recibo y anulación), quién y cuándo, el motivo y un detalle desplegable para los textos largos. Se carga la primera vez que se abre. Los estilos (`listing-timeline*`) quedan en `styles.css` para reutilizarlos.
+- **Pruebas**: `HistorialPedidoServiceImplTest` (orden y mapeo de todas las fuentes, anulaciones, cada acción de auditoría, alcance y pedidos no mayoristas), las consultas nuevas contra H2, la matriz de roles y los specs de la pantalla y el servicio.
+
 ### Agregado — Devoluciones de clientes (Fase 5, paso 1)
 
 El administrador registra lo que un cliente devuelve de lo ya entregado de un pedido mayorista. Se registra y queda aprobada en un solo paso.

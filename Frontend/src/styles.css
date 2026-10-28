@@ -1570,3 +1570,101 @@ input.listing-tile-input::placeholder {
 .listing-field select.form-control {
   height: 50px;
 }
+
+/* Línea de tiempo vertical: un icono por hecho sobre un hilo, con quién, cuándo y por qué. */
+.listing-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 4px;
+}
+
+.listing-timeline > li {
+  display: flex;
+  gap: 0.85rem;
+  padding-bottom: 1.1rem;
+  position: relative;
+}
+
+.listing-timeline > li:not(:last-child)::before {
+  background: #d9e3ef;
+  bottom: 0;
+  content: '';
+  left: 17px;
+  position: absolute;
+  top: 36px;
+  width: 2px;
+}
+
+.listing-timeline-icon {
+  --tl-color: #1559ad;
+  --tl-tint: #e8f1fd;
+  align-items: center;
+  background: var(--tl-tint);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--tl-color);
+  color: var(--tl-color);
+  display: flex;
+  flex: 0 0 36px;
+  font-size: 0.82rem;
+  height: 36px;
+  justify-content: center;
+}
+
+.tl-creacion .listing-timeline-icon { --tl-color: #147a4b; --tl-tint: #e5f6ed; }
+.tl-edicion .listing-timeline-icon { --tl-color: #6545a5; --tl-tint: #efe9fa; }
+.tl-autorizacion .listing-timeline-icon { --tl-color: #9a6500; --tl-tint: #fff3d6; }
+.tl-entrega .listing-timeline-icon { --tl-color: #087785; --tl-tint: #e4f5f7; }
+.tl-devolucion .listing-timeline-icon { --tl-color: #b04486; --tl-tint: #f7e8f1; }
+.tl-factura .listing-timeline-icon { --tl-color: #5c5038; --tl-tint: #f3efe7; }
+.tl-recibo .listing-timeline-icon { --tl-color: #2f7d6b; --tl-tint: #e6f3ef; }
+.tl-anulacion .listing-timeline-icon { --tl-color: #bd3434; --tl-tint: #fde9e9; }
+
+.listing-timeline-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-top: 2px;
+}
+
+.listing-timeline-head {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.8rem;
+  justify-content: space-between;
+}
+
+.listing-timeline-head strong {
+  color: #172b47;
+  font-size: 0.92rem;
+}
+
+.listing-timeline-head time {
+  color: #6b7c93;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.listing-timeline-who {
+  color: #5d7088;
+  font-size: 0.8rem;
+}
+
+.listing-timeline-motivo {
+  color: #3d4f66;
+  font-size: 0.85rem;
+  margin: 0.25rem 0 0;
+}
+
+.listing-timeline-detalle {
+  color: #5d7088;
+  font-size: 0.8rem;
+  margin-top: 0.3rem;
+  white-space: pre-line;
+}
+
+.listing-timeline-detalle summary {
+  color: #1559ad;
+  cursor: pointer;
+  font-weight: 650;
+}

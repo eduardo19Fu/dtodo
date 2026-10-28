@@ -27,6 +27,9 @@ public interface IReciboCajaRepository extends JpaRepository<ReciboCaja, Long> {
             + "left join r.proforma pr left join r.factura f where r.anulado = false")
     List<Object[]> abonosDeTodos();
 
+    /** Todos los recibos ligados directamente a un pedido, también los anulados, del más antiguo al más reciente. */
+    List<ReciboCaja> findByProforma_IdProformaOrderByFechaRegistroAscIdReciboAsc(Long idProforma);
+
     /** Los recibos vigentes de un cliente, del más antiguo al más reciente. */
     List<ReciboCaja> findByCliente_IdClienteAndAnuladoFalseOrderByFechaPagoAscIdReciboAsc(Integer idCliente);
 

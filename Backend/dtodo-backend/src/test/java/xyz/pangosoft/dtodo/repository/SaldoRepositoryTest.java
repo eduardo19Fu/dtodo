@@ -249,6 +249,8 @@ class SaldoRepositoryTest {
 
     @Autowired
     private IDevolucionClienteRepository devolucionRepository;
+    @Autowired
+    private IFacturaRepository facturaRepository;
 
     private xyz.pangosoft.dtodo.model.DevolucionCliente devolucion(Proforma deLaPedido, Cliente deCliente, LocalDate fecha, String... valores) {
         xyz.pangosoft.dtodo.model.DevolucionCliente d = xyz.pangosoft.dtodo.model.DevolucionCliente.builder()
@@ -293,5 +295,27 @@ class SaldoRepositoryTest {
                 org.springframework.data.domain.PageRequest.of(0, 10)).getTotalElements());
         assertEquals(3, devolucionRepository.buscar(null, LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31),
                 org.springframework.data.domain.PageRequest.of(0, 10)).getTotalElements());
+    }
+
+    @Test
+    void lasConsultasDelHistorialTraenTodasLasFacturasYRecibosDelPedido() {
+        base();
+        Proforma uno = pedido("1P", cliente, activo, TipoProformaEnum.MAYORISTA, EstadoPedidoEnum.ENTREGADA);
+        Proforma dos = pedido("2P", cliente, activo, TipoProformaEnum.MAYORISTA, EstadoPedidoEnum.ENTREGADA);
+        em.flush();
+        Factura vigente = factura(uno);
+        Factura anulada = factura(uno);
+        anulada.setEstado(anulado);
+        factura(dos);
+        recibo(cliente, uno, null, "10.00", false);
+        recibo(cliente, uno, null, "20.00", true);
+        recibo(cliente, dos, null, "30.00", false);
+        recibo(cliente, null, null, "40.00", false);
+        em.flush();
+
+        assertEquals(2, facturaRepository.findByIdProformaOrigenOrderByIdFactura(uno.getIdProforma()).size());
+        assertEquals(1, facturaRepository.findByIdProformaOrigenOrderByIdFactura(dos.getIdProforma()).size());
+        assertEquals(2, reciboRepository.findByProforma_IdProformaOrderByFechaRegistroAscIdReciboAsc(uno.getIdProforma()).size());
+        assertEquals(1, reciboRepository.findByProforma_IdProformaOrderByFechaRegistroAscIdReciboAsc(dos.getIdProforma()).size());
     }
 }

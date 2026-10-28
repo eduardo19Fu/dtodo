@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import {
-  EntregaDto, EntregaSolicitudDto, EstadoPedido, ETIQUETAS_ESTADO_PEDIDO, PedidoDetalleDto, PedidoDto
+  CategoriaHistorial, EntregaDto, EntregaSolicitudDto, EstadoPedido, ETIQUETAS_ESTADO_PEDIDO, HistorialEventoDto, PedidoDetalleDto,
+  PedidoDto
 } from '../../dtos/pedido-dto';
 import { ReporteSelectorOpcionDto } from '../../dtos/reporte-selector-opcion-dto';
 import { AuthService } from '../../services/auth.service';
@@ -69,6 +70,12 @@ export class PedidosComponent implements OnInit {
     { codigo: 'EMPACADA', nombre: ETIQUETAS_ESTADO_PEDIDO.EMPACADA },
     { codigo: 'EN_RUTA', nombre: ETIQUETAS_ESTADO_PEDIDO.EN_RUTA }
   ];
+
+  /** Línea de tiempo del pedido abierto; se carga al abrirla. */
+  historial: HistorialEventoDto[] = null;
+  historialAbierto = false;
+  cargandoHistorial = false;
+  errorHistorial = false;
 
   /** Cómo va el cobro del pedido abierto; solo lo consultan quienes pueden ver dinero. */
   cobro: PedidoSaldoDto = null;
@@ -278,6 +285,7 @@ export class PedidosComponent implements OnInit {
     this.abrirEntregaAlCargar = abrirEntrega;
     this.pedidoService.detalle(pedido.idProforma).subscribe(detalle => {
       this.detalle = detalle;
+      this.reiniciarHistorial();
       this.cargarCobro(detalle);
       this.cargandoDetalle = false;
       if (this.abrirEntregaAlCargar && this.puedeEntregarDetalle(detalle)) {
@@ -293,6 +301,49 @@ export class PedidosComponent implements OnInit {
   cerrarDetalle(): void {
     this.detalle = null;
     this.registrandoEntrega = false;
+    this.reiniciarHistorial();
+  }
+
+  private reiniciarHistorial(): void {
+    this.historial = null;
+    this.historialAbierto = false;
+    this.cargandoHistorial = false;
+    this.errorHistorial = false;
+  }
+
+  /** El repartidor no ve el historial: trae el de auditoría. */
+  get puedeVerHistorial(): boolean {
+    return !this.esRepartidor;
+  }
+
+  /** Abre o cierra la línea de tiempo; la trae del servidor la primera vez. */
+  alternarHistorial(): void {
+    if (this.historialAbierto) {
+      this.historialAbierto = false;
+      return;
+    }
+    this.historialAbierto = true;
+    if (this.historial || !this.detalle) {
+      return;
+    }
+    this.cargandoHistorial = true;
+    this.errorHistorial = false;
+    this.pedidoService.historial(this.detalle.idProforma).subscribe(eventos => {
+      this.historial = eventos;
+      this.cargandoHistorial = false;
+    }, () => {
+      this.cargandoHistorial = false;
+      this.errorHistorial = true;
+    });
+  }
+
+  /** Icono de Font Awesome según la clase de hecho. */
+  iconoHistorial(categoria: CategoriaHistorial): string {
+    const iconos: { [clave: string]: string } = {
+      CREACION: 'fa-file-signature', EDICION: 'fa-pen', AUTORIZACION: 'fa-user-check', ETAPA: 'fa-flag-checkered',
+      ENTREGA: 'fa-truck', DEVOLUCION: 'fa-undo-alt', FACTURA: 'fa-file-invoice', RECIBO: 'fa-receipt', ANULACION: 'fa-ban'
+    };
+    return iconos[categoria] || 'fa-circle';
   }
 
   // ------------------------------------------------------------------ entrega

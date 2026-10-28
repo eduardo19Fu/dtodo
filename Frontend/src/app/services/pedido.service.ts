@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-import { EntregaSolicitudDto, EstadoPedido, PedidoDetalleDto, PedidoDto } from '../dtos/pedido-dto';
+import { EntregaSolicitudDto, EstadoPedido, HistorialEventoDto, PedidoDetalleDto, PedidoDto } from '../dtos/pedido-dto';
 import { ReporteSelectorOpcionDto } from '../dtos/reporte-selector-opcion-dto';
 import { global } from './global';
 
@@ -38,6 +38,11 @@ export class PedidoService {
 
   detalle(idProforma: number): Observable<PedidoDetalleDto> {
     return this.http.get<PedidoDetalleDto>(`${this.url}/${idProforma}`);
+  }
+
+  /** Línea de tiempo del pedido (administrador, bodega y vendedor para lo suyo); de lo más antiguo a lo más reciente. */
+  historial(idProforma: number): Observable<HistorialEventoDto[]> {
+    return this.http.get<HistorialEventoDto[]>(`${this.url}/${idProforma}/historial`);
   }
 
   /** Pasa el pedido a la etapa siguiente; {@code responsable} es el nombre de quien lo hizo si no tiene usuario. */

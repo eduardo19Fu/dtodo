@@ -82,4 +82,12 @@ describe('PedidoService', () => {
     service.asignarRepartidor(7, 22).subscribe();
     expect(http.expectOne(`${global.url}/pedidos/7/repartidor`).request.body).toEqual({ idRepartidor: 22 });
   });
+
+  it('consulta la línea de tiempo del pedido', () => {
+    service.historial(7).subscribe();
+
+    const req = http.expectOne(`${global.url}/pedidos/7/historial`);
+    expect(req.request.method).toBe('GET');
+    req.flush([]);
+  });
 });

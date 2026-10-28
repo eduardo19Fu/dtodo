@@ -145,6 +145,12 @@ class VendedorSeguridadTest {
     }
 
     @Test
+    void elHistorialDelPedidoNoLoVeElRepartidorNiElCobrador() {
+        assertTrue(roles(HistorialPedidoApiController.class, "historial").equals(Arrays.asList("ROLE_ADMIN", "ROLE_BODEGA", "ROLE_VENDEDOR")),
+                "El historial es del administrador, bodega y el vendedor");
+    }
+
+    @Test
     void laCobranzaEsDelAdministradorYElCobrador() {
         String[] metodos = { "cuentasPorCobrar", "reporteCuentasPorCobrar", "estadoDeCuenta" };
         niegaAlVendedor(CobranzaApiController.class, metodos);
@@ -205,7 +211,7 @@ class VendedorSeguridadTest {
     void elRepartidorNoLlegaANingunOtroControlador() throws Exception {
         for (Class<?> controlador : new Class<?>[] { ProformaApiController.class, FacturaApiController.class, ClienteApiController.class,
                 ProductoApiController.class, RutaApiController.class, DescuentoApiController.class,
-                AutorizacionProformaApiController.class, ReporteMayoristasApiController.class, ComisionApiController.class, ReciboCajaApiController.class, SaldoApiController.class, CobranzaApiController.class, DevolucionClienteApiController.class }) {
+                AutorizacionProformaApiController.class, ReporteMayoristasApiController.class, ComisionApiController.class, ReciboCajaApiController.class, SaldoApiController.class, CobranzaApiController.class, DevolucionClienteApiController.class, HistorialPedidoApiController.class }) {
             for (Method metodo : controlador.getDeclaredMethods()) {
                 Secured secured = metodo.getAnnotation(Secured.class);
                 if (secured != null) {
