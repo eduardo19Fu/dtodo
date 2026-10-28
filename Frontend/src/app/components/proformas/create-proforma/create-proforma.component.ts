@@ -596,10 +596,17 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
       this.proformaService.create(this.proforma).subscribe(response => {
         if (response) {
           const generar = () => this.generarProformaPdf(response.idProforma, this.esProformaMayorista);
+          const avisos: string[] = [];
           if (response.estadoAutorizacion === 'PENDIENTE') {
-            swal.fire('Pendiente de autorización',
-              `La proforma ${response.noProforma} tiene un descuento mayor a ${this.topeDescuento} %. `
-              + 'No se podrá facturar hasta que un administrador la apruebe.', 'info').then(generar);
+            avisos.push(`La proforma ${response.noProforma} tiene un descuento mayor a ${this.topeDescuento} %. `
+              + 'No se podrá facturar hasta que un administrador la apruebe.');
+          }
+          if (response.creditoAutorizacion === 'PENDIENTE') {
+            avisos.push(`El pedido pasa del límite de crédito del cliente por Q${response.excesoCredito}. `
+              + 'No se podrá preparar, entregar ni facturar hasta que un administrador lo autorice.');
+          }
+          if (avisos.length > 0) {
+            swal.fire('Pendiente de autorización', avisos.join(' '), 'info').then(generar);
           } else {
             generar();
           }
@@ -657,6 +664,8 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
           this.proforma.total = response.total;
           this.proforma.tipoProforma = response.tipoProforma;
           this.proforma.estadoAutorizacion = response.estadoAutorizacion;
+          this.proforma.creditoAutorizacion = response.creditoAutorizacion;
+          this.proforma.excesoCredito = response.excesoCredito;
           this.proforma.estadoPedido = response.estadoPedido;
           this.proforma.observaciones = response.observaciones;
           this.proforma.fechaEntregaEstimada = response.fechaEntregaEstimada;

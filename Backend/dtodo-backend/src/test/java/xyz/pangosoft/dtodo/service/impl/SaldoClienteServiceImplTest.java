@@ -198,4 +198,43 @@ class SaldoClienteServiceImplTest {
         assertTrue(service.saldo(5).getPedidos().isEmpty());
         verify(ambito).exigirClienteEnAmbito(cliente);
     }
+
+    @Test
+    void laExposicionDeCreditoSumaElSaldoPendienteYLoQueFaltaEntregarDeLosOtrosPedidosACredito() {
+        IClienteRepository clientes = mock(IClienteRepository.class);
+        IProformaRepository proformas = mock(IProformaRepository.class);
+        IProformaEntregaRepository entregas = mock(IProformaEntregaRepository.class);
+        IReciboCajaRepository recibos = mock(IReciboCajaRepository.class);
+        SaldoClienteServiceImpl service = new SaldoClienteServiceImpl(clientes, proformas, entregas, recibos,
+                mock(IAmbitoVendedorService.class));
+        when(clientes.findById(5)).thenReturn(Optional.of(cliente));
+        // Pedido 1 (crédito, total 500): se entregaron 100 y se pagaron 30 => debe 70 y le faltan 400 por entregar.
+        // Pedido 2 (crédito, total 500): sin entregar => 500 comprometidos. Pedido 3 (contado) no cuenta como crédito.
+        Proforma uno = pedido(1, CondicionPagoEnum.CREDITO, EstadoPedidoEnum.ENTREGADA_PARCIAL);
+        Proforma dos = pedido(2, CondicionPagoEnum.CREDITO, EstadoPedidoEnum.CONFIRMADA);
+        Proforma tres = pedido(3, CondicionPagoEnum.CONTADO, EstadoPedidoEnum.CONFIRMADA);
+        when(proformas.pedidosVigentesDelCliente(5)).thenReturn(new ArrayList<>(Arrays.asList(uno, dos, tres)));
+        when(entregas.entregadoDelCliente(5)).thenReturn(filas(entregada(1, 10, "100.00", 10, LocalDate.of(2026, 10, 1))));
+        when(recibos.abonosDelCliente(5)).thenReturn(filas(abono(1L, null, "30.00")));
+
+        assertEquals(new BigDecimal("970.00"), service.exposicionDeCredito(5, null));
+        // Al evaluar el pedido 2 no se cuenta a sí mismo.
+        assertEquals(new BigDecimal("470.00"), service.exposicionDeCredito(5, 2L));
+    }
+
+    @Test
+    void conSaldoAFavorLaExposicionNoEsNegativa() {
+        IClienteRepository clientes = mock(IClienteRepository.class);
+        IProformaRepository proformas = mock(IProformaRepository.class);
+        IProformaEntregaRepository entregas = mock(IProformaEntregaRepository.class);
+        IReciboCajaRepository recibos = mock(IReciboCajaRepository.class);
+        SaldoClienteServiceImpl service = new SaldoClienteServiceImpl(clientes, proformas, entregas, recibos,
+                mock(IAmbitoVendedorService.class));
+        when(clientes.findById(5)).thenReturn(Optional.of(cliente));
+        when(proformas.pedidosVigentesDelCliente(5)).thenReturn(new ArrayList<>());
+        when(entregas.entregadoDelCliente(5)).thenReturn(new ArrayList<>());
+        when(recibos.abonosDelCliente(5)).thenReturn(filas(abono(null, null, "300.00")));
+
+        assertEquals(new BigDecimal("0.00"), service.exposicionDeCredito(5, null));
+    }
 }

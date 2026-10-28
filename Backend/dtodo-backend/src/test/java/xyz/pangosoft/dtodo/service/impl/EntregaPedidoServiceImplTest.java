@@ -541,4 +541,17 @@ class EntregaPedidoServiceImplTest {
 
         verify(saldoService, never()).cobrado(7L);
     }
+
+    @Test
+    void conElCreditoSinAutorizarNoSeEntrega() {
+        for (xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum estado : new xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum[] {
+                xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum.PENDIENTE, xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum.RECHAZADA }) {
+            pedido.setCreditoAutorizacion(estado);
+
+            ReglaNegocioException error = assertThrows(ReglaNegocioException.class, () -> service.registrar(7L, solicitud(1, 0)));
+
+            assertTrue(error.getMessage().contains("crédito"), error.getMessage());
+        }
+        verify(entregaRepository, never()).save(any());
+    }
 }

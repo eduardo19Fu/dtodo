@@ -5,11 +5,11 @@ import { AutorizacionProformaService } from '../../services/autorizacion-proform
 
 import Swal from 'sweetalert2';
 
-type Resolucion = 'aprobar' | 'rechazar' | 'vencida';
+type Resolucion = 'aprobar' | 'rechazar' | 'vencida' | 'aprobarCredito' | 'rechazarCredito';
 
 /**
- * Bandeja de autorizaciones (solo administrador): los descuentos de proformas mayoristas que pasan del tope y las
- * proformas vencidas que alguien quiere facturar. Toda decisión pide un motivo y queda en el historial.
+ * Bandeja de autorizaciones (solo administrador): los descuentos de proformas mayoristas que pasan del tope, los pedidos a
+ * crédito que pasan del límite del cliente y las proformas vencidas que alguien quiere facturar. Toda decisión pide un motivo y queda en el historial.
  */
 @Component({
   selector: 'app-autorizaciones',
@@ -21,6 +21,7 @@ export class AutorizacionesComponent implements OnInit {
   title = 'Autorizaciones';
   pendientes: AutorizacionProformaDto[] = [];
   vencidas: AutorizacionProformaDto[] = [];
+  credito: AutorizacionProformaDto[] = [];
   cargando = false;
   errorCarga = false;
   /** Proforma que se está resolviendo, para bloquear su botón y evitar un doble clic. */
@@ -35,7 +36,7 @@ export class AutorizacionesComponent implements OnInit {
   cargar(): void {
     this.cargando = true;
     this.errorCarga = false;
-    let faltan = 2;
+    let faltan = 3;
     const terminar = () => {
       faltan--;
       if (faltan === 0) {
@@ -48,10 +49,11 @@ export class AutorizacionesComponent implements OnInit {
     };
     this.autorizacionService.pendientes().subscribe(lista => { this.pendientes = lista; terminar(); }, fallar);
     this.autorizacionService.vencidas().subscribe(lista => { this.vencidas = lista; terminar(); }, fallar);
+    this.autorizacionService.credito().subscribe(lista => { this.credito = lista; terminar(); }, fallar);
   }
 
   get total(): number {
-    return this.pendientes.length + this.vencidas.length;
+    return this.pendientes.length + this.vencidas.length + this.credito.length;
   }
 
   /** Días que lleva vencida (0 si vence hoy o no tiene fecha). */
@@ -73,6 +75,14 @@ export class AutorizacionesComponent implements OnInit {
     this.resolver(proforma, 'rechazar');
   }
 
+  aprobarCredito(proforma: AutorizacionProformaDto): void {
+    this.resolver(proforma, 'aprobarCredito');
+  }
+
+  rechazarCredito(proforma: AutorizacionProformaDto): void {
+    this.resolver(proforma, 'rechazarCredito');
+  }
+
   autorizarVencida(proforma: AutorizacionProformaDto): void {
     this.resolver(proforma, 'vencida');
   }
@@ -85,6 +95,12 @@ export class AutorizacionesComponent implements OnInit {
       case 'rechazar':
         return { titulo: `Rechazar el descuento de la proforma ${proforma.noProforma}`, boton: 'Rechazar',
           exito: 'Descuento rechazado' };
+      case 'aprobarCredito':
+        return { titulo: `Autorizar el crédito del pedido ${proforma.noProforma}`, boton: 'Autorizar',
+          exito: 'Crédito autorizado' };
+      case 'rechazarCredito':
+        return { titulo: `Rechazar el crédito del pedido ${proforma.noProforma}`, boton: 'Rechazar',
+          exito: 'Crédito rechazado' };
       default:
         return { titulo: `Autorizar facturar la proforma vencida ${proforma.noProforma}`, boton: 'Autorizar',
           exito: 'Vencimiento autorizado' };
@@ -110,7 +126,9 @@ export class AutorizacionesComponent implements OnInit {
       this.resolviendo = proforma.idProforma;
       const llamada = accion === 'aprobar' ? this.autorizacionService.aprobar(proforma.idProforma, motivo)
         : accion === 'rechazar' ? this.autorizacionService.rechazar(proforma.idProforma, motivo)
-          : this.autorizacionService.autorizarVencida(proforma.idProforma, motivo);
+          : accion === 'aprobarCredito' ? this.autorizacionService.aprobarCredito(proforma.idProforma, motivo)
+            : accion === 'rechazarCredito' ? this.autorizacionService.rechazarCredito(proforma.idProforma, motivo)
+              : this.autorizacionService.autorizarVencida(proforma.idProforma, motivo);
       llamada.subscribe(() => {
         this.resolviendo = null;
         Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: textos.exito,

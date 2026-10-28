@@ -65,6 +65,41 @@ public class AutorizacionProformaServiceImpl implements IAutorizacionProformaSer
         auditoria.registrar(idProforma, accion, motivoLimpio, auditoria.resumen(proforma));
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public List<AutorizacionProformaDto> credito() {
+        return proformaRepository.findCreditoPorAutorizar(EstadoAutorizacionEnum.PENDIENTE);
+    }
+
+    @Transactional
+    @Override
+    public void aprobarCredito(Long idProforma, String motivo) {
+        resolverCredito(idProforma, motivo, EstadoAutorizacionEnum.APROBADA, AccionAuditoriaEnum.AUTORIZACION_CREDITO,
+                "autorizar el crédito del pedido");
+    }
+
+    @Transactional
+    @Override
+    public void rechazarCredito(Long idProforma, String motivo) {
+        resolverCredito(idProforma, motivo, EstadoAutorizacionEnum.RECHAZADA, AccionAuditoriaEnum.RECHAZO_CREDITO,
+                "rechazar el crédito del pedido");
+    }
+
+    private void resolverCredito(Long idProforma, String motivo, EstadoAutorizacionEnum nuevoEstado, AccionAuditoriaEnum accion,
+                                 String queHace) {
+        String motivoLimpio = auditoria.motivoObligatorio(motivo, queHace);
+        Proforma proforma = cargar(idProforma);
+        exigirSinFactura(proforma);
+        if (proforma.getCreditoAutorizacion() != EstadoAutorizacionEnum.PENDIENTE) {
+            throw new ReglaNegocioException("El pedido " + proforma.getNoProforma()
+                    + " no está pendiente de autorización de crédito.");
+        }
+        proforma.setCreditoAutorizacion(nuevoEstado);
+        proformaRepository.save(proforma);
+        auditoria.registrar(idProforma, accion, motivoLimpio, "Excedía el límite por Q" + proforma.getExcesoCredito()
+                + ". " + auditoria.resumen(proforma));
+    }
+
     @Transactional
     @Override
     public void autorizarVencida(Long idProforma, String motivo) {
@@ -101,6 +136,11 @@ public class AutorizacionProformaServiceImpl implements IAutorizacionProformaSer
         if (proforma.getEstadoAutorizacion() == EstadoAutorizacionEnum.RECHAZADA) {
             throw new ReglaNegocioException("El descuento de la proforma " + proforma.getNoProforma()
                     + " fue rechazado y no se puede facturar. Corrija la proforma para volver a pedir autorización.");
+        }
+        if (proforma.getCreditoAutorizacion() == EstadoAutorizacionEnum.PENDIENTE
+                || proforma.getCreditoAutorizacion() == EstadoAutorizacionEnum.RECHAZADA) {
+            throw new ReglaNegocioException("El crédito de la proforma " + proforma.getNoProforma()
+                    + " no está autorizado y no se puede facturar.");
         }
         if (estaVencida(proforma) && !proforma.isVencimientoAutorizado()) {
             throw new ReglaNegocioException("La proforma " + proforma.getNoProforma() + " venció el "

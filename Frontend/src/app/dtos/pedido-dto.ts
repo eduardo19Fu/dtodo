@@ -104,6 +104,9 @@ export class PedidoDetalleDto {
   idRepartidor?: number | null;
   repartidor?: string | null;
   condicionPago?: 'CONTADO' | 'CREDITO' | null;
+  /** PENDIENTE o RECHAZADA impiden preparar y entregar; nulo si el pedido cabe en el límite de crédito. */
+  creditoAutorizacion?: 'PENDIENTE' | 'APROBADA' | 'RECHAZADA' | null;
+  excesoCredito?: number | null;
   diasCredito?: number | null;
   observaciones?: string | null;
   /** Sucursal de la proforma: la que se propone para descontar el inventario. */

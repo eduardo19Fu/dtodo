@@ -200,6 +200,7 @@ public class ProformaApiController {
         proformaMayoristaService.preparar(proforma);
         descuentoService.prepararLineas(proforma);
         proformaMayoristaService.evaluarAutorizacion(proforma);
+        proformaMayoristaService.evaluarCredito(proforma);
         Proforma newProforma = proformaService.save(proforma, null);
         auditoriaService.registrar(newProforma.getIdProforma(), AccionAuditoriaEnum.CREACION, null,
                 auditoriaService.resumen(newProforma));
@@ -235,6 +236,7 @@ public class ProformaApiController {
 
         descuentoService.prepararLineas(proforma);
         proformaMayoristaService.evaluarAutorizacion(proforma);
+        proformaMayoristaService.evaluarCredito(proforma);
         Proforma proformaUpdated = proformaService.save(proforma, id);
         auditoriaService.registrar(id, AccionAuditoriaEnum.MODIFICACION, motivoLimpio,
                 "Antes: " + antes + "\nDespués: " + auditoriaService.resumen(proformaUpdated));

@@ -380,4 +380,17 @@ class PedidoServiceImplTest {
 
         verify(usuarioRepository).findRepartidores();
     }
+
+    @Test
+    void conElCreditoPendienteORechazadoNoSePreparaElPedido() {
+        Proforma proforma = pedido(EstadoPedidoEnum.CONFIRMADA);
+        proforma.setCreditoAutorizacion(EstadoAutorizacionEnum.PENDIENTE);
+        ReglaNegocioException pendiente = assertThrows(ReglaNegocioException.class, () -> service.avanzar(7L, null, null));
+        assertTrue(pendiente.getMessage().contains("límite de crédito"));
+
+        proforma.setCreditoAutorizacion(EstadoAutorizacionEnum.RECHAZADA);
+        ReglaNegocioException rechazada = assertThrows(ReglaNegocioException.class, () -> service.avanzar(7L, null, null));
+        assertTrue(rechazada.getMessage().contains("rechazado"));
+        assertEquals(EstadoPedidoEnum.CONFIRMADA, proforma.getEstadoPedido());
+    }
 }

@@ -49,6 +49,20 @@ public class SaldoClienteServiceImpl implements ISaldoClienteService {
 
     @Transactional(readOnly = true)
     @Override
+    public BigDecimal exposicionDeCredito(Integer idCliente, Long idProformaExcluir) {
+        Cliente cliente = clienteRepository.findById(idCliente)
+                .orElseThrow(() -> new NotFoundException("El cliente solicitado no se encuentra registrado."));
+        SaldoClienteDto saldo = calcular(cliente, proformaRepository.pedidosVigentesDelCliente(idCliente),
+                entregaRepository.entregadoDelCliente(idCliente), reciboRepository.abonosDelCliente(idCliente));
+        BigDecimal comprometido = saldo.getPedidos().stream()
+                .filter(p -> p.getCondicionPago() == CondicionPagoEnum.CREDITO && !p.getIdProforma().equals(idProformaExcluir))
+                .map(p -> p.getTotal().subtract(p.getEntregado()).max(BigDecimal.ZERO))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        return saldo.getSaldo().max(BigDecimal.ZERO).add(comprometido).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
     public PedidoSaldoDto saldoDelPedido(Long idProforma) {
         Proforma pedido = proformaRepository.findById(idProforma)
                 .orElseThrow(() -> new NotFoundException("El pedido solicitado no se encuentra registrado."));

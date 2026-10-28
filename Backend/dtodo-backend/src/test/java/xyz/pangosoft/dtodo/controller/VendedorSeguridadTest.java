@@ -99,6 +99,10 @@ class VendedorSeguridadTest {
                 "autorizarVencida");
         assertTrue(roles(AutorizacionProformaApiController.class, "aprobar").equals(Arrays.asList("ROLE_ADMIN")),
                 "aprobar es solo del administrador");
+        for (String metodo : new String[] { "credito", "aprobarCredito", "rechazarCredito" }) {
+            assertTrue(roles(AutorizacionProformaApiController.class, metodo).equals(Arrays.asList("ROLE_ADMIN")),
+                    metodo + " es solo del administrador");
+        }
     }
 
     @Test

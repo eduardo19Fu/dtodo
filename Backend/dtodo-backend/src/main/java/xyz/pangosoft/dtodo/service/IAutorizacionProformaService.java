@@ -25,6 +25,15 @@ public interface IAutorizacionProformaService {
     void rechazar(Long idProforma, String motivo);
 
     /** Autoriza facturar una proforma mayorista vencida; el motivo es obligatorio. */
+    /** Pedidos a crédito que pasan del límite del cliente y esperan una decisión. */
+    List<AutorizacionProformaDto> credito();
+
+    /** Autoriza un pedido que pasa del límite de crédito. Motivo obligatorio. */
+    void aprobarCredito(Long idProforma, String motivo);
+
+    /** Rechaza un pedido que pasa del límite de crédito. Motivo obligatorio. */
+    void rechazarCredito(Long idProforma, String motivo);
+
     void autorizarVencida(Long idProforma, String motivo);
 
     /**

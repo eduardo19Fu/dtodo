@@ -28,6 +28,18 @@ export class AutorizacionProformaService {
     return this.http.get<AutorizacionProformaDto[]>(`${this.url}/autorizaciones/vencidas`);
   }
 
+  credito(): Observable<AutorizacionProformaDto[]> {
+    return this.http.get<AutorizacionProformaDto[]>(`${this.url}/autorizaciones/credito`);
+  }
+
+  aprobarCredito(idProforma: number, motivo: string): Observable<any> {
+    return this.http.post<any>(`${this.url}/autorizaciones/${idProforma}/aprobar-credito`, { motivo });
+  }
+
+  rechazarCredito(idProforma: number, motivo: string): Observable<any> {
+    return this.http.post<any>(`${this.url}/autorizaciones/${idProforma}/rechazar-credito`, { motivo });
+  }
+
   aprobar(idProforma: number, motivo: string): Observable<any> {
     return this.http.post<any>(`${this.url}/autorizaciones/${idProforma}/aprobar`, { motivo });
   }

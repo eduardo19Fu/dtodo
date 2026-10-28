@@ -9,5 +9,8 @@ public enum AccionAuditoriaEnum {
     RECHAZO,
     /** Un administrador autorizó facturar la proforma aunque ya venció. */
     AUTORIZACION_VENCIDA,
+    /** Un administrador autorizó un pedido que pasa del límite de crédito del cliente. */
+    AUTORIZACION_CREDITO,
+    RECHAZO_CREDITO,
     CAMBIO_CLIENTE_FACTURA;
 }

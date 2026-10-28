@@ -18,6 +18,12 @@ public interface ISaldoClienteService {
     /** Cómo va el cobro de un pedido, sin repartir los abonos sin pedido. */
     PedidoSaldoDto saldoDelPedido(Long idProforma);
 
+    /**
+     * Cuánto del límite de crédito del cliente ya está comprometido: su saldo pendiente más lo que falta por entregar de sus
+     * otros pedidos a crédito vigentes. {@code idProformaExcluir} deja fuera el pedido que se está evaluando.
+     */
+    BigDecimal exposicionDeCredito(Integer idCliente, Long idProformaExcluir);
+
     /** Valor de lo entregado en un pedido con las entregas vigentes. */
     BigDecimal valorEntregado(Long idProforma);
 

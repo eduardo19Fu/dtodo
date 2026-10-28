@@ -168,6 +168,11 @@
           </strong>
         </div>
       </div>
+      <p *ngIf="detalle.creditoAutorizacion === 'PENDIENTE' || detalle.creditoAutorizacion === 'RECHAZADA'" class="detalle-observacion falta-cobro">
+        <strong>Crédito {{detalle.creditoAutorizacion === 'PENDIENTE' ? 'pendiente de autorización' : 'rechazado'}}:</strong>
+        el pedido pasa del límite de crédito del cliente por {{detalle.excesoCredito | currency: 'Q' : 'symbol'}}.
+        {{detalle.creditoAutorizacion === 'PENDIENTE' ? 'Un administrador debe autorizarlo para prepararlo y entregarlo.' : 'Debe corregirse la proforma.'}}
+      </p>
       <p *ngIf="cobro && faltaCobrar > 0" class="detalle-observacion falta-cobro">
         <strong>Pedido de contado:</strong> falta cobrar {{faltaCobrar | currency: 'Q' : 'symbol'}} de lo entregado.
         Emita un recibo de caja ligado a este pedido antes de entregar más.

@@ -28,7 +28,10 @@ class ProformaMayoristaServiceImplTest {
 
     private final IClienteRepository clienteRepository = mock(IClienteRepository.class);
     private final IAmbitoVendedorService ambito = mock(IAmbitoVendedorService.class);
-    private final ProformaMayoristaServiceImpl service = new ProformaMayoristaServiceImpl(clienteRepository, ambito);
+    private final xyz.pangosoft.dtodo.service.ISaldoClienteService saldoService = mock(xyz.pangosoft.dtodo.service.ISaldoClienteService.class);
+    private final xyz.pangosoft.dtodo.repository.IProformaRepository proformaRepository = mock(xyz.pangosoft.dtodo.repository.IProformaRepository.class);
+    private final ProformaMayoristaServiceImpl service = new ProformaMayoristaServiceImpl(clienteRepository, ambito, saldoService,
+            proformaRepository);
 
     private Cliente cliente(TipoClienteEnum tipo, Ruta ruta) {
         Cliente cliente = new Cliente();
@@ -240,5 +243,119 @@ class ProformaMayoristaServiceImplTest {
 
         assertEquals(xyz.pangosoft.dtodo.model.enums.CondicionPagoEnum.CONTADO, proforma.getCondicionPago());
         assertNull(proforma.getDiasCredito());
+    }
+
+    // ------------------------------------------------------------------------------------------ límite de crédito
+
+    private Proforma aCredito(String total) {
+        Proforma proforma = proforma(TipoProformaEnum.MAYORISTA);
+        proforma.setCondicionPago(xyz.pangosoft.dtodo.model.enums.CondicionPagoEnum.CREDITO);
+        DetalleProforma linea = new DetalleProforma();
+        linea.setSubTotalDescuento(new java.math.BigDecimal(total));
+        proforma.getItemsProforma().add(linea);
+        return proforma;
+    }
+
+    private void exposicion(String valor) {
+        when(saldoService.exposicionDeCredito(org.mockito.ArgumentMatchers.eq(5), org.mockito.ArgumentMatchers.any()))
+                .thenReturn(new java.math.BigDecimal(valor));
+    }
+
+    @Test
+    void unPedidoACreditoQueCabeEnElLimiteNoNecesitaAutorizacion() {
+        conCredito("1000", 30);
+        exposicion("400.00");
+        Proforma proforma = aCredito("600.00");
+
+        service.evaluarCredito(proforma);
+
+        assertNull(proforma.getCreditoAutorizacion());
+        assertNull(proforma.getExcesoCredito());
+    }
+
+    @Test
+    void unPedidoQuePasaDelLimiteQuedaPendienteConSuExceso() {
+        conCredito("1000", 30);
+        exposicion("400.00");
+        Proforma proforma = aCredito("600.01");
+
+        service.evaluarCredito(proforma);
+
+        assertEquals(xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum.PENDIENTE, proforma.getCreditoAutorizacion());
+        assertEquals(new java.math.BigDecimal("0.01"), proforma.getExcesoCredito());
+    }
+
+    @Test
+    void lasLineasSinImporteUsanElTotalDeLaProforma() {
+        conCredito("1000", 30);
+        exposicion("0.00");
+        Proforma proforma = aCredito("10.00");
+        proforma.getItemsProforma().get(0).setSubTotalDescuento(null);
+        proforma.setTotal(new java.math.BigDecimal("1500.00"));
+
+        service.evaluarCredito(proforma);
+
+        assertEquals(new java.math.BigDecimal("500.00"), proforma.getExcesoCredito());
+    }
+
+    @Test
+    void laContadoOMinoristaNoSeEvaluaYSeLimpiaLoQueTraiga() {
+        conCredito("1000", 30);
+        exposicion("5000.00");
+        Proforma contado = aCredito("600.00");
+        contado.setCondicionPago(xyz.pangosoft.dtodo.model.enums.CondicionPagoEnum.CONTADO);
+        contado.setCreditoAutorizacion(xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum.APROBADA);
+        contado.setExcesoCredito(new java.math.BigDecimal("99"));
+
+        service.evaluarCredito(contado);
+
+        assertNull(contado.getCreditoAutorizacion());
+        assertNull(contado.getExcesoCredito());
+        org.mockito.Mockito.verify(saldoService, org.mockito.Mockito.never()).exposicionDeCredito(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
+
+        Proforma minorista = aCredito("600.00");
+        minorista.setTipoProforma(TipoProformaEnum.MINORISTA);
+        service.evaluarCredito(minorista);
+        assertNull(minorista.getCreditoAutorizacion());
+    }
+
+    @Test
+    void unaEdicionQueNoEmpeoraElExcesoAprobadoConservaLaAprobacion() {
+        conCredito("1000", 30);
+        exposicion("400.00");
+        Proforma previa = new Proforma();
+        previa.setIdProforma(30L);
+        previa.setCreditoAutorizacion(xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum.APROBADA);
+        previa.setExcesoCredito(new java.math.BigDecimal("200.00"));
+        when(proformaRepository.findById(30L)).thenReturn(Optional.of(previa));
+
+        Proforma igual = aCredito("800.00");
+        igual.setIdProforma(30L);
+        service.evaluarCredito(igual);
+        assertEquals(xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum.APROBADA, igual.getCreditoAutorizacion());
+        assertEquals(new java.math.BigDecimal("200.00"), igual.getExcesoCredito());
+
+        Proforma mayor = aCredito("900.00");
+        mayor.setIdProforma(30L);
+        service.evaluarCredito(mayor);
+        assertEquals(xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum.PENDIENTE, mayor.getCreditoAutorizacion());
+        assertEquals(new java.math.BigDecimal("300.00"), mayor.getExcesoCredito());
+    }
+
+    @Test
+    void unaEdicionDeUnPedidoRechazadoVuelveAPedirAutorizacion() {
+        conCredito("1000", 30);
+        exposicion("400.00");
+        Proforma previa = new Proforma();
+        previa.setIdProforma(30L);
+        previa.setCreditoAutorizacion(xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum.RECHAZADA);
+        previa.setExcesoCredito(new java.math.BigDecimal("500.00"));
+        when(proformaRepository.findById(30L)).thenReturn(Optional.of(previa));
+        Proforma editada = aCredito("700.00");
+        editada.setIdProforma(30L);
+
+        service.evaluarCredito(editada);
+
+        assertEquals(xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum.PENDIENTE, editada.getCreditoAutorizacion());
     }
 }

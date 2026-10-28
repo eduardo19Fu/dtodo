@@ -6,6 +6,18 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Control del límite de crédito de los clientes (Fase 4, paso 3)
+
+Un pedido a crédito que pasa del límite del cliente queda bloqueado hasta que un administrador lo autorice.
+
+- **Cuándo pasa del límite**: cuando el total del pedido (con descuento) más lo que el cliente ya comprometió supera su límite de crédito. Lo comprometido es su **saldo pendiente** (entregado menos recibos vigentes) **más lo que falta por entregar de sus otros pedidos a crédito vigentes**, para que dos pedidos que caben cada uno por separado no pasen del límite juntos. Un saldo a favor no suma ni resta. Se evalúa al crear y al editar el pedido; un pedido de contado o minorista nunca se evalúa.
+- **Qué bloquea**: con la autorización de crédito `PENDIENTE` o `RECHAZADA` el pedido no se prepara, no se entrega y la proforma no se factura, igual que con un descuento sin autorizar. Es independiente de la autorización del descuento: un pedido puede necesitar las dos.
+- **Autorización**: el administrador autoriza o rechaza desde la bandeja *Autorizaciones*, en la nueva sección "Pedidos que pasan del límite de crédito" (cliente, total, límite y cuánto pasa), con motivo obligatorio; queda en el historial del pedido (`AUTORIZACION_CREDITO` / `RECHAZO_CREDITO`). `GET /api/autorizaciones/credito`, `POST /{id}/aprobar-credito` y `/{id}/rechazar-credito`, solo `ROLE_ADMIN`.
+- **Ediciones**: si el pedido ya estaba autorizado y la edición no pasa del exceso autorizado, conserva la autorización; si pasa más, o si estaba rechazado, vuelve a quedar pendiente.
+- **Avisos**: al guardar la proforma, el vendedor ve que el pedido quedó pendiente de autorización y por cuánto pasa; el detalle del pedido muestra el aviso mientras esté pendiente o rechazado.
+- **Base de datos** (`sql/mayoristas/17_proformas_autorizacion_credito.sql`, **requerido antes del jar**; el rollback lo revierte): `proformas.credito_autorizacion` y `proformas.exceso_credito`.
+- **Pruebas**: evaluación del límite (cabe, pasa por un centavo, líneas sin importe, contado, conserva o pierde la autorización al editar), exposición de crédito (otros pedidos por entregar, saldo a favor), bloqueos de preparar, entregar y facturar, decisiones del administrador, consulta de la bandeja contra H2, matriz de roles y specs de la bandeja.
+
 ### Agregado — Condición de pago, saldo del cliente y entrega condicionada al cobro (Fase 4, paso 2)
 
 El control del límite de crédito al confirmar el pedido llega en el paso 3; la cobranza (antigüedad, estado de cuenta imprimible, alertas), en el 4.

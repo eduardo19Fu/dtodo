@@ -224,6 +224,15 @@ public class PedidoServiceImpl implements IPedidoService {
     }
 
     private void exigirAutorizado(Proforma proforma) {
+        EstadoAutorizacionEnum credito = proforma.getCreditoAutorizacion();
+        if (credito == EstadoAutorizacionEnum.PENDIENTE) {
+            throw new ReglaNegocioException("El pedido " + proforma.getNoProforma() + " pasa del límite de crédito del cliente "
+                    + "y está pendiente de autorización. Un administrador debe aprobarlo antes de prepararlo.");
+        }
+        if (credito == EstadoAutorizacionEnum.RECHAZADA) {
+            throw new ReglaNegocioException("El crédito del pedido " + proforma.getNoProforma()
+                    + " fue rechazado; el pedido debe corregirse antes de prepararlo.");
+        }
         EstadoAutorizacionEnum autorizacion = proforma.getEstadoAutorizacion();
         if (autorizacion == EstadoAutorizacionEnum.PENDIENTE) {
             throw new ReglaNegocioException("El pedido " + proforma.getNoProforma() + " tiene un descuento mayor a lo "
@@ -292,6 +301,8 @@ public class PedidoServiceImpl implements IPedidoService {
             dto.setRepartidor(nombre(proforma.getRepartidor()));
         }
         dto.setCondicionPago(proforma.getCondicionPago());
+        dto.setCreditoAutorizacion(proforma.getCreditoAutorizacion());
+        dto.setExcesoCredito(proforma.getExcesoCredito());
         dto.setDiasCredito(proforma.getDiasCredito());
         dto.setObservaciones(proforma.getObservaciones());
         if (proforma.getItemsProforma() != null) {

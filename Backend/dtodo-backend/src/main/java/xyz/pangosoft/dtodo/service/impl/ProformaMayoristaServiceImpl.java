@@ -1,5 +1,8 @@
 package xyz.pangosoft.dtodo.service.impl;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +19,9 @@ import xyz.pangosoft.dtodo.model.enums.TipoDescuentoEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoProformaEnum;
 import xyz.pangosoft.dtodo.repository.IClienteRepository;
 import xyz.pangosoft.dtodo.service.IAmbitoVendedorService;
+import xyz.pangosoft.dtodo.repository.IProformaRepository;
 import xyz.pangosoft.dtodo.service.IProformaMayoristaService;
+import xyz.pangosoft.dtodo.service.ISaldoClienteService;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +32,8 @@ public class ProformaMayoristaServiceImpl implements IProformaMayoristaService {
 
     private final IClienteRepository clienteRepository;
     private final IAmbitoVendedorService ambito;
+    private final ISaldoClienteService saldoService;
+    private final IProformaRepository proformaRepository;
 
     /** Sobre este porcentaje la proforma mayorista pide autorización de un administrador. */
     @Value("${dtodo.mayorista.descuento-maximo:15}")
@@ -45,6 +52,51 @@ public class ProformaMayoristaServiceImpl implements IProformaMayoristaService {
                         && linea.getTipoDescuento() != TipoDescuentoEnum.PRECIO_MAYORISTA
                         && linea.getDescuento() != null && linea.getDescuento() > descuentoMaximo);
         proforma.setEstadoAutorizacion(requiere ? EstadoAutorizacionEnum.PENDIENTE : null);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public void evaluarCredito(Proforma proforma) {
+        proforma.setCreditoAutorizacion(null);
+        proforma.setExcesoCredito(null);
+        if (proforma.getTipoProforma() != TipoProformaEnum.MAYORISTA || proforma.getCondicionPago() != CondicionPagoEnum.CREDITO
+                || proforma.getCliente() == null || proforma.getCliente().getIdCliente() == null) {
+            return;
+        }
+        Cliente cliente = clienteRepository.findById(proforma.getCliente().getIdCliente()).orElse(null);
+        if (cliente == null || cliente.getLimiteCredito() == null) {
+            return;
+        }
+        BigDecimal exposicion = saldoService.exposicionDeCredito(cliente.getIdCliente(), proforma.getIdProforma())
+                .add(totalDe(proforma));
+        BigDecimal exceso = exposicion.subtract(cliente.getLimiteCredito()).setScale(2, RoundingMode.HALF_UP);
+        if (exceso.signum() <= 0) {
+            return;
+        }
+        Proforma previa = proforma.getIdProforma() == null ? null : proformaRepository.findById(proforma.getIdProforma()).orElse(null);
+        if (previa != null && previa.getCreditoAutorizacion() == EstadoAutorizacionEnum.APROBADA
+                && previa.getExcesoCredito() != null && exceso.compareTo(previa.getExcesoCredito()) <= 0) {
+            proforma.setCreditoAutorizacion(EstadoAutorizacionEnum.APROBADA);
+            proforma.setExcesoCredito(previa.getExcesoCredito());
+            return;
+        }
+        proforma.setCreditoAutorizacion(EstadoAutorizacionEnum.PENDIENTE);
+        proforma.setExcesoCredito(exceso);
+    }
+
+    /** El total del pedido según sus líneas (con descuento); si alguna no lo trae, el total de la proforma. */
+    static BigDecimal totalDe(Proforma proforma) {
+        BigDecimal suma = BigDecimal.ZERO;
+        if (proforma.getItemsProforma() != null && !proforma.getItemsProforma().isEmpty()) {
+            for (DetalleProforma linea : proforma.getItemsProforma()) {
+                if (linea == null || linea.getSubTotalDescuento() == null) {
+                    return proforma.getTotal() == null ? BigDecimal.ZERO : proforma.getTotal();
+                }
+                suma = suma.add(linea.getSubTotalDescuento());
+            }
+            return suma;
+        }
+        return proforma.getTotal() == null ? BigDecimal.ZERO : proforma.getTotal();
     }
 
     @Transactional(readOnly = true)

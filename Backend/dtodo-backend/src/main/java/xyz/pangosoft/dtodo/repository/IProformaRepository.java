@@ -68,6 +68,17 @@ public interface IProformaRepository extends JpaRepository<Proforma, Long> {
     List<AutorizacionProformaDto> findPorAutorizar(
             @Param("estado") xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum estado);
 
+    /** Pedidos a crédito que pasan del límite del cliente y esperan que un administrador los autorice, los más antiguos primero. */
+    @Query("select new xyz.pangosoft.dtodo.dto.AutorizacionProformaDto(" +
+            "p.idProforma, p.noProforma, p.fechaEmision, p.total, c.nombre, rt.nombre, " +
+            "trim(concat(coalesce(us.primerNombre, ''), ' ', coalesce(us.apellido, ''))), p.fechaVencimiento, " +
+            "(select max(i.descuento) from Proforma p2 join p2.itemsProforma i where p2.idProforma = p.idProforma), " +
+            "'CREDITO', p.excesoCredito, c.limiteCredito) " +
+            "from Proforma p join p.cliente c join p.usuario us left join p.ruta rt " +
+            "where p.creditoAutorizacion = :estado order by p.fechaEmision")
+    List<AutorizacionProformaDto> findCreditoPorAutorizar(
+            @Param("estado") xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum estado);
+
     /** Proformas mayoristas vencidas que todavía no se facturan ni tienen el vencimiento autorizado. */
     @Query(SELECT_AUTORIZACION + "'VENCIDA') from Proforma p join p.cliente c join p.usuario us left join p.ruta rt " +
             "where p.tipoProforma = :tipo and p.fechaVencimiento < :hoy and p.vencimientoAutorizado = false " +

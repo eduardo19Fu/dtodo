@@ -28,6 +28,9 @@ describe('AutorizacionesComponent', () => {
     servicio = {
       pendientes: jasmine.createSpy('pendientes').and.returnValue(of([dto()])),
       vencidas: jasmine.createSpy('vencidas').and.returnValue(of([dto({ idProforma: 8, tipo: 'VENCIDA' })])),
+      credito: jasmine.createSpy('credito').and.returnValue(of([dto({ idProforma: 9, tipo: 'CREDITO', excesoCredito: 250, limiteCredito: 1000 })])),
+      aprobarCredito: jasmine.createSpy('aprobarCredito').and.returnValue(of({})),
+      rechazarCredito: jasmine.createSpy('rechazarCredito').and.returnValue(of({})),
       aprobar: jasmine.createSpy('aprobar').and.returnValue(of({})),
       rechazar: jasmine.createSpy('rechazar').and.returnValue(of({})),
       autorizarVencida: jasmine.createSpy('autorizarVencida').and.returnValue(of({}))
@@ -40,7 +43,8 @@ describe('AutorizacionesComponent', () => {
 
     expect(component.pendientes.length).toBe(1);
     expect(component.vencidas.length).toBe(1);
-    expect(component.total).toBe(2);
+    expect(component.credito.length).toBe(1);
+    expect(component.total).toBe(3);
     expect(component.cargando).toBeFalse();
     expect(component.errorCarga).toBeFalse();
   });
@@ -111,5 +115,18 @@ describe('AutorizacionesComponent', () => {
 
     expect(component.diasVencida(dto({ fechaVencimiento: fecha }))).toBe(3);
     expect(component.diasVencida(dto({ fechaVencimiento: null }))).toBe(0);
+  });
+
+  it('autorizar el crédito pide el motivo y rechazarlo también', async () => {
+    confirmarConMotivo('  buen pagador ');
+    component.cargar();
+
+    component.aprobarCredito(dto({ idProforma: 9, tipo: 'CREDITO' }));
+    await esperar();
+    expect(servicio.aprobarCredito).toHaveBeenCalledWith(9, 'buen pagador');
+
+    component.rechazarCredito(dto({ idProforma: 9, tipo: 'CREDITO' }));
+    await esperar();
+    expect(servicio.rechazarCredito).toHaveBeenCalledWith(9, 'buen pagador');
   });
 });

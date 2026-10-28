@@ -60,6 +60,30 @@ public class AutorizacionProformaApiController {
     }
 
     @Secured(value = { "ROLE_ADMIN" })
+    @GetMapping("/credito")
+    public ResponseEntity<List<AutorizacionProformaDto>> credito() {
+        return ResponseEntity.ok(autorizacionService.credito());
+    }
+
+    @Secured(value = { "ROLE_ADMIN" })
+    @PostMapping("/{idProforma}/aprobar-credito")
+    public ResponseEntity<Map<String, Object>> aprobarCredito(@PathVariable("idProforma") Long idProforma,
+            @RequestBody Map<String, String> cuerpo) {
+        log.info("Autorizando el crédito del pedido {}", idProforma);
+        autorizacionService.aprobarCredito(idProforma, cuerpo.get("motivo"));
+        return ResponseEntity.ok(respuesta("El crédito del pedido fue autorizado."));
+    }
+
+    @Secured(value = { "ROLE_ADMIN" })
+    @PostMapping("/{idProforma}/rechazar-credito")
+    public ResponseEntity<Map<String, Object>> rechazarCredito(@PathVariable("idProforma") Long idProforma,
+            @RequestBody Map<String, String> cuerpo) {
+        log.info("Rechazando el crédito del pedido {}", idProforma);
+        autorizacionService.rechazarCredito(idProforma, cuerpo.get("motivo"));
+        return ResponseEntity.ok(respuesta("El crédito del pedido fue rechazado."));
+    }
+
+    @Secured(value = { "ROLE_ADMIN" })
     @PostMapping("/{idProforma}/autorizar-vencida")
     public ResponseEntity<Map<String, Object>> autorizarVencida(@PathVariable("idProforma") Long idProforma,
             @RequestBody Map<String, String> cuerpo) {

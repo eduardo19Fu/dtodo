@@ -22,6 +22,13 @@ public interface IProformaMayoristaService {
      */
     void evaluarAutorizacion(Proforma proforma);
 
+    /**
+     * Un pedido a crédito que, sumado a lo que el cliente ya debe y a sus otros pedidos a crédito por entregar, pasa de su
+     * límite queda {@code PENDIENTE} de autorización. Si ya estaba aprobado y la edición no pasa del exceso aprobado, conserva
+     * la aprobación. Lo demás queda sin autorización de crédito. Se llama después de calcular las líneas.
+     */
+    void evaluarCredito(Proforma proforma);
+
     /** Tope de descuento (en %) sobre el que se pide autorización. */
     double descuentoMaximo();
 }

@@ -30,6 +30,8 @@ public class PedidoDetalleDto {
     private EstadoPedidoEnum estadoPedido;
     private EstadoAutorizacionEnum estadoAutorizacion;
     private CondicionPagoEnum condicionPago;
+    private EstadoAutorizacionEnum creditoAutorizacion;
+    private java.math.BigDecimal excesoCredito;
     private Integer diasCredito;
     private Integer idRepartidor;
     private String repartidor;

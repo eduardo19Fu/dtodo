@@ -73,6 +73,64 @@
 
 <div class="card listing-card">
   <div class="card-header listing-card-header">
+    Pedidos que pasan del límite de crédito <span class="contador">{{credito.length}}</span>
+  </div>
+  <div class="card-body">
+    <p class="nota">
+      Un pedido a crédito pasa del límite cuando, sumado a lo que el cliente ya debe y a sus otros pedidos a crédito por entregar,
+      supera su límite. No se prepara, entrega ni factura hasta que un administrador lo autorice.
+    </p>
+    <div *ngIf="!cargando && credito.length === 0" class="estado-vacio">
+      <i class="fas fa-check-circle" aria-hidden="true"></i> No hay pedidos pendientes por crédito.
+    </div>
+
+    <div *ngIf="credito.length > 0" class="table-responsive">
+      <table class="table table-sm autorizaciones-table">
+        <thead>
+          <tr>
+            <th>No. proforma</th>
+            <th>Cliente / ruta</th>
+            <th>Vendedor</th>
+            <th class="text-right">Total</th>
+            <th class="text-right">Límite</th>
+            <th class="text-right">Pasa por</th>
+            <th class="text-center">Decisión</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let proforma of credito">
+            <td data-label="No. proforma"><span class="listing-id-pill">#{{proforma.noProforma}}</span></td>
+            <td data-label="Cliente / ruta">
+              <strong>{{proforma.cliente}}</strong>
+              <small *ngIf="proforma.ruta" class="d-block text-muted">{{proforma.ruta}}</small>
+            </td>
+            <td data-label="Vendedor">{{proforma.vendedor}}</td>
+            <td data-label="Total" class="text-right">{{proforma.total | currency: 'Q' : 'symbol'}}</td>
+            <td data-label="Límite" class="text-right">{{proforma.limiteCredito | currency: 'Q' : 'symbol'}}</td>
+            <td data-label="Pasa por" class="text-right"><span class="descuento-alto">{{proforma.excesoCredito | currency: 'Q' : 'symbol'}}</span></td>
+            <td data-label="Decisión" class="text-center">
+              <div class="acciones">
+                <button type="button" class="btn btn-sm btn-success" (click)="aprobarCredito(proforma)"
+                  [disabled]="resolviendo === proforma.idProforma"
+                  [attr.aria-label]="'Autorizar el crédito del pedido ' + proforma.noProforma">
+                  <i class="fas fa-check" aria-hidden="true"></i> Autorizar
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger" (click)="rechazarCredito(proforma)"
+                  [disabled]="resolviendo === proforma.idProforma"
+                  [attr.aria-label]="'Rechazar el crédito del pedido ' + proforma.noProforma">
+                  <i class="fas fa-times" aria-hidden="true"></i> Rechazar
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="card listing-card">
+  <div class="card-header listing-card-header">
     Proformas vencidas sin facturar <span class="contador">{{vencidas.length}}</span>
   </div>
   <div class="card-body">

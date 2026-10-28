@@ -196,4 +196,64 @@ class AutorizacionProformaServiceImplTest {
         service.exigirSinFactura(proforma);
         service.exigirSinFactura(null);
     }
+
+    // ------------------------------------------------------------------------------------------ crédito
+
+    private Proforma conCredito(EstadoAutorizacionEnum estado) {
+        Proforma proforma = proforma(null);
+        proforma.setCreditoAutorizacion(estado);
+        proforma.setExcesoCredito(new java.math.BigDecimal("150.00"));
+        return proforma;
+    }
+
+    @Test
+    void autorizarElCreditoDejaConstanciaConSuMotivo() {
+        Proforma proforma = conCredito(EstadoAutorizacionEnum.PENDIENTE);
+
+        service.aprobarCredito(7L, "  cliente con buen historial ");
+
+        assertEquals(EstadoAutorizacionEnum.APROBADA, proforma.getCreditoAutorizacion());
+        verify(proformaRepository).save(proforma);
+        verify(auditoria).registrar(eq(7L), eq(AccionAuditoriaEnum.AUTORIZACION_CREDITO), eq("cliente con buen historial"), any());
+    }
+
+    @Test
+    void rechazarElCreditoYSoloSiEstaPendiente() {
+        Proforma proforma = conCredito(EstadoAutorizacionEnum.PENDIENTE);
+
+        service.rechazarCredito(7L, "muy atrasado");
+
+        assertEquals(EstadoAutorizacionEnum.RECHAZADA, proforma.getCreditoAutorizacion());
+        verify(auditoria).registrar(eq(7L), eq(AccionAuditoriaEnum.RECHAZO_CREDITO), eq("muy atrasado"), any());
+        assertThrows(ReglaNegocioException.class, () -> service.aprobarCredito(7L, "otra vez"));
+    }
+
+    @Test
+    void elCreditoPideMotivoYNoSeDecideEnUnPedidoSinCreditoPendiente() {
+        conCredito(EstadoAutorizacionEnum.PENDIENTE);
+        assertThrows(ReglaNegocioException.class, () -> service.aprobarCredito(7L, " "));
+
+        conCredito(null);
+        assertThrows(ReglaNegocioException.class, () -> service.aprobarCredito(7L, "motivo"));
+        verify(auditoria, never()).registrar(any(), eq(AccionAuditoriaEnum.AUTORIZACION_CREDITO), any(), any());
+    }
+
+    @Test
+    void conElCreditoPendienteORechazadoNoSeFactura() {
+        conCredito(EstadoAutorizacionEnum.PENDIENTE);
+        assertThrows(ReglaNegocioException.class, () -> service.exigirFacturable(7L));
+
+        conCredito(EstadoAutorizacionEnum.RECHAZADA);
+        assertThrows(ReglaNegocioException.class, () -> service.exigirFacturable(7L));
+
+        conCredito(EstadoAutorizacionEnum.APROBADA);
+        service.exigirFacturable(7L);
+    }
+
+    @Test
+    void laBandejaDeCreditoListaLosPendientes() {
+        service.credito();
+
+        verify(proformaRepository).findCreditoPorAutorizar(EstadoAutorizacionEnum.PENDIENTE);
+    }
 }

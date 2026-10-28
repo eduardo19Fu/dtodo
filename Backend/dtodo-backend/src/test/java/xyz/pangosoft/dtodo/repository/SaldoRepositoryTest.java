@@ -188,4 +188,27 @@ class SaldoRepositoryTest {
         assertEquals(1, lista.size());
         assertEquals("1P", lista.get(0).getNoProforma());
     }
+
+    @Test
+    void laBandejaDeCreditoTraeSoloLosPedidosPendientesConSuExcesoYElLimiteDelCliente() {
+        base();
+        cliente.setLimiteCredito(new BigDecimal("1000.00"));
+        em.merge(cliente);
+        Proforma pendiente = pedido("1P", cliente, activo, TipoProformaEnum.MAYORISTA, EstadoPedidoEnum.CONFIRMADA);
+        pendiente.setCreditoAutorizacion(xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum.PENDIENTE);
+        pendiente.setExcesoCredito(new BigDecimal("250.00"));
+        Proforma aprobada = pedido("2P", cliente, activo, TipoProformaEnum.MAYORISTA, EstadoPedidoEnum.CONFIRMADA);
+        aprobada.setCreditoAutorizacion(xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum.APROBADA);
+        pedido("3P", cliente, activo, TipoProformaEnum.MAYORISTA, EstadoPedidoEnum.CONFIRMADA);
+        em.flush();
+
+        List<xyz.pangosoft.dtodo.dto.AutorizacionProformaDto> lista =
+                proformaRepository.findCreditoPorAutorizar(xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum.PENDIENTE);
+
+        assertEquals(1, lista.size());
+        assertEquals("1P", lista.get(0).getNoProforma());
+        assertEquals("CREDITO", lista.get(0).getTipo());
+        assertEquals(0, new BigDecimal("250.00").compareTo(lista.get(0).getExcesoCredito()));
+        assertEquals(0, new BigDecimal("1000.00").compareTo(lista.get(0).getLimiteCredito()));
+    }
 }

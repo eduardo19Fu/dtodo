@@ -256,6 +256,11 @@ public class EntregaPedidoServiceImpl implements IEntregaPedidoService {
             throw new ReglaNegocioException("El descuento del pedido " + pedido.getNoProforma()
                     + " no está autorizado; no se puede entregar.");
         }
+        if (pedido.getCreditoAutorizacion() == EstadoAutorizacionEnum.PENDIENTE
+                || pedido.getCreditoAutorizacion() == EstadoAutorizacionEnum.RECHAZADA) {
+            throw new ReglaNegocioException("El crédito del pedido " + pedido.getNoProforma()
+                    + " no está autorizado; no se puede entregar.");
+        }
     }
 
     private Sucursal sucursalDelPedido(Proforma pedido) {

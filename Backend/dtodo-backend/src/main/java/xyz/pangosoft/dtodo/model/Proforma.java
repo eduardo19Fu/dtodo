@@ -93,6 +93,16 @@ public class Proforma implements Serializable {
     @Builder.Default
     private CondicionPagoEnum condicionPago = CondicionPagoEnum.CONTADO;
 
+    /**
+     * {@code null} si el pedido a crédito cabe en el límite del cliente. {@code PENDIENTE} (pasa del límite) o
+     * {@code RECHAZADA} impiden prepararlo, entregarlo y facturarlo. Lo calcula el servidor; lo que traiga la petición se ignora.
+     */
+    @Enumerated(EnumType.STRING)
+    private EstadoAutorizacionEnum creditoAutorizacion;
+
+    /** Cuánto pasaba del límite cuando se evaluó; una edición que no pase de ahí conserva la aprobación. */
+    private BigDecimal excesoCredito;
+
     /** Los días de crédito del cliente cuando se hizo el pedido a crédito; los días corren desde la entrega. */
     private Integer diasCredito;
 

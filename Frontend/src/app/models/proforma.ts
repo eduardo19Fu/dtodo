@@ -28,6 +28,10 @@ export class Proforma {
     fechaEntregaEstimada?: string | null;
     /** Contado o crédito. A crédito solo si el cliente tiene límite y días de crédito; el servidor lo valida. */
     condicionPago?: 'CONTADO' | 'CREDITO' = 'CONTADO';
+    /** PENDIENTE si el pedido a crédito pasa del límite del cliente (lo calcula el servidor); nulo si cabe. */
+    creditoAutorizacion?: EstadoAutorizacion | null;
+    /** Cuánto pasa del límite de crédito. */
+    excesoCredito?: number | null;
     /** Los días de crédito del cliente cuando se hizo el pedido a crédito. */
     diasCredito?: number | null;
     /** Lo calcula el servidor: PENDIENTE si una línea pasa del tope de descuento; nulo si no necesita autorización. */

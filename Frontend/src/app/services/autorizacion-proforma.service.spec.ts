@@ -27,6 +27,16 @@ describe('AutorizacionProformaService', () => {
     expect(http.expectOne(`${global.url}/autorizaciones/vencidas`).request.method).toBe('GET');
   });
 
+  it('consulta los pedidos por crédito y autoriza o rechaza enviando el motivo', () => {
+    service.credito().subscribe();
+    service.aprobarCredito(7, 'buen pagador').subscribe();
+    service.rechazarCredito(8, 'muy atrasado').subscribe();
+
+    expect(http.expectOne(`${global.url}/autorizaciones/credito`).request.method).toBe('GET');
+    expect(http.expectOne(`${global.url}/autorizaciones/7/aprobar-credito`).request.body).toEqual({ motivo: 'buen pagador' });
+    expect(http.expectOne(`${global.url}/autorizaciones/8/rechazar-credito`).request.body).toEqual({ motivo: 'muy atrasado' });
+  });
+
   it('aprueba, rechaza y autoriza la vencida enviando el motivo', () => {
     service.aprobar(7, 'cliente de volumen').subscribe();
     service.rechazar(8, 'margen insuficiente').subscribe();
