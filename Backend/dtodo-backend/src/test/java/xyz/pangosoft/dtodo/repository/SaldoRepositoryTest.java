@@ -318,4 +318,37 @@ class SaldoRepositoryTest {
         assertEquals(2, reciboRepository.findByProforma_IdProformaOrderByFechaRegistroAscIdReciboAsc(uno.getIdProforma()).size());
         assertEquals(1, reciboRepository.findByProforma_IdProformaOrderByFechaRegistroAscIdReciboAsc(dos.getIdProforma()).size());
     }
+
+    @Test
+    void losPedidosCompletadosDelPeriodoTraenLaUltimaEntregaVigenteDeLosQueTienenFechaEstimada() {
+        base();
+        Proforma aTiempo = pedido("1P", cliente, activo, TipoProformaEnum.MAYORISTA, EstadoPedidoEnum.ENTREGADA);
+        aTiempo.setFechaEntregaEstimada(LocalDate.of(2026, 10, 20));
+        Proforma enPartes = pedido("2P", cliente, activo, TipoProformaEnum.MAYORISTA, EstadoPedidoEnum.ENTREGADA);
+        enPartes.setFechaEntregaEstimada(LocalDate.of(2026, 10, 20));
+        Proforma sinFecha = pedido("3P", cliente, activo, TipoProformaEnum.MAYORISTA, EstadoPedidoEnum.ENTREGADA);
+        Proforma incompleto = pedido("4P", cliente, activo, TipoProformaEnum.MAYORISTA, EstadoPedidoEnum.ENTREGADA_PARCIAL);
+        incompleto.setFechaEntregaEstimada(LocalDate.of(2026, 10, 20));
+        Proforma deOtroMes = pedido("5P", cliente, activo, TipoProformaEnum.MAYORISTA, EstadoPedidoEnum.ENTREGADA);
+        deOtroMes.setFechaEntregaEstimada(LocalDate.of(2026, 11, 20));
+        em.flush();
+        entrega(aTiempo, 10, LocalDate.of(2026, 10, 18), false);
+        entrega(enPartes, 5, LocalDate.of(2026, 10, 10), false);
+        entrega(enPartes, 5, LocalDate.of(2026, 10, 25), false);
+        entrega(enPartes, 1, LocalDate.of(2026, 10, 30), true);     // anulada: no cuenta como la última
+        entrega(sinFecha, 10, LocalDate.of(2026, 10, 12), false);
+        entrega(incompleto, 5, LocalDate.of(2026, 10, 12), false);
+        entrega(deOtroMes, 10, LocalDate.of(2026, 11, 5), false);
+        em.flush();
+
+        List<Object[]> filas = entregaRepository.pedidosCompletadosDelPeriodo(LocalDate.of(2026, 10, 1), LocalDate.of(2026, 11, 1));
+
+        assertEquals(2, filas.size());
+        Object[] puntual = filas.stream().filter(f -> aTiempo.getIdProforma().equals(f[1])).findFirst().get();
+        assertEquals(ana.getIdUsuario(), puntual[0]);
+        assertEquals(LocalDate.of(2026, 10, 20), puntual[2]);
+        assertEquals(LocalDate.of(2026, 10, 18), puntual[3]);
+        Object[] tarde = filas.stream().filter(f -> enPartes.getIdProforma().equals(f[1])).findFirst().get();
+        assertEquals(LocalDate.of(2026, 10, 25), tarde[3]);
+    }
 }

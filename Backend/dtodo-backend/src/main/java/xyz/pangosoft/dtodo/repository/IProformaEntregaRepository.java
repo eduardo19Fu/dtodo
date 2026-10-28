@@ -62,6 +62,20 @@ public interface IProformaEntregaRepository extends JpaRepository<ProformaEntreg
             "and e.anulada = false and p.idProforma = :idProforma")
     List<Object[]> entregadoDelPedido(@Param("idProforma") Long idProforma);
 
+    /**
+     * Pedidos mayoristas entregados por completo que tienen fecha de entrega estimada y cuya última entrega vigente cayó en el
+     * período: vendedor, pedido, fecha estimada y fecha de la última entrega. Base del porcentaje de pedidos entregados a tiempo.
+     */
+    @Query("select p.usuario.idUsuario, p.idProforma, p.fechaEntregaEstimada, max(e.fechaEntrega) "
+            + "from Proforma p, ProformaEntrega e "
+            + "where e.idProforma = p.idProforma and e.anulada = false "
+            + "and p.tipoProforma = xyz.pangosoft.dtodo.model.enums.TipoProformaEnum.MAYORISTA "
+            + "and p.estadoPedido = xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum.ENTREGADA "
+            + "and p.estado.estado <> 'ANULADO' and p.fechaEntregaEstimada is not null "
+            + "group by p.usuario.idUsuario, p.idProforma, p.fechaEntregaEstimada "
+            + "having max(e.fechaEntrega) >= :desde and max(e.fechaEntrega) < :hasta")
+    List<Object[]> pedidosCompletadosDelPeriodo(@Param("desde") LocalDate desde, @Param("hasta") LocalDate hasta);
+
     /** Entregas de un pedido, de la más antigua a la más reciente (incluye las anuladas). */
     List<ProformaEntrega> findByIdProformaOrderByFechaRegistroAscIdEntregaAsc(Long idProforma);
 }

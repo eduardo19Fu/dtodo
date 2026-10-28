@@ -1,0 +1,134 @@
+/* Botones, avisos, tablas y píldoras son los compartidos de src/styles.css (listing-*). */
+.selector-mes { align-items: center; display: flex; gap: 0.6rem; justify-content: flex-end; }
+
+.mes-actual {
+  background: #fff;
+  border: 1px solid #d8e1ee;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(36, 62, 98, 0.06);
+  color: #172b47;
+  font-size: 1.05rem;
+  font-weight: 750;
+  min-width: 9.5rem;
+  padding: 0.35rem 0.9rem;
+  text-align: center;
+  text-transform: capitalize;
+}
+
+.indicadores-tarjetas {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  margin-bottom: 14px;
+  transition: opacity 0.2s ease;
+}
+
+.indicadores-tarjetas.cargando { opacity: 0.55; }
+
+.indicador {
+  background: linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
+  border: 1px solid #e1e8f1;
+  border-radius: 14px;
+  box-shadow: 0 5px 16px rgba(33, 61, 99, 0.07);
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 1rem 1.15rem 1.1rem;
+}
+
+.indicador > header {
+  color: #5d7088;
+  font-size: 0.74rem;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.indicador > header i { color: #1559ad; margin-right: 0.35rem; }
+
+.indicador-valor {
+  color: #172b47;
+  font-size: 1.9rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+
+.indicador-pie { font-size: 0.84rem; min-height: 1.6rem; }
+.texto-suave { color: #6b7c93; font-size: 0.82rem; }
+
+.indicador-desglose {
+  border-top: 1px dashed #d9e3ef;
+  display: flex;
+  gap: 1.4rem;
+  margin: 0;
+  padding-top: 0.6rem;
+}
+
+.indicador-desglose dt { color: #6b7c93; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; }
+.indicador-desglose dd { color: #24344d; font-size: 0.98rem; font-variant-numeric: tabular-nums; font-weight: 700; margin: 0; }
+
+.indicador-enlace { font-size: 0.84rem; font-weight: 650; margin-top: auto; }
+
+/* Aro de porcentaje: conic-gradient con el color del tono. */
+.indicador-aro { --aro-color: #6b7c93; align-items: center; text-align: center; }
+.indicador-aro > header { align-self: flex-start; }
+.indicador-aro.tono-bueno { --aro-color: #147a4b; }
+.indicador-aro.tono-regular { --aro-color: #d98a00; }
+.indicador-aro.tono-malo { --aro-color: #bd3434; }
+
+.aro {
+  align-items: center;
+  border-radius: 50%;
+  display: flex;
+  height: 132px;
+  justify-content: center;
+  width: 132px;
+}
+
+.aro-centro {
+  align-items: center;
+  background: #fff;
+  border-radius: 50%;
+  display: flex;
+  height: 100px;
+  justify-content: center;
+  width: 100px;
+}
+
+.aro-centro strong { color: var(--aro-color); font-size: 1.55rem; font-variant-numeric: tabular-nums; }
+
+th.columna-barra { min-width: 170px; }
+
+.barra-participacion {
+  background: #e6ecf4;
+  border-radius: 999px;
+  height: 20px;
+  overflow: hidden;
+  position: relative;
+}
+
+.barra-participacion > span {
+  background: linear-gradient(90deg, #5aa0f0, #1769d2);
+  border-radius: 999px;
+  display: block;
+  height: 100%;
+  min-width: 2px;
+  transition: width 0.4s ease;
+}
+
+.barra-participacion > em {
+  color: #172b47;
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 750;
+  left: 0;
+  line-height: 20px;
+  position: absolute;
+  right: 0;
+  text-align: center;
+  text-shadow: 0 0 3px #fff;
+}
+
+@media (max-width: 767.98px) {
+  .selector-mes { justify-content: flex-start; margin-top: 0.5rem; }
+}

@@ -1,0 +1,150 @@
+<section class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2 align-items-end">
+      <div class="col-sm-8">
+        <h1>{{title}}</h1>
+        <p class="listing-subtitle">
+          Ventas por vendedor, pedidos entregados a tiempo y cuentas por cobrar. Las ventas son lo entregado en el mes menos lo que los
+          clientes devolvieron en el mes.
+        </p>
+      </div>
+      <div class="col-sm-4">
+        <div class="selector-mes">
+          <button type="button" class="btn btn-sm listing-table-action listing-action-view" (click)="cambiarMes(-1)"
+            [disabled]="cargando || !puedeRetroceder" aria-label="Mes anterior" appTooltip="Mes anterior">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <span class="mes-actual">{{etiquetaMes}}</span>
+          <button type="button" class="btn btn-sm listing-table-action listing-action-view" (click)="cambiarMes(1)"
+            [disabled]="cargando || esMesActual" aria-label="Mes siguiente" appTooltip="Mes siguiente">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div *ngIf="errorCarga" class="listing-alert listing-alert-warning" role="alert">
+  <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+  <span class="listing-alert-text">No fue posible cargar los indicadores.</span>
+  <button type="button" class="btn listing-page-action listing-secondary-action listing-compact" (click)="cargar()">
+    <i class="fas fa-redo"></i> Reintentar
+  </button>
+</div>
+
+<div *ngIf="cargando && !datos" class="text-center p-4">
+  <div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div>
+</div>
+
+<ng-container *ngIf="datos">
+  <div class="indicadores-tarjetas" [class.cargando]="cargando">
+    <article class="indicador">
+      <header><i class="fas fa-hand-holding-usd" aria-hidden="true"></i> Ventas netas del mes</header>
+      <strong class="indicador-valor">{{datos.totalNeto | currency: 'Q' : 'symbol'}}</strong>
+      <div class="indicador-pie">
+        <span *ngIf="variacion !== null" class="listing-status-pill" [ngClass]="variacion >= 0 ? 'listing-status-success' : 'listing-status-danger'">
+          <i class="fas" [ngClass]="variacion >= 0 ? 'fa-arrow-up' : 'fa-arrow-down'" aria-hidden="true"></i>
+          {{variacion >= 0 ? '+' : ''}}{{variacion}} % vs. mes anterior
+        </span>
+        <span *ngIf="variacion === null" class="texto-suave">Sin ventas el mes anterior para comparar</span>
+      </div>
+      <dl class="indicador-desglose">
+        <div><dt>Entregado</dt><dd>{{datos.totalEntregado | currency: 'Q' : 'symbol'}}</dd></div>
+        <div><dt>Devuelto</dt><dd>{{datos.totalDevuelto | currency: 'Q' : 'symbol'}}</dd></div>
+      </dl>
+    </article>
+
+    <article class="indicador indicador-aro" [ngClass]="'tono-' + claseATiempo(datos.porcentajeATiempo)">
+      <header><i class="fas fa-stopwatch" aria-hidden="true"></i> Entregados a tiempo</header>
+      <div class="aro" [style.background]="aro(datos.porcentajeATiempo)">
+        <div class="aro-centro">
+          <strong *ngIf="datos.porcentajeATiempo !== null && datos.porcentajeATiempo !== undefined">{{datos.porcentajeATiempo}} %</strong>
+          <strong *ngIf="datos.porcentajeATiempo === null || datos.porcentajeATiempo === undefined">—</strong>
+        </div>
+      </div>
+      <div class="indicador-pie texto-suave">
+        <ng-container *ngIf="datos.pedidosConFecha > 0">{{datos.pedidosATiempo}} de {{datos.pedidosConFecha}} pedidos con fecha estimada</ng-container>
+        <ng-container *ngIf="datos.pedidosConFecha === 0">Ningún pedido con fecha estimada se completó este mes</ng-container>
+      </div>
+    </article>
+
+    <article class="indicador">
+      <header><i class="fas fa-file-invoice-dollar" aria-hidden="true"></i> Cuentas por cobrar (hoy)</header>
+      <strong class="indicador-valor">{{datos.cuentasPorCobrar.total | currency: 'Q' : 'symbol'}}</strong>
+      <div class="indicador-pie">
+        <span class="listing-status-pill" [ngClass]="datos.cuentasPorCobrar.clientesConVencido > 0 ? 'listing-status-danger' : 'listing-status-success'">
+          {{datos.cuentasPorCobrar.clientesConVencido > 0 ? datos.cuentasPorCobrar.clientesConVencido + ' con saldo vencido' : 'Sin saldo vencido'}}
+        </span>
+      </div>
+      <dl class="indicador-desglose">
+        <div><dt>Vencido</dt><dd class="text-danger">{{datos.cuentasPorCobrar.vencido | currency: 'Q' : 'symbol'}}</dd></div>
+        <div><dt>Por vencer</dt><dd>{{datos.cuentasPorCobrar.porVencer | currency: 'Q' : 'symbol'}}</dd></div>
+      </dl>
+      <a [routerLink]="['/cobranza/index']" class="indicador-enlace">Ver la cobranza <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+    </article>
+  </div>
+
+  <div class="card listing-card">
+    <div class="card-header listing-card-header">Ventas por vendedor · {{etiquetaMes}}</div>
+    <div class="card-body">
+      <div *ngIf="!hayVentas" class="listing-empty-state">
+        <span class="listing-empty-icon" aria-hidden="true"><i class="fas fa-chart-bar"></i></span>
+        <div class="listing-empty-state-body">
+          <h5>No hubo entregas ni devoluciones este mes</h5>
+          <p>Las ventas cuentan lo entregado a clientes mayoristas por su fecha real de entrega.</p>
+        </div>
+      </div>
+
+      <div class="table-responsive" *ngIf="datos.vendedores.length > 0">
+        <table class="table table-hover table-striped table-bordered table-sm listing-data-table">
+          <thead>
+            <tr>
+              <th>Vendedor</th>
+              <th class="text-right">Entregado</th>
+              <th class="text-right">Devuelto</th>
+              <th class="text-right">Ventas netas</th>
+              <th class="columna-barra">Participación</th>
+              <th class="text-center">Entregados a tiempo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let vendedor of datos.vendedores; trackBy: trackVendedor">
+              <td data-label="Vendedor"><strong>{{vendedor.vendedor}}</strong></td>
+              <td data-label="Entregado" class="text-money">{{vendedor.entregado | currency: 'Q' : 'symbol'}}</td>
+              <td data-label="Devuelto" class="text-money">{{vendedor.devuelto | currency: 'Q' : 'symbol'}}</td>
+              <td data-label="Ventas netas" class="text-money"><strong>{{vendedor.neto | currency: 'Q' : 'symbol'}}</strong></td>
+              <td data-label="Participación">
+                <div class="barra-participacion" [attr.aria-label]="vendedor.participacion + ' % de las ventas'">
+                  <span [style.width.%]="vendedor.participacion > 100 ? 100 : (vendedor.participacion < 0 ? 0 : vendedor.participacion)"></span>
+                  <em>{{vendedor.participacion}} %</em>
+                </div>
+              </td>
+              <td data-label="Entregados a tiempo" class="text-center">
+                <span *ngIf="vendedor.pedidosConFecha > 0" class="listing-status-pill"
+                  [ngClass]="vendedor.porcentajeATiempo >= 90 ? 'listing-status-success' : vendedor.porcentajeATiempo >= 70 ? 'listing-status-warning' : 'listing-status-danger'">
+                  {{vendedor.porcentajeATiempo}} % · {{vendedor.pedidosATiempo}}/{{vendedor.pedidosConFecha}}
+                </span>
+                <span *ngIf="vendedor.pedidosConFecha === 0" class="texto-suave">—</span>
+              </td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td>Total</td>
+              <td class="text-money">{{datos.totalEntregado | currency: 'Q' : 'symbol'}}</td>
+              <td class="text-money">{{datos.totalDevuelto | currency: 'Q' : 'symbol'}}</td>
+              <td class="text-money">{{datos.totalNeto | currency: 'Q' : 'symbol'}}</td>
+              <td></td>
+              <td class="text-center">{{datos.pedidosConFecha > 0 ? datos.pedidosATiempo + '/' + datos.pedidosConFecha : '—'}}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <p class="listing-note mt-2 mb-0">
+        A tiempo: pedidos entregados por completo cuya última entrega fue en o antes de la fecha estimada de la proforma; los pedidos sin
+        fecha estimada no cuentan.
+      </p>
+    </div>
+  </div>
+</ng-container>

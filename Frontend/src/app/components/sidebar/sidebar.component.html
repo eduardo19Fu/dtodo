@@ -126,7 +126,13 @@
             [class.active]="router.url.startsWith('/bodegas')" (click)="notificarNavegacion()"><span></span>Listado</a>
           <a *ngIf="coincide('despachos', 'despachos de bodega')" [routerLink]="['/despachos-bodega/index']" class="submenu-link"
             [class.active]="router.url.startsWith('/despachos-bodega')" (click)="notificarNavegacion()"><span></span>Despachos</a>
-          <a *ngIf="coincide('devoluciones', 'devoluciones a bodega', 'tienda')" [routerLink]="['/devoluciones-bodega/index']" class="submenu-link"
+          <a *ngIf="coincide('indicadores', 'kpi', 'ventas', 'vendedores', 'a tiempo') && authService.hasRole('ROLE_ADMIN')" [routerLink]="['/indicadores/index']"
+        class="menu-link" [class.active]="router.url.startsWith('/indicadores')" (click)="notificarNavegacion()" title="Indicadores">
+        <span class="menu-icon"><i class="fas fa-chart-line" aria-hidden="true"></i></span>
+        <span class="menu-label">Indicadores</span>
+      </a>
+
+      <a *ngIf="coincide('devoluciones', 'devoluciones a bodega', 'tienda')" [routerLink]="['/devoluciones-bodega/index']" class="submenu-link"
             [class.active]="router.url.startsWith('/devoluciones-bodega')" (click)="notificarNavegacion()"><span></span>Devoluciones<span class="new-badge">Nuevo</span></a>
           <a *ngIf="coincide('tutorial', 'manual', 'ayuda')" href="assets/manual/manual-bodegas.html" target="_blank" rel="noopener"
             class="submenu-link" (click)="notificarNavegacion()" title="Manual de usuario de bodegas y despachos (se abre en una pestaña nueva)">

@@ -6,6 +6,18 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Tablero de indicadores (Fase 5, paso 3)
+
+Cierra la Fase 5 y el plan de clientes mayoristas. Sin script SQL; solo el administrador.
+
+- **Ventas del mes por vendedor**: lo entregado a clientes mayoristas en el mes (por la fecha real de entrega, a precio de línea con descuento) **menos lo que los clientes devolvieron en el mes**, con la participación de cada vendedor en las ventas netas y la comparación con el mes anterior. Aparecen los vendedores activos aunque no hayan vendido y quien vendió sin seguir activo.
+- **Pedidos entregados a tiempo**: de los pedidos entregados por completo cuya **última entrega vigente** cayó en el mes y que tenían fecha de entrega estimada, el porcentaje cuya última entrega fue en o antes de esa fecha (el mismo día cuenta a tiempo). Los pedidos sin fecha estimada no cuentan; una entrega anulada no cuenta como la última. Se muestra en total y por vendedor.
+- **Cuentas por cobrar**: el saldo por cobrar de hoy (total, por vencer, vencido y cuántos clientes lo tienen vencido), con enlace a la cobranza.
+- **API**: `GET /api/indicadores?anio&mes` (el mes actual si no se indican), solo `ROLE_ADMIN`; acepta de enero de 2020 al mes actual.
+- **Pantalla** *Indicadores* (menú lateral): selector de mes, tres tarjetas (ventas netas con su variación, aro de porcentaje a tiempo con tono verde desde 90 %, ámbar desde 70 % y rojo por debajo, y cuentas por cobrar) y la tabla por vendedor con barra de participación.
+- **Pruebas**: `IndicadoresServiceImplTest` (ventas netas, orden, participación, mes anterior, a tiempo en el borde y por vendedor, redondeo, validación de meses), la consulta de pedidos completados contra H2 (última entrega vigente, sin fecha estimada, parciales, otro mes), la matriz de roles y los specs de la pantalla y el servicio.
+- **Pendiente**: las comisiones todavía se calculan sobre lo entregado sin restar devoluciones, a diferencia de estas ventas netas.
+
 ### Agregado — Historial del pedido: línea de tiempo (Fase 5, paso 2)
 
 En el detalle de cada pedido, el botón **Ver el historial completo** muestra quién creó, editó, autorizó, preparó, empacó, cargó, entregó, devolvió y facturó, y cuándo, de lo más antiguo a lo más reciente. Sin script SQL.

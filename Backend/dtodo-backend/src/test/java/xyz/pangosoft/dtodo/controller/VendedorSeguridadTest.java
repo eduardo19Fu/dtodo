@@ -151,6 +151,13 @@ class VendedorSeguridadTest {
     }
 
     @Test
+    void losIndicadoresSonSoloDelAdministrador() {
+        niegaAlVendedor(IndicadoresApiController.class, "indicadores");
+        assertTrue(roles(IndicadoresApiController.class, "indicadores").equals(Arrays.asList("ROLE_ADMIN")),
+                "Los indicadores son solo del administrador");
+    }
+
+    @Test
     void laCobranzaEsDelAdministradorYElCobrador() {
         String[] metodos = { "cuentasPorCobrar", "reporteCuentasPorCobrar", "estadoDeCuenta" };
         niegaAlVendedor(CobranzaApiController.class, metodos);
@@ -211,7 +218,7 @@ class VendedorSeguridadTest {
     void elRepartidorNoLlegaANingunOtroControlador() throws Exception {
         for (Class<?> controlador : new Class<?>[] { ProformaApiController.class, FacturaApiController.class, ClienteApiController.class,
                 ProductoApiController.class, RutaApiController.class, DescuentoApiController.class,
-                AutorizacionProformaApiController.class, ReporteMayoristasApiController.class, ComisionApiController.class, ReciboCajaApiController.class, SaldoApiController.class, CobranzaApiController.class, DevolucionClienteApiController.class, HistorialPedidoApiController.class }) {
+                AutorizacionProformaApiController.class, ReporteMayoristasApiController.class, ComisionApiController.class, ReciboCajaApiController.class, SaldoApiController.class, CobranzaApiController.class, DevolucionClienteApiController.class, HistorialPedidoApiController.class, IndicadoresApiController.class }) {
             for (Method metodo : controlador.getDeclaredMethods()) {
                 Secured secured = metodo.getAnnotation(Secured.class);
                 if (secured != null) {
