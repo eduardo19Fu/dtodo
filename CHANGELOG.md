@@ -6,6 +6,13 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Cambiado — Menú lateral: opciones mayoristas agrupadas
+- Nuevo grupo **Mayoristas** (Rutas, Descuentos, Autorizaciones, Comisiones, Indicadores), solo administrador.
+- Nuevo grupo **Cuentas por cobrar** (Cobranza, Recibos de caja, Devoluciones de clientes): administrador y cobrador; Devoluciones solo administrador.
+- **Pedidos** queda suelto porque lo usan a diario el vendedor, la bodega y el repartidor.
+- Indicadores estaba escrito dentro del submenú de Bodegas con la clase de ítem principal; ahora vive en Mayoristas.
+- Los grupos se abren solos según la ruta activa y el buscador los muestra con sus opciones. Solo frontend.
+
 ### Agregado — Anular una devolución de cliente
 
 El administrador puede anular una devolución registrada, con motivo obligatorio. La devolución se conserva (quién, cuándo y por qué) y deja de contar.

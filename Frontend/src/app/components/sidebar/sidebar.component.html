@@ -126,13 +126,7 @@
             [class.active]="router.url.startsWith('/bodegas')" (click)="notificarNavegacion()"><span></span>Listado</a>
           <a *ngIf="coincide('despachos', 'despachos de bodega')" [routerLink]="['/despachos-bodega/index']" class="submenu-link"
             [class.active]="router.url.startsWith('/despachos-bodega')" (click)="notificarNavegacion()"><span></span>Despachos</a>
-          <a *ngIf="coincide('indicadores', 'kpi', 'ventas', 'vendedores', 'a tiempo') && authService.hasRole('ROLE_ADMIN')" [routerLink]="['/indicadores/index']"
-        class="menu-link" [class.active]="router.url.startsWith('/indicadores')" (click)="notificarNavegacion()" title="Indicadores">
-        <span class="menu-icon"><i class="fas fa-chart-line" aria-hidden="true"></i></span>
-        <span class="menu-label">Indicadores</span>
-      </a>
-
-      <a *ngIf="coincide('devoluciones', 'devoluciones a bodega', 'tienda')" [routerLink]="['/devoluciones-bodega/index']" class="submenu-link"
+          <a *ngIf="coincide('devoluciones', 'devoluciones a bodega', 'tienda')" [routerLink]="['/devoluciones-bodega/index']" class="submenu-link"
             [class.active]="router.url.startsWith('/devoluciones-bodega')" (click)="notificarNavegacion()"><span></span>Devoluciones<span class="new-badge">Nuevo</span></a>
           <a *ngIf="coincide('tutorial', 'manual', 'ayuda')" href="assets/manual/manual-bodegas.html" target="_blank" rel="noopener"
             class="submenu-link" (click)="notificarNavegacion()" title="Manual de usuario de bodegas y despachos (se abre en una pestaña nueva)">
@@ -152,47 +146,47 @@
         <span class="menu-label">Pedidos</span>
       </a>
 
-      <a *ngIf="coincide('rutas', 'mayoristas', 'vendedor') && authService.hasRole('ROLE_ADMIN')" [routerLink]="['/rutas/index']"
-        class="menu-link" [class.active]="router.url.startsWith('/rutas')" (click)="notificarNavegacion()" title="Rutas">
-        <span class="menu-icon"><i class="fas fa-route" aria-hidden="true"></i></span>
-        <span class="menu-label">Rutas</span>
-      </a>
+      <section class="menu-group" *ngIf="mostrarGrupo('mayoristas') && authService.hasRole('ROLE_ADMIN')"
+        [class.is-open]="menuAbierto('mayoristas')"
+        [class.is-active]="router.url.startsWith('/rutas') || router.url.startsWith('/descuentos') || router.url.startsWith('/autorizaciones') || router.url.startsWith('/comisiones') || router.url.startsWith('/indicadores')">
+        <button type="button" class="menu-link group-trigger" (click)="alternarMenu('mayoristas')"
+          [attr.aria-expanded]="menuAbierto('mayoristas')" title="Mayoristas">
+          <span class="menu-icon"><i class="fas fa-route" aria-hidden="true"></i></span>
+          <span class="menu-label">Mayoristas</span>
+          <i class="fas fa-chevron-down menu-chevron" aria-hidden="true"></i>
+        </button>
+        <div class="submenu" *ngIf="menuAbierto('mayoristas')">
+          <a *ngIf="coincide('rutas', 'mayoristas', 'vendedor')" [routerLink]="['/rutas/index']" class="submenu-link"
+            [class.active]="router.url.startsWith('/rutas')" (click)="notificarNavegacion()"><span></span>Rutas</a>
+          <a *ngIf="coincide('descuentos', 'mayoristas', 'precio mayorista')" [routerLink]="['/descuentos/index']" class="submenu-link"
+            [class.active]="router.url.startsWith('/descuentos')" (click)="notificarNavegacion()"><span></span>Descuentos</a>
+          <a *ngIf="coincide('autorizaciones', 'descuentos', 'mayoristas', 'proformas por autorizar', 'crédito', 'credito')" [routerLink]="['/autorizaciones/index']" class="submenu-link"
+            [class.active]="router.url.startsWith('/autorizaciones')" (click)="notificarNavegacion()"><span></span>Autorizaciones</a>
+          <a *ngIf="coincide('comisiones', 'vendedores', 'metas', 'mayoristas')" [routerLink]="['/comisiones/index']" class="submenu-link"
+            [class.active]="router.url.startsWith('/comisiones')" (click)="notificarNavegacion()"><span></span>Comisiones</a>
+          <a *ngIf="coincide('indicadores', 'kpi', 'ventas', 'vendedores', 'a tiempo', 'mayoristas')" [routerLink]="['/indicadores/index']" class="submenu-link"
+            [class.active]="router.url.startsWith('/indicadores')" (click)="notificarNavegacion()"><span></span>Indicadores</a>
+        </div>
+      </section>
 
-      <a *ngIf="coincide('autorizaciones', 'descuentos', 'mayoristas', 'proformas por autorizar') && authService.hasRole('ROLE_ADMIN')" [routerLink]="['/autorizaciones/index']"
-        class="menu-link" [class.active]="router.url.startsWith('/autorizaciones')" (click)="notificarNavegacion()" title="Autorizaciones">
-        <span class="menu-icon"><i class="fas fa-user-check" aria-hidden="true"></i></span>
-        <span class="menu-label">Autorizaciones</span>
-      </a>
-
-      <a *ngIf="coincide('devoluciones', 'clientes', 'devolver', 'merma') && authService.hasRole('ROLE_ADMIN')" [routerLink]="['/devoluciones-cliente/index']"
-        class="menu-link" [class.active]="router.url.startsWith('/devoluciones-cliente')" (click)="notificarNavegacion()" title="Devoluciones de clientes">
-        <span class="menu-icon"><i class="fas fa-undo-alt" aria-hidden="true"></i></span>
-        <span class="menu-label">Devoluciones de clientes</span>
-      </a>
-
-      <a *ngIf="coincide('cobranza', 'cuentas por cobrar', 'saldos', 'vencidos', 'estado de cuenta') && (authService.hasRole('ROLE_ADMIN') || authService.hasRole('ROLE_COBRADOR'))" [routerLink]="['/cobranza/index']"
-        class="menu-link" [class.active]="router.url.startsWith('/cobranza')" (click)="notificarNavegacion()" title="Cobranza">
-        <span class="menu-icon"><i class="fas fa-file-invoice-dollar" aria-hidden="true"></i></span>
-        <span class="menu-label">Cobranza</span>
-      </a>
-
-      <a *ngIf="coincide('recibos', 'caja', 'abonos', 'depositos', 'cobros') && (authService.hasRole('ROLE_ADMIN') || authService.hasRole('ROLE_COBRADOR'))" [routerLink]="['/recibos/index']"
-        class="menu-link" [class.active]="router.url.startsWith('/recibos')" (click)="notificarNavegacion()" title="Recibos de caja">
-        <span class="menu-icon"><i class="fas fa-receipt" aria-hidden="true"></i></span>
-        <span class="menu-label">Recibos de caja</span>
-      </a>
-
-      <a *ngIf="coincide('comisiones', 'vendedores', 'metas', 'mayoristas') && authService.hasRole('ROLE_ADMIN')" [routerLink]="['/comisiones/index']"
-        class="menu-link" [class.active]="router.url.startsWith('/comisiones')" (click)="notificarNavegacion()" title="Comisiones">
-        <span class="menu-icon"><i class="fas fa-hand-holding-usd" aria-hidden="true"></i></span>
-        <span class="menu-label">Comisiones</span>
-      </a>
-
-      <a *ngIf="coincide('descuentos', 'mayoristas', 'precio mayorista') && authService.hasRole('ROLE_ADMIN')" [routerLink]="['/descuentos/index']"
-        class="menu-link" [class.active]="router.url.startsWith('/descuentos')" (click)="notificarNavegacion()" title="Descuentos">
-        <span class="menu-icon"><i class="fas fa-tags" aria-hidden="true"></i></span>
-        <span class="menu-label">Descuentos</span>
-      </a>
+      <section class="menu-group" *ngIf="mostrarGrupo('cobros') && (authService.hasRole('ROLE_ADMIN') || authService.hasRole('ROLE_COBRADOR'))"
+        [class.is-open]="menuAbierto('cobros')"
+        [class.is-active]="router.url.startsWith('/cobranza') || router.url.startsWith('/recibos') || router.url.startsWith('/devoluciones-cliente')">
+        <button type="button" class="menu-link group-trigger" (click)="alternarMenu('cobros')"
+          [attr.aria-expanded]="menuAbierto('cobros')" title="Cuentas por cobrar">
+          <span class="menu-icon"><i class="fas fa-file-invoice-dollar" aria-hidden="true"></i></span>
+          <span class="menu-label">Cuentas por cobrar</span>
+          <i class="fas fa-chevron-down menu-chevron" aria-hidden="true"></i>
+        </button>
+        <div class="submenu" *ngIf="menuAbierto('cobros')">
+          <a *ngIf="coincide('cobranza', 'cuentas por cobrar', 'saldos', 'vencidos', 'estado de cuenta')" [routerLink]="['/cobranza/index']" class="submenu-link"
+            [class.active]="router.url.startsWith('/cobranza')" (click)="notificarNavegacion()"><span></span>Cobranza</a>
+          <a *ngIf="coincide('recibos', 'recibos de caja', 'caja', 'abonos', 'depositos', 'cobros', 'cuentas por cobrar')" [routerLink]="['/recibos/index']" class="submenu-link"
+            [class.active]="router.url.startsWith('/recibos')" (click)="notificarNavegacion()"><span></span>Recibos de caja</a>
+          <a *ngIf="coincide('devoluciones', 'devoluciones de clientes', 'devolver', 'merma', 'cuentas por cobrar') && authService.hasRole('ROLE_ADMIN')" [routerLink]="['/devoluciones-cliente/index']" class="submenu-link"
+            [class.active]="router.url.startsWith('/devoluciones-cliente')" (click)="notificarNavegacion()"><span></span>Devoluciones de clientes</a>
+        </div>
+      </section>
 
       <a *ngIf="coincide('reportes', 'informes', 'análisis', 'analisis') && (authService.hasRole('ROLE_ADMIN') || authService.hasRole('ROLE_INVENTARIO') || authService.hasRole('ROLE_BODEGA'))"
         [routerLink]="['/reportes']" class="menu-link" [class.active]="router.url.startsWith('/reportes')"

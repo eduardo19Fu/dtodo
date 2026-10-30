@@ -1,3 +1,4 @@
+import { NavigationEnd } from '@angular/router';
 import { Subject } from 'rxjs';
 
 import { Usuario } from '../../models/usuario';
@@ -58,6 +59,55 @@ describe('SidebarComponent', () => {
       expect(component.mostrarGrupo('bodegas')).toBeTrue();
       expect(component.mostrarGrupo('facturas')).toBeFalse();
     });
+  });
+
+  it('abre el grupo Mayoristas o Cuentas por cobrar según la ruta activa y deja cerrado el otro', () => {
+    router.url = '/autorizaciones/index';
+    routerEvents.next(new NavigationEnd(1, '/autorizaciones/index', '/autorizaciones/index'));
+    expect(component.mayoristasAbierto).toBeTrue();
+    expect(component.cobrosAbierto).toBeFalse();
+
+    routerEvents.next(new NavigationEnd(2, '/devoluciones-cliente/index', '/devoluciones-cliente/index'));
+    expect(component.mayoristasAbierto).toBeFalse();
+    expect(component.cobrosAbierto).toBeTrue();
+
+    routerEvents.next(new NavigationEnd(3, '/pedidos/index', '/pedidos/index'));
+    expect(component.mayoristasAbierto).toBeFalse();
+    expect(component.cobrosAbierto).toBeFalse();
+  });
+
+  it('abre y cierra los grupos nuevos con alternarMenu', () => {
+    component.alternarMenu('mayoristas');
+    component.alternarMenu('cobros');
+    expect(component.menuAbierto('mayoristas')).toBeTrue();
+    expect(component.menuAbierto('cobros')).toBeTrue();
+
+    component.alternarMenu('mayoristas');
+    expect(component.menuAbierto('mayoristas')).toBeFalse();
+    expect(component.menuAbierto('cobros')).toBeTrue();
+  });
+
+  it('el buscador encuentra cada opción dentro de su grupo y no en los demás', () => {
+    const casos: Array<[string, string]> = [
+      ['indicadores', 'mayoristas'], ['comisiones', 'mayoristas'], ['rutas', 'mayoristas'],
+      ['autorizaciones', 'mayoristas'], ['descuentos', 'mayoristas'],
+      ['cobranza', 'cobros'], ['recibos', 'cobros'], ['devoluciones de clientes', 'cobros']
+    ];
+    casos.forEach(([termino, grupo]) => {
+      component.filtro = termino;
+      expect(component.mostrarGrupo(grupo as any)).withContext(termino).toBeTrue();
+      expect(component.menuAbierto(grupo as any)).withContext(termino).toBeTrue();
+      expect(component.mostrarGrupo(grupo === 'cobros' ? 'mayoristas' : 'cobros')).withContext(termino).toBeFalse();
+    });
+  });
+
+  it('buscar por el nombre del grupo muestra el grupo completo', () => {
+    component.filtro = 'mayoristas';
+    expect(component.mostrarGrupo('mayoristas')).toBeTrue();
+
+    component.filtro = 'cuentas por cobrar';
+    expect(component.mostrarGrupo('cobros')).toBeTrue();
+    expect(component.mostrarGrupo('mayoristas')).toBeFalse();
   });
 
   it('cierra la sesión mediante el servicio y navega al login', () => {

@@ -6,7 +6,7 @@ import { filter } from 'rxjs/operators';
 import { Usuario } from '../../models/usuario';
 import { AuthService } from '../../services/auth.service';
 
-type MenuDesplegable = 'productos' | 'facturas' | 'compras' | 'bodegas';
+type MenuDesplegable = 'productos' | 'facturas' | 'compras' | 'bodegas' | 'mayoristas' | 'cobros';
 
 @Component({
   selector: 'app-sidebar',
@@ -24,6 +24,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
   facturasAbierto = false;
   comprasAbierto = false;
   bodegasAbierto = false;
+  mayoristasAbierto = false;
+  cobrosAbierto = false;
 
   private routerSubscription: Subscription;
 
@@ -63,6 +65,14 @@ export class SidebarComponent implements OnInit, OnDestroy {
       this.bodegasAbierto = !this.bodegasAbierto;
       return;
     }
+    if (menu === 'mayoristas') {
+      this.mayoristasAbierto = !this.mayoristasAbierto;
+      return;
+    }
+    if (menu === 'cobros') {
+      this.cobrosAbierto = !this.cobrosAbierto;
+      return;
+    }
     this.comprasAbierto = !this.comprasAbierto;
   }
 
@@ -75,6 +85,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
     }
     if (menu === 'bodegas') {
       return this.bodegasAbierto;
+    }
+    if (menu === 'mayoristas') {
+      return this.mayoristasAbierto;
+    }
+    if (menu === 'cobros') {
+      return this.cobrosAbierto;
     }
     return menu === 'facturas' ? this.facturasAbierto : this.comprasAbierto;
   }
@@ -89,6 +105,16 @@ export class SidebarComponent implements OnInit, OnDestroy {
     if (menu === 'bodegas') {
       return this.coincide('bodegas', 'inventario', 'despachos', 'despachos de bodega', 'devoluciones', 'tienda',
         'tutorial', 'manual', 'ayuda');
+    }
+    if (menu === 'mayoristas') {
+      return this.coincide('mayoristas', 'rutas', 'vendedor', 'descuentos', 'precio mayorista', 'autorizaciones',
+        'proformas por autorizar', 'crédito', 'credito', 'comisiones', 'metas', 'indicadores', 'kpi', 'ventas',
+        'vendedores', 'a tiempo');
+    }
+    if (menu === 'cobros') {
+      return this.coincide('cuentas por cobrar', 'cobranza', 'saldos', 'vencidos', 'estado de cuenta', 'recibos',
+        'recibos de caja', 'caja', 'abonos', 'depositos', 'cobros', 'devoluciones', 'devoluciones de clientes',
+        'devolver', 'merma');
     }
     return this.coincide('compras', 'registrar compra', 'proveedores');
   }
@@ -122,6 +148,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
       this.facturasAbierto = url.startsWith('/facturas');
       this.comprasAbierto = url.startsWith('/compras') || url.startsWith('/proveedores');
       this.bodegasAbierto = url.startsWith('/bodegas') || url.startsWith('/despachos-bodega') || url.startsWith('/devoluciones-bodega');
+      this.mayoristasAbierto = ['/rutas', '/descuentos', '/autorizaciones', '/comisiones', '/indicadores']
+        .some(ruta => url.startsWith(ruta));
+      this.cobrosAbierto = ['/cobranza', '/recibos', '/devoluciones-cliente'].some(ruta => url.startsWith(ruta));
     }
   }
 }
