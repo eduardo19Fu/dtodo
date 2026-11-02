@@ -1,4 +1,4 @@
-import { Component, EventEmitter, HostListener, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import Swal from 'sweetalert2';
@@ -16,6 +16,8 @@ import { ClienteService } from '../../../../services/cliente.service';
 })
 export class ModalBuscarClienteComponent implements OnInit, OnDestroy {
 
+  /** Si se indica (por ejemplo MAYORISTA), solo se listan clientes de ese tipo; vacío lista todos. */
+  @Input() tipoCliente = '';
   @Output() cliente = new EventEmitter<Cliente>();
   @Output() cerrar = new EventEmitter<void>();
 
@@ -64,7 +66,7 @@ export class ModalBuscarClienteComponent implements OnInit, OnDestroy {
 
   cargarClientes(page: number): void {
     this.cargando = true;
-    this.clienteService.getListado(page, this.pageSize, this.filtro, this.orden, this.direccion).subscribe(
+    this.clienteService.getListado(page, this.pageSize, this.filtro, this.orden, this.direccion, this.tipoCliente || undefined).subscribe(
       response => {
         this.clientes = response.content || [];
         this.paginaActual = response.number;

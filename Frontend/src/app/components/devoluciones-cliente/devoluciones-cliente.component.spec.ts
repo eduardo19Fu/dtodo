@@ -1,4 +1,3 @@
-import { fakeAsync, tick } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 
 import { ClienteDto } from '../../dtos/cliente-dto';
@@ -8,7 +7,6 @@ import Swal from 'sweetalert2';
 
 describe('DevolucionesClienteComponent', () => {
   let devoluciones: any;
-  let clientes: any;
   let sucursales: any;
   let component: DevolucionesClienteComponent;
 
@@ -48,9 +46,8 @@ describe('DevolucionesClienteComponent', () => {
       registrar: jasmine.createSpy('registrar').and.returnValue(of(devolucion())),
       anular: jasmine.createSpy('anular').and.returnValue(of(devolucion()))
     };
-    clientes = { getListado: jasmine.createSpy('getListado').and.returnValue(of({ content: [cliente()] })) };
     sucursales = { getSucursales: jasmine.createSpy('getSucursales').and.returnValue(of([{ idSucursal: 1, nombre: 'Central' }])) };
-    component = new DevolucionesClienteComponent(devoluciones, clientes, sucursales);
+    component = new DevolucionesClienteComponent(devoluciones, sucursales);
   });
 
   function abrirConPedido(): void {
@@ -64,7 +61,6 @@ describe('DevolucionesClienteComponent', () => {
 
     expect(component.devoluciones.length).toBe(1);
     expect(sucursales.getSucursales).toHaveBeenCalled();
-    component.ngOnDestroy();
   });
 
   it('avisa si no pudo cargar la lista', () => {
@@ -77,18 +73,38 @@ describe('DevolucionesClienteComponent', () => {
     expect(Swal.fire).toHaveBeenCalledWith('No se pudo cargar la lista', 'Error del servidor', 'error');
   });
 
-  it('busca solo clientes mayoristas con pausa y desde dos letras', fakeAsync(() => {
-    component.ngOnInit();
+  it('el directorio de clientes se abre al buscar y se cierra al elegir; elegir trae los pedidos', () => {
+    component.abrirModalCliente();
+    expect(component.modalClienteVisible).toBeTrue();
 
-    component.onBuscarCliente('l');
-    tick(300);
-    expect(clientes.getListado).not.toHaveBeenCalled();
+    component.elegirCliente(cliente());
 
-    component.onBuscarCliente('libre');
-    tick(300);
-    expect(clientes.getListado).toHaveBeenCalledWith(0, 8, 'libre', 'nombre', 'asc', 'MAYORISTA');
-    component.ngOnDestroy();
-  }));
+    expect(component.modalClienteVisible).toBeFalse();
+    expect(component.clienteElegido.nombre).toBe('Libreria Uno');
+    expect(devoluciones.pedidosDevolubles).toHaveBeenCalledWith(5);
+    expect(component.pedidos.length).toBe(1);
+  });
+
+  it('no abre el directorio mientras registra', () => {
+    component.registrando = true;
+
+    component.abrirModalCliente();
+
+    expect(component.modalClienteVisible).toBeFalse();
+  });
+
+  it('quitar el cliente borra sus pedidos y lo capturado de ellos', () => {
+    abrirConPedido();
+    component.cantidades[1] = 3;
+
+    component.quitarCliente();
+
+    expect(component.clienteElegido).toBeNull();
+    expect(component.pedidos.length).toBe(0);
+    expect(component.pedido).toBeNull();
+    expect(component.cantidades).toEqual({});
+    expect(component.faltante).toBe('Elige el cliente.');
+  });
 
   it('al elegir el cliente trae sus pedidos y al elegir el pedido parte de cero con la sucursal del pedido', () => {
     abrirConPedido();

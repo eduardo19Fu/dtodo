@@ -1,13 +1,11 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Subject, Subscription } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 
 import { ClienteDto } from '../../dtos/cliente-dto';
 import {
   CrearDevolucionClienteDto, DestinoDevolucion, DevolucionClienteDto, PedidoDevolubleDto
 } from '../../dtos/devolucion-cliente-dto';
+import { Cliente } from '../../models/cliente';
 import { Sucursal } from '../../models/sucursal';
-import { ClienteService } from '../../services/cliente.service';
 import { DevolucionClienteService } from '../../services/devolucion-cliente.service';
 import { SucursalService } from '../../services/sucursal.service';
 
@@ -21,9 +19,12 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-devoluciones-cliente',
   templateUrl: './devoluciones-cliente.component.html',
-  styleUrls: ['./devoluciones-cliente.component.css', '../shared/management-page.css']
+  styleUrls: [
+    '../productos/create-producto/create-producto.component.css', './devoluciones-cliente.component.css',
+    '../shared/management-page.css', './devoluciones-cliente-create.component.css'
+  ]
 })
-export class DevolucionesClienteComponent implements OnInit, OnDestroy {
+export class DevolucionesClienteComponent implements OnInit {
 
   title = 'Devoluciones de clientes';
   readonly destinos: Array<{ valor: DestinoDevolucion; etiqueta: string }> = [
@@ -33,9 +34,9 @@ export class DevolucionesClienteComponent implements OnInit, OnDestroy {
 
   // ---- formulario
   formularioAbierto = false;
-  busquedaCliente = '';
-  clientesEncontrados: ClienteDto[] = [];
-  clienteElegido: ClienteDto = null;
+  modalClienteVisible = false;
+  @ViewChild('buscarClienteButton') buscarClienteButton: ElementRef<HTMLButtonElement>;
+  clienteElegido: ClienteDto | Cliente = null;
   pedidos: PedidoDevolubleDto[] = [];
   cargandoPedidos = false;
   idProformaElegida: number = null;
@@ -63,27 +64,15 @@ export class DevolucionesClienteComponent implements OnInit, OnDestroy {
   /** Devolución con el detalle abierto. */
   abierta: DevolucionClienteDto = null;
 
-  private clienteSubject = new Subject<string>();
-  private clienteSubscription: Subscription;
-
   constructor(
     private devolucionService: DevolucionClienteService,
-    private clienteService: ClienteService,
     private sucursalService: SucursalService
   ) { }
 
   ngOnInit(): void {
     this.fecha = this.hoy();
-    this.clienteSubscription = this.clienteSubject.pipe(debounceTime(300), distinctUntilChanged())
-      .subscribe(texto => this.buscarClientes(texto));
     this.sucursalService.getSucursales().subscribe(lista => this.sucursales = lista, () => this.sucursales = []);
     this.cargar(0);
-  }
-
-  ngOnDestroy(): void {
-    if (this.clienteSubscription) {
-      this.clienteSubscription.unsubscribe();
-    }
   }
 
   private hoy(): string {
@@ -150,8 +139,7 @@ export class DevolucionesClienteComponent implements OnInit, OnDestroy {
   }
 
   private limpiarFormulario(): void {
-    this.busquedaCliente = '';
-    this.clientesEncontrados = [];
+    this.modalClienteVisible = false;
     this.clienteElegido = null;
     this.pedidos = [];
     this.limpiarPedido();
@@ -167,29 +155,32 @@ export class DevolucionesClienteComponent implements OnInit, OnDestroy {
     this.idNotaCredito = null;
   }
 
-  onBuscarCliente(texto: string): void {
-    this.busquedaCliente = texto;
+  /** Abre el directorio de clientes mayoristas para elegir a quien devuelve. */
+  abrirModalCliente(): void {
+    if (!this.registrando) {
+      this.modalClienteVisible = true;
+    }
+  }
+
+  cerrarModalCliente(): void {
+    this.modalClienteVisible = false;
+    if (this.buscarClienteButton) {
+      this.buscarClienteButton.nativeElement.focus();
+    }
+  }
+
+  /** Quita el cliente elegido, con sus pedidos y lo que se haya capturado de ellos, para elegir a otro. */
+  quitarCliente(): void {
     this.clienteElegido = null;
     this.pedidos = [];
     this.limpiarPedido();
-    this.clienteSubject.next((texto || '').trim());
   }
 
-  private buscarClientes(texto: string): void {
-    if (texto.length < 2) {
-      this.clientesEncontrados = [];
-      return;
+  elegirCliente(cliente: ClienteDto | Cliente): void {
+    if (this.modalClienteVisible) {
+      this.cerrarModalCliente();
     }
-    this.clienteService.getListado(0, 8, texto, 'nombre', 'asc', 'MAYORISTA').subscribe(
-      respuesta => this.clientesEncontrados = respuesta.content,
-      () => this.clientesEncontrados = []
-    );
-  }
-
-  elegirCliente(cliente: ClienteDto): void {
     this.clienteElegido = cliente;
-    this.busquedaCliente = cliente.nombre;
-    this.clientesEncontrados = [];
     this.pedidos = [];
     this.limpiarPedido();
     this.cargandoPedidos = true;

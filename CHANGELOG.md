@@ -6,6 +6,11 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Cambiado — Devoluciones de clientes: formulario con la estructura de los demás
+- El formulario de creación usa la misma estructura que Productos, Rutas y Recibos: encabezado de página, tarjeta con banner y secciones numeradas (Cliente y pedido, Productos devueltos, Datos de la devolución). Las dos últimas aparecen al elegir el pedido.
+- El cliente se elige en el directorio de clientes (lupa o Enter), solo mayoristas, en lugar de escribirlo. El modal de búsqueda acepta un `tipoCliente` opcional; sin él se comporta igual que antes.
+- Mientras se registra una devolución se oculta la lista de devoluciones registradas; reaparece al registrar o cancelar.
+
 ### Cambiado — Recibos de caja: búsqueda de cliente, cheque y formulario más limpio
 - El campo de cliente se presenta como búsqueda (icono, "Buscar cliente", indicador de búsqueda en curso) y avisa cuando no encuentra a nadie; un botón permite quitar el cliente elegido y buscar a otro.
 - Nueva forma de pago **Cheque**: pide el número de cheque como referencia, sale en el recibo impreso y en el estado de cuenta. No requiere script SQL (`forma_pago` es VARCHAR).

@@ -1,144 +1,216 @@
-<header class="management-header">
+<app-modal-buscar-cliente *ngIf="modalClienteVisible" tipoCliente="MAYORISTA" (cliente)="elegirCliente($event)"
+  (cerrar)="cerrarModalCliente()"></app-modal-buscar-cliente>
+
+<header class="management-header" *ngIf="!formularioAbierto">
   <div class="management-heading">
     <h1>{{title}}</h1>
     <p>Registra productos devueltos y su ajuste en el saldo del cliente.</p>
   </div>
-  <div class="listing-actions"><button type="button" class="btn listing-page-action listing-primary-action" (click)="abrirFormulario()"
-      *ngIf="!formularioAbierto"><i class="fas fa-plus" aria-hidden="true"></i> Nueva devolución</button></div>
+  <div class="listing-actions">
+    <button type="button" class="btn listing-page-action listing-primary-action" (click)="abrirFormulario()">
+      <i class="fas fa-plus" aria-hidden="true"></i> Nueva devolución
+    </button>
+  </div>
 </header>
 
-<div class="card listing-card" *ngIf="formularioAbierto">
-  <div class="card-header listing-card-header"><i class="fas fa-undo-alt" aria-hidden="true"></i>Nueva devolución</div>
-  <div class="card-body">
-    <div class="listing-panel">
-      <div class="listing-fields-grid">
-        <div class="listing-field buscador listing-span-2">
-          <label for="clienteDevolucion">Cliente <span class="requerido">*</span></label>
-          <input type="text" id="clienteDevolucion" class="form-control" autocomplete="off" [value]="busquedaCliente"
-            (input)="onBuscarCliente($event.target.value)" placeholder="Nombre, NIT, teléfono o código del cliente mayorista">
-          <ul class="list-group resultados" *ngIf="clientesEncontrados.length > 0">
-            <li class="list-group-item" *ngFor="let cliente of clientesEncontrados">
-              <button type="button" class="customer-option" (click)="elegirCliente(cliente)">
-              <strong>{{cliente.nombre}}</strong>
-              <small class="d-block text-muted">
-                <span *ngIf="cliente.nombreNegocio">{{cliente.nombreNegocio}} · </span>NIT {{cliente.nit || '—'}}
-              </small>
+<div class="return-form-page" *ngIf="formularioAbierto">
+  <header class="page-heading">
+    <div>
+      <span class="page-eyebrow">Devoluciones de clientes</span>
+      <h1>Registrar nueva devolución</h1>
+      <p>Elige al cliente y el pedido, e indica qué producto devuelve y qué se hace con él.</p>
+    </div>
+    <div class="heading-icon" aria-hidden="true"><i class="fas fa-undo-alt"></i></div>
+  </header>
+
+  <form class="product-card" (ngSubmit)="registrar()">
+    <div class="card-hero">
+      <div class="hero-icon" aria-hidden="true"><i class="fas fa-dolly-flatbed"></i></div>
+      <div>
+        <h2>Nueva devolución</h2>
+        <p>Los campos marcados con <span aria-hidden="true">*</span> son obligatorios.</p>
+      </div>
+      <span class="status-pill"><i class="fas fa-circle" aria-hidden="true"></i> Nuevo registro</span>
+    </div>
+
+    <div class="form-content">
+      <section class="form-section return-client-section" [class.last-section]="!pedido" aria-labelledby="devolucion-cliente-title">
+        <div class="section-heading">
+          <span class="section-number">01</span>
+          <div>
+            <h3 id="devolucion-cliente-title">Cliente y pedido</h3>
+            <p>Identifica al cliente mayorista y el pedido del que devuelve.</p>
+          </div>
+        </div>
+
+        <div class="form-grid return-fields-grid">
+          <div class="field-group">
+            <label for="clienteDevolucion">Buscar cliente <span class="required-mark">*</span></label>
+            <div class="return-client-picker" [class.is-elegido]="clienteElegido" [class.has-client]="clienteElegido">
+              <div class="control-with-icon return-client-value">
+                <i class="fas fa-id-card" aria-hidden="true"></i>
+                <input type="text" id="clienteDevolucion" class="form-control" [value]="clienteElegido?.nombre || ''"
+                  readonly placeholder="Selecciona un cliente" (click)="abrirModalCliente()" [disabled]="registrando"
+                  (keydown.enter)="$event.preventDefault(); abrirModalCliente()" aria-haspopup="dialog">
+              </div>
+              <button #buscarClienteButton type="button" class="return-search-client" (click)="abrirModalCliente()"
+                [disabled]="registrando" aria-haspopup="dialog" [attr.aria-label]="clienteElegido ? 'Cambiar cliente' : 'Buscar cliente'">
+                <i class="fas fa-search" aria-hidden="true"></i>
               </button>
-            </li>
-          </ul>
-          <small class="text-success" *ngIf="clienteElegido"><i class="fas fa-check-circle" aria-hidden="true"></i> Cliente elegido</small>
+              <button type="button" class="return-remove-client" *ngIf="clienteElegido" (click)="quitarCliente()"
+                [disabled]="registrando" aria-label="Quitar cliente seleccionado">
+                <i class="fas fa-times" aria-hidden="true"></i>
+              </button>
+            </div>
+            <small *ngIf="!clienteElegido">Presiona Enter o utiliza la lupa para buscar en el directorio de clientes mayoristas.</small>
+            <small *ngIf="clienteElegido">
+              <span *ngIf="clienteElegido.nombreNegocio">{{clienteElegido.nombreNegocio}} · </span>
+              NIT {{clienteElegido.nit || '—'}}
+            </small>
+          </div>
+
+          <div class="field-group" *ngIf="clienteElegido">
+            <label for="pedidoDevolucion">Pedido <span class="required-mark">*</span></label>
+            <div class="control-with-icon">
+              <i class="fas fa-file-invoice" aria-hidden="true"></i>
+              <select id="pedidoDevolucion" class="form-control" [ngModel]="idProformaElegida" (ngModelChange)="elegirPedido($event)"
+                name="pedido" [disabled]="cargandoPedidos">
+                <option [ngValue]="null" disabled>{{cargandoPedidos ? 'Cargando pedidos...' : pedidos.length === 0 ? 'Este cliente no tiene pedidos con entregas' : 'Elige el pedido'}}</option>
+                <option *ngFor="let pedido of pedidos" [ngValue]="pedido.idProforma">
+                  Pedido {{pedido.noProforma}}<ng-container *ngIf="pedido.facturado"> · facturado</ng-container>
+                </option>
+              </select>
+            </div>
+          </div>
         </div>
 
-        <div class="listing-field listing-span-2" *ngIf="clienteElegido">
-          <label for="pedidoDevolucion">Pedido <span class="requerido">*</span></label>
-          <select id="pedidoDevolucion" class="form-control" [ngModel]="idProformaElegida" (ngModelChange)="elegirPedido($event)"
-            name="pedido" [disabled]="cargandoPedidos">
-            <option [ngValue]="null" disabled>{{cargandoPedidos ? 'Cargando pedidos...' : pedidos.length === 0 ? 'Este cliente no tiene pedidos con entregas' : 'Elige el pedido'}}</option>
-            <option *ngFor="let pedido of pedidos" [ngValue]="pedido.idProforma">
-              Pedido {{pedido.noProforma}}<ng-container *ngIf="pedido.facturado"> · facturado</ng-container>
-            </option>
-          </select>
+        <div class="listing-alert listing-alert-info return-invoice-note" *ngIf="pedido?.facturado" role="status">
+          <i class="fas fa-file-invoice" aria-hidden="true"></i>
+          <span class="listing-alert-text">
+            El pedido tiene la factura <strong>{{pedido.noFactura}}</strong>: la devolución debe ligarse a una nota de crédito.
+          </span>
         </div>
-      </div>
-    </div>
+      </section>
 
-    <ng-container *ngIf="pedido">
-      <div class="listing-alert listing-alert-info" *ngIf="pedido.facturado" role="status">
-        <i class="fas fa-file-invoice" aria-hidden="true"></i>
-        <span class="listing-alert-text">
-          El pedido tiene la factura <strong>{{pedido.noFactura}}</strong>: la devolución debe ligarse a una nota de crédito.
-        </span>
-      </div>
+      <ng-container *ngIf="pedido">
+        <section class="form-section" aria-labelledby="devolucion-productos-title">
+          <div class="section-heading">
+            <span class="section-number">02</span>
+            <div>
+              <h3 id="devolucion-productos-title">Productos devueltos</h3>
+              <p>Indica la cantidad de cada producto y si reingresa al inventario o se da de baja.</p>
+            </div>
+          </div>
 
-      <div class="table-responsive">
-        <table class="table table-hover table-striped table-bordered table-sm listing-data-table">
-          <thead>
-            <tr>
-              <th scope="col">Producto</th>
-              <th scope="col" class="text-right">Entregado</th>
-              <th scope="col" class="text-right">Ya devuelto</th>
-              <th scope="col" class="text-right">Se puede devolver</th>
-              <th scope="col" class="text-center">Devuelve</th>
-              <th scope="col">Destino</th>
-              <th scope="col" class="text-right">Valor</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let linea of pedido.lineas" [class.is-muted]="linea.devolvible === 0">
-              <td data-label="Producto">
-                <strong>{{linea.producto}}</strong>
-                <small class="d-block text-muted" *ngIf="linea.codigo">{{linea.codigo}}</small>
-              </td>
-              <td data-label="Entregado" class="text-money">{{linea.entregada | number}}</td>
-              <td data-label="Ya devuelto" class="text-money">{{linea.devuelta | number}}</td>
-              <td data-label="Se puede devolver" class="text-money">{{linea.devolvible | number}}</td>
-              <td data-label="Devuelve" class="text-center">
-                <input type="number" min="0" step="1" [max]="linea.devolvible" class="form-control cantidad-devolucion"
-                  [(ngModel)]="cantidades[linea.idDetalle]" [name]="'cantidad-' + linea.idDetalle" [disabled]="linea.devolvible === 0"
-                  placeholder="0" [attr.aria-label]="'Cantidad que devuelve de ' + linea.producto">
-              </td>
-              <td data-label="Destino">
-                <select class="form-control destino-devolucion" [(ngModel)]="destinoDe[linea.idDetalle]" [name]="'destino-' + linea.idDetalle"
-                  [disabled]="linea.devolvible === 0" [attr.aria-label]="'Destino de ' + linea.producto">
-                  <option *ngFor="let destino of destinos" [value]="destino.valor">{{destino.etiqueta}}</option>
+          <div class="table-responsive">
+            <table class="table table-hover table-striped table-bordered table-sm listing-data-table">
+              <thead>
+                <tr>
+                  <th scope="col">Producto</th>
+                  <th scope="col" class="text-right">Entregado</th>
+                  <th scope="col" class="text-right">Ya devuelto</th>
+                  <th scope="col" class="text-right">Se puede devolver</th>
+                  <th scope="col" class="text-center">Devuelve</th>
+                  <th scope="col">Destino</th>
+                  <th scope="col" class="text-right">Valor</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let linea of pedido.lineas" [class.is-muted]="linea.devolvible === 0">
+                  <td data-label="Producto">
+                    <strong>{{linea.producto}}</strong>
+                    <small class="d-block text-muted" *ngIf="linea.codigo">{{linea.codigo}}</small>
+                  </td>
+                  <td data-label="Entregado" class="text-money">{{linea.entregada | number}}</td>
+                  <td data-label="Ya devuelto" class="text-money">{{linea.devuelta | number}}</td>
+                  <td data-label="Se puede devolver" class="text-money">{{linea.devolvible | number}}</td>
+                  <td data-label="Devuelve" class="text-center">
+                    <input type="number" min="0" step="1" [max]="linea.devolvible" class="form-control cantidad-devolucion"
+                      [(ngModel)]="cantidades[linea.idDetalle]" [name]="'cantidad-' + linea.idDetalle" [disabled]="linea.devolvible === 0"
+                      placeholder="0" [attr.aria-label]="'Cantidad que devuelve de ' + linea.producto">
+                  </td>
+                  <td data-label="Destino">
+                    <select class="form-control destino-devolucion" [(ngModel)]="destinoDe[linea.idDetalle]" [name]="'destino-' + linea.idDetalle"
+                      [disabled]="linea.devolvible === 0" [attr.aria-label]="'Destino de ' + linea.producto">
+                      <option *ngFor="let destino of destinos" [value]="destino.valor">{{destino.etiqueta}}</option>
+                    </select>
+                  </td>
+                  <td data-label="Valor" class="text-money">{{valorDeLinea(linea) | currency: 'Q' : 'symbol'}}</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="6">Valor devuelto (baja lo que debe el cliente)</td>
+                  <td data-label="Valor devuelto" class="text-money">{{total | currency: 'Q' : 'symbol'}}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </section>
+
+        <section class="form-section last-section" aria-labelledby="devolucion-datos-title">
+          <div class="section-heading">
+            <span class="section-number">03</span>
+            <div>
+              <h3 id="devolucion-datos-title">Datos de la devolución</h3>
+              <p>Fecha, sucursal que recibe, nota de crédito si el pedido está facturado, y el motivo.</p>
+            </div>
+          </div>
+
+          <div class="form-grid return-fields-grid">
+            <div class="row listing-date-range listing-date-single return-date-field">
+              <app-date-range-picker apariencia="campo" modo="fecha" [(fecha)]="fecha"
+                etiquetaFecha="Fecha de la devolución" tema="notas"></app-date-range-picker>
+            </div>
+            <div class="field-group" *ngIf="algunaReingresa">
+              <label for="sucursalDevolucion">Sucursal que recibe <span class="required-mark">*</span></label>
+              <div class="control-with-icon">
+                <i class="fas fa-store" aria-hidden="true"></i>
+                <select id="sucursalDevolucion" class="form-control" [(ngModel)]="idSucursal" name="sucursal">
+                  <option [ngValue]="null" disabled>Elige la sucursal</option>
+                  <option *ngFor="let sucursal of sucursales" [ngValue]="sucursal.idSucursal">{{sucursal.nombre}}</option>
                 </select>
-              </td>
-              <td data-label="Valor" class="text-money">{{valorDeLinea(linea) | currency: 'Q' : 'symbol'}}</td>
-            </tr>
-          </tbody>
-          <tfoot>
-            <tr>
-              <td colspan="6">Valor devuelto (baja lo que debe el cliente)</td>
-              <td data-label="Valor devuelto" class="text-money">{{total | currency: 'Q' : 'symbol'}}</td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-
-      <div class="listing-panel mt-3">
-        <div class="listing-fields-grid">
-          <div class="row listing-date-range listing-date-single">
-            <app-date-range-picker apariencia="campo" modo="fecha" [(fecha)]="fecha" etiquetaFecha="Fecha de la devolución" tema="notas"></app-date-range-picker>
+              </div>
+            </div>
+            <div class="field-group" *ngIf="pedido.facturado">
+              <label for="notaDevolucion">Nota de crédito <span class="required-mark">*</span></label>
+              <div class="control-with-icon">
+                <i class="fas fa-credit-card" aria-hidden="true"></i>
+                <select id="notaDevolucion" class="form-control" [(ngModel)]="idNotaCredito" name="nota">
+                  <option [ngValue]="null" disabled>{{pedido.notasCredito.length === 0 ? 'No hay notas de crédito del pedido' : 'Elige la nota'}}</option>
+                  <option *ngFor="let nota of pedido.notasCredito" [ngValue]="nota.idNotaCredito">
+                    {{nota.descripcion}} · {{nota.total | currency: 'Q' : 'symbol'}}
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div class="field-group return-span-all">
+              <label for="motivoDevolucion">Motivo <span class="required-mark">*</span></label>
+              <div class="control-with-icon return-textarea">
+                <i class="far fa-comment-alt" aria-hidden="true"></i>
+                <textarea id="motivoDevolucion" class="form-control" rows="3" maxlength="500" [(ngModel)]="motivo" name="motivo"
+                  placeholder="Por qué devuelve el cliente"></textarea>
+              </div>
+              <small>{{motivo.length}}/500</small>
+            </div>
           </div>
-          <div class="listing-field" *ngIf="algunaReingresa">
-            <label for="sucursalDevolucion">Sucursal que recibe <span class="requerido">*</span></label>
-            <select id="sucursalDevolucion" class="form-control" [(ngModel)]="idSucursal" name="sucursal">
-              <option [ngValue]="null" disabled>Elige la sucursal</option>
-              <option *ngFor="let sucursal of sucursales" [ngValue]="sucursal.idSucursal">{{sucursal.nombre}}</option>
-            </select>
-          </div>
-          <div class="listing-field" *ngIf="pedido.facturado">
-            <label for="notaDevolucion">Nota de crédito <span class="requerido">*</span></label>
-            <select id="notaDevolucion" class="form-control" [(ngModel)]="idNotaCredito" name="nota">
-              <option [ngValue]="null" disabled>{{pedido.notasCredito.length === 0 ? 'No hay notas de crédito del pedido' : 'Elige la nota'}}</option>
-              <option *ngFor="let nota of pedido.notasCredito" [ngValue]="nota.idNotaCredito">
-                {{nota.descripcion}} · {{nota.total | currency: 'Q' : 'symbol'}}
-              </option>
-            </select>
-          </div>
-          <div class="listing-field listing-span-2">
-            <label for="motivoDevolucion">Motivo <span class="requerido">*</span></label>
-            <textarea id="motivoDevolucion" class="form-control" rows="2" maxlength="500" [(ngModel)]="motivo" name="motivo"
-              placeholder="Por qué devuelve el cliente"></textarea>
-            <small>{{motivo.length}}/500</small>
-          </div>
-        </div>
-      </div>
-    </ng-container>
-
-    <p class="listing-note" *ngIf="faltante"><i class="fas fa-info-circle" aria-hidden="true"></i> {{faltante}}</p>
-    <div class="listing-actions">
-      <button type="button" class="btn listing-page-action listing-primary-action" (click)="registrar()" [disabled]="!!faltante || registrando">
-        <i class="fas fa-undo-alt" aria-hidden="true"></i> Registrar devolución
-      </button>
-      <button type="button" class="btn listing-page-action listing-secondary-action" (click)="cancelarFormulario()" [disabled]="registrando">
-        Cancelar
-      </button>
+        </section>
+      </ng-container>
     </div>
-  </div>
+
+    <footer class="form-actions return-form-actions">
+      <p *ngIf="faltante"><i class="fas fa-info-circle" aria-hidden="true"></i> {{faltante}}</p>
+      <div class="return-action-buttons">
+        <button type="button" class="return-cancel-action" (click)="cancelarFormulario()" [disabled]="registrando">Cancelar</button>
+        <button type="submit" class="primary-action" [disabled]="!!faltante || registrando">
+          <i class="fas fa-undo-alt" aria-hidden="true"></i> {{registrando ? 'Registrando...' : 'Registrar devolución'}}
+        </button>
+      </div>
+    </footer>
+  </form>
 </div>
 
-<div class="card listing-card">
+<div class="card listing-card" *ngIf="!formularioAbierto">
   <div class="card-header listing-card-header"><i class="fas fa-undo-alt" aria-hidden="true"></i>Devoluciones registradas</div>
   <div class="card-body">
     <div class="listing-filter-grid filtros-devoluciones">
