@@ -182,11 +182,10 @@
   </form>
 </div>
 
-<div class="card listing-card" *ngIf="!formularioAbierto">
-  <div class="card-header listing-card-header"><i class="fas fa-receipt" aria-hidden="true"></i>Recibos emitidos</div>
+<div class="card listing-card receipt-list" *ngIf="!formularioAbierto">
   <div class="card-body">
-    <div class="listing-filter-grid recibos-filters">
-      <div class="listing-tile-cell">
+    <div class="recibos-filters">
+      <div class="receipt-date-filters">
         <div class="row listing-date-range">
           <app-date-range-picker apariencia="campo" [(fechaInicio)]="desde" [(fechaFin)]="hasta" tema="ventas"></app-date-range-picker>
         </div>
@@ -200,29 +199,28 @@
         </select>
       </div>
 
-      <div class="listing-tile-cell">
-        <span class="listing-tile-label">Estado</span>
-        <label class="listing-tile listing-tile-toggle" for="anuladosRecibo">
-          <span class="listing-tile-icon" aria-hidden="true"><i class="fas fa-ban"></i></span>
-          <span class="listing-tile-copy">
-            <small>Anulados</small>
-            <strong>{{incluirAnulados ? 'Incluidos' : 'Ocultos'}}</strong>
-          </span>
-          <input type="checkbox" class="listing-switch" id="anuladosRecibo" [(ngModel)]="incluirAnulados" name="anulados">
+      <div class="receipt-status-filter">
+        <label class="receipt-canceled-toggle" for="anuladosRecibo">
+          <span>Incluir anulados</span>
+          <input type="checkbox" role="switch" class="listing-switch" id="anuladosRecibo"
+            [(ngModel)]="incluirAnulados" name="anulados">
         </label>
       </div>
 
-      <div class="listing-tile-actions">
+      <div class="receipt-filter-actions">
         <button type="button" class="btn listing-page-action listing-primary-action" (click)="aplicarFiltros()">
-          <i class="fas fa-filter"></i> Filtrar
+          <i class="fas fa-filter" aria-hidden="true"></i> Filtrar
         </button>
         <button type="button" class="btn listing-page-action listing-secondary-action" (click)="limpiarFiltros()"
           appTooltip="Quitar los filtros" aria-label="Quitar los filtros">
-          <i class="fas fa-eraser"></i>
+          <i class="fas fa-eraser" aria-hidden="true"></i>
         </button>
       </div>
     </div>
-    <p class="listing-note">Sin fechas se muestran los últimos 30 días.<span *ngIf="!cargando"> · {{totalElementos}} {{totalElementos === 1 ? 'recibo' : 'recibos'}}</span></p>
+    <div class="receipt-list-caption">
+      <span>Sin fechas se muestran los últimos 30 días.</span>
+      <span *ngIf="!cargando"><strong>{{totalElementos}}</strong> {{totalElementos === 1 ? 'recibo' : 'recibos'}}</span>
+    </div>
 
     <div *ngIf="errorCarga" class="listing-alert listing-alert-warning" role="alert">
       <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
@@ -245,7 +243,7 @@
     </div>
 
     <div class="table-responsive" *ngIf="recibos.length > 0">
-      <table class="table table-hover table-striped table-bordered table-sm listing-data-table">
+      <table class="table table-hover table-sm listing-data-table">
         <thead>
           <tr>
             <th scope="col">Recibo</th>

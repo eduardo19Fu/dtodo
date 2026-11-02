@@ -1,0 +1,16 @@
+/* Angular 13 no encapsula @container correctamente. Estas variables globales
+   quedan limitadas al listado de recibos; sus estilos siguen en el componente. */
+@container receipt-list (min-width: 1100px) {
+  .receipt-list .recibos-filters {
+    --receipt-filter-columns: minmax(0, 2fr) minmax(220px, 1fr) minmax(180px, auto) auto;
+    --receipt-filter-span: auto;
+  }
+}
+
+@container receipt-list (max-width: 560px) {
+  .receipt-list .recibos-filters {
+    --receipt-filter-columns: minmax(0, 1fr);
+    --receipt-date-columns: minmax(0, 1fr);
+    --receipt-action-flex: 1 1 auto;
+  }
+}

@@ -170,4 +170,31 @@ describe('Selector de sucursal de recibos', () => {
     expect(document.activeElement).toBe(select);
     expect(getComputedStyle(select).borderColor).toBe('rgb(47, 125, 107)');
   });
+
+  [1240, 760, 360].forEach(width => {
+    it(`ajusta los filtros del listado al panel de ${width}px sin recortes`, () => {
+      const root: HTMLElement = fixture.nativeElement;
+      const body: HTMLElement = root.querySelector('.receipt-list > .card-body');
+      body.style.width = `${width}px`;
+      const filters: HTMLElement = body.querySelector('.recibos-filters');
+      const dates: HTMLElement = filters.querySelector('.receipt-date-filters');
+      const branch: HTMLSelectElement = filters.querySelector('#sucursalFiltro');
+      const status: HTMLElement = filters.querySelector('.receipt-canceled-toggle');
+      const actions: HTMLElement = filters.querySelector('.receipt-filter-actions');
+
+      expect(filters.scrollWidth).toBeLessThanOrEqual(filters.clientWidth);
+      expect(status.textContent).toContain('Incluir anulados');
+      expect(branch.getBoundingClientRect().height).toBe(46);
+      expect(status.getBoundingClientRect().height).toBe(46);
+      expect(root.querySelector('.receipt-list .card-header')).toBeNull();
+      if (width === 1240) {
+        expect(branch.getBoundingClientRect().top).toBe(dates.querySelector('button').getBoundingClientRect().top);
+        expect(actions.getBoundingClientRect().top).toBe(branch.getBoundingClientRect().top);
+      } else if (width === 360) {
+        expect(status.getBoundingClientRect().top).toBeGreaterThan(branch.getBoundingClientRect().bottom);
+        const dateButtons = Array.from(dates.querySelectorAll('button')) as HTMLElement[];
+        expect(dateButtons[1].getBoundingClientRect().top).toBeGreaterThan(dateButtons[0].getBoundingClientRect().bottom);
+      }
+    });
+  });
 });
