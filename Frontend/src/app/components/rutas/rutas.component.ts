@@ -11,7 +11,7 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-rutas',
   templateUrl: './rutas.component.html',
-  styleUrls: ['./rutas.component.css']
+  styleUrls: ['./rutas.component.css', '../shared/management-page.css']
 })
 export class RutasComponent implements OnInit, OnDestroy {
 

@@ -91,6 +91,56 @@ describe('RecibosComponent', () => {
     component.ngOnDestroy();
   }));
 
+  it('avisa mientras busca y cuando no encuentra a nadie, y se queda sin avisos al borrar', fakeAsync(() => {
+    component.ngOnInit();
+    clientes.getListado.and.returnValue(of({ content: [] }));
+
+    component.onBuscarCliente('zzz');
+    tick(300);
+    expect(component.buscando).toBeFalse();
+    expect(component.sinResultados).toBeTrue();
+    expect(component.clientesEncontrados.length).toBe(0);
+
+    component.quitarCliente();
+    tick(300);
+    expect(component.busquedaCliente).toBe('');
+    expect(component.sinResultados).toBeFalse();
+
+    clientes.getListado.and.returnValue(throwError({ status: 500 }));
+    component.onBuscarCliente('libre');
+    tick(300);
+    expect(component.sinResultados).toBeTrue();
+    component.ngOnDestroy();
+  }));
+
+  it('quitar el cliente elegido borra también su saldo y el pedido', () => {
+    component.elegirCliente(cliente());
+    expect(component.saldo).not.toBeNull();
+
+    component.quitarCliente();
+
+    expect(component.clienteElegido).toBeNull();
+    expect(component.saldo).toBeNull();
+    expect(component.busquedaCliente).toBe('');
+  });
+
+  it('el cheque es una forma de pago que pide su número y lo indica en el campo', () => {
+    expect(component.formas.map(f => f.valor)).toContain('CHEQUE');
+    expect(component.etiquetaForma('CHEQUE')).toBe('Cheque');
+
+    component.formaPago = 'CHEQUE';
+    expect(component.pideReferencia).toBeTrue();
+    expect(component.textoReferencia).toBe('No. de cheque');
+
+    component.formaPago = 'DEPOSITO';
+    expect(component.textoReferencia).toBe('No. de boleta');
+    component.formaPago = 'TRANSFERENCIA';
+    expect(component.textoReferencia).toBe('No. de transferencia');
+    component.formaPago = 'EFECTIVO';
+    expect(component.pideReferencia).toBeFalse();
+    expect(component.textoReferencia).toBe('Opcional');
+  });
+
   it('dice qué falta antes de poder emitir', () => {
     expect(component.faltante).toBe('Elige el cliente.');
 

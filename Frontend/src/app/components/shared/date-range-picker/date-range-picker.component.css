@@ -106,6 +106,46 @@
 }
 .date-trigger-active .date-trigger-chevron { transform: rotate(180deg); }
 
+/* Variante de formulario: una etiqueta y una línea de valor, con la misma
+   altura que los selects e inputs de la página que contiene el selector. */
+.date-range-theme-fields .date-picker-column {
+  flex: 1 1 0;
+  max-width: none;
+  min-width: 0;
+  padding: 0;
+}
+.date-range-theme-fields .filter-label {
+  color: #344459;
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+  margin: 0 0 6px;
+}
+.date-range-theme-fields .date-trigger {
+  border-color: #cbd6e2;
+  border-radius: 7px;
+  height: var(--management-control-height, 46px);
+  min-height: var(--management-control-height, 46px);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.date-range-theme-fields .date-trigger:hover { transform: none; }
+.date-range-theme-fields .date-trigger:focus-visible { outline: 3px solid var(--date-accent); outline-offset: 3px; }
+.date-range-theme-fields .date-trigger-icon {
+  align-self: center;
+  background: transparent;
+  border-radius: 0;
+  color: #607087;
+  flex: 0 0 16px;
+  font-size: 15px;
+  margin-left: 12px;
+}
+.date-range-theme-fields .date-trigger-copy { padding: 10px; }
+.date-range-theme-fields .date-trigger-copy small { display: none; }
+.date-range-theme-fields .date-trigger-copy strong { font-size: 15px; font-weight: 400; line-height: 1.5; }
+.date-range-theme-fields .date-trigger-copy .date-placeholder { color: #718095; font-weight: 400; }
+.date-range-theme-fields .date-trigger-chevron { margin-right: 12px; }
+
 .custom-calendar-panel {
   animation: calendarReveal 0.18s ease-out;
   background: #fff;

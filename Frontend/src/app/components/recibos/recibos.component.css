@@ -1,6 +1,20 @@
 /* Los estilos de botones, campos, resúmenes, avisos y tablas son los compartidos de src/styles.css (listing-*). */
 .action-buttons { gap: 0.35rem; }
 
+:host .listing-filter-grid.recibos-filters {
+  grid-template-columns: minmax(0, 2fr) minmax(240px, 1fr) minmax(180px, 1fr);
+}
+:host .recibos-filters > .listing-tile-actions { grid-column: 1 / -1; justify-content: flex-end; }
+
+@media (max-width: 1399.98px) {
+  :host .listing-filter-grid.recibos-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  :host .recibos-filters > .listing-tile-cell:first-child { grid-column: 1 / -1; }
+}
+
+@media (max-width: 575.98px) {
+  :host .listing-filter-grid.recibos-filters { grid-template-columns: minmax(0, 1fr); }
+}
+
 /* Lista de clientes que aparece bajo el buscador del formulario. */
 .buscador { position: relative; }
 .resultados {
@@ -15,3 +29,33 @@
   z-index: 20;
 }
 .resultados .list-group-item { cursor: pointer; }
+.resultados .list-group-item.sin-resultados { color: #6c7a8d; cursor: default; font-size: 0.9rem; }
+
+/* Campo de búsqueda: el icono a la izquierda lo distingue de un cuadro de texto cualquiera. */
+.cliente-buscador { position: relative; }
+.cliente-buscador > .fas {
+  color: #6c7a8d;
+  left: 0.95rem;
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.cliente-buscador > input.form-control { padding-left: 2.6rem; padding-right: 2.6rem; }
+.cliente-buscador.is-elegido > .fas { color: #198754; }
+.cliente-buscador.is-elegido > input.form-control { border-color: #198754; font-weight: 600; }
+.cliente-quitar {
+  background: transparent;
+  border: 0;
+  color: #6c7a8d;
+  height: 2rem;
+  line-height: 2rem;
+  padding: 0;
+  position: absolute;
+  right: 0.5rem;
+  text-align: center;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2rem;
+}
+.cliente-quitar:hover { color: #c0392b; }

@@ -1,15 +1,9 @@
-<section class="content-header">
-  <div class="container-fluid">
-    <div class="row mb-2 align-items-end">
-      <div class="col-sm-8">
-        <h1>{{title}}</h1>
-        <p class="listing-subtitle">
-          Ventas por vendedor, pedidos entregados a tiempo y cuentas por cobrar. Las ventas son lo entregado en el mes menos lo que los
-          clientes devolvieron en el mes.
-        </p>
-      </div>
-      <div class="col-sm-4">
-        <div class="selector-mes">
+<header class="management-header">
+  <div class="management-heading">
+    <h1>{{title}}</h1>
+    <p>Consulta las ventas netas, el cumplimiento de entregas y los saldos pendientes.</p>
+  </div>
+  <div class="listing-actions"><div class="selector-mes">
           <button type="button" class="btn btn-sm listing-table-action listing-action-view" (click)="cambiarMes(-1)"
             [disabled]="cargando || !puedeRetroceder" aria-label="Mes anterior" appTooltip="Mes anterior">
             <i class="fas fa-chevron-left"></i>
@@ -19,11 +13,8 @@
             [disabled]="cargando || esMesActual" aria-label="Mes siguiente" appTooltip="Mes siguiente">
             <i class="fas fa-chevron-right"></i>
           </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+        </div></div>
+</header>
 
 <div *ngIf="errorCarga" class="listing-alert listing-alert-warning" role="alert">
   <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
@@ -86,7 +77,7 @@
   </div>
 
   <div class="card listing-card">
-    <div class="card-header listing-card-header">Ventas por vendedor · {{etiquetaMes}}</div>
+    <div class="card-header listing-card-header"><i class="fas fa-chart-line" aria-hidden="true"></i>Ventas por vendedor · {{etiquetaMes}}</div>
     <div class="card-body">
       <div *ngIf="!hayVentas" class="listing-empty-state">
         <span class="listing-empty-icon" aria-hidden="true"><i class="fas fa-chart-bar"></i></span>
@@ -100,12 +91,12 @@
         <table class="table table-hover table-striped table-bordered table-sm listing-data-table">
           <thead>
             <tr>
-              <th>Vendedor</th>
-              <th class="text-right">Entregado</th>
-              <th class="text-right">Devuelto</th>
-              <th class="text-right">Ventas netas</th>
-              <th class="columna-barra">Participación</th>
-              <th class="text-center">Entregados a tiempo</th>
+              <th scope="col">Vendedor</th>
+              <th scope="col" class="text-right">Entregado</th>
+              <th scope="col" class="text-right">Devuelto</th>
+              <th scope="col" class="text-right">Ventas netas</th>
+              <th scope="col" class="columna-barra">Participación</th>
+              <th scope="col" class="text-center">Entregados a tiempo</th>
             </tr>
           </thead>
           <tbody>
@@ -132,11 +123,11 @@
           <tfoot>
             <tr>
               <td>Total</td>
-              <td class="text-money">{{datos.totalEntregado | currency: 'Q' : 'symbol'}}</td>
-              <td class="text-money">{{datos.totalDevuelto | currency: 'Q' : 'symbol'}}</td>
-              <td class="text-money">{{datos.totalNeto | currency: 'Q' : 'symbol'}}</td>
+              <td data-label="Entregado" class="text-money">{{datos.totalEntregado | currency: 'Q' : 'symbol'}}</td>
+              <td data-label="Devuelto" class="text-money">{{datos.totalDevuelto | currency: 'Q' : 'symbol'}}</td>
+              <td data-label="Ventas netas" class="text-money">{{datos.totalNeto | currency: 'Q' : 'symbol'}}</td>
               <td></td>
-              <td class="text-center">{{datos.pedidosConFecha > 0 ? datos.pedidosATiempo + '/' + datos.pedidosConFecha : '—'}}</td>
+              <td data-label="A tiempo" class="text-center">{{datos.pedidosConFecha > 0 ? datos.pedidosATiempo + '/' + datos.pedidosConFecha : '—'}}</td>
             </tr>
           </tfoot>
         </table>

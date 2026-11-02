@@ -10,7 +10,7 @@ import { IndicadoresService } from '../../services/indicadores.service';
 @Component({
   selector: 'app-indicadores',
   templateUrl: './indicadores.component.html',
-  styleUrls: ['./indicadores.component.css']
+  styleUrls: ['./indicadores.component.css', '../shared/management-page.css']
 })
 export class IndicadoresComponent implements OnInit {
 

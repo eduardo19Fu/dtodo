@@ -13,7 +13,7 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-cobranza',
   templateUrl: './cobranza.component.html',
-  styleUrls: ['./cobranza.component.css']
+  styleUrls: ['./cobranza.component.css', '../shared/management-page.css']
 })
 export class CobranzaComponent implements OnInit {
 

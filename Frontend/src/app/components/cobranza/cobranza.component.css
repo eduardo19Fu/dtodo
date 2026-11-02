@@ -1,2 +1,42 @@
 /* Los estilos de botones, filtros, resúmenes, avisos y tablas son los compartidos de src/styles.css (listing-*). */
 .action-buttons { gap: 0.35rem; }
+
+:host .cobranza-filters {
+  background: #f7f9fb;
+  border: 1px solid #dce4ec;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  padding: 16px;
+}
+:host .cobranza-fields {
+  align-items: end;
+  display: grid;
+  gap: 16px 24px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+}
+:host .cobranza-fields > div { min-width: 0; }
+:host .cobranza-fields .listing-field > .cobranza-balance-toggle {
+  align-items: center;
+  background: #fff;
+  border: 1px solid #cbd6e2;
+  border-radius: 7px;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: flex;
+  gap: 16px;
+  height: var(--management-control-height);
+  justify-content: space-between;
+  margin: 0;
+  padding: 8px 12px;
+}
+:host .cobranza-balance-toggle > span { color: #344459; font-size: 15px; font-weight: 400; }
+:host .cobranza-balance-toggle .listing-switch { flex: 0 0 40px; margin: 0; }
+:host .cobranza-balance-toggle:focus-within { border-color: #2f7d6b; box-shadow: 0 0 0 3px rgba(47, 125, 107, 0.14); }
+:host .cobranza-exports { align-items: center; border-top: 1px solid #dce4ec; display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; margin-top: 16px; padding-top: 16px; }
+:host .cobranza-exports > span { color: #607087; font-size: 13px; }
+:host .listing-data-table { min-width: 1120px; }
+:host .listing-data-table thead th { white-space: nowrap; }
+
+@media (max-width: 767.98px) {
+  :host .listing-data-table { min-width: 0; }
+}

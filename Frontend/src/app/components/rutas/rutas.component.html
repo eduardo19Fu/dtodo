@@ -1,31 +1,24 @@
-<section class="content-header">
-  <div class="container-fluid">
-    <div class="row mb-2">
-      <div class="col-sm-8">
-        <h1>{{title}}</h1>
-        <p class="rutas-subtitle">Zonas de venta de los clientes mayoristas y el vendedor que las atiende.</p>
-        <br>
-        <a *ngIf="auth.hasRole('ROLE_ADMIN')" [routerLink]="['/rutas/create']"
-          class="btn listing-page-action listing-primary-action">
-          <i class="fas fa-plus"></i> Nueva
-        </a>
-      </div>
-    </div>
+<header class="management-header">
+  <div class="management-heading">
+    <h1>{{title}}</h1>
+    <p>Organiza las zonas de venta, los días de visita y sus vendedores.</p>
   </div>
-</section>
+  <div class="listing-actions"><a *ngIf="auth.hasRole('ROLE_ADMIN')" [routerLink]="['/rutas/create']"
+      class="btn listing-page-action listing-primary-action"><i class="fas fa-plus" aria-hidden="true"></i> Nueva ruta</a></div>
+</header>
 
 <div class="card listing-card">
-  <div class="card-header listing-card-header">Listado de Rutas</div>
-  <div class="card-body table-responsive">
-    <div class="row mb-2 align-items-center table-controls">
+  <div class="card-header listing-card-header"><i class="fas fa-route" aria-hidden="true"></i>Rutas registradas</div>
+  <div class="card-body">
+    <div class="management-table-controls">
       <div class="col-sm-4">
         <div class="d-inline-flex align-items-center">
-          <label class="mb-0 mr-2">Mostrar</label>
-          <select class="form-control form-control-sm page-size-select"
+          <label class="mb-0 mr-2" for="rutas-page-size">Mostrar</label>
+          <select id="rutas-page-size" class="form-control form-control-sm page-size-select"
                   [ngModel]="pageSize" (ngModelChange)="cambiarPageSize($event)">
             <option *ngFor="let opt of pageSizeOptions" [ngValue]="opt">{{opt}}</option>
           </select>
-          <label class="mb-0 ml-2">registros</label>
+          <span class="mb-0 ml-2">registros</span>
         </div>
       </div>
       <div class="col-sm-4 text-center">
@@ -37,8 +30,8 @@
       </div>
       <div class="col-sm-4">
         <div class="listing-search-control float-right search-control">
-          <label class="mb-0 mr-2">B&uacute;squeda:</label>
-          <input type="text" class="form-control form-control-sm" [value]="filtro"
+          <label class="mb-0 mr-2" for="rutas-search">Buscar</label>
+          <input id="rutas-search" type="search" class="form-control form-control-sm" [value]="filtro"
                  (input)="onBuscar($event.target.value)" placeholder="Ruta, zona, vendedor o sucursal">
         </div>
       </div>
@@ -56,42 +49,43 @@
       </div>
     </div>
 
+    <div class="table-responsive">
     <table class="table table-hover table-striped table-bordered table-sm mt-0 catalog-table mobile-data-table"
            *ngIf="!cargando && rutas.length > 0">
       <thead>
         <tr>
-          <th class="col-nombre">
+          <th scope="col" class="col-nombre">
             <button type="button" class="sort-header" (click)="ordenarPor('nombre')">
               Ruta <i [class]="iconoOrden('nombre')"></i>
             </button>
           </th>
-          <th class="col-zona">
+          <th scope="col" class="col-zona">
             <button type="button" class="sort-header" (click)="ordenarPor('zona')">
               Zona <i [class]="iconoOrden('zona')"></i>
             </button>
           </th>
-          <th class="col-dias">
+          <th scope="col" class="col-dias">
             <button type="button" class="sort-header" (click)="ordenarPor('dias')">
               D&iacute;as de visita <i [class]="iconoOrden('dias')"></i>
             </button>
           </th>
-          <th class="col-vendedor">
+          <th scope="col" class="col-vendedor">
             <button type="button" class="sort-header" (click)="ordenarPor('vendedor')">
               Vendedor <i [class]="iconoOrden('vendedor')"></i>
             </button>
           </th>
-          <th class="col-sucursal">
+          <th scope="col" class="col-sucursal">
             <button type="button" class="sort-header" (click)="ordenarPor('sucursal')">
               Sucursal <i [class]="iconoOrden('sucursal')"></i>
             </button>
           </th>
-          <th class="col-clientes">Clientes</th>
-          <th class="col-estado">
+          <th scope="col" class="col-clientes">Clientes</th>
+          <th scope="col" class="col-estado">
             <button type="button" class="sort-header" (click)="ordenarPor('estado')">
               Estado <i [class]="iconoOrden('estado')"></i>
             </button>
           </th>
-          <th class="col-opciones" *ngIf="auth.hasRole('ROLE_ADMIN')">Opciones</th>
+          <th scope="col" class="col-opciones" *ngIf="auth.hasRole('ROLE_ADMIN')">Opciones</th>
         </tr>
       </thead>
       <tbody>
@@ -128,14 +122,15 @@
         </tr>
       </tbody>
     </table>
+    </div>
 
     <nav class="listing-pagination" *ngIf="!cargando && rutas.length > 0" aria-label="Paginaci&oacute;n de rutas">
       <ul class="pagination justify-content-center mt-3 mb-0">
-        <li class="page-item" [ngClass]="{'disabled': isFirst}"><a class="page-link" href="javascript:void(0)" (click)="irPrimeraPagina()"><i class="fas fa-angle-double-left"></i></a></li>
-        <li class="page-item" [ngClass]="{'disabled': isFirst}"><a class="page-link" href="javascript:void(0)" (click)="irPaginaAnterior()"><i class="fas fa-angle-left"></i></a></li>
-        <li class="page-item" *ngFor="let pagina of paginasVisibles" [ngClass]="{'active': pagina === paginaActual}"><a class="page-link" href="javascript:void(0)" (click)="irAPagina(pagina)">{{pagina + 1}}</a></li>
-        <li class="page-item" [ngClass]="{'disabled': isLast}"><a class="page-link" href="javascript:void(0)" (click)="irPaginaSiguiente()"><i class="fas fa-angle-right"></i></a></li>
-        <li class="page-item" [ngClass]="{'disabled': isLast}"><a class="page-link" href="javascript:void(0)" (click)="irUltimaPagina()"><i class="fas fa-angle-double-right"></i></a></li>
+        <li class="page-item" [ngClass]="{'disabled': isFirst}"><button type="button" class="page-link" (click)="irPrimeraPagina()" [disabled]="isFirst" aria-label="Primera página"><i class="fas fa-angle-double-left"></i></button></li>
+        <li class="page-item" [ngClass]="{'disabled': isFirst}"><button type="button" class="page-link" (click)="irPaginaAnterior()" [disabled]="isFirst" aria-label="Página anterior"><i class="fas fa-angle-left"></i></button></li>
+        <li class="page-item" *ngFor="let pagina of paginasVisibles" [ngClass]="{'active': pagina === paginaActual}"><button type="button" class="page-link" (click)="irAPagina(pagina)" [attr.aria-label]="'Ir a la página ' + (pagina + 1)" [attr.aria-current]="pagina === paginaActual ? 'page' : null">{{pagina + 1}}</button></li>
+        <li class="page-item" [ngClass]="{'disabled': isLast}"><button type="button" class="page-link" (click)="irPaginaSiguiente()" [disabled]="isLast" aria-label="Página siguiente"><i class="fas fa-angle-right"></i></button></li>
+        <li class="page-item" [ngClass]="{'disabled': isLast}"><button type="button" class="page-link" (click)="irUltimaPagina()" [disabled]="isLast" aria-label="Última página"><i class="fas fa-angle-double-right"></i></button></li>
       </ul>
     </nav>
   </div>

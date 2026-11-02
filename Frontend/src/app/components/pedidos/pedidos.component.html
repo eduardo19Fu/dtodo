@@ -1,21 +1,16 @@
-<section class="content-header">
-  <div class="container-fluid">
-    <div class="row mb-2">
-      <div class="col-sm-9">
-        <h1>{{title}}</h1>
-        <p class="pedidos-subtitle" *ngIf="!esRepartidor">
-          Pedidos mayoristas por entregar, por ruta. Bodega avanza cada etapa: picking, empaque y salida a ruta.
-        </p>
-        <p class="pedidos-subtitle" *ngIf="esRepartidor">Tus pedidos en ruta. Al entregar, registra lo que dejaste en cada cliente.</p>
-      </div>
-    </div>
+<header class="management-header">
+  <div class="management-heading">
+    <h1>{{title}}</h1>
+    <p *ngIf="!esRepartidor">Prepara y entrega los pedidos mayoristas de cada ruta.</p>
+    <p *ngIf="esRepartidor">Consulta tus pedidos en ruta y registra lo entregado a cada cliente.</p>
   </div>
-</section>
+
+</header>
 
 <div class="card listing-card">
-  <div class="card-header listing-card-header">Filtros</div>
+  <div class="card-header listing-card-header"><i class="fas fa-dolly" aria-hidden="true"></i>Filtros</div>
   <div class="card-body">
-    <div class="filtros">
+    <div class="filtros" [attr.aria-busy]="cargando">
       <label class="filtro">
         <span>Etapa</span>
         <select class="form-control form-control-sm" [(ngModel)]="estado" (ngModelChange)="cargar()" name="estado">
@@ -24,39 +19,46 @@
       </label>
       <label class="filtro">
         <span>Ruta</span>
-        <select class="form-control form-control-sm" [(ngModel)]="idRuta" name="ruta">
+        <select class="form-control form-control-sm" [(ngModel)]="idRuta" name="ruta" (ngModelChange)="cargar()">
           <option [ngValue]="''">Todas las rutas</option>
           <option *ngFor="let ruta of rutas" [ngValue]="ruta.idRuta">{{ruta.nombre}}</option>
         </select>
       </label>
       <div class="row listing-date-range">
-        <app-date-range-picker [(fechaInicio)]="fechaInicio" [(fechaFin)]="fechaFin" tema="proformas"
+        <app-date-range-picker apariencia="campo" [(fechaInicio)]="fechaInicio" [(fechaFin)]="fechaFin" tema="proformas"
           (fechaInicioChange)="cargar()" (fechaFinChange)="cargar()"></app-date-range-picker>
       </div>
-      <button type="button" class="btn btn-sm btn-outline-secondary filtro-boton" (click)="cargar()">
-        <i class="fas fa-sync-alt" aria-hidden="true"></i> Actualizar
+      <button type="button" class="btn listing-page-action listing-secondary-action filtro-boton" (click)="cargar()"
+        [disabled]="cargando">
+        <i class="fas fa-sync-alt" aria-hidden="true"></i> {{cargando ? 'Actualizando...' : 'Actualizar'}}
       </button>
     </div>
   </div>
 </div>
 
-<div *ngIf="errorCarga" class="alert alert-warning" role="alert">
+<div *ngIf="errorCarga" class="listing-alert listing-alert-warning" role="alert">
   No fue posible cargar los pedidos.
   <button type="button" class="btn btn-sm btn-outline-dark ml-2" (click)="cargar()">Reintentar</button>
 </div>
 
-<div *ngIf="cargando" class="estado-vacio">Cargando...</div>
-<div *ngIf="!cargando && !errorCarga && grupos.length === 0" class="estado-vacio">
-  <i class="fas fa-check-circle" aria-hidden="true"></i> No hay pedidos para los filtros seleccionados.
+<div *ngIf="cargando" class="estado-vacio" role="status">
+  <span class="spinner-border spinner-border-sm mr-2" aria-hidden="true"></span> Cargando pedidos...
+</div>
+<div *ngIf="!cargando && !errorCarga && grupos.length === 0" class="listing-empty-state" role="status">
+  <span class="listing-empty-icon" aria-hidden="true"><i class="fas fa-dolly"></i></span>
+  <div class="listing-empty-state-body">
+    <h5>No hay pedidos para mostrar</h5>
+    <p>Prueba con otra etapa, ruta o período de entrega.</p>
+  </div>
 </div>
 
 <div class="card listing-card" *ngFor="let grupo of grupos">
   <div class="card-header listing-card-header grupo-encabezado">
-    <span>
+    <div class="grupo-titulo">
       <i class="fas fa-route" aria-hidden="true"></i> {{grupo.ruta}}
-      <small class="grupo-resumen">{{grupo.pedidos.length}} {{grupo.pedidos.length === 1 ? 'pedido' : 'pedidos'}} ·
-        {{grupo.unidades | number}} unidades</small>
-    </span>
+      <span class="grupo-resumen">{{grupo.pedidos.length}} {{grupo.pedidos.length === 1 ? 'pedido' : 'pedidos'}} ·
+        {{grupo.unidades | number}} unidades</span>
+    </div>
     <button *ngIf="puedeOperar && grupo.idRuta" type="button" class="btn btn-sm btn-light" (click)="imprimirNotaEnvio(grupo)"
       [attr.aria-label]="'Imprimir la nota de envío de ' + grupo.ruta">
       <i class="fas fa-print" aria-hidden="true"></i> Nota de envío
@@ -66,14 +68,14 @@
     <table class="table table-sm pedidos-table">
       <thead>
         <tr>
-          <th>Pedido</th>
-          <th>Cliente</th>
-          <th>Vendedor</th>
-          <th>Piloto</th>
-          <th>Entrega est.</th>
-          <th class="text-right">Unidades</th>
-          <th>Etapa</th>
-          <th class="text-center">Acciones</th>
+          <th scope="col">Pedido</th>
+          <th scope="col">Cliente</th>
+          <th scope="col">Vendedor</th>
+          <th scope="col">Piloto</th>
+          <th scope="col">Entrega est.</th>
+          <th scope="col" class="text-right">Unidades</th>
+          <th scope="col">Etapa</th>
+          <th scope="col" class="text-center">Acciones</th>
         </tr>
       </thead>
       <tbody>
@@ -180,8 +182,8 @@
       <div class="table-responsive">
         <table class="table table-sm">
           <thead>
-            <tr><th>Código</th><th>Producto</th><th class="text-right">Cant.</th><th class="text-right">Entregado</th>
-              <th class="text-right">Pendiente</th><th>Observación</th></tr>
+            <tr><th scope="col">Código</th><th scope="col">Producto</th><th scope="col" class="text-right">Cant.</th><th scope="col" class="text-right">Entregado</th>
+              <th scope="col" class="text-right">Pendiente</th><th scope="col">Observación</th></tr>
           </thead>
           <tbody>
             <tr *ngFor="let linea of detalle.lineas">
@@ -214,7 +216,7 @@
             </select>
           </label>
           <div class="row listing-date-range listing-date-single">
-            <app-date-range-picker modo="fecha" [(fecha)]="entrega.fechaEntrega" etiquetaFecha="Fecha de entrega" tema="proformas"></app-date-range-picker>
+            <app-date-range-picker apariencia="campo" modo="fecha" [(fecha)]="entrega.fechaEntrega" etiquetaFecha="Fecha de entrega" tema="proformas"></app-date-range-picker>
           </div>
           <label *ngIf="!esRepartidor">
             <span>Entregó (opcional)</span>
@@ -225,7 +227,7 @@
 
         <div class="table-responsive">
           <table class="table table-sm">
-            <thead><tr><th>Producto</th><th class="text-right">Pendiente</th><th class="text-right">Entregado ahora</th></tr></thead>
+            <thead><tr><th scope="col">Producto</th><th scope="col" class="text-right">Pendiente</th><th scope="col" class="text-right">Entregado ahora</th></tr></thead>
             <tbody>
               <tr *ngFor="let linea of detalle.lineas">
                 <td>{{linea.producto}}</td>

@@ -1,15 +1,9 @@
-<section class="content-header">
-  <div class="container-fluid">
-    <div class="row mb-2 align-items-end">
-      <div class="col-sm-8">
-        <h1>{{title}}</h1>
-        <p class="listing-subtitle">
-          Porcentaje plano sobre lo entregado en el año menos lo que los clientes devolvieron, según la meta más alta alcanzada. Solo cobra quien
-          completó el año.
-        </p>
-      </div>
-      <div class="col-sm-4">
-        <div class="selector-anio">
+<header class="management-header">
+  <div class="management-heading">
+    <h1>{{title}}</h1>
+    <p>Define metas y revisa las comisiones sobre lo entregado, menos las devoluciones.</p>
+  </div>
+  <div class="listing-actions"><div class="selector-anio">
           <button type="button" class="btn btn-sm listing-table-action listing-action-view" (click)="cambiarAnio(-1)" [disabled]="cargando"
             aria-label="Año anterior" appTooltip="Año anterior">
             <i class="fas fa-chevron-left"></i>
@@ -19,11 +13,14 @@
             aria-label="Año siguiente" appTooltip="Año siguiente">
             <i class="fas fa-chevron-right"></i>
           </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+        </div></div>
+</header>
+
+<details class="management-help">
+  <summary>Condiciones de la comisión</summary>
+  <p>Se aplica el porcentaje de la meta más alta alcanzada al total entregado menos las devoluciones.
+    Solo se liquida a los vendedores que completaron el año.</p>
+</details>
 
 <div *ngIf="errorCarga" class="listing-alert listing-alert-warning" role="alert">
   <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
@@ -45,7 +42,7 @@
 </div>
 
 <div class="card listing-card">
-  <div class="card-header listing-card-header">Metas del año {{anio}}</div>
+  <div class="card-header listing-card-header"><i class="fas fa-hand-holding-usd" aria-hidden="true"></i>Metas del año {{anio}}</div>
   <div class="card-body">
     <p class="listing-note" *ngIf="metas.length === 0 && !liquidado">Este año no tiene metas. Agrégalas o cópialas de otro año.</p>
     <p class="listing-note" *ngIf="metas.length === 0 && liquidado">Este año se liquidó sin metas guardadas.</p>
@@ -103,7 +100,7 @@
 </div>
 
 <div class="card listing-card">
-  <div class="card-header listing-card-header">{{liquidado ? 'Comisiones liquidadas' : 'Avance de los vendedores'}}</div>
+  <div class="card-header listing-card-header"><i class="fas fa-hand-holding-usd" aria-hidden="true"></i>{{liquidado ? 'Comisiones liquidadas' : 'Avance de los vendedores'}}</div>
   <div class="card-body">
     <div *ngIf="cargando" class="text-center p-4">
       <div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div>
@@ -121,16 +118,16 @@
       <table class="table table-hover table-striped table-bordered table-sm listing-data-table">
         <thead>
           <tr>
-            <th>Vendedor</th>
-            <th>Alta</th>
-            <th class="text-right">Entregado</th>
-            <th class="text-right">Devuelto</th>
-            <th class="text-right">Base (neto)</th>
-            <th class="text-right">Meta alcanzada</th>
-            <th class="text-center">%</th>
-            <th class="text-right">{{liquidado ? 'Comisión' : 'Comisión si completó'}}</th>
-            <th class="text-right">Falta p/ siguiente</th>
-            <th class="text-center">Completó el año</th>
+            <th scope="col">Vendedor</th>
+            <th scope="col">Alta</th>
+            <th scope="col" class="text-right">Entregado</th>
+            <th scope="col" class="text-right">Devuelto</th>
+            <th scope="col" class="text-right">Base (neto)</th>
+            <th scope="col" class="text-right">Meta alcanzada</th>
+            <th scope="col" class="text-center">%</th>
+            <th scope="col" class="text-right">{{liquidado ? 'Comisión' : 'Comisión si completó'}}</th>
+            <th scope="col" class="text-right">Falta p/ siguiente</th>
+            <th scope="col" class="text-center">Completó el año</th>
           </tr>
         </thead>
         <tbody>
@@ -169,11 +166,11 @@
         <tfoot>
           <tr>
             <td colspan="2">Totales</td>
-            <td class="text-money">{{avance.totalEntregado | currency: 'Q' : 'symbol'}}</td>
-            <td class="text-money">{{avance.totalDevuelto | currency: 'Q' : 'symbol'}}</td>
-            <td class="text-money">{{avance.totalNeto | currency: 'Q' : 'symbol'}}</td>
+            <td data-label="Entregado" class="text-money">{{avance.totalEntregado | currency: 'Q' : 'symbol'}}</td>
+            <td data-label="Devuelto" class="text-money">{{avance.totalDevuelto | currency: 'Q' : 'symbol'}}</td>
+            <td data-label="Base neta" class="text-money">{{avance.totalNeto | currency: 'Q' : 'symbol'}}</td>
             <td colspan="2"></td>
-            <td class="text-money">{{(liquidado ? avance.totalComision : totalAPagar) | currency: 'Q' : 'symbol'}}</td>
+            <td data-label="Comisión" class="text-money">{{(liquidado ? avance.totalComision : totalAPagar) | currency: 'Q' : 'symbol'}}</td>
             <td colspan="2" class="text-muted">{{liquidado ? 'total liquidado' : 'a pagar a los marcados'}}</td>
           </tr>
         </tfoot>

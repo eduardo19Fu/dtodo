@@ -1,3 +1,5 @@
+@import "./app/components/cobranza/cobranza-summary.css";
+
 /* You can add global styles to this file, and also import other style files */
 .requerido{
     color: red;
@@ -5,6 +7,55 @@
   
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+/* Fondo uniforme para campos bloqueados. La prioridad evita que los colores
+   locales de cada formulario vuelvan a introducir fondos grises. No cambia
+   el estado disabled/readonly ni la presentación de botones o casillas. */
+input.form-control:disabled,
+input.form-control[readonly],
+select:disabled,
+textarea.form-control:disabled,
+textarea.form-control[readonly] {
+  background-color: #fff !important;
+  color: #40506b !important;
+  -webkit-text-fill-color: #40506b !important;
+  opacity: 1 !important;
+}
+
+/* Foco de selectores unificado. La prioridad es intencional: los formularios
+   heredados definen colores locales y todos deben conservar el mismo foco. */
+:root {
+  --select-focus-border: #2f7d6b;
+  --select-focus-ring: #438d7c;
+}
+
+select:not(.listing-tile-select):focus,
+.report-select-trigger:focus,
+.listing-tile:has(select:focus) {
+  border-color: var(--select-focus-border) !important;
+  box-shadow: 0 0 0 3px rgba(47, 125, 107, 0.14) !important;
+}
+
+select:not(.listing-tile-select):focus-visible,
+.report-select-trigger:focus-visible,
+.listing-tile:has(select:focus-visible) {
+  outline: 3px solid var(--select-focus-ring) !important;
+  outline-offset: 3px !important;
+}
+
+/* Los selectores integrados en una ficha enfocan el contenedor completo. */
+select.listing-tile-select:focus {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+@media (forced-colors: active) {
+  select:focus-visible,
+  .report-select-trigger:focus-visible,
+  .listing-tile:has(select:focus-visible) {
+    outline-color: Highlight !important;
+  }
+}
 
 /* Escala tipográfica compartida para formularios. Las vistas heredadas aún
    definen tamaños locales, por lo que estas reglas mantienen una base legible

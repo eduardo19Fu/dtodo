@@ -14,7 +14,7 @@ type Resolucion = 'aprobar' | 'rechazar' | 'vencida' | 'aprobarCredito' | 'recha
 @Component({
   selector: 'app-autorizaciones',
   templateUrl: './autorizaciones.component.html',
-  styleUrls: ['./autorizaciones.component.css']
+  styleUrls: ['./autorizaciones.component.css', '../shared/management-page.css']
 })
 export class AutorizacionesComponent implements OnInit {
 

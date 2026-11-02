@@ -33,7 +33,7 @@ const DESCRIPCION_CATEGORIA: Record<CategoriaCliente, string> = {
 @Component({
   selector: 'app-descuentos',
   templateUrl: './descuentos.component.html',
-  styleUrls: ['./descuentos.component.css']
+  styleUrls: ['./descuentos.component.css', '../shared/management-page.css']
 })
 export class DescuentosComponent implements OnInit, OnDestroy {
 

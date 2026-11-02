@@ -21,7 +21,7 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-devoluciones-cliente',
   templateUrl: './devoluciones-cliente.component.html',
-  styleUrls: ['./devoluciones-cliente.component.css']
+  styleUrls: ['./devoluciones-cliente.component.css', '../shared/management-page.css']
 })
 export class DevolucionesClienteComponent implements OnInit, OnDestroy {
 

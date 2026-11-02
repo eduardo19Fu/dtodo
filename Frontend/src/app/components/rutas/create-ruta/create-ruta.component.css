@@ -48,3 +48,36 @@
 .product-form-page.route-form-page .primary-action {
   box-shadow: 0 7px 16px rgba(31, 90, 76, 0.27);
 }
+
+.route-fields-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.route-form-page .field-group { min-width: 0; }
+.route-form-page .field-group small { color: #607087; font-size: 12px; line-height: 1.6; }
+.route-form-page .field-group select.form-control {
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='m4 6 4 4 4-4' fill='none' stroke='%23607087' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position: right 14px center;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+  padding-right: 42px;
+}
+.route-form-page .form-actions { flex-wrap: wrap; gap: 16px; }
+.route-cancel-action { border: 1px solid #cbd6e2; border-radius: 9px; color: #344459; font-size: 14px; font-weight: 600; padding: 10px 20px; text-align: center; }
+.route-cancel-action:hover { background: #edf3f0; color: #1f5a4c; }
+.route-form-page a:focus-visible,
+.route-form-page button:focus-visible,
+.route-form-page input:focus-visible,
+.route-form-page select:focus-visible { outline: 3px solid #438d7c; outline-offset: 3px; }
+
+@media (max-width: 991.98px) {
+  .route-fields-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 575.98px) {
+  .route-fields-grid { grid-template-columns: minmax(0, 1fr); }
+  .route-form-page .form-actions > * { flex: 1 1 auto; justify-content: center; }
+}
+
+@media (forced-colors: active) {
+  .route-form-page .field-group select.form-control { appearance: auto; background-image: none; }
+}

@@ -1,19 +1,13 @@
-<section class="content-header">
-  <div class="container-fluid">
-    <div class="row mb-2">
-      <div class="col-sm-9">
-        <h1>{{title}}</h1>
-        <p class="descuentos-subtitle">
-          Niveles de descuento por categoría de cliente, precio mayorista fijo y descuentos por ciento o fardo cerrado.
-          El vendedor elige el tipo en cada línea de la proforma.
-        </p>
-      </div>
-    </div>
+<header class="management-header">
+  <div class="management-heading">
+    <h1>{{title}}</h1>
+    <p>Configura niveles por categoría, precios mayoristas y descuentos por volumen.</p>
   </div>
-</section>
+
+</header>
 
 <div class="card listing-card">
-  <div class="card-header listing-card-header">Categorías de cliente</div>
+  <div class="card-header listing-card-header"><i class="fas fa-tags" aria-hidden="true"></i>Categorías de cliente</div>
   <div class="card-body">
     <div class="row">
       <div class="col-lg-4 mb-3" *ngFor="let categoria of categorias">
@@ -33,9 +27,12 @@
           </div>
 
           <div class="nivel-nuevo">
-            <input type="number" min="0.01" max="100" step="0.01" class="form-control form-control-sm"
-              [name]="'nuevo-' + categoria.categoria" [(ngModel)]="nuevoPorcentaje[categoria.categoria]"
-              (keyup.enter)="agregarNivel(categoria)" placeholder="Nuevo nivel %">
+            <div class="listing-field">
+              <label [for]="'nuevo-' + categoria.categoria">Nuevo nivel (%)</label>
+              <input type="number" min="0.01" max="100" step="0.01" class="form-control form-control-sm"
+                [id]="'nuevo-' + categoria.categoria" [name]="'nuevo-' + categoria.categoria"
+                [(ngModel)]="nuevoPorcentaje[categoria.categoria]" (keyup.enter)="agregarNivel(categoria)" placeholder="0.00">
+            </div>
             <button type="button" class="btn btn-sm btn-outline-secondary" (click)="agregarNivel(categoria)">
               <i class="fas fa-plus"></i> Agregar
             </button>
@@ -43,7 +40,8 @@
 
           <button type="button" class="btn btn-sm btn-descuentos mt-3"
             [disabled]="guardandoCategoria === categoria.categoria" (click)="guardarCategoria(categoria)">
-            <i class="fas fa-save"></i> Guardar categoría
+            <i class="fas fa-save" aria-hidden="true"></i>
+            {{guardandoCategoria === categoria.categoria ? 'Guardando...' : 'Guardar categoría'}}
           </button>
         </div>
       </div>
@@ -52,12 +50,12 @@
 </div>
 
 <div class="card listing-card mt-3" *ngIf="edicion">
-  <div class="card-header listing-card-header">Editando: {{edicion.nombre}}</div>
+  <div class="card-header listing-card-header"><i class="fas fa-tags" aria-hidden="true"></i>Editando: {{edicion.nombre}}</div>
   <div class="card-body">
     <p class="text-muted">Precio de venta actual: <strong>Q{{edicion.precioVenta | number: '1.2-2'}}</strong></p>
     <form #edicionForm="ngForm" (ngSubmit)="guardarProducto()">
       <div class="row">
-        <div class="col-md-4 mb-3">
+        <div class="col-md-4 mb-3 listing-field">
           <label for="precioMayorista">Precio mayorista fijo (Q)</label>
           <input type="number" min="0.01" step="0.01" id="precioMayorista" name="precioMayorista"
             class="form-control" [(ngModel)]="edicion.precioMayorista" placeholder="Sin precio mayorista">
@@ -74,19 +72,21 @@
             <strong>{{fila.nombre}}</strong>
           </label>
         </div>
-        <div class="col-md-3 mb-2">
-          <input type="number" min="2" step="1" class="form-control form-control-sm" [name]="'minimo-' + fila.id"
+        <div class="col-md-3 mb-2 listing-field">
+          <label [for]="'minimo-' + fila.id">{{fila.id === 'fardo' ? 'Unidades por fardo' : 'Cantidad mínima'}}</label>
+          <input type="number" min="2" step="1" class="form-control form-control-sm" [id]="'minimo-' + fila.id" [name]="'minimo-' + fila.id"
             [(ngModel)]="fila.modelo.cantidadMinima" [disabled]="!fila.modelo.activo"
             [placeholder]="fila.id === 'fardo' ? 'Unidades por fardo' : 'Desde (unidades)'">
         </div>
-        <div class="col-md-3 mb-2">
+        <div class="col-md-3 mb-2 listing-field">
+          <label [for]="'porcentaje-' + fila.id">Descuento (%)</label>
           <input type="number" min="0.01" max="100" step="0.01" class="form-control form-control-sm"
-            [name]="'porcentaje-' + fila.id" [(ngModel)]="fila.modelo.porcentaje" [disabled]="!fila.modelo.activo"
+            [id]="'porcentaje-' + fila.id" [name]="'porcentaje-' + fila.id" [(ngModel)]="fila.modelo.porcentaje" [disabled]="!fila.modelo.activo"
             placeholder="Descuento %">
         </div>
       </div>
 
-      <div class="mt-3">
+      <div class="management-form-actions">
         <button type="submit" class="btn btn-sm btn-descuentos mr-2" [disabled]="guardandoProducto">
           <i class="fas fa-save"></i> Guardar producto
         </button>
@@ -97,17 +97,22 @@
 </div>
 
 <div class="card listing-card mt-3">
-  <div class="card-header listing-card-header">Precio mayorista y descuentos por producto</div>
+  <div class="card-header listing-card-header"><i class="fas fa-tags" aria-hidden="true"></i>Precio mayorista y descuentos por producto</div>
   <div class="card-body table-responsive">
-    <div class="row mb-3 align-items-center filtros-productos">
-      <div class="col-sm-6">
-        <input type="text" class="form-control form-control-sm" [value]="filtro"
+    <div class="filtros-productos">
+      <div class="listing-field">
+        <label for="buscar-producto-descuento">Buscar producto</label>
+        <input id="buscar-producto-descuento" type="search" class="form-control form-control-sm" [value]="filtro"
           (input)="onBuscar($event.target.value)" placeholder="Buscar por nombre o código del producto">
       </div>
-      <div class="col-sm-6">
-        <label class="mb-0">
-          <input type="checkbox" [(ngModel)]="soloConDescuentos" (ngModelChange)="cambiarSoloConDescuentos()">
-          Solo productos que ya tienen precio mayorista o descuentos
+      <div class="discount-filter-option">
+        <label class="discount-filter-toggle" for="solo-productos-descuentos">
+          <span class="discount-filter-copy">
+            <span class="discount-filter-title">Solo productos con descuentos</span>
+            <span class="discount-filter-description">Incluye productos con precio mayorista.</span>
+          </span>
+          <input id="solo-productos-descuentos" type="checkbox" role="switch" class="listing-switch"
+            [(ngModel)]="soloConDescuentos" (ngModelChange)="cambiarSoloConDescuentos()">
         </label>
       </div>
     </div>
@@ -124,39 +129,39 @@
       </div>
     </div>
 
-    <table class="table table-hover table-striped table-bordered table-sm productos-descuentos-table"
+    <table class="table table-hover table-sm listing-data-table productos-descuentos-table"
       *ngIf="!cargando && productos.length > 0">
       <thead>
         <tr>
-          <th>Código</th>
-          <th>Producto</th>
-          <th class="text-right">Venta</th>
-          <th class="text-right">Mayorista</th>
-          <th>Por ciento</th>
-          <th>Fardo cerrado</th>
-          <th class="text-center">Opciones</th>
+          <th scope="col">Código</th>
+          <th scope="col">Producto</th>
+          <th scope="col" class="text-right">Venta (Q)</th>
+          <th scope="col" class="text-right">Mayorista (Q)</th>
+          <th scope="col">Por ciento</th>
+          <th scope="col">Fardo cerrado</th>
+          <th scope="col" class="text-center">Opciones</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let producto of productos">
-          <td>{{producto.codProducto}}</td>
-          <td>{{producto.nombre}}</td>
-          <td class="text-right">{{producto.precioVenta | number: '1.2-2'}}</td>
-          <td class="text-right">{{producto.precioMayorista !== null ? (producto.precioMayorista | number: '1.2-2') : '—'}}</td>
-          <td>
+          <td data-label="Código">{{producto.codProducto}}</td>
+          <td data-label="Producto"><strong>{{producto.nombre}}</strong></td>
+          <td data-label="Venta (Q)" class="text-money">{{producto.precioVenta | number: '1.2-2'}}</td>
+          <td data-label="Mayorista (Q)" class="text-money">{{producto.precioMayorista !== null ? (producto.precioMayorista | number: '1.2-2') : '—'}}</td>
+          <td data-label="Por ciento">
             <ng-container *ngIf="especial(producto, 'CIENTO') as c; else sinCiento">
               {{c.porcentaje}} % desde {{c.cantidadMinima}}
             </ng-container>
             <ng-template #sinCiento>—</ng-template>
           </td>
-          <td>
+          <td data-label="Fardo cerrado">
             <ng-container *ngIf="especial(producto, 'FARDO') as f; else sinFardo">
               {{f.porcentaje}} % · fardo de {{f.cantidadMinima}}
             </ng-container>
             <ng-template #sinFardo>—</ng-template>
           </td>
-          <td class="text-center">
-            <button type="button" class="btn btn-sm btn-outline-secondary" (click)="editar(producto)"
+          <td data-label="Opciones" class="text-center">
+            <button type="button" class="btn btn-sm listing-table-action listing-action-edit" (click)="editar(producto)"
               aria-label="Editar descuentos del producto" title="Editar">
               <i class="fas fa-edit"></i>
             </button>
@@ -168,11 +173,11 @@
     <nav *ngIf="!cargando && totalPaginas > 1" aria-label="Paginación de productos">
       <ul class="pagination justify-content-center mt-3 mb-0">
         <li class="page-item" [ngClass]="{'disabled': isFirst}">
-          <a class="page-link" href="javascript:void(0)" (click)="irPaginaAnterior()"><i class="fas fa-angle-left"></i></a>
+          <button type="button" class="page-link" (click)="irPaginaAnterior()" [disabled]="isFirst" aria-label="Página anterior"><i class="fas fa-angle-left"></i></button>
         </li>
         <li class="page-item disabled"><span class="page-link">{{paginaActual + 1}} de {{totalPaginas}}</span></li>
         <li class="page-item" [ngClass]="{'disabled': isLast}">
-          <a class="page-link" href="javascript:void(0)" (click)="irPaginaSiguiente()"><i class="fas fa-angle-right"></i></a>
+          <button type="button" class="page-link" (click)="irPaginaSiguiente()" [disabled]="isLast" aria-label="Página siguiente"><i class="fas fa-angle-right"></i></button>
         </li>
       </ul>
     </nav>

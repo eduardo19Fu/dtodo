@@ -6,6 +6,12 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Cambiado — Recibos de caja: búsqueda de cliente, cheque y formulario más limpio
+- El campo de cliente se presenta como búsqueda (icono, "Buscar cliente", indicador de búsqueda en curso) y avisa cuando no encuentra a nadie; un botón permite quitar el cliente elegido y buscar a otro.
+- Nueva forma de pago **Cheque**: pide el número de cheque como referencia, sale en el recibo impreso y en el estado de cuenta. No requiere script SQL (`forma_pago` es VARCHAR).
+- El campo de referencia indica qué número va (boleta, transferencia o cheque) según la forma de pago.
+- Al crear un recibo se oculta la lista de recibos emitidos; reaparece al emitir o cancelar.
+
 ### Cambiado — Menú lateral: opciones mayoristas agrupadas
 - Nuevo grupo **Mayoristas** (Rutas, Descuentos, Autorizaciones, Comisiones, Indicadores), solo administrador.
 - Nuevo grupo **Cuentas por cobrar** (Cobranza, Recibos de caja, Devoluciones de clientes): administrador y cobrador; Devoluciones solo administrador.

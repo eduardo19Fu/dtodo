@@ -1,16 +1,16 @@
-<section class="content-header">
-  <div class="container-fluid">
-    <div class="row mb-2">
-      <div class="col-sm-9">
-        <h1>{{title}}</h1>
-        <p class="listing-subtitle">
-          Lo que deben los clientes mayoristas, según cuánto lleva vencido cada pedido. Un pedido vence cuando pasan los días de
-          crédito desde su primera entrega.
-        </p>
-      </div>
-    </div>
+<header class="management-header">
+  <div class="management-heading">
+    <h1>{{title}}</h1>
+    <p>Consulta saldos por cliente, ruta y antigüedad de la deuda.</p>
   </div>
-</section>
+
+</header>
+
+<details class="management-help">
+  <summary>¿Cómo se calcula el vencimiento?</summary>
+  <p>Un pedido vence cuando transcurren sus días de crédito desde la primera entrega.
+    Los saldos se agrupan según los días de atraso de cada pedido.</p>
+</details>
 
 <div *ngIf="errorCarga" class="listing-alert listing-alert-warning" role="alert">
   <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
@@ -32,69 +32,74 @@
   </button>
 </div>
 
-<div class="listing-stats" *ngIf="cobranza">
-  <div class="listing-stat"><span>Por vencer</span><strong>{{totales.porVencer | currency: 'Q' : 'symbol'}}</strong></div>
-  <div class="listing-stat"><span>Vencido 1-30 días</span><strong>{{totales.vencido1a30 | currency: 'Q' : 'symbol'}}</strong></div>
-  <div class="listing-stat"><span>Vencido 31-60 días</span><strong>{{totales.vencido31a60 | currency: 'Q' : 'symbol'}}</strong></div>
-  <div class="listing-stat is-danger"><span>Vencido +60 días</span><strong>{{totales.vencidoMasDe60 | currency: 'Q' : 'symbol'}}</strong></div>
-  <div class="listing-stat"><span>Total por cobrar</span><strong>{{totales.total | currency: 'Q' : 'symbol'}}</strong>
-    <small>{{clientes.length}} {{clientes.length === 1 ? 'cliente' : 'clientes'}}</small></div>
+<div class="cobranza-summary" *ngIf="cobranza" role="region" aria-label="Resumen de saldos">
+  <div class="balance-total">
+    <span><i class="fas fa-wallet" aria-hidden="true"></i> Total por cobrar</span>
+    <strong>{{totales.total | currency: 'Q' : 'symbol'}}</strong>
+    <small>{{clientes.length}} {{clientes.length === 1 ? 'cliente con saldo' : 'clientes con saldo'}}</small>
+  </div>
+  <div class="balance-aging">
+    <div class="balance-period balance-current">
+      <span><i class="far fa-calendar-check" aria-hidden="true"></i> Por vencer</span>
+      <strong>{{totales.porVencer | currency: 'Q' : 'symbol'}}</strong>
+      <small>Dentro del plazo de pago</small>
+    </div>
+    <div class="balance-period balance-recent">
+      <span><i class="far fa-clock" aria-hidden="true"></i> Vencido 1–30 días</span>
+      <strong>{{totales.vencido1a30 | currency: 'Q' : 'symbol'}}</strong>
+    </div>
+    <div class="balance-period balance-overdue">
+      <span><i class="fas fa-history" aria-hidden="true"></i> Vencido 31–60 días</span>
+      <strong>{{totales.vencido31a60 | currency: 'Q' : 'symbol'}}</strong>
+    </div>
+    <div class="balance-period balance-critical" [class.has-balance]="totales.vencidoMasDe60 > 0">
+      <span><i class="fas fa-exclamation-circle" aria-hidden="true"></i> Vencido +60 días</span>
+      <strong>{{totales.vencidoMasDe60 | currency: 'Q' : 'symbol'}}</strong>
+      <small *ngIf="totales.vencidoMasDe60 > 0">Prioridad de cobro</small>
+    </div>
+  </div>
 </div>
 
 <div class="card listing-card">
-  <div class="card-header listing-card-header">Cuentas por cobrar</div>
+  <div class="card-header listing-card-header"><i class="fas fa-file-invoice-dollar" aria-hidden="true"></i>Cuentas por cobrar</div>
   <div class="card-body">
-    <div class="listing-filter-grid">
-      <div class="listing-tile-cell">
-        <label class="listing-tile-label" for="busquedaCobranza">Cliente</label>
-        <div class="listing-tile">
-          <span class="listing-tile-icon" aria-hidden="true"><i class="fas fa-search"></i></span>
-          <span class="listing-tile-copy">
-            <small>Buscar por</small>
-            <input type="text" id="busquedaCobranza" class="listing-tile-input" [(ngModel)]="busqueda" name="busqueda"
-              placeholder="Nombre o negocio" autocomplete="off">
-          </span>
+    <div class="cobranza-filters">
+      <div class="cobranza-fields">
+        <div class="listing-field">
+          <label for="busquedaCobranza">Cliente</label>
+          <input type="search" id="busquedaCobranza" class="form-control" [(ngModel)]="busqueda" name="busqueda"
+            placeholder="Nombre o negocio" autocomplete="off">
+        </div>
+        <div class="listing-field">
+          <label for="rutaCobranza">Ruta</label>
+          <select id="rutaCobranza" class="form-control" [(ngModel)]="idRuta" name="ruta">
+            <option [ngValue]="''">Todas las rutas</option>
+            <option *ngFor="let ruta of rutas" [ngValue]="ruta.idRuta">{{ruta.nombre}}</option>
+          </select>
+        </div>
+        <div class="listing-field">
+          <span class="listing-field-label" id="saldoCobranzaLabel">Saldo</span>
+          <label class="cobranza-balance-toggle" for="vencidosCobranza">
+            <span>Solo vencidos</span>
+            <input type="checkbox" role="switch" class="listing-switch" id="vencidosCobranza"
+              [(ngModel)]="soloVencidos" name="vencidos" aria-describedby="saldoCobranzaLabel">
+          </label>
         </div>
       </div>
-
-      <div class="listing-tile-cell">
-        <label class="listing-tile-label" for="rutaCobranza">Ruta</label>
-        <div class="listing-tile">
-          <span class="listing-tile-icon" aria-hidden="true"><i class="fas fa-route"></i></span>
-          <span class="listing-tile-copy">
-            <small>Clientes de</small>
-            <select id="rutaCobranza" class="listing-tile-select" [(ngModel)]="idRuta" name="ruta">
-              <option value="">Todas las rutas</option>
-              <option *ngFor="let ruta of rutas" [ngValue]="ruta.idRuta">{{ruta.nombre}}</option>
-            </select>
-          </span>
+      <div class="cobranza-exports">
+        <span>Exportar resultados</span>
+        <div class="listing-actions">
+          <button type="button" class="btn listing-page-action listing-secondary-action" (click)="descargarReporte('PDF')"
+            [disabled]="generando || !cobranza" aria-label="Exportar cobranza a PDF">
+            <i class="fas fa-file-pdf" aria-hidden="true"></i> PDF
+          </button>
+          <button type="button" class="btn listing-page-action listing-secondary-action" (click)="descargarReporte('XLSX')"
+            [disabled]="generando || !cobranza" aria-label="Exportar cobranza a Excel">
+            <i class="fas fa-file-excel" aria-hidden="true"></i> Excel
+          </button>
         </div>
-      </div>
-
-      <div class="listing-tile-cell">
-        <span class="listing-tile-label">Saldo</span>
-        <label class="listing-tile listing-tile-toggle" for="vencidosCobranza">
-          <span class="listing-tile-icon" aria-hidden="true"><i class="fas fa-exclamation-triangle"></i></span>
-          <span class="listing-tile-copy">
-            <small>Mostrar</small>
-            <strong>{{soloVencidos ? 'Solo vencidos' : 'Todo lo pendiente'}}</strong>
-          </span>
-          <input type="checkbox" class="listing-switch" id="vencidosCobranza" [(ngModel)]="soloVencidos" name="vencidos">
-        </label>
-      </div>
-
-      <div class="listing-tile-actions">
-        <button type="button" class="btn listing-page-action listing-secondary-action" (click)="descargarReporte('PDF')"
-          [disabled]="generando || !cobranza">
-          <i class="fas fa-file-pdf"></i> PDF
-        </button>
-        <button type="button" class="btn listing-page-action listing-secondary-action" (click)="descargarReporte('XLSX')"
-          [disabled]="generando || !cobranza">
-          <i class="fas fa-file-excel"></i> Excel
-        </button>
       </div>
     </div>
-
     <div *ngIf="cargando" class="text-center p-4">
       <div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div>
     </div>
@@ -111,16 +116,16 @@
       <table class="table table-hover table-striped table-bordered table-sm listing-data-table">
         <thead>
           <tr>
-            <th>Cliente</th>
-            <th>Ruta</th>
-            <th class="text-right">Por vencer</th>
-            <th class="text-right">Vencido 1-30</th>
-            <th class="text-right">Vencido 31-60</th>
-            <th class="text-right">Vencido +60</th>
-            <th class="text-right">Total vencido</th>
-            <th class="text-right">Total</th>
-            <th class="text-center">Atraso</th>
-            <th class="text-center">Estado de cuenta</th>
+            <th scope="col">Cliente</th>
+            <th scope="col">Ruta</th>
+            <th scope="col" class="text-right">Por vencer</th>
+            <th scope="col" class="text-right">Vencido 1-30</th>
+            <th scope="col" class="text-right">Vencido 31-60</th>
+            <th scope="col" class="text-right">Vencido +60</th>
+            <th scope="col" class="text-right">Total vencido</th>
+            <th scope="col" class="text-right">Total</th>
+            <th scope="col" class="text-center">Atraso</th>
+            <th scope="col" class="text-center">Estado de cuenta</th>
           </tr>
         </thead>
         <tbody>
@@ -157,12 +162,12 @@
         <tfoot>
           <tr>
             <td colspan="2">Totales</td>
-            <td class="text-money">{{totales.porVencer | currency: 'Q' : 'symbol'}}</td>
-            <td class="text-money">{{totales.vencido1a30 | currency: 'Q' : 'symbol'}}</td>
-            <td class="text-money">{{totales.vencido31a60 | currency: 'Q' : 'symbol'}}</td>
-            <td class="text-money">{{totales.vencidoMasDe60 | currency: 'Q' : 'symbol'}}</td>
-            <td class="text-money text-danger">{{totales.vencido | currency: 'Q' : 'symbol'}}</td>
-            <td class="text-money">{{totales.total | currency: 'Q' : 'symbol'}}</td>
+            <td data-label="Por vencer" class="text-money">{{totales.porVencer | currency: 'Q' : 'symbol'}}</td>
+            <td data-label="Vencido 1–30" class="text-money">{{totales.vencido1a30 | currency: 'Q' : 'symbol'}}</td>
+            <td data-label="Vencido 31–60" class="text-money">{{totales.vencido31a60 | currency: 'Q' : 'symbol'}}</td>
+            <td data-label="Vencido +60" class="text-money">{{totales.vencidoMasDe60 | currency: 'Q' : 'symbol'}}</td>
+            <td data-label="Total vencido" class="text-money text-danger">{{totales.vencido | currency: 'Q' : 'symbol'}}</td>
+            <td data-label="Total" class="text-money">{{totales.total | currency: 'Q' : 'symbol'}}</td>
             <td colspan="2"></td>
           </tr>
         </tfoot>

@@ -1,134 +1,203 @@
-<section class="content-header">
-  <div class="container-fluid">
-    <div class="row mb-2">
-      <div class="col-sm-9">
-        <h1>{{title}}</h1>
-        <p class="listing-subtitle">Abonos y depósitos de los clientes. Cada sucursal numera sus recibos.</p>
-        <br>
-        <button type="button" class="btn listing-page-action listing-primary-action" (click)="abrirFormulario()" *ngIf="!formularioAbierto">
-          <i class="fas fa-plus"></i> Nuevo recibo
+<app-modal-buscar-cliente *ngIf="modalClienteVisible" (cliente)="elegirCliente($event)"
+  (cerrar)="cerrarModalCliente()"></app-modal-buscar-cliente>
+
+<header class="management-header" *ngIf="!formularioAbierto">
+  <div class="management-heading">
+    <h1>{{title}}</h1>
+    <p>Registra abonos y depósitos, y consulta los recibos de cada sucursal.</p>
+  </div>
+  <div class="listing-actions">
+    <button type="button" class="btn listing-page-action listing-primary-action" (click)="abrirFormulario()">
+      <i class="fas fa-plus" aria-hidden="true"></i> Nuevo recibo
+    </button>
+  </div>
+</header>
+
+<div class="receipt-form-page" *ngIf="formularioAbierto">
+  <header class="page-heading">
+    <div>
+      <span class="page-eyebrow">Recibos de caja</span>
+      <h1>Registrar nuevo recibo</h1>
+      <p>Selecciona al cliente y registra los datos de su pago.</p>
+    </div>
+    <div class="heading-icon" aria-hidden="true"><i class="fas fa-receipt"></i></div>
+  </header>
+
+  <form class="product-card" (ngSubmit)="emitir()">
+    <div class="card-hero">
+      <div class="hero-icon" aria-hidden="true"><i class="fas fa-file-invoice-dollar"></i></div>
+      <div>
+        <h2>Nuevo recibo</h2>
+        <p>Los campos marcados con <span aria-hidden="true">*</span> son obligatorios.</p>
+      </div>
+      <span class="status-pill"><i class="fas fa-circle" aria-hidden="true"></i> Nuevo registro</span>
+    </div>
+
+    <div class="form-content">
+      <section class="form-section receipt-client-section" aria-labelledby="recibo-cliente-title">
+        <div class="section-heading">
+          <span class="section-number">01</span>
+          <div>
+            <h3 id="recibo-cliente-title">Información del cliente</h3>
+            <p>Identifica quién recibe el pago y selecciona al cliente.</p>
+          </div>
+        </div>
+
+        <div class="form-grid receipt-seller-search-grid">
+          <div class="field-group">
+            <label for="usuarioRecibo">Recibido por</label>
+            <div class="control-with-icon">
+              <i class="fas fa-user-tie" aria-hidden="true"></i>
+              <input type="text" id="usuarioRecibo" class="form-control"
+                [value]="(auth.usuario?.primerNombre || '') + ' ' + (auth.usuario?.apellido || '')" disabled>
+            </div>
+          </div>
+          <div class="field-group receipt-client-field">
+            <label for="clienteRecibo">Buscar cliente <span class="required-mark">*</span></label>
+            <div class="receipt-client-picker cliente-buscador" [class.is-elegido]="clienteElegido"
+              [class.has-client]="clienteElegido">
+              <div class="control-with-icon receipt-client-value">
+                <i class="fas fa-id-card" aria-hidden="true"></i>
+                <input type="text" id="clienteRecibo" class="form-control" [value]="clienteElegido?.nombre || ''"
+                  readonly placeholder="Selecciona un cliente" (click)="abrirModalCliente()" [disabled]="emitiendo"
+                  (keydown.enter)="$event.preventDefault(); abrirModalCliente()" aria-haspopup="dialog">
+              </div>
+              <button #buscarClienteButton type="button" class="receipt-search-client" (click)="abrirModalCliente()"
+                [disabled]="emitiendo" aria-haspopup="dialog" [attr.aria-label]="clienteElegido ? 'Cambiar cliente' : 'Buscar cliente'">
+                <i class="fas fa-search" aria-hidden="true"></i>
+              </button>
+              <button type="button" class="receipt-remove-client" *ngIf="clienteElegido" (click)="quitarCliente()"
+                [disabled]="emitiendo" aria-label="Quitar cliente seleccionado">
+                <i class="fas fa-times" aria-hidden="true"></i>
+              </button>
+            </div>
+            <small *ngIf="!clienteElegido">Presiona Enter o utiliza la lupa para buscar en el directorio de clientes.</small>
+            <small *ngIf="clienteElegido">
+              <span *ngIf="clienteElegido.nombreNegocio">{{clienteElegido.nombreNegocio}} · </span>
+              NIT {{clienteElegido.nit || '—'}}<span *ngIf="clienteElegido.telefono"> · {{clienteElegido.telefono}}</span>
+            </small>
+          </div>
+        </div>
+
+        <div class="listing-stats receipt-balance" *ngIf="saldo" role="status">
+          <div class="listing-stat"><span>Entregado</span><strong>{{saldo.entregado | currency: 'Q' : 'symbol'}}</strong></div>
+          <div class="listing-stat" *ngIf="saldo.devuelto > 0"><span>Devuelto</span><strong>{{saldo.devuelto | currency: 'Q' : 'symbol'}}</strong></div>
+          <div class="listing-stat"><span>Abonado</span><strong>{{saldo.abonado | currency: 'Q' : 'symbol'}}</strong></div>
+          <div class="listing-stat" [ngClass]="saldo.saldo < 0 ? 'is-success' : saldo.saldo > 0 ? 'is-danger' : ''">
+            <span>{{saldo.saldo < 0 ? 'A favor del cliente' : 'Saldo pendiente'}}</span>
+            <strong>{{(saldo.saldo < 0 ? -saldo.saldo : saldo.saldo) | currency: 'Q' : 'symbol'}}</strong>
+          </div>
+          <div class="listing-stat" *ngIf="saldo.limiteCredito != null">
+            <span>Crédito disponible</span><strong>{{saldo.disponible | currency: 'Q' : 'symbol'}}</strong>
+            <small>de {{saldo.limiteCredito | currency: 'Q' : 'symbol'}}</small>
+          </div>
+        </div>
+
+        <div class="field-group" *ngIf="saldo">
+          <label for="pedidoRecibo">Aplicar pago a</label>
+          <div class="control-with-icon">
+            <i class="fas fa-file-invoice" aria-hidden="true"></i>
+            <select id="pedidoRecibo" class="form-control" [(ngModel)]="idProformaElegida" name="pedido"
+              (ngModelChange)="sugerirMonto($event)">
+              <option [ngValue]="null">Abono a la cuenta (se aplica a lo más antiguo)</option>
+              <option *ngFor="let pedido of saldo.pedidos" [ngValue]="pedido.idProforma">
+                Pedido {{pedido.noProforma}} · {{pedido.condicionPago === 'CREDITO' ? 'crédito' : 'contado'}} · total {{pedido.total | currency: 'Q' : 'symbol'}} ·
+                cobrado {{pedido.cobrado | currency: 'Q' : 'symbol'}}<ng-container *ngIf="pedido.pendiente > 0"> · pendiente {{pedido.pendiente | currency: 'Q' : 'symbol'}}</ng-container>
+              </option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section last-section" aria-labelledby="recibo-pago-title">
+        <div class="section-heading">
+          <span class="section-number">02</span>
+          <div>
+            <h3 id="recibo-pago-title">Datos del pago</h3>
+            <p>Indica el monto, la fecha y la forma de pago del recibo.</p>
+          </div>
+        </div>
+
+        <div class="form-grid receipt-fields-grid">
+          <div class="field-group">
+            <label for="montoRecibo">Monto (Q) <span class="required-mark">*</span></label>
+            <div class="control-with-icon">
+              <i class="fas fa-coins" aria-hidden="true"></i>
+              <input type="number" id="montoRecibo" class="form-control" min="0" step="0.01"
+                [(ngModel)]="monto" name="monto" placeholder="0.00">
+            </div>
+          </div>
+          <div class="row listing-date-range listing-date-single receipt-date-field">
+            <app-date-range-picker apariencia="campo" modo="fecha" [(fecha)]="fechaPago"
+              etiquetaFecha="Fecha de pago" tema="ventas"></app-date-range-picker>
+          </div>
+          <div class="field-group">
+            <label for="formaRecibo">Forma de pago</label>
+            <div class="control-with-icon">
+              <i class="fas fa-money-check-alt" aria-hidden="true"></i>
+              <select id="formaRecibo" class="form-control" [(ngModel)]="formaPago" name="formaPago">
+                <option *ngFor="let forma of formas" [value]="forma.valor">{{forma.etiqueta}}</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-group">
+            <label for="referenciaRecibo">Referencia <span class="required-mark" *ngIf="pideReferencia">*</span></label>
+            <div class="control-with-icon">
+              <i class="fas fa-hashtag" aria-hidden="true"></i>
+              <input type="text" id="referenciaRecibo" class="form-control" maxlength="100"
+                [(ngModel)]="referencia" name="referencia" [placeholder]="textoReferencia">
+            </div>
+          </div>
+          <div class="field-group" *ngIf="esAdmin && sucursales.length > 0">
+            <label for="sucursalRecibo">Sucursal</label>
+            <div class="control-with-icon">
+              <i class="fas fa-store" aria-hidden="true"></i>
+              <select id="sucursalRecibo" class="form-control" [(ngModel)]="idSucursalEmision" name="sucursal">
+                <option [ngValue]="null">La mía</option>
+                <option *ngFor="let sucursal of sucursales" [ngValue]="sucursal.idSucursal">{{sucursal.nombre}}</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-group receipt-span-all">
+            <label for="observacionesRecibo">Observaciones</label>
+            <div class="control-with-icon">
+              <i class="far fa-comment-alt" aria-hidden="true"></i>
+              <input type="text" id="observacionesRecibo" class="form-control" maxlength="255"
+                [(ngModel)]="observaciones" name="observaciones" placeholder="Opcional">
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <footer class="form-actions receipt-form-actions">
+      <p *ngIf="faltante"><i class="fas fa-info-circle" aria-hidden="true"></i> {{faltante}}</p>
+      <div class="receipt-action-buttons">
+        <button type="button" class="receipt-cancel-action" (click)="cancelarFormulario()" [disabled]="emitiendo">Cancelar</button>
+        <button type="submit" class="primary-action" [disabled]="!!faltante || emitiendo">
+          <i class="fas fa-receipt" aria-hidden="true"></i> {{emitiendo ? 'Emitiendo...' : 'Emitir e imprimir'}}
         </button>
       </div>
-    </div>
-  </div>
-</section>
-
-<div class="card listing-card" *ngIf="formularioAbierto">
-  <div class="card-header listing-card-header">Nuevo recibo</div>
-  <div class="card-body">
-    <div class="listing-panel">
-      <div class="listing-fields-grid">
-        <div class="listing-field buscador listing-span-2">
-          <label for="clienteRecibo">Cliente <span class="requerido">*</span></label>
-          <input type="text" id="clienteRecibo" class="form-control" autocomplete="off" [value]="busquedaCliente"
-            (input)="onBuscarCliente($event.target.value)" placeholder="Nombre, NIT, teléfono o código">
-          <ul class="list-group resultados" *ngIf="clientesEncontrados.length > 0">
-            <li class="list-group-item list-group-item-action" *ngFor="let cliente of clientesEncontrados"
-              (click)="elegirCliente(cliente)" role="button">
-              <strong>{{cliente.nombre}}</strong>
-              <small class="d-block text-muted">
-                <span *ngIf="cliente.nombreNegocio">{{cliente.nombreNegocio}} · </span>NIT {{cliente.nit || '—'}}
-              </small>
-            </li>
-          </ul>
-          <small class="text-success" *ngIf="clienteElegido"><i class="fas fa-check-circle" aria-hidden="true"></i> Cliente elegido</small>
-        </div>
-        <div class="listing-field">
-          <label for="montoRecibo">Monto (Q) <span class="requerido">*</span></label>
-          <input type="number" id="montoRecibo" class="form-control" min="0" step="0.01" [(ngModel)]="monto" name="monto" placeholder="0.00">
-        </div>
-        <div class="row listing-date-range listing-date-single">
-          <app-date-range-picker modo="fecha" [(fecha)]="fechaPago" etiquetaFecha="Fecha de pago" tema="ventas"></app-date-range-picker>
-        </div>
-      </div>
-    </div>
-
-    <div class="listing-stats" *ngIf="saldo" role="status">
-      <div class="listing-stat"><span>Entregado</span><strong>{{saldo.entregado | currency: 'Q' : 'symbol'}}</strong></div>
-      <div class="listing-stat" *ngIf="saldo.devuelto > 0"><span>Devuelto</span><strong>{{saldo.devuelto | currency: 'Q' : 'symbol'}}</strong></div>
-      <div class="listing-stat"><span>Abonado</span><strong>{{saldo.abonado | currency: 'Q' : 'symbol'}}</strong></div>
-      <div class="listing-stat" [ngClass]="saldo.saldo < 0 ? 'is-success' : saldo.saldo > 0 ? 'is-danger' : ''">
-        <span>{{saldo.saldo < 0 ? 'A favor del cliente' : 'Saldo pendiente'}}</span>
-        <strong>{{(saldo.saldo < 0 ? -saldo.saldo : saldo.saldo) | currency: 'Q' : 'symbol'}}</strong>
-      </div>
-      <div class="listing-stat" *ngIf="saldo.limiteCredito != null">
-        <span>Crédito disponible</span><strong>{{saldo.disponible | currency: 'Q' : 'symbol'}}</strong>
-        <small>de {{saldo.limiteCredito | currency: 'Q' : 'symbol'}}</small>
-      </div>
-    </div>
-
-    <div class="listing-panel">
-      <div class="listing-fields-grid">
-        <div class="listing-field listing-span-2" *ngIf="saldo">
-          <label for="pedidoRecibo">Paga a</label>
-          <select id="pedidoRecibo" class="form-control" [(ngModel)]="idProformaElegida" name="pedido" (ngModelChange)="sugerirMonto($event)">
-            <option [ngValue]="null">Abono a la cuenta (se aplica a lo más antiguo)</option>
-            <option *ngFor="let pedido of saldo.pedidos" [ngValue]="pedido.idProforma">
-              Pedido {{pedido.noProforma}} · {{pedido.condicionPago === 'CREDITO' ? 'crédito' : 'contado'}} · total {{pedido.total | currency: 'Q' : 'symbol'}} ·
-              cobrado {{pedido.cobrado | currency: 'Q' : 'symbol'}}<ng-container *ngIf="pedido.pendiente > 0"> · pendiente {{pedido.pendiente | currency: 'Q' : 'symbol'}}</ng-container>
-            </option>
-          </select>
-        </div>
-        <div class="listing-field">
-          <label for="formaRecibo">Forma de pago</label>
-          <select id="formaRecibo" class="form-control" [(ngModel)]="formaPago" name="formaPago">
-            <option *ngFor="let forma of formas" [value]="forma.valor">{{forma.etiqueta}}</option>
-          </select>
-        </div>
-        <div class="listing-field">
-          <label for="referenciaRecibo">Referencia <span class="requerido" *ngIf="pideReferencia">*</span></label>
-          <input type="text" id="referenciaRecibo" class="form-control" maxlength="100" [(ngModel)]="referencia" name="referencia"
-            placeholder="No. de boleta o transferencia">
-        </div>
-        <div class="listing-field" *ngIf="esAdmin && sucursales.length > 0">
-          <label for="sucursalRecibo">Sucursal</label>
-          <select id="sucursalRecibo" class="form-control" [(ngModel)]="idSucursalEmision" name="sucursal">
-            <option [ngValue]="null">La mía</option>
-            <option *ngFor="let sucursal of sucursales" [ngValue]="sucursal.idSucursal">{{sucursal.nombre}}</option>
-          </select>
-        </div>
-        <div class="listing-field listing-span-2">
-          <label for="observacionesRecibo">Observaciones</label>
-          <input type="text" id="observacionesRecibo" class="form-control" maxlength="255" [(ngModel)]="observaciones" name="observaciones"
-            placeholder="Opcional">
-        </div>
-      </div>
-    </div>
-
-    <p class="listing-note" *ngIf="faltante"><i class="fas fa-info-circle" aria-hidden="true"></i> {{faltante}}</p>
-    <div class="listing-actions">
-      <button type="button" class="btn listing-page-action listing-primary-action" (click)="emitir()" [disabled]="!!faltante || emitiendo">
-        <i class="fas fa-receipt"></i> Emitir e imprimir
-      </button>
-      <button type="button" class="btn listing-page-action listing-secondary-action" (click)="cancelarFormulario()" [disabled]="emitiendo">
-        Cancelar
-      </button>
-    </div>
-  </div>
+    </footer>
+  </form>
 </div>
 
-<div class="card listing-card">
-  <div class="card-header listing-card-header">Recibos emitidos</div>
+<div class="card listing-card" *ngIf="!formularioAbierto">
+  <div class="card-header listing-card-header"><i class="fas fa-receipt" aria-hidden="true"></i>Recibos emitidos</div>
   <div class="card-body">
-    <div class="listing-filter-grid">
+    <div class="listing-filter-grid recibos-filters">
       <div class="listing-tile-cell">
         <div class="row listing-date-range">
-          <app-date-range-picker [(fechaInicio)]="desde" [(fechaFin)]="hasta" tema="ventas"></app-date-range-picker>
+          <app-date-range-picker apariencia="campo" [(fechaInicio)]="desde" [(fechaFin)]="hasta" tema="ventas"></app-date-range-picker>
         </div>
       </div>
 
-      <div class="listing-tile-cell" *ngIf="esAdmin && sucursales.length > 0">
-        <label class="listing-tile-label" for="sucursalFiltro">Sucursal</label>
-        <div class="listing-tile">
-          <span class="listing-tile-icon" aria-hidden="true"><i class="fas fa-store"></i></span>
-          <span class="listing-tile-copy">
-            <small>Emitidos en</small>
-            <select id="sucursalFiltro" class="listing-tile-select" [(ngModel)]="idSucursalFiltro" name="sucursalFiltro">
-              <option [ngValue]="null">Todas las sucursales</option>
-              <option *ngFor="let sucursal of sucursales" [ngValue]="sucursal.idSucursal">{{sucursal.nombre}}</option>
-            </select>
-          </span>
-        </div>
+      <div class="listing-field" *ngIf="esAdmin && sucursales.length > 0">
+        <label for="sucursalFiltro">Sucursal</label>
+        <select id="sucursalFiltro" class="form-control" [(ngModel)]="idSucursalFiltro" name="sucursalFiltro">
+          <option [ngValue]="null">Todas las sucursales</option>
+          <option *ngFor="let sucursal of sucursales" [ngValue]="sucursal.idSucursal">{{sucursal.nombre}}</option>
+        </select>
       </div>
 
       <div class="listing-tile-cell">
@@ -179,13 +248,13 @@
       <table class="table table-hover table-striped table-bordered table-sm listing-data-table">
         <thead>
           <tr>
-            <th>Recibo</th>
-            <th>Fecha de pago</th>
-            <th>Cliente</th>
-            <th>Forma de pago</th>
-            <th class="text-right">Monto</th>
-            <th>Emitió</th>
-            <th class="text-center">Acciones</th>
+            <th scope="col">Recibo</th>
+            <th scope="col">Fecha de pago</th>
+            <th scope="col">Cliente</th>
+            <th scope="col">Forma de pago</th>
+            <th scope="col" class="text-right">Monto</th>
+            <th scope="col">Emitió</th>
+            <th scope="col" class="text-center">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -203,7 +272,7 @@
             </td>
             <td data-label="Forma de pago">
               <span class="listing-status-pill"
-                [ngClass]="recibo.formaPago === 'EFECTIVO' ? 'listing-status-success' : recibo.formaPago === 'DEPOSITO' ? 'listing-status-primary' : 'listing-status-info'">
+                [ngClass]="recibo.formaPago === 'EFECTIVO' ? 'listing-status-success' : recibo.formaPago === 'DEPOSITO' ? 'listing-status-primary' : recibo.formaPago === 'CHEQUE' ? 'listing-status-warning' : 'listing-status-info'">
                 {{etiquetaForma(recibo.formaPago)}}
               </span>
               <small class="d-block text-muted" *ngIf="recibo.referencia">Ref. {{recibo.referencia}}</small>
@@ -229,9 +298,9 @@
 
     <nav class="listing-pagination" *ngIf="!cargando && totalPaginas > 1" aria-label="Paginación de recibos">
       <ul class="pagination justify-content-center mt-3 mb-0">
-        <li class="page-item" [ngClass]="{'disabled': isFirst}"><a class="page-link" href="javascript:void(0)" (click)="irPaginaAnterior()"><i class="fas fa-angle-left"></i></a></li>
+        <li class="page-item" [ngClass]="{'disabled': isFirst}"><button type="button" class="page-link" (click)="irPaginaAnterior()" [disabled]="isFirst" aria-label="Página anterior"><i class="fas fa-angle-left"></i></button></li>
         <li class="page-item disabled"><span class="page-link">{{paginaActual + 1}} de {{totalPaginas}}</span></li>
-        <li class="page-item" [ngClass]="{'disabled': isLast}"><a class="page-link" href="javascript:void(0)" (click)="irPaginaSiguiente()"><i class="fas fa-angle-right"></i></a></li>
+        <li class="page-item" [ngClass]="{'disabled': isLast}"><button type="button" class="page-link" (click)="irPaginaSiguiente()" [disabled]="isLast" aria-label="Página siguiente"><i class="fas fa-angle-right"></i></button></li>
       </ul>
     </nav>
   </div>

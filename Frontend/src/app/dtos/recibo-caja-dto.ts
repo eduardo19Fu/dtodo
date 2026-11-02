@@ -1,4 +1,4 @@
-export type FormaPagoRecibo = 'EFECTIVO' | 'DEPOSITO' | 'TRANSFERENCIA';
+export type FormaPagoRecibo = 'EFECTIVO' | 'DEPOSITO' | 'TRANSFERENCIA' | 'CHEQUE';
 
 /** Un recibo de caja en la lista y el detalle. */
 export class ReciboCajaDto {

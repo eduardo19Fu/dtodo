@@ -1,16 +1,10 @@
-<section class="content-header">
-  <div class="container-fluid">
-    <div class="row mb-2">
-      <div class="col-sm-9">
-        <h1>{{title}}</h1>
-        <p class="listing-subtitle">
-          Descuentos de proformas mayoristas que pasan del tope, pedidos a crédito que pasan del límite del cliente y proformas
-          vencidas que esperan una decisión.
-        </p>
-      </div>
-    </div>
+<header class="management-header">
+  <div class="management-heading">
+    <h1>{{title}}</h1>
+    <p>Revisa descuentos, límites de crédito y proformas vencidas pendientes de decisión.</p>
   </div>
-</section>
+
+</header>
 
 <div *ngIf="errorCarga" class="listing-alert listing-alert-warning" role="alert">
   <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
@@ -21,7 +15,7 @@
 </div>
 
 <div class="card listing-card">
-  <div class="card-header listing-card-header">
+  <div class="card-header listing-card-header"><i class="fas fa-user-check" aria-hidden="true"></i>
     Descuentos por autorizar <span class="listing-status-pill listing-status-primary ml-2">{{pendientes.length}}</span>
   </div>
   <div class="card-body">
@@ -40,13 +34,13 @@
       <table class="table table-hover table-striped table-bordered table-sm listing-data-table">
         <thead>
           <tr>
-            <th>No. proforma</th>
-            <th>Fecha</th>
-            <th>Cliente / ruta</th>
-            <th>Vendedor</th>
-            <th class="text-right">Total</th>
-            <th class="text-center">Descuento máx.</th>
-            <th class="text-center">Decisión</th>
+            <th scope="col">No. proforma</th>
+            <th scope="col">Fecha</th>
+            <th scope="col">Cliente / ruta</th>
+            <th scope="col">Vendedor</th>
+            <th scope="col" class="text-right">Total</th>
+            <th scope="col" class="text-center">Descuento máx.</th>
+            <th scope="col" class="text-center">Decisión</th>
           </tr>
         </thead>
         <tbody>
@@ -82,7 +76,7 @@
 </div>
 
 <div class="card listing-card">
-  <div class="card-header listing-card-header">
+  <div class="card-header listing-card-header"><i class="fas fa-user-check" aria-hidden="true"></i>
     Pedidos que pasan del límite de crédito <span class="listing-status-pill listing-status-primary ml-2">{{credito.length}}</span>
   </div>
   <div class="card-body">
@@ -102,13 +96,13 @@
       <table class="table table-hover table-striped table-bordered table-sm listing-data-table">
         <thead>
           <tr>
-            <th>No. proforma</th>
-            <th>Cliente / ruta</th>
-            <th>Vendedor</th>
-            <th class="text-right">Total</th>
-            <th class="text-right">Límite</th>
-            <th class="text-center">Pasa por</th>
-            <th class="text-center">Decisión</th>
+            <th scope="col">No. proforma</th>
+            <th scope="col">Cliente / ruta</th>
+            <th scope="col">Vendedor</th>
+            <th scope="col" class="text-right">Total</th>
+            <th scope="col" class="text-right">Límite</th>
+            <th scope="col" class="text-center">Pasa por</th>
+            <th scope="col" class="text-center">Decisión</th>
           </tr>
         </thead>
         <tbody>
@@ -144,7 +138,7 @@
 </div>
 
 <div class="card listing-card">
-  <div class="card-header listing-card-header">
+  <div class="card-header listing-card-header"><i class="fas fa-user-check" aria-hidden="true"></i>
     Proformas vencidas sin facturar <span class="listing-status-pill listing-status-primary ml-2">{{vencidas.length}}</span>
   </div>
   <div class="card-body">
@@ -161,12 +155,12 @@
       <table class="table table-hover table-striped table-bordered table-sm listing-data-table">
         <thead>
           <tr>
-            <th>No. proforma</th>
-            <th>Cliente / ruta</th>
-            <th>Vendedor</th>
-            <th>Venció</th>
-            <th class="text-right">Total</th>
-            <th class="text-center">Decisión</th>
+            <th scope="col">No. proforma</th>
+            <th scope="col">Cliente / ruta</th>
+            <th scope="col">Vendedor</th>
+            <th scope="col">Venció</th>
+            <th scope="col" class="text-right">Total</th>
+            <th scope="col" class="text-center">Decisión</th>
           </tr>
         </thead>
         <tbody>

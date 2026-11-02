@@ -1,8 +1,9 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 import { ClienteDto } from '../../dtos/cliente-dto';
+import { Cliente } from '../../models/cliente';
 import { CrearReciboCajaDto, FormaPagoRecibo, ReciboCajaDto } from '../../dtos/recibo-caja-dto';
 import { Sucursal } from '../../models/sucursal';
 import { AuthService } from '../../services/auth.service';
@@ -21,7 +22,10 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-recibos',
   templateUrl: './recibos.component.html',
-  styleUrls: ['./recibos.component.css']
+  styleUrls: [
+    '../productos/create-producto/create-producto.component.css', './recibos.component.css',
+    '../shared/management-page.css', './recibos-create.component.css'
+  ]
 })
 export class RecibosComponent implements OnInit, OnDestroy {
 
@@ -29,14 +33,20 @@ export class RecibosComponent implements OnInit, OnDestroy {
   readonly formas: { valor: FormaPagoRecibo; etiqueta: string }[] = [
     { valor: 'EFECTIVO', etiqueta: 'Efectivo' },
     { valor: 'DEPOSITO', etiqueta: 'Depósito' },
-    { valor: 'TRANSFERENCIA', etiqueta: 'Transferencia' }
+    { valor: 'TRANSFERENCIA', etiqueta: 'Transferencia' },
+    { valor: 'CHEQUE', etiqueta: 'Cheque' }
   ];
 
   // ---- formulario de emisión
   formularioAbierto = false;
+  modalClienteVisible = false;
+  @ViewChild('buscarClienteButton') buscarClienteButton: ElementRef<HTMLButtonElement>;
   busquedaCliente = '';
   clientesEncontrados: ClienteDto[] = [];
-  clienteElegido: ClienteDto = null;
+  /** Hay una búsqueda en curso, o ya terminó sin encontrar a nadie: ambos casos se avisan bajo el campo. */
+  buscando = false;
+  sinResultados = false;
+  clienteElegido: ClienteDto | Cliente = null;
   /** Estado de cuenta del cliente elegido, para ver su saldo y escoger el pedido al que paga. */
   saldo: SaldoClienteDto = null;
   idProformaElegida: number = null;
@@ -149,13 +159,27 @@ export class RecibosComponent implements OnInit, OnDestroy {
   }
 
   cancelarFormulario(): void {
+    this.modalClienteVisible = false;
     this.formularioAbierto = false;
     this.limpiarFormulario();
+  }
+
+  abrirModalCliente(): void {
+    if (!this.emitiendo) {
+      this.modalClienteVisible = true;
+    }
+  }
+
+  cerrarModalCliente(): void {
+    this.modalClienteVisible = false;
+    this.buscarClienteButton?.nativeElement.focus();
   }
 
   private limpiarFormulario(): void {
     this.busquedaCliente = '';
     this.clientesEncontrados = [];
+    this.buscando = false;
+    this.sinResultados = false;
     this.clienteElegido = null;
     this.saldo = null;
     this.idProformaElegida = null;
@@ -176,20 +200,41 @@ export class RecibosComponent implements OnInit, OnDestroy {
   }
 
   private buscarClientes(texto: string): void {
+    this.sinResultados = false;
     if (texto.length < 2) {
+      this.buscando = false;
       this.clientesEncontrados = [];
       return;
     }
-    this.clienteService.getListado(0, 8, texto, 'nombre', 'asc').subscribe(
-      respuesta => this.clientesEncontrados = respuesta.content,
-      () => this.clientesEncontrados = []
-    );
+    this.buscando = true;
+    this.clienteService.getListado(0, 8, texto, 'nombre', 'asc').subscribe(respuesta => {
+      this.buscando = false;
+      this.clientesEncontrados = respuesta.content;
+      this.sinResultados = respuesta.content.length === 0;
+    }, () => {
+      this.buscando = false;
+      this.clientesEncontrados = [];
+      this.sinResultados = true;
+    });
   }
 
-  elegirCliente(cliente: ClienteDto): void {
+  /** Borra el cliente elegido (o lo escrito) para buscar a otro. */
+  quitarCliente(): void {
+    this.onBuscarCliente('');
+    this.clientesEncontrados = [];
+    this.buscando = false;
+    this.sinResultados = false;
+  }
+
+  elegirCliente(cliente: ClienteDto | Cliente): void {
+    if (this.modalClienteVisible) {
+      this.cerrarModalCliente();
+    }
     this.clienteElegido = cliente;
     this.busquedaCliente = cliente.nombre;
     this.clientesEncontrados = [];
+    this.buscando = false;
+    this.sinResultados = false;
     this.saldo = null;
     this.idProformaElegida = null;
     this.saldoService.cliente(cliente.idCliente).subscribe(saldo => {
@@ -212,6 +257,16 @@ export class RecibosComponent implements OnInit, OnDestroy {
 
   get pideReferencia(): boolean {
     return this.formaPago !== 'EFECTIVO';
+  }
+
+  /** Qué número va en la referencia según cómo pagó el cliente. */
+  get textoReferencia(): string {
+    switch (this.formaPago) {
+      case 'CHEQUE': return 'No. de cheque';
+      case 'DEPOSITO': return 'No. de boleta';
+      case 'TRANSFERENCIA': return 'No. de transferencia';
+      default: return 'Opcional';
+    }
   }
 
   /** Por qué todavía no se puede emitir, o texto vacío si el formulario está completo. */

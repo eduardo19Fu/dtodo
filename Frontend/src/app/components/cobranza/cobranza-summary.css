@@ -1,0 +1,48 @@
+/* Resumen de cobranza: alcance explícito para mantener sus estilos independientes del encapsulado del componente. */
+.cobranza-summary {
+  background: #fff;
+  border: 1px solid #dce4ec;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(33, 48, 68, 0.06);
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(0, 3fr);
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+.cobranza-summary .balance-total { background: #edf6f2; border-right: 1px solid #d5e7df; padding: 24px; }
+.cobranza-summary .balance-total > span,
+.cobranza-summary .balance-period > span { align-items: center; color: #52657a; display: flex; font-size: 13px; gap: 8px; line-height: 1.5; }
+.cobranza-summary .balance-total > span { color: #255e4e; font-weight: 600; }
+.cobranza-summary .balance-total > strong { color: #1f5a4c; display: block; font-size: 30px; font-variant-numeric: tabular-nums; font-weight: 700; line-height: 1.4; margin-top: 12px; overflow-wrap: anywhere; }
+.cobranza-summary .balance-total > small { color: #527367; display: block; font-size: 12px; margin-top: 8px; }
+.cobranza-summary .balance-aging { align-items: stretch; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 20px 8px; }
+.cobranza-summary .balance-period { min-width: 0; padding: 4px 16px; }
+.cobranza-summary .balance-period + .balance-period { border-left: 1px solid #e5ebf0; }
+.cobranza-summary .balance-period > span { align-items: flex-start; min-height: 40px; }
+.cobranza-summary .balance-period > span > i { flex-shrink: 0; margin-top: 3px; }
+.cobranza-summary .balance-period > strong { color: #24344d; display: block; font-size: 23px; font-variant-numeric: tabular-nums; font-weight: 700; line-height: 1.4; margin-top: 8px; overflow-wrap: anywhere; }
+.cobranza-summary .balance-period > small { color: #607087; display: block; font-size: 12px; line-height: 1.5; margin-top: 8px; }
+.cobranza-summary .balance-current > span > i { color: #2f7d6b; }
+.cobranza-summary .balance-recent > span > i { color: #9a721c; }
+.cobranza-summary .balance-overdue > span > i { color: #ac612e; }
+.cobranza-summary .balance-critical > span > i { color: #b44949; }
+.cobranza-summary .balance-critical.has-balance { background: #fff5f5; border-radius: 6px; }
+.cobranza-summary .balance-critical.has-balance > strong,
+.cobranza-summary .balance-critical.has-balance > small { color: #a72f3b; }
+
+@media (max-width: 1199.98px) {
+  .cobranza-summary { grid-template-columns: minmax(0, 1fr); }
+  .cobranza-summary .balance-total { border-bottom: 1px solid #d5e7df; border-right: 0; padding: 20px 24px; }
+}
+
+@media (max-width: 767.98px) {
+  .cobranza-summary .balance-aging { gap: 20px 0; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 20px 8px; }
+  .cobranza-summary .balance-period:nth-child(3) { border-left: 0; }
+  .cobranza-summary .balance-period > strong { font-size: 21px; }
+}
+
+@media (max-width: 359.98px) {
+  .cobranza-summary .balance-period { padding: 4px 10px; }
+  .cobranza-summary .balance-period > strong { font-size: 19px; }
+}
+

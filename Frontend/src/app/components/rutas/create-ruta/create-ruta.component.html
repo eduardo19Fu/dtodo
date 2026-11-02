@@ -3,18 +3,14 @@
     <div>
       <span class="page-eyebrow">Rutas</span>
       <h1>{{ title }}</h1>
-      <p>Define la zona de venta, los d&iacute;as de visita y el vendedor que atiende a los clientes mayoristas de la ruta.</p>
+      <p>Define la zona de venta, los días de visita y el vendedor responsable.</p>
     </div>
-    <div class="heading-icon" aria-hidden="true">
-      <i class="fas fa-route"></i>
-    </div>
+    <div class="heading-icon" aria-hidden="true"><i class="fas fa-route"></i></div>
   </header>
 
   <form #rutaForm="ngForm" class="product-card" (ngSubmit)="guardar()">
     <div class="card-hero">
-      <div class="hero-icon" aria-hidden="true">
-        <i class="fas fa-map-marked-alt"></i>
-      </div>
+      <div class="hero-icon" aria-hidden="true"><i class="fas fa-map-marked-alt"></i></div>
       <div>
         <h2>{{ esNueva ? 'Nueva ruta' : 'Editar ruta' }}</h2>
         <p>Los campos marcados con <span aria-hidden="true">*</span> son obligatorios.</p>
@@ -31,40 +27,42 @@
           <span class="section-number">01</span>
           <div>
             <h3 id="datos-ruta-title">Datos de la ruta</h3>
-            <p>Nombre y zona con la que se identificar&aacute; la ruta en clientes y proformas.</p>
+            <p>Identifica la zona de venta y su frecuencia de visita.</p>
           </div>
         </div>
 
-        <div class="field-group">
-          <label for="nombre">Nombre de la ruta <span class="required-mark">*</span></label>
-          <div class="control-with-icon">
-            <i class="fas fa-signature" aria-hidden="true"></i>
-            <input type="text" class="form-control" id="nombre" name="nombre" [(ngModel)]="ruta.nombre"
-              placeholder="Ej. RUTA 1, JALAPA..." required maxlength="100" #nombre="ngModel" autocomplete="off">
+        <div class="form-grid route-fields-grid">
+          <div class="field-group">
+            <label for="nombre">Nombre de la ruta <span class="required-mark">*</span></label>
+            <div class="control-with-icon">
+              <i class="fas fa-signature" aria-hidden="true"></i>
+              <input type="text" class="form-control" id="nombre" name="nombre" [(ngModel)]="ruta.nombre"
+                placeholder="Ej. RUTA 1, JALAPA..." required maxlength="100" #nombre="ngModel" autocomplete="off">
+            </div>
+            <div class="validation-message" *ngIf="nombre.invalid && (nombre.dirty || nombre.touched)">
+              <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+              <span>El nombre no puede estar vac&iacute;o.</span>
+            </div>
           </div>
-          <div class="validation-message" *ngIf="nombre.invalid && (nombre.dirty || nombre.touched)">
-            <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
-            <span>El nombre no puede estar vac&iacute;o.</span>
-          </div>
-        </div>
 
-        <div class="field-group">
-          <label for="zona">Zona o municipios</label>
-          <div class="control-with-icon">
-            <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
-            <input type="text" class="form-control" id="zona" name="zona" [(ngModel)]="ruta.zona"
-              placeholder="Ej. Monjas, San Manuel Chaparr&oacute;n, San Carlos Alzatate" maxlength="255" autocomplete="off">
+          <div class="field-group">
+            <label for="zona">Zona o municipios</label>
+            <div class="control-with-icon">
+              <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+              <input type="text" class="form-control" id="zona" name="zona" [(ngModel)]="ruta.zona"
+                placeholder="Ej. Monjas, San Manuel Chaparr&oacute;n, San Carlos Alzatate" maxlength="255" autocomplete="off">
+            </div>
           </div>
-        </div>
 
-        <div class="field-group">
-          <label for="diasVisita">D&iacute;as de visita</label>
-          <div class="control-with-icon">
-            <i class="far fa-calendar-alt" aria-hidden="true"></i>
-            <input type="text" class="form-control" id="diasVisita" name="diasVisita" [(ngModel)]="ruta.diasVisita"
-              placeholder="Ej. Lunes cada 15 d&iacute;as" maxlength="100" autocomplete="off">
+          <div class="field-group">
+            <label for="diasVisita">D&iacute;as de visita</label>
+            <div class="control-with-icon">
+              <i class="far fa-calendar-alt" aria-hidden="true"></i>
+              <input type="text" class="form-control" id="diasVisita" name="diasVisita" [(ngModel)]="ruta.diasVisita"
+                placeholder="Ej. Lunes cada 15 d&iacute;as" maxlength="100" autocomplete="off">
+            </div>
+            <small>Es solo informativo: el sistema no genera recordatorios.</small>
           </div>
-          <small>Es solo informativo: el sistema no genera recordatorios.</small>
         </div>
       </section>
 
@@ -77,59 +75,62 @@
           </div>
         </div>
 
-        <div class="field-group">
-          <label for="sucursal">Sucursal <span class="required-mark">*</span></label>
-          <div class="control-with-icon">
-            <i class="fas fa-store" aria-hidden="true"></i>
-            <select class="form-control" id="sucursal" name="sucursal" [(ngModel)]="idSucursalSeleccionada" required
-              #sucursal="ngModel">
-              <option [ngValue]="null" disabled>Seleccione una sucursal</option>
-              <option *ngFor="let opcion of sucursales" [ngValue]="opcion.idSucursal">
-                {{opcion.nombre}}{{opcion.esPrincipal ? ' (Principal)' : ''}}
-              </option>
-            </select>
+        <div class="form-grid route-fields-grid">
+          <div class="field-group">
+            <label for="sucursal">Sucursal <span class="required-mark">*</span></label>
+            <div class="control-with-icon">
+              <i class="fas fa-store" aria-hidden="true"></i>
+              <select class="form-control" id="sucursal" name="sucursal" [(ngModel)]="idSucursalSeleccionada" required
+                #sucursal="ngModel">
+                <option [ngValue]="null" disabled>Seleccione una sucursal</option>
+                <option *ngFor="let opcion of sucursales" [ngValue]="opcion.idSucursal">
+                  {{opcion.nombre}}{{opcion.esPrincipal ? ' (Principal)' : ''}}
+                </option>
+              </select>
+            </div>
+            <div class="validation-message" *ngIf="sucursal.invalid && (sucursal.dirty || sucursal.touched)">
+              <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+              <span>Seleccione la sucursal de la ruta.</span>
+            </div>
           </div>
-          <div class="validation-message" *ngIf="sucursal.invalid && (sucursal.dirty || sucursal.touched)">
-            <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
-            <span>Seleccione la sucursal de la ruta.</span>
-          </div>
-        </div>
 
-        <div class="field-group">
-          <label for="vendedor">Vendedor</label>
-          <div class="control-with-icon">
-            <i class="fas fa-user-tie" aria-hidden="true"></i>
-            <select class="form-control" id="vendedor" name="vendedor" [(ngModel)]="idVendedorSeleccionado">
-              <option [ngValue]="null">Sin vendedor asignado</option>
-              <option *ngFor="let vendedor of vendedores" [ngValue]="vendedor.idUsuario">
-                {{vendedor.primerNombre}} {{vendedor.apellido}} ({{vendedor.usuario}})
-              </option>
-            </select>
+          <div class="field-group">
+            <label for="vendedor">Vendedor</label>
+            <div class="control-with-icon">
+              <i class="fas fa-user-tie" aria-hidden="true"></i>
+              <select class="form-control" id="vendedor" name="vendedor" [(ngModel)]="idVendedorSeleccionado">
+                <option [ngValue]="null">Sin vendedor asignado</option>
+                <option *ngFor="let vendedor of vendedores" [ngValue]="vendedor.idUsuario">
+                  {{vendedor.primerNombre}} {{vendedor.apellido}} ({{vendedor.usuario}})
+                </option>
+              </select>
+            </div>
+            <small *ngIf="vendedores.length === 0">
+              No hay vendedores disponibles. Registra o habilita un vendedor desde Usuarios.
+            </small>
+            <small *ngIf="vendedores.length > 0">Un vendedor puede atender varias rutas; cada ruta tiene un solo vendedor.</small>
           </div>
-          <small *ngIf="vendedores.length === 0">
-            No hay usuarios con el rol de vendedor. Cr&eacute;alos en Usuarios con el rol <strong>ROLE_VENDEDOR</strong>.
-          </small>
-          <small *ngIf="vendedores.length > 0">Un vendedor puede atender varias rutas; cada ruta tiene un solo vendedor.</small>
-        </div>
 
-        <div class="field-group" *ngIf="!esNueva">
-          <label for="estado">Estado de la ruta</label>
-          <div class="control-with-icon">
-            <i class="fas fa-toggle-on" aria-hidden="true"></i>
-            <select class="form-control" id="estado" name="estado" [(ngModel)]="idEstadoSeleccionado">
-              <option *ngFor="let estado of estadosRuta" [ngValue]="estado.idEstado">{{estado.estado}}</option>
-            </select>
+          <div class="field-group" *ngIf="!esNueva">
+            <label for="estado">Estado de la ruta</label>
+            <div class="control-with-icon">
+              <i class="fas fa-toggle-on" aria-hidden="true"></i>
+              <select class="form-control" id="estado" name="estado" [(ngModel)]="idEstadoSeleccionado">
+                <option *ngFor="let estado of estadosRuta" [ngValue]="estado.idEstado">{{estado.estado}}</option>
+              </select>
+            </div>
+            <small>Una ruta inactiva ya no se ofrece al asignar clientes, pero conserva los que tiene.</small>
           </div>
-          <small>Una ruta inactiva ya no se ofrece al asignar clientes, pero conserva los que tiene.</small>
         </div>
       </section>
     </div>
 
     <footer class="form-actions">
-      <p><i class="fas fa-shield-alt" aria-hidden="true"></i> Tu informaci&oacute;n se guardar&aacute; de forma segura.</p>
+      <a class="route-cancel-action" [routerLink]="['/rutas/index']"
+        [class.disabled]="guardando" [attr.aria-disabled]="guardando">Cancelar</a>
       <button type="submit" class="primary-action" [disabled]="!rutaForm.form.valid || guardando">
         <i class="fas" [ngClass]="esNueva ? 'fa-save' : 'fa-check'" aria-hidden="true"></i>
-        {{ esNueva ? 'Guardar ruta' : 'Actualizar ruta' }}
+        {{ guardando ? 'Guardando...' : esNueva ? 'Guardar ruta' : 'Actualizar ruta' }}
       </button>
     </footer>
   </form>

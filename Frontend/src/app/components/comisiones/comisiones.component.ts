@@ -14,7 +14,7 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-comisiones',
   templateUrl: './comisiones.component.html',
-  styleUrls: ['./comisiones.component.css']
+  styleUrls: ['./comisiones.component.css', '../shared/management-page.css']
 })
 export class ComisionesComponent implements OnInit {
 

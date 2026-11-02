@@ -34,7 +34,7 @@ const ACCION_AVANCE: { [estado: string]: string } = {
 @Component({
   selector: 'app-pedidos',
   templateUrl: './pedidos.component.html',
-  styleUrls: ['./pedidos.component.css']
+  styleUrls: ['./pedidos.component.css', '../shared/management-page.css']
 })
 export class PedidosComponent implements OnInit {
 
