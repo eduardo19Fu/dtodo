@@ -52,12 +52,12 @@ describe('SidebarComponent', () => {
     expect(component.mostrarGrupo('productos')).toBeFalse();
   });
 
-  it('encuentra el tutorial de bodegas al buscar tutorial, manual o ayuda', () => {
+  it('Bodegas ya no ofrece un tutorial: buscar tutorial, manual o ayuda no abre su grupo', () => {
     ['tutorial', 'manual', 'ayuda'].forEach(termino => {
       component.filtro = termino;
 
-      expect(component.mostrarGrupo('bodegas')).toBeTrue();
-      expect(component.mostrarGrupo('facturas')).toBeFalse();
+      expect(component.mostrarGrupo('bodegas')).withContext(termino).toBeFalse();
+      expect(component.mostrarGrupo('facturas')).withContext(termino).toBeFalse();
     });
   });
 
@@ -98,6 +98,15 @@ describe('SidebarComponent', () => {
       expect(component.mostrarGrupo(grupo as any)).withContext(termino).toBeTrue();
       expect(component.menuAbierto(grupo as any)).withContext(termino).toBeTrue();
       expect(component.mostrarGrupo(grupo === 'cobros' ? 'mayoristas' : 'cobros')).withContext(termino).toBeFalse();
+    });
+  });
+
+  it('encuentra el tutorial de mayoristas al buscar tutorial, manual o ayuda, y no el de cuentas por cobrar', () => {
+    ['tutorial', 'manual', 'ayuda'].forEach(termino => {
+      component.filtro = termino;
+
+      expect(component.mostrarGrupo('mayoristas')).withContext(termino).toBeTrue();
+      expect(component.mostrarGrupo('cobros')).withContext(termino).toBeFalse();
     });
   });
 

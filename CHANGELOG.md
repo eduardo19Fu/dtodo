@@ -6,6 +6,11 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Manual de usuario de clientes mayoristas
+- `assets/manual/manual-mayoristas.html`: manual con el formato del de Bodegas. Explica rutas, clientes mayoristas, descuentos, proforma mayorista, autorizaciones, pedidos y entregas, facturación, cuentas por cobrar (recibos, cobranza y devoluciones), comisiones, indicadores y reportes, con la tabla de roles y las preguntas frecuentes.
+- Incluye una guía de pruebas con datos de ejemplo, 15 escenarios con resultado esperado, pruebas negativas por rol y cómo reportar un hallazgo.
+- Enlace **Tutorial** con la etiqueta *Nuevo* en el grupo Mayoristas del menú lateral. Se quita el enlace Tutorial de Bodegas (el archivo del manual de Bodegas se conserva).
+
 ### Cambiado — Etiqueta "Nuevo" del menú lateral
 - Se quita de Bodegas (grupo y su opción Devoluciones) y pasa a los módulos nuevos: Pedidos, Mayoristas y Cuentas por cobrar.
 

@@ -1,0 +1,1615 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manual de usuario - Clientes Mayoristas, Pedidos y Cobranza - D'Todo</title>
+  <style>
+    :root {
+      --ink: #1c2b36;
+      --muted: #5b6b78;
+      --line: #dbe4ea;
+      --paper: #ffffff;
+      --bg: #f3f6f8;
+      --teal: #2f7d6b;
+      --teal-dark: #1f5a4c;
+      --teal-soft: #e3f3ee;
+      --navy: #12281f;
+      --ok: #1f7a4d;
+      --ok-soft: #e3f4ea;
+      --warn: #9a6200;
+      --warn-soft: #fff3d6;
+      --bad: #a8323f;
+      --bad-soft: #fbe6e8;
+      --info-soft: #e8f0fb;
+      --info: #2a5ea8;
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 20px; }
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font: 16px/1.65 "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+      margin: 0;
+    }
+
+    a { color: var(--teal-dark); }
+    h1, h2, h3, h4 { color: var(--navy); line-height: 1.25; margin: 0; }
+    p { margin: 0 0 12px; }
+    ul, ol { margin: 0 0 14px; padding-left: 22px; }
+    li { margin-bottom: 5px; }
+    code, kbd {
+      background: #eef3f6;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      font: 600 .88em Consolas, "Courier New", monospace;
+      padding: 1px 6px;
+    }
+
+    /* ---------- Encabezado ---------- */
+    .hero {
+      background: linear-gradient(135deg, #10231d 0%, #1f5a4c 55%, #3a937e 100%);
+      color: #fff;
+      padding: 44px 24px 40px;
+    }
+    .hero-inner { margin: 0 auto; max-width: 1180px; }
+    .hero .eyebrow {
+      background: rgba(255, 255, 255, .14);
+      border-radius: 999px;
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      padding: 4px 12px;
+      text-transform: uppercase;
+    }
+    .hero h1 { color: #fff; font-size: clamp(28px, 4vw, 42px); margin: 14px 0 10px; }
+    .hero p { color: #d6ece4; font-size: 18px; margin: 0; max-width: 760px; }
+    .hero-meta { color: #b3d6c9; font-size: 14px; margin-top: 18px !important; }
+
+    /* ---------- Estructura ---------- */
+    .layout {
+      display: grid;
+      gap: 28px;
+      grid-template-columns: 270px minmax(0, 1fr);
+      margin: 0 auto;
+      max-width: 1180px;
+      padding: 28px 24px 70px;
+    }
+
+    .toc {
+      align-self: start;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      max-height: calc(100vh - 40px);
+      overflow-y: auto;
+      padding: 16px 12px;
+      position: sticky;
+      top: 20px;
+    }
+    .toc strong {
+      color: var(--muted);
+      display: block;
+      font-size: 12px;
+      letter-spacing: .08em;
+      margin: 0 8px 8px;
+      text-transform: uppercase;
+    }
+    .toc a {
+      border-radius: 8px;
+      color: var(--ink);
+      display: block;
+      font-size: 14.5px;
+      line-height: 1.35;
+      padding: 7px 10px;
+      text-decoration: none;
+    }
+    .toc a:hover { background: var(--teal-soft); }
+    .toc a.active { background: var(--teal); color: #fff; font-weight: 600; }
+
+    main { min-width: 0; }
+
+    section.chapter {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      margin-bottom: 22px;
+      padding: 28px 30px 20px;
+    }
+    .chapter > h2 {
+      align-items: center;
+      border-bottom: 2px solid var(--teal-soft);
+      display: flex;
+      font-size: 24px;
+      gap: 12px;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+    }
+    .chapter > h2 .num {
+      align-items: center;
+      background: var(--teal);
+      border-radius: 10px;
+      color: #fff;
+      display: inline-flex;
+      flex: 0 0 38px;
+      font-size: 17px;
+      height: 38px;
+      justify-content: center;
+    }
+    .chapter h3 { font-size: 18px; margin: 26px 0 10px; }
+    .chapter h4 { color: var(--teal-dark); font-size: 15px; margin: 18px 0 6px; }
+
+    /* ---------- Componentes ---------- */
+    .callout {
+      border-left: 4px solid;
+      border-radius: 8px;
+      margin: 16px 0;
+      padding: 12px 16px;
+    }
+    .callout > :last-child { margin-bottom: 0; }
+    .callout .callout-title { display: block; font-size: 13px; font-weight: 700; letter-spacing: .05em; margin-bottom: 4px; text-transform: uppercase; }
+    .callout.note { background: var(--info-soft); border-color: var(--info); }
+    .callout.note .callout-title { color: var(--info); }
+    .callout.tip { background: var(--ok-soft); border-color: var(--ok); }
+    .callout.tip .callout-title { color: var(--ok); }
+    .callout.warn { background: var(--warn-soft); border-color: #e0a100; }
+    .callout.warn .callout-title { color: var(--warn); }
+    .callout.danger { background: var(--bad-soft); border-color: var(--bad); }
+    .callout.danger .callout-title { color: var(--bad); }
+
+    .steps { counter-reset: paso; list-style: none; margin: 14px 0 18px; padding: 0; }
+    .steps > li {
+      counter-increment: paso;
+      margin: 0 0 12px;
+      min-height: 32px;
+      padding-left: 46px;
+      position: relative;
+    }
+    .steps > li::before {
+      align-items: center;
+      background: var(--teal-soft);
+      border: 2px solid var(--teal);
+      border-radius: 50%;
+      color: var(--teal-dark);
+      content: counter(paso);
+      display: flex;
+      font-size: 14px;
+      font-weight: 700;
+      height: 30px;
+      justify-content: center;
+      left: 0;
+      position: absolute;
+      top: 0;
+      width: 30px;
+    }
+
+    .table-wrap { margin: 14px 0 18px; overflow-x: auto; }
+    table { border-collapse: collapse; font-size: 14.5px; width: 100%; }
+    th, td { border: 1px solid var(--line); padding: 9px 12px; text-align: left; vertical-align: top; }
+    th { background: #eef4f7; color: var(--navy); font-weight: 700; white-space: nowrap; }
+    tbody tr:nth-child(even) td { background: #fafcfd; }
+    td.c, th.c { text-align: center; }
+
+    /* Botones y etiquetas dibujados como en el sistema */
+    .btn {
+      background: var(--teal);
+      border-radius: 7px;
+      color: #fff;
+      display: inline-block;
+      font-size: 13.5px;
+      font-weight: 600;
+      line-height: 1.4;
+      padding: 2px 11px;
+      white-space: nowrap;
+    }
+    .btn.light { background: #fff; border: 1px solid var(--teal); color: var(--teal-dark); }
+    .btn.green { background: #2f9e62; }
+    .btn.red { background: #c24a57; }
+    .btn.gray { background: #6c7c89; }
+
+    .pill {
+      border-radius: 999px;
+      display: inline-block;
+      font-size: 12.5px;
+      font-weight: 700;
+      line-height: 1.5;
+      padding: 1px 11px;
+      white-space: nowrap;
+    }
+    .pill.ok { background: var(--ok-soft); color: var(--ok); }
+    .pill.wait { background: var(--warn-soft); color: var(--warn); }
+    .pill.bad { background: var(--bad-soft); color: var(--bad); }
+    .pill.plus { background: var(--ok-soft); color: var(--ok); }
+    .pill.minus { background: var(--bad-soft); color: var(--bad); }
+
+    .menu-demo {
+      background: #183228;
+      border-radius: 10px;
+      color: #cbd8e0;
+      display: inline-block;
+      font-size: 14.5px;
+      margin: 8px 0 14px;
+      min-width: 240px;
+      padding: 14px 16px;
+    }
+    .menu-demo .group { align-items: center; color: #fff; display: flex; font-weight: 700; gap: 8px; }
+    .menu-demo .sub { border-left: 1px solid #3f6556; margin: 6px 0 0 8px; padding-left: 14px; }
+    .menu-demo .sub div { padding: 3px 0; }
+    .badge-new {
+      vertical-align: middle;
+      background: #e8a317;
+      border-radius: 999px;
+      color: #1c1500;
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: .05em;
+      padding: 1px 8px;
+      text-transform: uppercase;
+    }
+
+    /* Hoja de Excel */
+    .sheet { border: 1px solid #b9c5cd; border-radius: 6px; display: block; font: 13px Consolas, "Courier New", monospace; margin: 8px 0 10px; max-width: 100%; overflow-x: auto; width: 100%; }
+    .sheet .r { display: grid; grid-template-columns: 30px 132px 80px 108px 170px 116px 108px 74px 88px; min-width: 906px; }
+    .sheet .r > span { border-bottom: 1px solid #dfe6ea; border-right: 1px solid #dfe6ea; overflow: hidden; padding: 5px 7px; text-overflow: ellipsis; white-space: nowrap; }
+    .sheet .r > span:last-child { border-right: 0; }
+    .sheet .letters > span, .sheet .idx { background: #eef3f6; color: #6b7b87; text-align: center; }
+    .sheet .head > span:not(.idx) { background: #e1f1e7; color: #185a37; font-weight: 700; }
+    .sheet .head > span.opt { background: #f0f5e1; color: #55611a; }
+    .sheet .head > span.cat { background: #fdf1d8; color: #8a5a00; }
+    .sheet .num { text-align: right; }
+
+    /* Diagramas */
+    .flow { display: grid; gap: 10px; grid-template-columns: 1fr 34px 1fr 34px 1fr; margin: 16px 0 6px; }
+    .flow .node {
+      background: var(--teal-soft);
+      border: 1px solid #b9dccf;
+      border-radius: 10px;
+      padding: 12px 14px;
+      text-align: center;
+    }
+    .flow .node strong { color: var(--navy); display: block; }
+    .flow .node span { color: var(--muted); font-size: 13.5px; }
+    .flow .arrow { align-self: center; color: var(--teal-dark); font-size: 26px; text-align: center; }
+
+    .cards { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin: 14px 0 18px; }
+    .card { background: #f8fbfc; border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+    .card h4 { margin-top: 0; }
+    .card p:last-child { margin-bottom: 0; }
+
+    details { background: #f8fbfc; border: 1px solid var(--line); border-radius: 10px; margin: 0 0 10px; padding: 0 16px; }
+    details[open] { padding-bottom: 6px; }
+    summary { cursor: pointer; font-weight: 700; padding: 12px 0; }
+    summary:hover { color: var(--teal-dark); }
+
+    .ok-mark { color: var(--ok); font-weight: 800; }
+    .no-mark { color: #9aa7b0; }
+
+    footer.page-footer { color: var(--muted); font-size: 13.5px; margin-top: 8px; text-align: center; }
+
+    .to-top {
+      background: var(--teal);
+      border-radius: 999px;
+      bottom: 22px;
+      box-shadow: 0 6px 16px rgba(19, 35, 47, .28);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 9px 16px;
+      position: fixed;
+      right: 22px;
+      text-decoration: none;
+    }
+    .to-top:hover { background: var(--teal-dark); }
+
+    .print-btn {
+      background: rgba(255, 255, 255, .16);
+      border: 1px solid rgba(255, 255, 255, .45);
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+      font: 600 14px inherit;
+      margin-top: 18px;
+      padding: 8px 16px;
+    }
+    .print-btn:hover { background: rgba(255, 255, 255, .26); }
+
+    @media (max-width: 960px) {
+      .layout { grid-template-columns: 1fr; padding: 18px 14px 60px; }
+      .toc { max-height: none; position: static; }
+      section.chapter { padding: 22px 18px 14px; }
+      .flow { grid-template-columns: 1fr; }
+      .flow .arrow { transform: rotate(90deg); }
+    }
+
+    @media print {
+      body { background: #fff; font-size: 12.5px; }
+      .hero { background: #10231d !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 24px; }
+      .toc, .to-top, .print-btn { display: none; }
+      .layout { display: block; padding: 0 12px; }
+      section.chapter { border: 0; break-inside: auto; padding: 14px 0 0; }
+      .chapter > h2 { break-after: avoid; }
+      .callout, .card, table, .flow, .steps > li { break-inside: avoid; }
+      details { display: block; }
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+
+    /* ---------- Guía de pruebas ---------- */
+    td.c .box, .box {
+      border: 2px solid #8da39a;
+      border-radius: 4px;
+      display: inline-block;
+      height: 18px;
+      vertical-align: middle;
+      width: 18px;
+    }
+    .chapter h4 small { font-size: 13px; }
+    .pill.role { background: #eef3f6; color: var(--navy); }
+    @media print {
+      .box { border-color: #444; }
+      tr { break-inside: avoid; }
+    }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <span class="eyebrow">Manual de usuario</span>
+    <h1>Clientes Mayoristas, Pedidos y Cobranza</h1>
+    <p>Guía paso a paso para registrar rutas y clientes mayoristas, vender con descuentos y crédito, preparar y entregar pedidos, cobrar, recibir devoluciones y medir las comisiones y los resultados. Incluye una guía de pruebas para validar el módulo completo.</p>
+    <p class="hero-meta">Sistema D'Todo &middot; Dirigido a <strong>Administrador</strong>, <strong>Vendedor</strong>, <strong>Bodega</strong>, <strong>Repartidor</strong> y <strong>Cobrador</strong> &middot; Noviembre 2026</p>
+    <button type="button" class="print-btn" onclick="window.print()">Imprimir o guardar como PDF</button>
+  </div>
+</header>
+
+<div class="layout">
+
+  <nav class="toc" aria-label="Contenido del manual">
+    <strong>Contenido</strong>
+    <a href="#introduccion">1. Introducción</a>
+    <a href="#roles">2. Roles y permisos</a>
+    <a href="#acceso">3. Cómo entrar al módulo</a>
+    <a href="#rutas">4. Rutas</a>
+    <a href="#clientes">5. Clientes mayoristas</a>
+    <a href="#descuentos">6. Descuentos</a>
+    <a href="#proformas">7. Proforma mayorista</a>
+    <a href="#autorizaciones">8. Autorizaciones</a>
+    <a href="#pedidos">9. Pedidos y entregas</a>
+    <a href="#facturar">10. Facturar un pedido</a>
+    <a href="#cobrar">11. Cuentas por cobrar</a>
+    <a href="#recibos">&nbsp;&nbsp;11.1 Recibos de caja</a>
+    <a href="#cobranza">&nbsp;&nbsp;11.2 Cobranza</a>
+    <a href="#devoluciones">&nbsp;&nbsp;11.3 Devoluciones de clientes</a>
+    <a href="#comisiones">12. Comisiones</a>
+    <a href="#indicadores">13. Indicadores</a>
+    <a href="#reportes">14. Reportes</a>
+    <a href="#pruebas">15. Guía de pruebas</a>
+    <a href="#faq">16. Preguntas y problemas frecuentes</a>
+    <a href="#resumen">17. Resumen rápido</a>
+  </nav>
+
+  <main>
+
+    <!-- ===================== 1 ===================== -->
+    <section class="chapter" id="introduccion">
+      <h2><span class="num">1</span> Introducción</h2>
+      <p>Este módulo atiende la venta a <strong>clientes mayoristas</strong>: negocios que compran por volumen para revender, se visitan por <strong>rutas</strong>, reciben su pedido en el negocio y muchas veces pagan después. Cubre todo el recorrido, desde registrar al cliente hasta cobrar, recibir devoluciones y pagar la comisión del vendedor.</p>
+
+      <h3>La idea general en seis pasos</h3>
+      <div class="flow">
+        <div class="node"><strong>1. Preparar</strong><span>Rutas, clientes y descuentos</span></div>
+        <div class="arrow">&rarr;</div>
+        <div class="node"><strong>2. Vender</strong><span>Proforma mayorista con su descuento y su condición de pago</span></div>
+        <div class="arrow">&rarr;</div>
+        <div class="node"><strong>3. Autorizar</strong><span>El administrador aprueba lo que pasa del tope o del límite de crédito</span></div>
+      </div>
+      <div class="flow">
+        <div class="node"><strong>4. Entregar</strong><span>Picking, empaque, ruta y entrega al cliente</span></div>
+        <div class="arrow">&rarr;</div>
+        <div class="node"><strong>5. Cobrar</strong><span>Recibos de caja, cobranza y devoluciones</span></div>
+        <div class="arrow">&rarr;</div>
+        <div class="node"><strong>6. Medir</strong><span>Comisiones, indicadores y reportes</span></div>
+      </div>
+
+      <h3>Conceptos que se usan en todo el manual</h3>
+      <div class="cards">
+        <div class="card">
+          <h4>Ruta</h4>
+          <p>Una zona de venta con su vendedor, su sucursal y sus días de visita. Todo cliente mayorista pertenece a una ruta.</p>
+        </div>
+        <div class="card">
+          <h4>Cliente mayorista</h4>
+          <p>Un cliente marcado como mayorista, con ruta, categoría de descuento y, si se le da crédito, un límite y los días para pagar.</p>
+        </div>
+        <div class="card">
+          <h4>Proforma mayorista</h4>
+          <p>El <strong>documento de venta</strong>: la mayoría de los pedidos se entrega sin factura. Vale <strong>15 días</strong> desde su emisión. La factura es opcional y se hace después.</p>
+        </div>
+        <div class="card">
+          <h4>Pedido</h4>
+          <p>La proforma mayorista vista como trabajo de bodega: pasa por <em>Confirmado, En preparación, Empacado, En ruta</em> y <em>Entregado</em>.</p>
+        </div>
+        <div class="card">
+          <h4>Entrega</h4>
+          <p>Lo que realmente se deja en el cliente. Puede ser parcial. <strong>El inventario baja al entregar</strong>, no al vender.</p>
+        </div>
+        <div class="card">
+          <h4>Saldo</h4>
+          <p>Lo que el cliente debe: <strong>entregado &minus; devuelto &minus; abonado</strong>. La deuda nace al <strong>entregar</strong>, no al hacer la proforma.</p>
+        </div>
+        <div class="card">
+          <h4>Recibo de caja</h4>
+          <p>La constancia de un pago del cliente (abono, depósito, transferencia o cheque). Baja su saldo.</p>
+        </div>
+        <div class="card">
+          <h4>Comisión</h4>
+          <p>Un porcentaje sobre lo entregado menos lo devuelto, según la meta más alta que alcance el vendedor en el año.</p>
+        </div>
+      </div>
+
+      <div class="callout note">
+        <span class="callout-title">Importante</span>
+        <p>La <strong>proforma</strong> es el documento de venta; la <strong>entrega</strong> es el momento en que sale el inventario y nace la deuda; el <strong>recibo de caja</strong> es el momento en que se cobra. Casi todo lo que verás en este manual es una consecuencia de esas tres ideas.</p>
+      </div>
+    </section>
+
+    <!-- ===================== 2 ===================== -->
+    <section class="chapter" id="roles">
+      <h2><span class="num">2</span> Roles y permisos</h2>
+      <p>Cada persona ve solo lo que su rol necesita. Los roles que intervienen son <strong>Administrador</strong>, <strong>Vendedor</strong>, <strong>Bodega</strong>, <strong>Repartidor</strong> y <strong>Cobrador</strong>. Los usuarios se crean en <strong>Usuarios</strong> asignándoles el rol (<code>ROLE_VENDEDOR</code>, <code>ROLE_BODEGA</code>, <code>ROLE_REPARTIDOR</code> y <code>ROLE_COBRADOR</code>).</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Acción</th><th class="c">Admin.</th><th class="c">Vendedor</th><th class="c">Bodega</th><th class="c">Repartidor</th><th class="c">Cobrador</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Crear y editar <strong>rutas</strong></td><td class="c ok-mark">Sí</td><td class="c no-mark">No</td><td class="c no-mark">No</td><td class="c no-mark">No</td><td class="c no-mark">No</td></tr>
+            <tr><td>Registrar un cliente mayorista</td><td class="c ok-mark">Sí</td><td class="c ok-mark">En su ruta</td><td class="c no-mark">No</td><td class="c no-mark">No</td><td class="c ok-mark">Minorista</td></tr>
+            <tr><td>Asignar categoría de descuento, límite y días de crédito</td><td class="c ok-mark">Sí</td><td class="c no-mark">No</td><td class="c no-mark">No</td><td class="c no-mark">No</td><td class="c no-mark">No</td></tr>
+            <tr><td>Configurar <strong>descuentos</strong> y precios mayoristas</td><td class="c ok-mark">Sí</td><td class="c no-mark">No</td><td class="c no-mark">No</td><td class="c no-mark">No</td><td class="c no-mark">No</td></tr>
+            <tr><td>Hacer proformas mayoristas</td><td class="c ok-mark">Sí</td><td class="c ok-mark">A sus clientes</td><td class="c no-mark">No</td><td class="c no-mark">No</td><td class="c no-mark">No</td></tr>
+            <tr><td><strong>Autorizar</strong> descuentos, crédito y proformas vencidas</td><td class="c ok-mark">Sí</td><td class="c no-mark">No</td><td class="c no-mark">No</td><td class="c no-mark">No</td><td class="c no-mark">No</td></tr>
+            <tr><td>Ver los pedidos</td><td class="c ok-mark">Todos</td><td class="c ok-mark">Los suyos</td><td class="c ok-mark">Todos</td><td class="c ok-mark">Los asignados</td><td class="c no-mark">No</td></tr>
+            <tr><td>Avanzar etapas: picking, empaque y salida a ruta</td><td class="c ok-mark">Sí</td><td class="c no-mark">No</td><td class="c ok-mark">Sí</td><td class="c no-mark">No</td><td class="c no-mark">No</td></tr>
+            <tr><td>Registrar una <strong>entrega</strong></td><td class="c ok-mark">Sí</td><td class="c ok-mark">Las suyas</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Las asignadas</td><td class="c no-mark">No</td></tr>
+            <tr><td>Entregar un pedido de contado <strong>sin cobro</strong></td><td class="c ok-mark">Sí</td><td class="c no-mark">No</td><td class="c no-mark">No</td><td class="c no-mark">No</td><td class="c no-mark">No</td></tr>
+            <tr><td>Anular una entrega, cerrar un pedido parcial o regresar una etapa</td><td class="c ok-mark">Sí</td><td class="c no-mark">No</td><td class="c no-mark">No</td><td class="c no-mark">No</td><td class="c no-mark">No</td></tr>
+            <tr><td>Facturar una proforma</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Las suyas</td><td class="c no-mark">No</td><td class="c no-mark">No</td><td class="c no-mark">No</td></tr>
+            <tr><td>Emitir <strong>recibos de caja</strong></td><td class="c ok-mark">Sí</td><td class="c no-mark">No</td><td class="c no-mark">No</td><td class="c no-mark">No</td><td class="c ok-mark">Sí</td></tr>
+            <tr><td>Anular un recibo</td><td class="c ok-mark">Sí</td><td class="c no-mark">No</td><td class="c no-mark">No</td><td class="c no-mark">No</td><td class="c no-mark">No</td></tr>
+            <tr><td>Consultar la <strong>cobranza</strong> y el estado de cuenta</td><td class="c ok-mark">Sí</td><td class="c no-mark">No</td><td class="c no-mark">No</td><td class="c no-mark">No</td><td class="c ok-mark">Sí</td></tr>
+            <tr><td>Ver <strong>cuánto se ha cobrado</strong> de un pedido (en su detalle)</td><td class="c ok-mark">Sí</td><td class="c ok-mark">Los suyos</td><td class="c no-mark">No</td><td class="c no-mark">No</td><td class="c ok-mark">Sí</td></tr>
+            <tr><td>Registrar y anular <strong>devoluciones</strong> de clientes</td><td class="c ok-mark">Sí</td><td class="c no-mark">No</td><td class="c no-mark">No</td><td class="c no-mark">No</td><td class="c no-mark">No</td></tr>
+            <tr><td><strong>Comisiones</strong>, <strong>indicadores</strong> y reportes de Mayoristas</td><td class="c ok-mark">Sí</td><td class="c no-mark">No</td><td class="c no-mark">No</td><td class="c no-mark">No</td><td class="c no-mark">No</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout warn">
+        <span class="callout-title">Tenlo presente</span>
+        <p>El <strong>Vendedor</strong> solo trabaja con <strong>sus</strong> rutas, clientes y pedidos. El <strong>Repartidor</strong> solo ve los pedidos que se le asignaron al cargarlos. <strong>Bodega</strong> y <strong>Repartidor</strong> no ven importes de dinero: trabajan con productos y cantidades. Si alguien no ve una pantalla que esperaba, casi siempre es por su rol.</p>
+      </div>
+      <div class="callout note">
+        <span class="callout-title">Por qué el repartidor y el vendedor no autorizan</span>
+        <p>Para que quien vende o entrega no pueda aprobarse a sí mismo un descuento o un crédito mayor al permitido. Esas decisiones son del <strong>administrador</strong> y quedan registradas con su usuario y su motivo.</p>
+      </div>
+    </section>
+
+    <!-- ===================== 3 ===================== -->
+    <section class="chapter" id="acceso">
+      <h2><span class="num">3</span> Cómo entrar al módulo</h2>
+      <p>En el menú lateral aparecen tres entradas con la etiqueta <span class="pill wait" style="background:#e8a317;color:#1c1500">NUEVO</span>:</p>
+
+      <div class="menu-demo" aria-label="Ilustración del menú lateral">
+        <div class="group">Pedidos <span class="badge-new">Nuevo</span></div>
+        <div class="group" style="margin-top:10px">Mayoristas <span class="badge-new">Nuevo</span></div>
+        <div class="sub">
+          <div>Rutas</div>
+          <div>Descuentos</div>
+          <div>Autorizaciones</div>
+          <div>Comisiones</div>
+          <div>Indicadores</div>
+          <div>Tutorial</div>
+        </div>
+        <div class="group" style="margin-top:10px">Cuentas por cobrar <span class="badge-new">Nuevo</span></div>
+        <div class="sub">
+          <div>Cobranza</div>
+          <div>Recibos de caja</div>
+          <div>Devoluciones de clientes</div>
+        </div>
+      </div>
+
+      <ul>
+        <li><strong>Pedidos:</strong> los pedidos mayoristas agrupados por ruta, con sus etapas y entregas.</li>
+        <li><strong>Mayoristas:</strong> rutas, descuentos, autorizaciones, comisiones e indicadores (administrador).</li>
+        <li><strong>Cuentas por cobrar:</strong> cobranza y recibos de caja (administrador y cobrador) y devoluciones de clientes (administrador).</li>
+        <li><strong>Tutorial:</strong> este manual, que se abre en una pestaña nueva.</li>
+      </ul>
+      <p>Además se usan pantallas que ya existían: <strong>Clientes</strong> (para registrar al cliente mayorista y su crédito), <strong>Proformas</strong> (para vender), <strong>Facturas</strong> (para facturar) y <strong>Reportes</strong> (categoría <em>Mayoristas</em>).</p>
+
+      <div class="callout tip">
+        <span class="callout-title">Consejo</span>
+        <p>El cuadro <strong>Buscar módulo</strong> del menú lateral filtra las opciones y abre el grupo que corresponde. Escribe, por ejemplo, <code>cobranza</code>, <code>rutas</code> o <code>comisiones</code>.</p>
+      </div>
+      <div class="callout note">
+        <span class="callout-title">Fechas en los listados</span>
+        <p>Si no eliges fechas, <strong>Recibos de caja</strong> muestra los últimos <strong>30 días</strong> y <strong>Devoluciones de clientes</strong> los últimos <strong>90 días</strong>. Usa el selector de fechas y <span class="btn light">Filtrar</span> para ver otro período.</p>
+      </div>
+    </section>
+
+    <!-- ===================== 4 ===================== -->
+    <section class="chapter" id="rutas">
+      <h2><span class="num">4</span> Rutas</h2>
+      <p>Una ruta agrupa a los clientes de una zona y tiene <strong>un solo vendedor</strong> responsable. Un vendedor puede atender varias rutas. Las rutas las administra el <strong>administrador</strong> en <strong>Mayoristas &rarr; Rutas</strong>.</p>
+
+      <h3>4.1 El listado de rutas</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Columna</th><th>Qué muestra</th></tr></thead>
+          <tbody>
+            <tr><td>Nombre</td><td>El nombre de la ruta (por ejemplo <code>RUTA 1</code>).</td></tr>
+            <tr><td>Zona</td><td>Los municipios o zonas que cubre.</td></tr>
+            <tr><td>Días de visita</td><td>Texto libre, solo informativo: el sistema no genera recordatorios.</td></tr>
+            <tr><td>Vendedor</td><td>El vendedor responsable.</td></tr>
+            <tr><td>Sucursal</td><td>La sucursal a la que pertenece la ruta.</td></tr>
+            <tr><td>Clientes</td><td>Cuántos clientes mayoristas tiene.</td></tr>
+            <tr><td>Estado</td><td>Activa o inactiva.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La caja de búsqueda filtra por ruta, zona, vendedor o sucursal.</p>
+
+      <h3>4.2 Crear una ruta</h3>
+      <ol class="steps">
+        <li>Entra a <strong>Mayoristas &rarr; Rutas</strong> y pulsa <span class="btn">+ Nueva ruta</span>.</li>
+        <li>En <strong>Datos de la ruta</strong> escribe el <strong>Nombre</strong> (obligatorio). La <strong>Zona o municipios</strong> y los <strong>Días de visita</strong> son opcionales.</li>
+        <li>En <strong>Asignación</strong> elige la <strong>Sucursal</strong> (obligatoria; la principal viene propuesta) y el <strong>Vendedor</strong>.</li>
+        <li>Pulsa <span class="btn">Guardar ruta</span>. Verás el aviso &laquo;Ruta Guardada&raquo;.</li>
+      </ol>
+      <div class="callout note">
+        <span class="callout-title">Si no aparecen vendedores</span>
+        <p>El campo Vendedor lista solo usuarios con el rol <code>ROLE_VENDEDOR</code> activos. Crea primero el usuario en <strong>Usuarios</strong>. Una ruta puede guardarse <strong>sin vendedor</strong> y asignarlo después; por ejemplo, mientras todavía no se ha contratado a quien la atenderá.</p>
+      </div>
+
+      <h3>4.3 Editar, activar y desactivar</h3>
+      <p>Con el lápiz de la fila abres la ruta. Al editar aparece el campo <strong>Estado de la ruta</strong>. Una ruta <strong>inactiva</strong> ya no se ofrece al asignar clientes, pero conserva los que tiene y su historial.</p>
+    </section>
+
+    <!-- ===================== 5 ===================== -->
+    <section class="chapter" id="clientes">
+      <h2><span class="num">5</span> Clientes mayoristas</h2>
+      <p>Un cliente mayorista es un cliente normal al que se le activa la casilla <strong>Es cliente mayorista</strong>. Se registra en <strong>Clientes</strong>, el mismo lugar donde ya se administraban los clientes.</p>
+
+      <h3>5.1 Registrar un cliente mayorista</h3>
+      <ol class="steps">
+        <li>Entra a <strong>Clientes</strong> y pulsa <span class="btn">+ Nuevo</span>.</li>
+        <li>En <strong>Identificación del cliente</strong> escribe el <strong>Nombre</strong> (obligatorio), el <strong>NIT</strong> (o <code>CF</code> si es consumidor final) y, si tiene, el <strong>Nombre del negocio</strong>. El <strong>Código de cliente</strong> lo asigna el sistema solo y no se puede cambiar.</li>
+        <li>En <strong>Información de contacto</strong> escribe la <strong>Dirección</strong> (obligatoria) y el <strong>Teléfono</strong>.</li>
+        <li>En <strong>Cliente mayorista</strong> marca <strong>Es cliente mayorista</strong> y completa:
+          <ul>
+            <li><strong>Ruta</strong> (obligatoria): la ruta a la que pertenece.</li>
+            <li><strong>Categoría de descuento</strong>: A, B, Volumen o ninguna (ver <a href="#descuentos">capítulo 6</a>).</li>
+            <li><strong>Persona de contacto</strong>, <strong>Teléfono de contacto</strong> y <strong>Referencia de ubicación</strong> (por ejemplo &laquo;frente a la escuela&raquo;).</li>
+            <li><strong>Límite de crédito (Q)</strong> y <strong>Días de crédito</strong>: solo si se le va a dar crédito.</li>
+          </ul>
+        </li>
+        <li>Pulsa <span class="btn">Guardar cliente</span>.</li>
+      </ol>
+
+      <div class="callout warn">
+        <span class="callout-title">El NIT no puede repetirse</span>
+        <p>Si intentas guardar un NIT que ya existe (incluido <code>CF</code>, que ya está registrado), el sistema responde con un error en lugar de crear un duplicado. Busca primero al cliente: probablemente ya existe. Para un consumidor final usa el cliente <code>CF</code> existente.</p>
+      </div>
+
+      <h3>5.2 Qué cambia según el rol</h3>
+      <ul>
+        <li><strong>Administrador:</strong> asigna todo: ruta, categoría, contacto, límite y días de crédito.</li>
+        <li><strong>Vendedor:</strong> puede registrar clientes mayoristas <strong>solo en sus rutas</strong>. La categoría de descuento y el crédito los asigna el administrador. Solo ve a los clientes de sus rutas.</li>
+        <li><strong>Otros roles:</strong> solo pueden registrar clientes minoristas; los datos mayoristas se ignoran.</li>
+      </ul>
+
+      <h3>5.3 Crédito del cliente</h3>
+      <p>El crédito se da <strong>únicamente</strong> si el cliente tiene <strong>límite</strong> y <strong>días de crédito</strong>. Sin esos dos datos, todos sus pedidos son <strong>de contado</strong>. El detalle de cómo se controla está en los capítulos <a href="#proformas">7</a> y <a href="#cobranza">11.2</a>.</p>
+
+      <h3>5.4 Buscar y filtrar clientes</h3>
+      <p>En el listado de clientes el filtro <strong>Tipo de cliente</strong> permite ver <em>Mayoristas</em>, y la columna <strong>Tipo / Ruta</strong> muestra la etiqueta &laquo;Mayorista&raquo; con su ruta. Hay también un filtro por ruta y la casilla <strong>Solo con NIT inválido</strong>, útil porque algunos clientes antiguos tienen un teléfono en lugar del NIT y la SAT lo rechaza al facturar.</p>
+    </section>
+
+    <!-- ===================== 6 ===================== -->
+    <section class="chapter" id="descuentos">
+      <h2><span class="num">6</span> Descuentos</h2>
+      <p>Los descuentos mayoristas se configuran en <strong>Mayoristas &rarr; Descuentos</strong> (solo administrador) y se aplican al armar la proforma. Hay <strong>cuatro formas</strong> de dar descuento y una quinta manual:</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Tipo</th><th>Cuándo aplica</th><th>Dónde se configura</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Categoría</strong></td><td>Según el tipo de cliente. <strong>A</strong>: compra frecuente. <strong>B</strong>: no frecuente, menos de 12 unidades. <strong>Volumen</strong>: frecuente, pide fardos o cientos; tiene varios niveles y el vendedor elige uno.</td><td>Sección <em>Categorías de cliente</em>.</td></tr>
+            <tr><td><strong>Precio mayorista</strong></td><td>Un precio fijo por producto, menor al precio de venta. Se muestra como el descuento equivalente.</td><td>Edición de cada producto.</td></tr>
+            <tr><td><strong>Por ciento</strong></td><td>Al comprar una cantidad mínima de un producto (por ejemplo, 100 unidades).</td><td>Edición de cada producto.</td></tr>
+            <tr><td><strong>Fardo cerrado</strong></td><td>Al comprar fardos completos de un producto (se indican las unidades por fardo).</td><td>Edición de cada producto.</td></tr>
+            <tr><td><strong>Manual</strong></td><td>Un porcentaje libre que escribe el vendedor. Si pasa del tope, requiere autorización.</td><td>No se configura; se escribe al vender.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>6.1 Categorías de cliente</h3>
+      <p>En la parte superior hay una tarjeta por categoría con sus <strong>niveles de descuento</strong> (por ejemplo A: 10 %, B: 8 %, Volumen: 12 %, 15 % y 20 %). Para cambiarlos:</p>
+      <ol class="steps">
+        <li>Quita un nivel con la <strong>&times;</strong> de su etiqueta, o escribe un porcentaje en <strong>Nuevo nivel (%)</strong> y pulsa <span class="btn light">+ Agregar</span>.</li>
+        <li>Pulsa <span class="btn">Guardar categoría</span>. Una categoría sin niveles muestra &laquo;Sin niveles: no ofrece descuento&raquo;.</li>
+      </ol>
+      <div class="callout note">
+        <span class="callout-title">Los valores iniciales son propuestas</span>
+        <p>Los porcentajes con que arranca el sistema se pueden cambiar. Lo que ya se vendió <strong>no cambia</strong>: cada línea de una proforma conserva el descuento con que se hizo.</p>
+      </div>
+
+      <h3>6.2 Precio mayorista, por ciento y fardo de un producto</h3>
+      <p>Abajo, la tabla <strong>Precio mayorista y descuentos por producto</strong> lista los productos con su precio de venta, su precio mayorista y sus descuentos. Busca por nombre o código; el interruptor <strong>Solo productos con descuentos</strong> oculta los que no tienen ninguno.</p>
+      <ol class="steps">
+        <li>Busca el producto y pulsa el lápiz de su fila. Se abre <strong>Editando: [producto]</strong> con su precio de venta actual.</li>
+        <li>En <strong>Precio mayorista fijo (Q)</strong> escribe el precio (opcional; debe ser menor al de venta).</li>
+        <li>Para dar descuento por cantidad, marca <strong>Por ciento</strong> e indica la <strong>Cantidad mínima</strong> y el <strong>Descuento (%)</strong>. Para <strong>Fardo cerrado</strong>, indica las <strong>Unidades por fardo</strong> y el descuento.</li>
+        <li>Pulsa <span class="btn">Guardar producto</span>.</li>
+      </ol>
+
+      <h3>6.3 El tope de descuento</h3>
+      <p>Un descuento de <strong>hasta 15 %</strong> se aplica sin pedir permiso. Si una línea pasa de ese tope, la proforma queda <span class="pill wait">Por autorizar</span> y un administrador debe aprobarla (<a href="#autorizaciones">capítulo 8</a>). El tope lo fija el sistema; si necesita cambiarse, se solicita a sistemas.</p>
+    </section>
+
+    <!-- ===================== 7 ===================== -->
+    <section class="chapter" id="proformas">
+      <h2><span class="num">7</span> Proforma mayorista</h2>
+      <p>La proforma mayorista se hace en <strong>Proformas &rarr; Nueva proforma</strong>, igual que una proforma normal. Se vuelve mayorista <strong>automáticamente</strong> cuando eliges a un cliente mayorista con ruta: aparecen los campos propios del pedido y los descuentos por tipo.</p>
+
+      <h3>7.1 Crear una proforma mayorista</h3>
+      <ol class="steps">
+        <li>Entra a <strong>Proformas</strong> y pulsa <span class="btn">+ Nueva proforma</span>. En <strong>Vendedor</strong> aparece tu nombre.</li>
+        <li>En <strong>Buscar cliente</strong> escribe el NIT y presiona <kbd>Enter</kbd>, o usa la lupa para buscar en el directorio. Al elegirlo ves su NIT, nombre, dirección y <strong>ruta</strong>.</li>
+        <li>Completa los datos del pedido:
+          <ul>
+            <li><strong>Fecha de entrega estimada</strong> (opcional): con ella se mide el porcentaje de entregas a tiempo (<a href="#indicadores">capítulo 13</a>).</li>
+            <li><strong>Condición de pago</strong>: <em>Contado</em> (se cobra antes de entregar) o <em>Crédito</em> (los días del cliente, contados desde la entrega).</li>
+            <li><strong>Observaciones del pedido</strong> (hasta 500 caracteres): solo se imprimen en la copia de la tienda.</li>
+          </ul>
+        </li>
+        <li>En <strong>Agregar productos</strong>, escribe o escanea el <strong>código</strong> y presiona <kbd>Enter</kbd>, o usa la lupa. Indica la <strong>Cantidad</strong>.</li>
+        <li>Elige el <strong>Tipo de descuento</strong>. El sistema propone el que corresponde al cliente, al producto y a la cantidad; solo aparecen los tipos que aplican. Si el tipo tiene varios <strong>Niveles</strong> (categoría Volumen), elige uno. Con <em>Manual</em> escribes el porcentaje.</li>
+        <li>Pulsa <span class="btn">+ Agregar</span>. Repite para cada producto. En la tabla del detalle puedes cambiar la cantidad o el descuento con el lápiz y escribir una <strong>observación de la línea</strong> (opcional, hasta 255 caracteres).</li>
+        <li>La barra superior muestra el <strong>total</strong>. Pulsa <span class="btn">Guardar proforma</span>.</li>
+      </ol>
+
+      <div class="callout note">
+        <span class="callout-title">Contado o crédito</span>
+        <ul>
+          <li>La opción <strong>Crédito</strong> solo se habilita si el cliente tiene <strong>límite</strong> y <strong>días de crédito</strong>. Si no, el mensaje dice: &laquo;El cliente no tiene límite ni días de crédito: el pedido es de contado&raquo;.</li>
+          <li>Un pedido de <strong>contado</strong> no puede entregarse hasta que exista un <strong>recibo de caja</strong> que cubra lo entregado (ver <a href="#recibos">11.1</a>).</li>
+          <li>Un pedido a <strong>crédito</strong> puede entregarse sin cobro, siempre que no pase del límite del cliente (ver <a href="#autorizaciones">capítulo 8</a>).</li>
+        </ul>
+      </div>
+
+      <h3>7.2 Vigencia</h3>
+      <p>La proforma mayorista <strong>vale 15 días</strong> desde su emisión (se indica en el formulario). Pasado ese plazo se puede seguir entregando, pero <strong>para facturarla hace falta que un administrador lo autorice</strong>.</p>
+
+      <h3>7.3 Imprimir la proforma</h3>
+      <p>En el listado de proformas, el botón de imprimir de una proforma mayorista pregunta <strong>qué copia</strong> quieres: <span class="btn light">Copia cliente</span> o <span class="btn light">Copia tienda</span>. La copia de la tienda incluye la observación general del pedido; la del cliente no.</p>
+
+      <h3>7.4 Cómo se ve en el listado</h3>
+      <ul>
+        <li>Bajo el nombre del cliente aparece <strong>Mayorista</strong> y su ruta.</li>
+        <li>Si el descuento espera decisión, la proforma muestra <span class="pill wait">Por autorizar</span>; si fue rechazado, <span class="pill bad">Rechazada</span>.</li>
+        <li>El estado de factura indica <em>Sin facturar</em> mientras no se haya facturado.</li>
+        <li>El vendedor solo ve <strong>sus</strong> proformas.</li>
+      </ul>
+
+      <h3>7.5 Editar o anular una proforma mayorista</h3>
+      <p>Al <strong>guardar cambios</strong> de una proforma mayorista el sistema pide el <strong>motivo del cambio</strong> (obligatorio) y lo guarda en el historial. Lo mismo ocurre al anularla.</p>
+      <div class="callout warn">
+        <span class="callout-title">Si bodega ya empezó</span>
+        <p>Si el pedido ya está <em>En preparación</em> y guardas cambios, el pedido <strong>vuelve a Confirmado</strong> y hay que imprimir de nuevo la hoja de picking. El formulario te lo avisa antes de guardar.</p>
+      </div>
+      <div class="callout warn">
+        <span class="callout-title">Editar puede volver a pedir autorización</span>
+        <ul>
+          <li><strong>Descuento:</strong> cada vez que guardas una proforma que tiene una línea sobre el tope, vuelve a quedar <span class="pill wait">Por autorizar</span>, aunque ya estuviera aprobada. El administrador debe aprobarla otra vez.</li>
+          <li><strong>Crédito:</strong> si el pedido ya estaba autorizado y al editarlo el exceso sobre el límite <strong>no aumenta</strong>, conserva su autorización. Si aumenta, vuelve a pedirla.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ===================== 8 ===================== -->
+    <section class="chapter" id="autorizaciones">
+      <h2><span class="num">8</span> Autorizaciones</h2>
+      <p>La bandeja <strong>Mayoristas &rarr; Autorizaciones</strong> (solo administrador) reúne lo que espera una decisión. Tiene <strong>tres secciones</strong>; cada una indica con un número cuántos casos hay.</p>
+
+      <h3>8.1 Descuentos por autorizar</h3>
+      <p>Proformas con una línea de más del <strong>15 %</strong>. La tabla muestra el número de proforma, la fecha, el cliente y su ruta, el vendedor, el total y el <strong>descuento máximo</strong> de la proforma.</p>
+      <ul>
+        <li><span class="btn">Autorizar</span>: aprueba el descuento. La proforma puede prepararse, entregarse y facturarse.</li>
+        <li><span class="btn red">Rechazar</span>: el descuento no se acepta. El vendedor debe corregir la proforma bajando el descuento.</li>
+      </ul>
+      <p>Cualquiera de las dos pide un <strong>motivo obligatorio</strong>, que queda en el historial.</p>
+
+      <h3>8.2 Pedidos que pasan del límite de crédito</h3>
+      <p>Aplica a pedidos a <strong>crédito</strong>. Al guardar la proforma el sistema calcula la <strong>exposición</strong> del cliente:</p>
+      <div class="callout tip">
+        <span class="callout-title">La fórmula de la exposición</span>
+        <p><strong>Exposición = lo que ya debe + lo que falta por entregar de sus otros pedidos a crédito + el total de este pedido.</strong></p>
+        <p>Si la exposición es mayor que el <strong>límite de crédito</strong> del cliente, el pedido queda <strong>pendiente de autorización de crédito</strong>. La columna <em>Pasa por</em> muestra cuánto se pasa.</p>
+      </div>
+      <p>Mientras está pendiente, el pedido <strong>no se puede preparar, entregar ni facturar</strong>. En Pedidos aparece la marca <span class="pill wait">Por autorizar</span> y su detalle lo explica. Con <span class="btn">Autorizar</span> (y un motivo) el pedido sigue su curso; con <span class="btn red">Rechazar</span> debe corregirse la proforma (por ejemplo, reduciendo cantidades).</p>
+      <div class="callout note">
+        <span class="callout-title">Ejemplo</span>
+        <p>Un cliente con límite de <strong>Q300</strong> debe <strong>Q128.70</strong> y hace un pedido a crédito de <strong>Q205.92</strong>. Exposición: 128.70 + 205.92 = <strong>Q334.62</strong>. Pasa del límite por <strong>Q34.62</strong>, así que el pedido espera la autorización del administrador.</p>
+      </div>
+      <div class="callout note">
+        <span class="callout-title">Son dos autorizaciones distintas</span>
+        <p>La autorización del <strong>descuento</strong> y la del <strong>crédito</strong> son independientes. Un pedido puede necesitar una, la otra o ambas.</p>
+      </div>
+
+      <h3>8.3 Proformas vencidas sin facturar</h3>
+      <p>Una proforma mayorista vence a los 15 días. Para <strong>facturarla</strong> después hace falta que un administrador lo autorice desde esta sección. Entregar el pedido no necesita esa autorización.</p>
+    </section>
+
+    <!-- ===================== 9 ===================== -->
+    <section class="chapter" id="pedidos">
+      <h2><span class="num">9</span> Pedidos y entregas</h2>
+      <p>Entra a <strong>Pedidos</strong>. Cada proforma mayorista aparece como un pedido, agrupado por <strong>ruta</strong>. La lista es operativa: <strong>no muestra importes</strong>.</p>
+
+      <h3>9.1 Las etapas de un pedido</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Etapa</th><th>Significa</th><th>Quién avanza</th><th>Botón</th></tr></thead>
+          <tbody>
+            <tr><td><span class="pill wait">Confirmado</span></td><td>La proforma se creó y espera a bodega. Es la etapa inicial.</td><td>Administrador, Bodega</td><td><span class="btn green">Iniciar picking</span></td></tr>
+            <tr><td><span class="pill wait">En preparación</span></td><td>Bodega junta los productos del pedido (picking).</td><td>Administrador, Bodega</td><td><span class="btn green">Marcar empacado</span></td></tr>
+            <tr><td><span class="pill ok">Empacado</span></td><td>El pedido está listo y empacado, esperando salir.</td><td>Administrador, Bodega</td><td><span class="btn green">Cargar y salir a ruta</span></td></tr>
+            <tr><td><span class="pill ok">En ruta</span></td><td>El pedido salió con su <strong>piloto</strong>. Es el único momento en que se registran entregas.</td><td>&mdash;</td><td><span class="btn">Registrar entrega</span></td></tr>
+            <tr><td><span class="pill wait">Entrega parcial</span></td><td>Se entregó una parte; el resto sigue pendiente.</td><td>&mdash;</td><td><span class="btn">Registrar entrega</span></td></tr>
+            <tr><td><span class="pill ok">Entregado</span></td><td>Se entregó todo (o el administrador lo cerró). Es un estado final.</td><td>&mdash;</td><td>Solo consulta</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>9.2 Filtros de la lista</h3>
+      <p>Arriba puedes filtrar por <strong>Etapa</strong> (por defecto <em>Por entregar</em>, que reúne todo lo no entregado), por <strong>Ruta</strong> y por <strong>fechas</strong>, y pulsar <span class="btn light">Actualizar</span>. Cada fila muestra el pedido, el cliente (y su negocio), el vendedor, el piloto, la fecha de entrega estimada, las unidades y la etapa. Con el ojo abres el <strong>detalle</strong>.</p>
+
+      <h3>9.3 Preparar el pedido (Bodega)</h3>
+      <ol class="steps">
+        <li>Pulsa <span class="btn green">Iniciar picking</span>. El sistema pregunta <em>&iquest;Quién lo hizo? (opcional, si no tiene usuario)</em>: sirve cuando quien trabaja no tiene usuario propio. Confirma.</li>
+        <li>Imprime la <strong>hoja de picking</strong> con el icono de la lista (<em>Hoja de picking</em>) para juntar los productos.</li>
+        <li>Al terminar pulsa <span class="btn green">Marcar empacado</span> y, si quieres, imprime la <strong>lista de empaque</strong> con el icono de la caja.</li>
+        <li>Pulsa <span class="btn green">Cargar y salir a ruta</span>. El sistema pide el <strong>piloto</strong> (obligatorio): un usuario con rol Repartidor. Si no hay ninguno, avisa que el administrador debe crearlo.</li>
+        <li>Para llevar un resumen de la ruta, pulsa <span class="btn light">Nota de envío</span> en el encabezado del grupo de la ruta: imprime los pedidos de esa ruta que muestra la lista.</li>
+      </ol>
+      <div class="callout warn">
+        <span class="callout-title">Pedidos que no avanzan</span>
+        <p>Un pedido <span class="pill wait">Por autorizar</span> (por descuento o por crédito) <strong>no puede prepararse</strong>. Pide al administrador que lo autorice en la bandeja de Autorizaciones.</p>
+      </div>
+      <p>Mientras el pedido está en ruta, el administrador o bodega pueden <strong>cambiar el piloto</strong> con el icono del usuario.</p>
+
+      <h3>9.4 Registrar una entrega</h3>
+      <p>Un pedido <em>En ruta</em> se entrega con <span class="btn">Registrar entrega</span>, que abre su detalle con el formulario de entrega.</p>
+      <ol class="steps">
+        <li>Si eres administrador, bodega o vendedor, elige la <strong>Sucursal de la que se descuenta</strong> el inventario. El repartidor no la elige: se usa la del pedido.</li>
+        <li>Confirma la <strong>Fecha de entrega</strong>. No puede ser futura, ni de hace más de <strong>7 días</strong>, ni anterior a la emisión del pedido.</li>
+        <li>Opcionalmente escribe quién <strong>Entregó</strong> (nombre del piloto o vendedor).</li>
+        <li>En la tabla, escribe en <strong>Entregado ahora</strong> la cantidad de cada producto. Puede ser menos que lo pendiente.</li>
+        <li>Pulsa <span class="btn green">Guardar entrega</span>.</li>
+      </ol>
+      <p>Qué pasa al guardar:</p>
+      <ul>
+        <li>Las unidades <strong>salen del inventario</strong> de la sucursal elegida (con origen &laquo;Entrega de pedido&raquo;).</li>
+        <li><strong>Nace la deuda</strong> del cliente por lo entregado (si es a crédito) y empieza a correr su plazo.</li>
+        <li>Si se entregó todo, el pedido pasa a <span class="pill ok">Entregado</span>; si falta algo, a <span class="pill wait">Entrega parcial</span> y lo pendiente puede entregarse después.</li>
+      </ul>
+
+      <div class="callout danger">
+        <span class="callout-title">Pedido de contado sin cobro</span>
+        <p>Un pedido de <strong>contado</strong> no se entrega hasta que existan <strong>recibos de caja ligados a ese pedido</strong> que cubran lo entregado. Si falta cobrar, el sistema lo impide y el detalle muestra cuánto falta: &laquo;Emita un recibo de caja ligado a este pedido antes de entregar más&raquo;.</p>
+        <p>Solo el <strong>administrador</strong> puede marcar <em>Entregar aunque no esté cobrado</em>; queda anotado en las etapas del pedido. El repartidor, el vendedor y bodega <strong>nunca</strong> pueden hacerlo.</p>
+      </div>
+
+      <div class="callout note">
+        <span class="callout-title">Inventario descontado a mano</span>
+        <p>Si la empresa ya descontó el inventario por otro medio (una salida manual), marca <em>El inventario de lo entregado ya se descontó a mano</em>: esa entrega <strong>no vuelve a descontarlo</strong>. Se usa para pedidos anteriores a la puesta en marcha del sistema. La entrega queda marcada como <span class="pill">Descontado a mano</span>.</p>
+      </div>
+
+      <h3>9.5 Si algo sale mal (administrador)</h3>
+      <ul>
+        <li><strong>Anular una entrega:</strong> en el detalle, <span class="btn red">Anular</span> junto a la entrega, con un motivo obligatorio. Las unidades <strong>regresan al inventario</strong> y el pedido vuelve a mostrar lo pendiente. No se puede anular si el pedido tiene una <strong>factura vigente</strong>: primero se anula la factura.</li>
+        <li><strong>Cerrar con lo entregado:</strong> en un pedido con entrega parcial, da por entregado el pedido aunque falte parte. Pide un motivo.</li>
+        <li><strong>Regresar a la etapa anterior:</strong> el botón rojo de la flecha regresa el pedido una etapa (por ejemplo, de Empacado a En preparación). Pide un motivo. No está disponible en pedidos Confirmados ni en los que ya tienen entregas.</li>
+      </ul>
+
+      <h3>9.6 El historial del pedido</h3>
+      <p>En el detalle, <span class="btn light">Ver el historial completo</span> despliega una <strong>línea de tiempo</strong> con todo lo que le ha pasado al pedido: sus etapas, los cambios y autorizaciones, las entregas, las facturas y los recibos ligados. Cada hecho muestra la fecha, quién lo hizo y su motivo, si lo tiene. La ven el administrador, bodega y el vendedor.</p>
+
+      <h3>9.7 Lo que ve cada rol</h3>
+      <ul>
+        <li><strong>Administrador y bodega:</strong> todos los pedidos, con picking, empaque, nota de envío y avance de etapas.</li>
+        <li><strong>Vendedor:</strong> solo los pedidos de sus clientes, y puede registrar entregas de ellos. Ve cuánto se ha cobrado.</li>
+        <li><strong>Repartidor:</strong> solo los pedidos que se le asignaron al cargarlos. No ve dinero. Registra la entrega con la sucursal del pedido.</li>
+      </ul>
+    </section>
+
+    <!-- ===================== 10 ===================== -->
+    <section class="chapter" id="facturar">
+      <h2><span class="num">10</span> Facturar un pedido mayorista</h2>
+      <p>La <strong>factura es opcional</strong>: muchos pedidos mayoristas se entregan y se cobran solo con la proforma. Cuando el cliente la pide, se factura desde <strong>Proformas</strong> con el botón <em>Crear factura desde esta proforma</em> (administrador y el vendedor dueño de la proforma).</p>
+
+      <h3>10.1 Qué pasa con el inventario</h3>
+      <p>El inventario ya salió al <strong>entregar</strong>, así que la factura <strong>no lo descuenta otra vez</strong>: solo descuenta lo que todavía no se había descontado (por ejemplo, lo que se factura antes de entregarse). Si la factura se anula, el sistema devuelve únicamente lo que ella misma había descontado.</p>
+
+      <h3>10.2 Cuándo no deja facturar</h3>
+      <ul>
+        <li>La proforma está <span class="pill wait">Por autorizar</span> (descuento o crédito) o fue rechazada.</li>
+        <li>La proforma está <strong>vencida</strong> (más de 15 días) y un administrador no la ha autorizado.</li>
+        <li>Ya tiene una factura vigente: &laquo;Para facturarla de nuevo anule primero esa factura&raquo;. Si la factura fue anulada, el botón cambia a <em>Volver a facturar</em>.</li>
+        <li>El cliente no tiene <strong>NIT</strong> o no es válido (por ejemplo, un teléfono). El mensaje pide <strong>cambiar el cliente de la factura</strong> o corregir el NIT; para consumidor final se usa <code>C/F</code>.</li>
+      </ul>
+
+      <div class="callout note">
+        <span class="callout-title">Facturar no cambia lo que el cliente debe</span>
+        <p>La deuda nació al <strong>entregar</strong>. Facturar es un documento fiscal y no suma ni resta al saldo del cliente. La cobranza se calcula sobre lo entregado, lo devuelto y lo abonado.</p>
+      </div>
+      <div class="callout warn">
+        <span class="callout-title">Una proforma puede tener varias facturas</span>
+        <p>Si una factura se anula, la proforma se puede facturar de nuevo. Mientras haya una factura vigente no se permite otra, ni anular entregas.</p>
+      </div>
+    </section>
+
+    <!-- ===================== 11 ===================== -->
+    <section class="chapter" id="cobrar">
+      <h2><span class="num">11</span> Cuentas por cobrar</h2>
+      <p>Este grupo reúne lo que tiene que ver con el dinero del cliente: los <a href="#recibos">recibos de caja</a> (cuando paga), la <a href="#cobranza">cobranza</a> (lo que debe) y las <a href="#devoluciones">devoluciones</a> (lo que devuelve y baja su deuda).</p>
+
+      <div class="callout tip">
+        <span class="callout-title">Cómo se calcula lo que el cliente debe</span>
+        <p><strong>Saldo = Entregado &minus; Devuelto &minus; Abonado.</strong></p>
+        <ul>
+          <li><strong>Entregado:</strong> el valor de lo entregado, a precio de la línea de la proforma (con su descuento). Una entrega parcial suma solo lo entregado.</li>
+          <li><strong>Devuelto:</strong> el valor de las devoluciones vigentes (las anuladas no cuentan).</li>
+          <li><strong>Abonado:</strong> la suma de los recibos de caja vigentes (los anulados no cuentan).</li>
+        </ul>
+        <p>Si el cliente abonó más de lo que debe, el saldo queda <strong>a favor del cliente</strong>.</p>
+      </div>
+
+      <div class="callout note">
+        <span class="callout-title">Cuándo vence una deuda</span>
+        <p>Una entrega vence a los <strong>días de crédito del cliente</strong> contados desde su <strong>primera entrega</strong>. Un pedido de <strong>contado</strong> entregado sin cobrar vence <strong>el mismo día</strong> de la entrega.</p>
+      </div>
+
+      <!-- ===================== 11.1 ===================== -->
+      <h3 id="recibos">11.1 Recibos de caja</h3>
+      <p>Un recibo de caja es la constancia de un pago. Lo emiten el <strong>administrador</strong> y el <strong>cobrador</strong> en <strong>Cuentas por cobrar &rarr; Recibos de caja</strong>. Cada sucursal numera los suyos con su propio correlativo (por ejemplo <code>S1-000001</code>). Los recibos <strong>no se editan</strong>; si hay un error se anula y se emite otro.</p>
+
+      <h4>Emitir un recibo</h4>
+      <ol class="steps">
+        <li>Pulsa <span class="btn">+ Nuevo recibo</span>. Se abre el formulario <strong>Registrar nuevo recibo</strong> (la lista de recibos se oculta mientras lo llenas).</li>
+        <li>En <strong>Información del cliente</strong>, el campo <strong>Recibido por</strong> muestra tu nombre. En <strong>Buscar cliente</strong> presiona <kbd>Enter</kbd> o la lupa para abrir el directorio de clientes y elige uno.</li>
+        <li>Al elegir al cliente aparece su <strong>resumen</strong>: <em>Entregado, Devuelto</em> (si hay), <em>Abonado, Saldo pendiente</em> (o <em>A favor del cliente</em>) y <em>Crédito disponible</em> si tiene límite.</li>
+        <li>En <strong>Aplicar pago a</strong> elige a qué se aplica:
+          <ul>
+            <li><strong>Abono a la cuenta (se aplica a lo más antiguo):</strong> baja el saldo general; el sistema lo asigna a la entrega más antigua primero.</li>
+            <li><strong>Un pedido concreto:</strong> la lista muestra, por pedido, su condición (contado o crédito), su total, lo cobrado y lo pendiente. Al elegirlo, el <strong>Monto</strong> se propone con lo que falta.</li>
+          </ul>
+        </li>
+        <li>En <strong>Datos del pago</strong> indica el <strong>Monto (Q)</strong>, la <strong>Fecha de pago</strong> y la <strong>Forma de pago</strong>: <em>Efectivo, Depósito, Transferencia</em> o <em>Cheque</em>.</li>
+        <li>Si no es efectivo, escribe la <strong>Referencia</strong> (obligatoria): el número de boleta, de transferencia o de cheque. El campo te dice cuál según la forma elegida.</li>
+        <li>El administrador puede elegir la <strong>Sucursal</strong> que emite (por defecto, la suya). <strong>Observaciones</strong> es opcional.</li>
+        <li>Pulsa <span class="btn">Emitir e imprimir</span>. El recibo se genera en PDF (media carta) en una pestaña nueva y aparece el aviso &laquo;Recibo S1-000001 emitido&raquo;.</li>
+      </ol>
+
+      <div class="callout danger">
+        <span class="callout-title">Pedidos de contado</span>
+        <p>Para entregar un pedido de contado hace falta un recibo <strong>ligado a ese pedido</strong> (elegido en <em>Aplicar pago a</em>) por lo menos por lo que se va a entregar. Un abono a la cuenta <strong>no</strong> sirve para liberar la entrega de un pedido de contado.</p>
+      </div>
+
+      <h4>La lista de recibos emitidos</h4>
+      <p>Filtra por <strong>fechas</strong> (sin fechas, los últimos 30 días), por <strong>sucursal</strong> (administrador) y activa <strong>Incluir anulados</strong> para verlos. Cada fila muestra el número y la sucursal, la fecha de pago, el cliente (con el pedido o factura a que se ligó), la forma de pago y su referencia, el monto y quién lo emitió. Con la impresora vuelves a imprimirlo.</p>
+
+      <h4>Anular un recibo <small style="font-weight:400;color:var(--muted)">(solo administrador)</small></h4>
+      <p>Con el botón <span class="btn red">Anular</span> y un <strong>motivo obligatorio</strong>. El recibo queda marcado como anulado y <strong>deja de contar</strong> para el saldo del cliente, y el pedido que había liberado vuelve a mostrar lo que falta cobrar.</p>
+
+      <!-- ===================== 11.2 ===================== -->
+      <h3 id="cobranza">11.2 Cobranza</h3>
+      <p><strong>Cuentas por cobrar &rarr; Cobranza</strong> (administrador y cobrador) muestra <strong>quién debe, cuánto y desde cuándo</strong>.</p>
+
+      <h4>El resumen</h4>
+      <p>Arriba hay cinco tarjetas con los totales de todos los clientes: <strong>Por vencer</strong> (dentro del plazo), <strong>Vencido 1&ndash;30 días</strong>, <strong>Vencido 31&ndash;60 días</strong>, <strong>Vencido +60 días</strong> (prioridad de cobro) y <strong>Total por cobrar</strong> con cuántos clientes tienen saldo. Si hay saldo vencido aparece una <strong>alerta roja</strong> con cuántos clientes y cuánto, con el botón <span class="btn red">Ver solo vencidos</span>.</p>
+
+      <h4>La tabla de clientes</h4>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Columna</th><th>Qué muestra</th></tr></thead>
+          <tbody>
+            <tr><td>Cliente y Ruta</td><td>El cliente, su negocio y su ruta.</td></tr>
+            <tr><td>Por vencer</td><td>Lo que debe y todavía está dentro de su plazo.</td></tr>
+            <tr><td>Vencido 1&ndash;30, 31&ndash;60 y +60</td><td>Lo vencido, repartido por los días de atraso.</td></tr>
+            <tr><td>Total vencido y Total</td><td>La suma de lo vencido y el total que debe.</td></tr>
+            <tr><td>Atraso</td><td>&laquo;Al día&raquo; si no tiene nada vencido; si no, indica el atraso.</td></tr>
+            <tr><td>Estado de cuenta</td><td>El botón de la impresora genera su estado de cuenta en PDF.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Puedes filtrar por <strong>cliente</strong> (nombre o negocio) y por <strong>ruta</strong>, y activar <strong>Solo vencidos</strong>. Los botones <span class="btn light">PDF</span> y <span class="btn light">Excel</span> exportan el resumen con los filtros aplicados.</p>
+
+      <h4>El estado de cuenta</h4>
+      <p>Es un PDF por cliente con todos sus movimientos en orden y el <strong>saldo corrido</strong>: cada entrega (lo que se carga), cada devolución y cada recibo (lo que se descuenta), hasta el saldo actual. Sirve para mostrarle al cliente cómo se llegó a lo que debe.</p>
+
+      <div class="callout note">
+        <span class="callout-title">Contado y crédito en la cobranza</span>
+        <p>Un pedido de crédito aparece en <em>Por vencer</em> mientras no pasen los días del cliente desde su primera entrega. Un pedido de contado entregado sin recibo (solo posible con la autorización del administrador) aparece <strong>vencido desde el día de la entrega</strong>.</p>
+      </div>
+
+      <!-- ===================== 11.3 ===================== -->
+      <h3 id="devoluciones">11.3 Devoluciones de clientes</h3>
+      <p>Cuando un cliente devuelve producto de lo ya entregado, el administrador lo registra en <strong>Cuentas por cobrar &rarr; Devoluciones de clientes</strong>. La devolución <strong>baja lo que debe el cliente</strong> y puede regresar el producto al inventario. Se registra y queda aprobada en un solo paso.</p>
+
+      <h4>Registrar una devolución</h4>
+      <ol class="steps">
+        <li>Pulsa <span class="btn">+ Nueva devolución</span>. Se abre el formulario <strong>Registrar nueva devolución</strong> (la lista se oculta mientras lo llenas).</li>
+        <li>En <strong>Cliente y pedido</strong>, abre el directorio con la lupa y elige al cliente (solo aparecen mayoristas). Luego elige el <strong>Pedido</strong> del que devuelve: solo se ofrecen pedidos que ya tienen entregas.</li>
+        <li>En <strong>Productos devueltos</strong> la tabla muestra por producto lo <em>Entregado</em>, lo <em>Ya devuelto</em> y lo que <em>Se puede devolver</em>. Escribe en <strong>Devuelve</strong> la cantidad (entera, sin pasar de lo que se puede devolver).</li>
+        <li>Elige el <strong>Destino</strong> de cada línea: <em>Reingresa al inventario</em> (el producto está bien y vuelve a la sucursal) o <em>Baja (merma)</em> (está dañado y no vuelve al inventario).</li>
+        <li>En <strong>Datos de la devolución</strong> confirma la <strong>Fecha</strong>, elige la <strong>Sucursal que recibe</strong> (solo si algo reingresa) y escribe el <strong>Motivo</strong> (obligatorio, hasta 500 caracteres).</li>
+        <li>Pulsa <span class="btn">Registrar devolución</span>. El pie del formulario te dice qué falta mientras el botón esté desactivado.</li>
+      </ol>
+      <p>La tabla calcula el <strong>valor devuelto</strong>: cantidad &times; el precio de la línea (con su descuento). Es lo que baja del saldo del cliente.</p>
+
+      <div class="callout warn">
+        <span class="callout-title">Pedido facturado</span>
+        <p>Si el pedido tiene una factura vigente, el formulario avisa y pide ligar la devolución a una <strong>nota de crédito</strong> vigente del mismo cliente. Si no existe, el mensaje dice que debes emitirla primero en <strong>Notas de crédito</strong>. Si hay una sola, se elige sola.</p>
+      </div>
+
+      <h4>Qué pasa al registrar</h4>
+      <ul>
+        <li>Baja el <strong>saldo</strong> del cliente, la cobranza y la exposición de su crédito.</li>
+        <li>Lo que <strong>reingresa</strong> entra al inventario de la sucursal elegida (movimiento <em>Devolución de cliente</em>). La <strong>baja</strong> no mueve inventario.</li>
+        <li>Se descuenta de las <strong>ventas netas</strong> y de la base de la comisión del vendedor.</li>
+        <li>Queda en el <strong>historial del pedido</strong>.</li>
+      </ul>
+
+      <h4>La lista y el detalle</h4>
+      <p>Filtra por fechas (sin fechas, los últimos 90 días). Cada devolución muestra su número, fecha, cliente y pedido, motivo, valor devuelto y quién la registró. La flecha del detalle despliega los productos, su destino y su valor, y la sucursal que recibió.</p>
+
+      <h4>Anular una devolución</h4>
+      <p>Con <span class="btn red">Anular</span> y un <strong>motivo obligatorio</strong>. Lo que había reingresado <strong>sale otra vez</strong> del inventario (movimiento <em>Anulación de devolución de cliente</em>) y el valor <strong>vuelve a sumarse</strong> a lo que debe el cliente. La devolución queda marcada <span class="pill bad">Anulada</span> y ya no cuenta en saldos, ventas netas ni comisiones. No se puede anular cuando:</p>
+      <ul>
+        <li>Está ligada a una <strong>nota de crédito vigente</strong>: primero se anula la nota.</li>
+        <li>Las <strong>comisiones</strong> del año de la devolución ya están liquidadas: primero se deshace la liquidación.</li>
+        <li>El producto que reingresó <strong>ya salió</strong> de la sucursal y no hay existencias para retirarlo: la anulación se rechaza completa, sin cambiar nada.</li>
+        <li>Ya estaba anulada.</li>
+      </ul>
+    </section>
+
+    <!-- ===================== 12 ===================== -->
+    <section class="chapter" id="comisiones">
+      <h2><span class="num">12</span> Comisiones</h2>
+      <p><strong>Mayoristas &rarr; Comisiones</strong> (solo administrador) calcula lo que gana cada vendedor. La regla es sencilla: se toma <strong>lo entregado menos lo devuelto</strong> del año y se le aplica <strong>el porcentaje de la meta más alta que el vendedor alcanzó</strong>. El porcentaje es <strong>plano</strong>: se aplica a todo el monto, no solo al excedente de cada meta.</p>
+
+      <div class="callout note">
+        <span class="callout-title">Ejemplo</span>
+        <p>Metas: <strong>Q300,000 &rarr; 0.5 %</strong> y <strong>Q700,000 &rarr; 1 %</strong>. Un vendedor entregó Q800,000 y le devolvieron Q50,000: base <strong>Q750,000</strong>. Alcanzó la meta de Q700,000, así que cobra <strong>1 % de Q750,000 = Q7,500</strong>. Si hubiera llegado a Q500,000 netos, cobraría 0.5 % de Q500,000.</p>
+      </div>
+
+      <h3>12.1 Definir las metas del año</h3>
+      <p>Arriba, las flechas &lsaquo; &rsaquo; cambian el <strong>año</strong>. En <strong>Metas del año</strong> cada fila tiene <strong>Desde (Q entregados)</strong> y <strong>Porcentaje (%)</strong>.</p>
+      <ol class="steps">
+        <li>Pulsa <span class="btn light">+ Agregar meta</span> para una fila nueva, o <span class="btn light">Copiar de otro año</span> para partir de las metas de otro año. El bote de basura quita una fila.</li>
+        <li>Cada meta debe pedir un monto <strong>y</strong> un porcentaje <strong>mayores</strong> que los de la anterior.</li>
+        <li>Pulsa <span class="btn">Guardar metas</span>. Si cambias algo y no quieres guardarlo, usa <em>Descartar cambios</em>.</li>
+      </ol>
+
+      <h3>12.2 El avance de los vendedores</h3>
+      <p>La tabla muestra, por vendedor: la fecha de <strong>Alta</strong>, lo <strong>Entregado</strong>, lo <strong>Devuelto</strong>, la <strong>Base (neto)</strong>, la <strong>Meta alcanzada</strong> y su <strong>%</strong>, la <strong>Comisión si completó</strong> el año y lo que <strong>Falta para la siguiente</strong> meta. Las tarjetas de arriba suman la <strong>Base de comisión</strong> y lo <strong>A pagar a los marcados</strong>.</p>
+
+      <h3>12.3 Quién cobra</h3>
+      <ul>
+        <li>Solo cobra quien el administrador marca en <strong>Completó el año</strong>. Esa casilla se habilita <strong>cuando el año termina</strong>.</li>
+        <li>Un vendedor nuevo completa el año al cumplir <strong>365 días</strong> desde su <strong>fecha de alta</strong> como usuario.</li>
+        <li>Si el vendedor <strong>ingresó el año anterior</strong>, la fila avisa &laquo;se le paga todo lo entregado desde su ingreso&raquo; y puede marcarse.</li>
+        <li>Si <strong>ingresó este año</strong> y aún no cumple 365 días, la fila avisa &laquo;se liquida el año siguiente&raquo; y no puede marcarse.</li>
+      </ul>
+
+      <h3>12.4 Liquidar el año</h3>
+      <p>Con las casillas marcadas, <span class="btn">Liquidar el año</span> guarda las comisiones. Está disponible <strong>desde el 1 de enero siguiente</strong>; antes, el botón está desactivado y la pantalla explica por qué. Un año liquidado muestra &laquo;Comisiones liquidadas&raquo; y ya no se pueden cambiar sus metas.</p>
+      <ul>
+        <li><span class="btn light">Reporte PDF</span> y <span class="btn light">Reporte Excel</span> descargan el avance o la liquidación del año.</li>
+        <li><span class="btn red">Deshacer liquidación</span> (solo administrador, con motivo) reabre el año. Es necesario, por ejemplo, para poder anular una devolución de ese año.</li>
+      </ul>
+
+      <div class="callout note">
+        <span class="callout-title">Devoluciones y comisiones</span>
+        <p>Lo devuelto se resta del vendedor <strong>del pedido devuelto</strong>. Una devolución anulada deja de restar.</p>
+      </div>
+    </section>
+
+    <!-- ===================== 13 ===================== -->
+    <section class="chapter" id="indicadores">
+      <h2><span class="num">13</span> Indicadores</h2>
+      <p><strong>Mayoristas &rarr; Indicadores</strong> (solo administrador) es un tablero para ver cómo va el mes. Con las flechas &lsaquo; &rsaquo; eliges el mes.</p>
+      <div class="cards">
+        <div class="card">
+          <h4>Ventas netas del mes</h4>
+          <p>Lo entregado en el mes menos lo devuelto en el mes, comparado con el mes anterior. Debajo, el entregado y el devuelto por separado.</p>
+        </div>
+        <div class="card">
+          <h4>Entregados a tiempo</h4>
+          <p>El porcentaje de pedidos entregados por completo cuya <strong>última entrega</strong> fue en o antes de su <strong>fecha estimada</strong>.</p>
+        </div>
+        <div class="card">
+          <h4>Cuentas por cobrar</h4>
+          <p>Lo que se debe hoy, separado en vencido y por vencer, con un enlace directo a la cobranza.</p>
+        </div>
+      </div>
+      <p>Abajo, la tabla <strong>Ventas por vendedor</strong> muestra, para cada uno: lo entregado, lo devuelto, las ventas netas, su participación en el total (barra) y su porcentaje de entregas a tiempo.</p>
+      <div class="callout warn">
+        <span class="callout-title">Pedidos sin fecha estimada</span>
+        <p>Los pedidos <strong>sin fecha de entrega estimada</strong> no cuentan para el porcentaje a tiempo. Si quieres medirlos, escribe la fecha al hacer la proforma.</p>
+      </div>
+    </section>
+
+    <!-- ===================== 14 ===================== -->
+    <section class="chapter" id="reportes">
+      <h2><span class="num">14</span> Reportes</h2>
+      <p>En <strong>Reportes</strong> existe la categoría <strong>Mayoristas</strong> (solo administrador). Cada reporte pide sus filtros y se descarga en <strong>PDF</strong> o <strong>Excel</strong>.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Reporte</th><th>Qué contiene</th><th>Filtros</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Clientes por ruta</strong></td><td>Los clientes mayoristas agrupados por ruta, con su vendedor, contacto y condiciones.</td><td>Ruta</td></tr>
+            <tr><td><strong>Clientes sin compras</strong></td><td>Clientes mayoristas sin proformas ni facturas en el período, con su última compra.</td><td>Fechas, ruta</td></tr>
+            <tr><td><strong>Proformas por vendedor</strong></td><td>Las proformas mayoristas generadas frente a las facturadas por cada vendedor.</td><td>Fechas, ruta</td></tr>
+            <tr><td><strong>Ventas entregadas</strong></td><td>Lo entregado a los clientes por ruta y vendedor, a precio de línea. Una entrega parcial suma solo lo entregado.</td><td>Fechas, ruta, vendedor (opcional)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Otros documentos del módulo se obtienen en sus propias pantallas:</p>
+      <ul>
+        <li><strong>Hoja de picking, lista de empaque y nota de envío:</strong> en <a href="#pedidos">Pedidos</a>.</li>
+        <li><strong>Proforma mayorista</strong> (copia cliente y copia tienda): en Proformas.</li>
+        <li><strong>Recibo de caja:</strong> al emitirlo y desde la lista de recibos.</li>
+        <li><strong>Cobranza (PDF y Excel) y estado de cuenta del cliente:</strong> en <a href="#cobranza">Cobranza</a>.</li>
+        <li><strong>Comisiones del año (PDF y Excel):</strong> en <a href="#comisiones">Comisiones</a>.</li>
+      </ul>
+      <p>Además, el <strong>kardex</strong> de cada producto y los reportes de movimientos e inventario muestran el <strong>origen</strong> de cada movimiento, incluidas las entregas de pedidos, las devoluciones de clientes y sus anulaciones.</p>
+    </section>
+
+    <!-- ===================== 15 ===================== -->
+    <section class="chapter" id="pruebas">
+      <h2><span class="num">15</span> Guía de pruebas</h2>
+      <p>Esta guía lleva de la mano a quien va a <strong>probar el módulo completo</strong>. Está pensada para ejecutarse de principio a fin con <strong>datos de prueba</strong>: primero se prepara el entorno (usuarios, ruta, clientes, productos, descuentos y metas) y luego se recorren los escenarios. Cada paso dice <strong>qué hacer</strong> y <strong>qué resultado se espera</strong>; marca la casilla cuando coincida y anota cualquier diferencia.</p>
+
+      <div class="callout warn">
+        <span class="callout-title">Antes de empezar</span>
+        <ul>
+          <li>Prueba <strong>solo en el ambiente de pruebas</strong> y con <strong>clientes y productos de prueba</strong>, nunca con datos reales de clientes.</li>
+          <li>Los escenarios <strong>se encadenan</strong>: usan los pedidos, entregas y recibos de los anteriores. Hazlos en orden.</li>
+          <li>Los registros no se borran: entregas, recibos y devoluciones se <strong>anulan</strong> con motivo y quedan en el historial. Es lo normal.</li>
+          <li>Los totales de ejemplo suponen que el vendedor y el año <strong>no tenían otros movimientos mayoristas</strong>. Si ya existían, tus totales incluirán esos movimientos: compara las <em>diferencias</em>, no los totales absolutos.</li>
+        </ul>
+      </div>
+
+      <h3>15.1 Datos de prueba de este manual</h3>
+      <p>Los ejemplos usan estos valores. Puedes usar otros, pero entonces recalcula los resultados esperados con la fórmula de abajo.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Dato</th><th>Valor sugerido</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Producto P1</strong> (el principal)</td><td>Precio de venta <strong>Q100.00</strong>. Con <strong>al menos 40 unidades</strong> en la sucursal que usarás para entregar. Anota su existencia inicial.</td></tr>
+            <tr><td><strong>Producto P2</strong></td><td>Precio de venta <strong>Q50.00</strong>, con existencias. Se le dará un precio mayorista de <strong>Q45.00</strong>.</td></tr>
+            <tr><td><strong>Producto P3</strong></td><td>Precio de venta <strong>Q10.00</strong>, con 150 unidades. Se le dará un descuento &laquo;por ciento&raquo; de <strong>12 %</strong> desde <strong>100</strong> unidades.</td></tr>
+            <tr><td><strong>Cliente CONTADO</strong></td><td>Categoría <strong>A</strong> (10 %). Sin límite ni días de crédito.</td></tr>
+            <tr><td><strong>Cliente CRÉDITO</strong></td><td>Categoría <strong>A</strong> (10 %). Límite de crédito <strong>Q1,000</strong> y <strong>30</strong> días de crédito.</td></tr>
+            <tr><td><strong>Metas de comisión</strong> del año</td><td>Para la prueba: <strong>Q1,000 &rarr; 0.5 %</strong> y <strong>Q3,000 &rarr; 1 %</strong>.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout tip">
+        <span class="callout-title">La fórmula para recalcular</span>
+        <p><strong>Total de una línea = cantidad &times; precio &times; (1 &minus; descuento).</strong> Por ejemplo, 10 unidades de P1 con 10 % de descuento: 10 &times; 100 &times; 0.90 = <strong>Q900.00</strong>.</p>
+      </div>
+
+      <h3>15.2 Preparación</h3>
+      <p>Hazla una sola vez antes de los escenarios.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th class="c">&check;</th><th>Qué preparar</th><th>Cómo</th></tr></thead>
+          <tbody>
+            <tr><td class="c"><span class="box"></span></td><td><strong>P-1.</strong> Cuatro usuarios de prueba</td><td>En <strong>Usuarios &rarr; Nuevo</strong> crea uno con cada rol, todos con la <strong>sucursal</strong> que usarás: <code>vendedor.prueba</code> (<code>ROLE_VENDEDOR</code>), <code>bodega.prueba</code> (<code>ROLE_BODEGA</code>), <code>repartidor.prueba</code> (<code>ROLE_REPARTIDOR</code>) y <code>cobrador.prueba</code> (<code>ROLE_COBRADOR</code>). Anota las contraseñas en un lugar seguro, no en este manual.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td><strong>P-2.</strong> Ruta de prueba</td><td><strong>Mayoristas &rarr; Rutas &rarr; Nueva ruta</strong>: nombre <code>RUTA PRUEBA</code>, tu sucursal y <code>vendedor.prueba</code> como vendedor.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td><strong>P-3.</strong> Dos clientes de prueba</td><td>En <strong>Clientes &rarr; Nuevo</strong>: <code>CLIENTE CONTADO</code> y <code>CLIENTE CREDITO</code>, ambos mayoristas en <code>RUTA PRUEBA</code>, categoría A, con <strong>NIT distinto</strong> cada uno. Al de crédito ponle límite <strong>1000</strong> y días <strong>30</strong>.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td><strong>P-4.</strong> Productos con existencias</td><td>Elige P1, P2 y P3 (o crea productos de prueba). En <strong>Movimientos de producto</strong> o en el kardex anota la <strong>existencia inicial</strong> de cada uno en la sucursal.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td><strong>P-5.</strong> Descuentos</td><td>En <strong>Mayoristas &rarr; Descuentos</strong>: confirma que la categoría A tiene el nivel de <strong>10 %</strong>; edita P2 con <strong>Precio mayorista fijo Q45</strong>; edita P3 con <strong>Por ciento</strong>, cantidad mínima <strong>100</strong>, descuento <strong>12 %</strong>.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td><strong>P-6.</strong> Metas de comisión</td><td>En <strong>Mayoristas &rarr; Comisiones</strong>, en el año actual, agrega las metas <strong>1000 &rarr; 0.5</strong> y <strong>3000 &rarr; 1</strong> y pulsa Guardar metas.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ====== E1 ====== -->
+      <h3>15.3 Escenario 1 &mdash; Menú, rutas y clientes <small style="font-weight:400;color:var(--muted)">(administrador)</small></h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th class="c">&check;</th><th>Qué hacer</th><th>Resultado esperado</th></tr></thead>
+          <tbody>
+            <tr><td class="c"><span class="box"></span></td><td>Entra como administrador y mira el menú lateral.</td><td>Aparecen <strong>Pedidos</strong>, <strong>Mayoristas</strong> y <strong>Cuentas por cobrar</strong> con la etiqueta <em>Nuevo</em>. Bodegas ya no la tiene.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Abre <strong>Mayoristas</strong>.</td><td>Se despliegan Rutas, Descuentos, Autorizaciones, Comisiones, Indicadores y Tutorial.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>En <strong>Rutas</strong>, busca <code>PRUEBA</code>.</td><td>Aparece <code>RUTA PRUEBA</code> con su vendedor, sucursal y <strong>2 clientes</strong>.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>En <strong>Clientes</strong>, filtra <em>Tipo de cliente &rarr; Mayoristas</em>.</td><td>Salen los dos clientes con la etiqueta <em>Mayorista</em> y su ruta. Filtra por la ruta y siguen saliendo.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Intenta crear otro cliente con el <strong>mismo NIT</strong> que uno existente.</td><td>El sistema <strong>no lo guarda</strong> (muestra un error). Anótalo: el NIT no puede repetirse.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Intenta guardar un cliente marcado como mayorista <strong>sin ruta</strong>.</td><td>El formulario exige la ruta: &laquo;Un cliente mayorista debe tener una ruta&raquo;.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ====== E2 ====== -->
+      <h3>15.4 Escenario 2 &mdash; El vendedor solo ve lo suyo <small style="font-weight:400;color:var(--muted)">(vendedor)</small></h3>
+      <p>Cierra sesión y entra como <code>vendedor.prueba</code>.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th class="c">&check;</th><th>Qué hacer</th><th>Resultado esperado</th></tr></thead>
+          <tbody>
+            <tr><td class="c"><span class="box"></span></td><td>Mira el menú lateral.</td><td>Ve <strong>Pedidos</strong>, Clientes, Proformas y Productos, pero <strong>no</strong> ve Mayoristas ni Cuentas por cobrar.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Abre <strong>Clientes</strong>.</td><td>Ve <strong>solo</strong> los clientes de su ruta.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Crea un cliente mayorista: <code>CLIENTE VENDEDOR</code>, en <code>RUTA PRUEBA</code>.</td><td>Se guarda. El formulario le dice que la <strong>categoría y el crédito los asigna el administrador</strong> y no le deja ponerlos.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Intenta escribir en la barra del navegador <code>/rutas/index</code>, <code>/comisiones/index</code> o <code>/devoluciones-cliente/index</code>.</td><td>El sistema <strong>no le muestra</strong> esas pantallas.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ====== E3 ====== -->
+      <h3>15.5 Escenario 3 &mdash; Descuentos y tope <small style="font-weight:400;color:var(--muted)">(vendedor)</small></h3>
+      <p>Entra a <strong>Proformas &rarr; Nueva proforma</strong> como <code>vendedor.prueba</code> y elige <code>CLIENTE CONTADO</code>. <strong>No guardes</strong> todavía: solo observa los descuentos que ofrece al agregar cada producto.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th class="c">&check;</th><th>Qué hacer</th><th>Resultado esperado</th></tr></thead>
+          <tbody>
+            <tr><td class="c"><span class="box"></span></td><td>Agrega <strong>P1</strong>, cantidad <strong>10</strong>.</td><td>Se propone <strong>Categoría 10 %</strong>. Línea: <strong>Q900.00</strong>.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Agrega <strong>P2</strong>, cantidad <strong>2</strong>.</td><td>Aparece la opción <strong>Precio mayorista</strong> (Q45.00 por unidad, el 10 % equivalente). Línea: <strong>Q90.00</strong>.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Agrega <strong>P3</strong>, cantidad <strong>100</strong>.</td><td>Aparece <strong>Por ciento 12 %</strong>. Línea: <strong>Q880.00</strong>. Con 99 unidades no ofrece ese descuento.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Quita la línea de P1 (bote de basura) y agrégala de nuevo: esta vez elige el tipo <strong>Manual</strong> y escribe <strong>20</strong>.</td><td>Aparece el aviso: <em>una línea tiene un descuento mayor a 15 %; la proforma quedará pendiente de autorización</em>.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Quita esa línea y agrega <strong>P1 &times; 10</strong> con <strong>Categoría 10 %</strong>. Quita P2 y P3 para dejar solo esa línea.</td><td>El aviso desaparece. Total: <strong>Q900.00</strong>.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ====== E4 ====== -->
+      <h3>15.6 Escenario 4 &mdash; Pedido de contado: del cobro a la entrega</h3>
+      <p>Continúa con la proforma de P1 &times; 10 del cliente <strong>CONTADO</strong>.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th class="c">&check;</th><th>Quién y qué hacer</th><th>Resultado esperado</th></tr></thead>
+          <tbody>
+            <tr><td class="c"><span class="box"></span></td><td><strong>Vendedor.</strong> Verifica <em>Condición de pago = Contado</em>, escribe una fecha de entrega estimada (hoy o mañana) y una observación. Pulsa <span class="btn">Guardar proforma</span>.</td><td>Se guarda. La opción <em>Crédito</em> está <strong>desactivada</strong> con el mensaje de que el cliente no tiene crédito.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td><strong>Vendedor.</strong> En Proformas, imprime la proforma.</td><td>Pregunta <em>Copia cliente</em> o <em>Copia tienda</em>. La observación solo sale en la copia de la tienda.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td><strong>Bodega.</strong> Entra a <strong>Pedidos</strong>. Pulsa <span class="btn green">Iniciar picking</span>, confirma, luego <span class="btn green">Marcar empacado</span>.</td><td>El pedido pasa de <em>Confirmado</em> a <em>En preparación</em> y a <em>Empacado</em>. La lista <strong>no muestra importes</strong>.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td><strong>Bodega.</strong> Pulsa <span class="btn green">Cargar y salir a ruta</span> y elige a <code>repartidor.prueba</code> como piloto.</td><td>El pedido queda <em>En ruta</em> con su piloto. (Si no hay repartidores, el sistema lo avisa.)</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td><strong>Administrador.</strong> Abre el pedido y pulsa <span class="btn">Registrar entrega</span> con las <strong>10</strong> unidades, <strong>sin</strong> marcar ninguna casilla.</td><td>Lo <strong>rechaza</strong>: el pedido es de contado y falta cobrar <strong>Q900.00</strong>. El detalle dice que se emita un recibo ligado al pedido.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td><strong>Cobrador</strong> (<code>cobrador.prueba</code>). En <strong>Recibos de caja &rarr; Nuevo recibo</strong>: busca a CLIENTE CONTADO; en <em>Aplicar pago a</em> elige <strong>este pedido</strong>; monto <strong>900</strong>; forma <em>Efectivo</em>. Pulsa <span class="btn">Emitir e imprimir</span>.</td><td>Se emite el recibo (por ejemplo <code>S1-000001</code>) y se abre su PDF.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td><strong>Administrador.</strong> Vuelve a registrar la entrega de las 10 unidades.</td><td>Se guarda. El pedido pasa a <em>Entregado</em> y <strong>sale de la lista</strong> de Pedidos por entregar.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Revisa el <strong>kardex</strong> de P1 en la sucursal.</td><td>P1 <strong>bajó 10</strong> unidades respecto a la existencia inicial, con origen de entrega de pedido.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Abre <strong>Cobranza</strong>.</td><td>CLIENTE CONTADO <strong>no aparece</strong> con saldo: entregado Q900 &minus; abonado Q900 = Q0.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ====== E5 ====== -->
+      <h3>15.7 Escenario 5 &mdash; Entrega parcial, cierre y anulación <small style="font-weight:400;color:var(--muted)">(administrador)</small></h3>
+      <p>Como <code>vendedor.prueba</code>, crea una proforma de contado nueva para <strong>CLIENTE CONTADO</strong>: <strong>P1 &times; 10</strong> (Q900). Llévala hasta <em>En ruta</em> (como en el escenario 4) y emite un recibo ligado a ese pedido por <strong>Q900</strong>.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th class="c">&check;</th><th>Qué hacer</th><th>Resultado esperado</th></tr></thead>
+          <tbody>
+            <tr><td class="c"><span class="box"></span></td><td>Registra una entrega de solo <strong>6</strong> unidades.</td><td>El pedido queda <em>Entrega parcial</em>. En el detalle: entregado 6, pendiente 4.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Intenta entregar <strong>5</strong> más.</td><td>Lo rechaza: solo quedan 4 por entregar.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Pon la fecha de entrega de <strong>10 días atrás</strong>.</td><td>Lo rechaza: la fecha no puede ser de hace más de 7 días. Una fecha futura tampoco se acepta.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Pulsa <span class="btn red">Anular</span> en la entrega de 6, con un motivo.</td><td>La entrega queda <em>Anulada</em>, las 6 unidades <strong>regresan</strong> al inventario y el pedido vuelve a mostrar 10 pendientes.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Entrega <strong>6</strong> otra vez y pulsa <span class="btn light">Cerrar con lo entregado</span> (con motivo).</td><td>El pedido pasa a <em>Entregado</em> aunque falten 4. Es un estado final.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Abre <span class="btn light">Ver el historial completo</span> del pedido.</td><td>La línea de tiempo muestra las etapas, la entrega anulada con su motivo, la nueva entrega y el cierre.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout note">
+        <span class="callout-title">Saldo de este pedido</span>
+        <p>En este pedido se cobró Q900 y solo se entregaron 6 unidades (Q540). Sumado al escenario 4, CLIENTE CONTADO tiene entregado <strong>Q1,440</strong> y abonado <strong>Q1,800</strong>: queda con <strong>Q360 a favor</strong>. Lo verás en el resumen al abrir un recibo nuevo para ese cliente (sin emitirlo).</p>
+      </div>
+
+      <!-- ====== E6 ====== -->
+      <h3>15.8 Escenario 6 &mdash; Crédito dentro del límite</h3>
+      <p>Como <code>vendedor.prueba</code>, crea una proforma para <strong>CLIENTE CREDITO</strong>: <strong>P1 &times; 5</strong>, <em>Condición de pago = Crédito (30 días desde la entrega)</em>. Total: <strong>Q450.00</strong>.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th class="c">&check;</th><th>Quién y qué hacer</th><th>Resultado esperado</th></tr></thead>
+          <tbody>
+            <tr><td class="c"><span class="box"></span></td><td>Guarda la proforma.</td><td>Se guarda como pedido normal, <strong>sin</strong> marca de &laquo;Por autorizar&raquo;: 450 es menos que el límite de 1,000.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Bodega: picking, empaque y salida a ruta. Administrador: entrega las 5 unidades <strong>sin recibo</strong>.</td><td>La entrega se <strong>acepta</strong>: en un pedido a crédito no hace falta cobrar antes. <strong>No aparece</strong> la casilla de entregar sin cobro.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Abre <strong>Cobranza</strong>.</td><td>CLIENTE CREDITO aparece con <strong>Q450.00 Por vencer</strong>, &laquo;Al día&raquo;. El total por cobrar suma Q450 (y lo de otros clientes que debieran).</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Pulsa el botón de la impresora de su fila.</td><td>Se abre su <strong>estado de cuenta</strong> en PDF con la entrega como cargo y el saldo corrido de Q450.00.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ====== E7 ====== -->
+      <h3>15.9 Escenario 7 &mdash; Crédito sobre el límite y su autorización</h3>
+      <p>Como <code>vendedor.prueba</code>, crea otra proforma para <strong>CLIENTE CREDITO</strong>: <strong>P1 &times; 8</strong> a crédito. Total: <strong>Q720.00</strong>. Exposición: 450 que ya debe + 720 = <strong>Q1,170</strong>, contra un límite de <strong>Q1,000</strong>.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th class="c">&check;</th><th>Quién y qué hacer</th><th>Resultado esperado</th></tr></thead>
+          <tbody>
+            <tr><td class="c"><span class="box"></span></td><td>Guarda la proforma. Mira el listado de Proformas.</td><td>La proforma aparece como <span class="pill wait">Por autorizar</span>.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Bodega: intenta <span class="btn green">Iniciar picking</span>.</td><td>El botón <strong>no aparece</strong>; el pedido muestra <em>Por autorizar</em> y su detalle explica que pasa del límite de crédito <strong>por Q170.00</strong>.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Administrador: abre <strong>Mayoristas &rarr; Autorizaciones</strong>, sección <em>Pedidos que pasan del límite de crédito</em>.</td><td>Aparece el pedido con total Q720.00, límite Q1,000.00 y <strong>Pasa por Q170.00</strong>.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Pulsa <span class="btn red">Rechazar</span> y escribe un motivo.</td><td>El pedido queda <span class="pill bad">Rechazado</span> y sigue sin poder prepararse.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Como vendedor, edita la proforma y baja a <strong>6</strong> unidades (Q540). Guarda (pedirá el motivo del cambio).</td><td>Ya no pasa del límite (450 + 540 = Q990): deja de estar por autorizar y el pedido puede prepararse.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Vuelve a dejar <strong>P1 &times; 8</strong> y guarda. Luego, como administrador, pulsa <span class="btn">Autorizar</span> y escribe un motivo.</td><td>El mensaje &laquo;Crédito autorizado&raquo; y el pedido <strong>sale</strong> de la bandeja. Ahora sí avanza: picking, empaque, ruta y entrega.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Entrega las 8 unidades. Abre <strong>Cobranza</strong>.</td><td>CLIENTE CREDITO debe <strong>Q1,170.00</strong> (450 + 720), todo <em>Por vencer</em>. Al emitir un recibo para él, el resumen muestra <em>Crédito disponible &minus;Q170.00 de Q1,000.00</em>.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ====== E8 ====== -->
+      <h3>15.10 Escenario 8 &mdash; Descuento sobre el tope</h3>
+      <p>Como <code>vendedor.prueba</code>, crea una proforma para <strong>CLIENTE CONTADO</strong>: <strong>P1 &times; 10</strong> con descuento <strong>Manual de 20 %</strong>. Total: <strong>Q800.00</strong>.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th class="c">&check;</th><th>Quién y qué hacer</th><th>Resultado esperado</th></tr></thead>
+          <tbody>
+            <tr><td class="c"><span class="box"></span></td><td>Guarda la proforma.</td><td>Queda <span class="pill wait">Por autorizar</span> en Proformas y en Pedidos; bodega no puede prepararla.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Intenta facturarla (como vendedor).</td><td>No lo permite mientras espere autorización.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Administrador: en <strong>Autorizaciones &rarr; Descuentos por autorizar</strong>, pulsa <span class="btn">Autorizar</span> con un motivo.</td><td>Sale de la bandeja y el pedido ya puede prepararse. En su historial queda el motivo y quién autorizó.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Como vendedor, edita esa proforma (por ejemplo, cambia una cantidad) y guarda.</td><td>Pide el <strong>motivo del cambio</strong>. Como sigue con 20 %, vuelve a quedar <strong>Por autorizar</strong>.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Para no dejar pedidos de más, puedes dejar esta proforma sin entregar.</p>
+
+      <!-- ====== E9 ====== -->
+      <h3>15.11 Escenario 9 &mdash; Recibos: abonos, cheque y anulación <small style="font-weight:400;color:var(--muted)">(cobrador y administrador)</small></h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th class="c">&check;</th><th>Qué hacer</th><th>Resultado esperado</th></tr></thead>
+          <tbody>
+            <tr><td class="c"><span class="box"></span></td><td>Como <strong>cobrador</strong>, emite un recibo para <strong>CLIENTE CREDITO</strong>: <em>Abono a la cuenta</em>, <strong>Q500</strong>, forma <strong>Efectivo</strong>.</td><td>Se emite. El resumen previo mostraba saldo pendiente <strong>Q1,170.00</strong>.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Abre <strong>Cobranza</strong>.</td><td>El saldo de CLIENTE CREDITO bajó a <strong>Q670.00</strong>.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Emite otro recibo, forma <strong>Cheque</strong>, monto <strong>Q100</strong>, y deja la referencia <strong>vacía</strong>.</td><td>No te deja emitir: el pie dice <em>Indica el número de referencia</em>. El campo de referencia pide el <strong>No. de cheque</strong>.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Escribe como referencia <code>CHQ-001</code> y emítelo.</td><td>Se emite. En la lista, la forma de pago aparece como <strong>Cheque</strong> con &laquo;Ref. CHQ-001&raquo; y el PDF dice <em>Cheque</em>. El saldo en Cobranza baja a <strong>Q570.00</strong>.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Como <strong>cobrador</strong>, mira la lista de recibos.</td><td><strong>No ve</strong> el botón de anular.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Como <strong>administrador</strong>, anula el recibo del cheque con un motivo.</td><td>Queda <span class="pill bad">Anulado</span> (visible con <em>Incluir anulados</em>). El cheque <strong>deja de descontar</strong>: el saldo vuelve a <strong>Q670.00</strong>.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout note">
+        <span class="callout-title">Saldo esperado tras este escenario</span>
+        <p>CLIENTE CREDITO: entregado 1,170 &minus; abonado 500 = <strong>Q670.00</strong> (el cheque anulado no cuenta).</p>
+      </div>
+
+      <!-- ====== E10 ====== -->
+      <h3>15.12 Escenario 10 &mdash; Facturar un pedido entregado <small style="font-weight:400;color:var(--muted)">(opcional)</small></h3>
+      <div class="callout warn">
+        <span class="callout-title">Este escenario certifica con la SAT</span>
+        <p>Facturar genera un documento fiscal. Hazlo solo si el ambiente de pruebas está conectado a la certificadora de prueba, y con un cliente de prueba con un NIT válido. Si no estás seguro, omítelo.</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th class="c">&check;</th><th>Qué hacer</th><th>Resultado esperado</th></tr></thead>
+          <tbody>
+            <tr><td class="c"><span class="box"></span></td><td>Anota la existencia de P1. Como vendedor, en Proformas pulsa <em>Crear factura</em> sobre el pedido ya <strong>entregado</strong> de CLIENTE CONTADO (P1 &times; 10, Q900).</td><td>Se factura. La existencia de P1 <strong>no baja otra vez</strong>: ya salió al entregar.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Intenta facturar de nuevo la misma proforma.</td><td>Lo rechaza: ya fue facturada, hay que anular primero esa factura.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Como administrador, intenta <strong>anular la entrega</strong> de ese pedido.</td><td>Lo rechaza: tiene una factura vigente; primero se anula la factura.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Abre <strong>Cobranza</strong> y revisa la deuda del cliente.</td><td>No cambió: <strong>facturar no suma ni resta</strong> al saldo.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ====== E11 ====== -->
+      <h3>15.13 Escenario 11 &mdash; Devoluciones de clientes <small style="font-weight:400;color:var(--muted)">(administrador)</small></h3>
+      <p>Usa el pedido entregado de <strong>CLIENTE CONTADO</strong> (P1 &times; 10, Q900). Anota la existencia actual de P1.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th class="c">&check;</th><th>Qué hacer</th><th>Resultado esperado</th></tr></thead>
+          <tbody>
+            <tr><td class="c"><span class="box"></span></td><td>En <strong>Devoluciones de clientes &rarr; Nueva devolución</strong>, abre la lupa.</td><td>El directorio lista <strong>solo clientes mayoristas</strong>.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Elige a CLIENTE CONTADO y el pedido. Mira la tabla.</td><td>P1: entregado 10, ya devuelto 0, se puede devolver 10.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>En <em>Devuelve</em> escribe <strong>11</strong>.</td><td>El pie dice que solo se pueden devolver 10 y el botón sigue desactivado.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Escribe <strong>3</strong>, destino <strong>Reingresa al inventario</strong>, sucursal que recibe la tuya y motivo <em>Producto dañado en transporte</em>. Registra.</td><td>El valor devuelto es <strong>Q270.00</strong> (3 &times; 100 &times; 0.90). Aviso &laquo;Devolución #N registrada&raquo;.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Revisa el kardex de P1.</td><td>P1 <strong>subió 3</strong> unidades, con el movimiento <em>Devolución de cliente</em>.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Abre <strong>Recibos de caja &rarr; Nuevo recibo</strong> y elige a CLIENTE CONTADO (sin emitir).</td><td>El resumen muestra <em>Devuelto Q270.00</em> y el saldo <strong>A favor del cliente Q630.00</strong>: entregado 1,440 &minus; devuelto 270 &minus; abonado 1,800 = &minus;630 (con los escenarios 4 y 5 hechos).</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Registra otra devolución de <strong>2</strong> unidades con destino <strong>Baja (merma)</strong>.</td><td>El valor es Q180.00. P1 <strong>no sube</strong> en el kardex: la baja no mueve inventario.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Abre el detalle de la primera devolución y pulsa <span class="btn red">Anular</span> con un motivo.</td><td>Queda <span class="pill bad">Anulada</span>. P1 <strong>baja 3</strong> (movimiento <em>Anulación de devolución de cliente</em>) y el saldo del cliente vuelve a sumar los Q270.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout note">
+        <span class="callout-title">Pedido facturado</span>
+        <p>Si probaste el escenario 10, el pedido de CLIENTE CONTADO está facturado: al intentar una devolución el formulario avisa y exige ligarla a una <strong>nota de crédito</strong> vigente del mismo cliente. Emítela antes en <strong>Notas de crédito</strong> y vuelve a intentarlo. Mientras esa nota esté vigente, no podrás anular la devolución ligada a ella.</p>
+      </div>
+
+      <!-- ====== E12 ====== -->
+      <h3>15.14 Escenario 12 &mdash; Comisiones e indicadores <small style="font-weight:400;color:var(--muted)">(administrador)</small></h3>
+      <p>Con lo hecho hasta aquí, los totales de <code>vendedor.prueba</code> son (si no tenía otros movimientos): <strong>entregado Q2,610</strong> (900 + 540 + 450 + 720), <strong>devuelto Q180</strong> (solo cuenta la devolución de baja de 2 unidades; la otra se anuló) y <strong>neto Q2,430</strong>.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th class="c">&check;</th><th>Qué hacer</th><th>Resultado esperado</th></tr></thead>
+          <tbody>
+            <tr><td class="c"><span class="box"></span></td><td>Abre <strong>Mayoristas &rarr; Comisiones</strong>.</td><td>Aparece el vendedor con su alta, lo entregado, lo devuelto y la <strong>base neta</strong>. Con las metas de prueba, una base de Q1,000 o más alcanza <strong>0.5 %</strong>.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Mira la columna <em>Comisión si completó</em> y <em>Falta p/ siguiente</em>.</td><td>La comisión es <strong>0.5 % de la base neta</strong>: 0.5 % de Q2,430 = <strong>Q12.15</strong>. Para la meta de Q3,000 faltan <strong>Q570.00</strong>.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Intenta marcar <em>Completó el año</em> y pulsar <em>Liquidar el año</em>.</td><td>Están <strong>desactivados</strong>: el año no ha terminado. La pantalla explica que se puede liquidar a partir del 1 de enero siguiente.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Pulsa <span class="btn light">Reporte PDF</span> y <span class="btn light">Reporte Excel</span>.</td><td>Se descargan con las mismas cifras.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Abre <strong>Mayoristas &rarr; Indicadores</strong> en el mes actual.</td><td><em>Ventas netas del mes</em> = entregado &minus; devuelto del mes (Q2,430 si todo fue en el mismo mes). La tabla por vendedor coincide con Comisiones (si todo fue en el mismo año y mes). <em>Entregados a tiempo</em> cuenta solo pedidos con fecha estimada.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout warn">
+        <span class="callout-title">La liquidación no se puede probar antes de fin de año</span>
+        <p>Liquidar solo se habilita a partir del 1 de enero. Para probarla, hay que hacerlo con un año ya terminado que tenga entregas, o esperar al cierre del año. Lo que sí se valida ahora es el cálculo, las metas y los reportes.</p>
+      </div>
+
+      <!-- ====== E13 ====== -->
+      <h3>15.15 Escenario 13 &mdash; El repartidor <small style="font-weight:400;color:var(--muted)">(repartidor)</small></h3>
+      <p>Crea dos pedidos para <strong>CLIENTE CREDITO</strong> (por ejemplo, P1 &times; 1 cada uno, dentro del límite). Lleva el primero hasta <em>En ruta</em> con <code>repartidor.prueba</code> como piloto y deja el segundo <em>Empacado</em>, sin cargarlo. Entra como <code>repartidor.prueba</code>.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th class="c">&check;</th><th>Qué hacer</th><th>Resultado esperado</th></tr></thead>
+          <tbody>
+            <tr><td class="c"><span class="box"></span></td><td>Mira el menú y la pantalla de <strong>Pedidos</strong>.</td><td>El menú es corto (Pedidos). La pantalla dice &laquo;Consulta tus pedidos en ruta&raquo; y lista <strong>solo el pedido en ruta que se le asignó</strong>; el pedido empacado no aparece. No ve importes ni los botones de picking o empaque.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Abre uno y registra la entrega.</td><td>El formulario <strong>no pide</strong> sucursal ni el <em>Entregó</em> ni las casillas especiales: usa la sucursal del pedido.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Intenta entregar un pedido de contado sin cobro.</td><td>Lo rechaza siempre: el repartidor <strong>nunca</strong> puede entregar sin cobro.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ====== E14 ====== -->
+      <h3>15.16 Escenario 14 &mdash; Reportes y documentos impresos</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th class="c">&check;</th><th>Qué hacer</th><th>Resultado esperado</th></tr></thead>
+          <tbody>
+            <tr><td class="c"><span class="box"></span></td><td>En <strong>Reportes &rarr; Mayoristas</strong>, genera los cuatro reportes en PDF y en Excel.</td><td>Se descargan: Clientes por ruta, Clientes sin compras, Proformas por vendedor y Ventas entregadas. Las cifras de <em>Ventas entregadas</em> coinciden con lo entregado.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>En Pedidos, imprime una <strong>hoja de picking</strong>, una <strong>lista de empaque</strong> y la <strong>nota de envío</strong> de la ruta.</td><td>Los tres documentos se generan con los productos y las cantidades del pedido.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>En Cobranza, exporta a PDF y a Excel con y sin <em>Solo vencidos</em>.</td><td>Las cifras coinciden con las tarjetas del resumen.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Reimprime un recibo de caja.</td><td>Muestra su número, el cliente, el concepto (pedido o abono a la cuenta) y la forma de pago.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ====== E15 ====== -->
+      <h3>15.17 Escenario 15 &mdash; Pruebas negativas por rol</h3>
+      <p>Lo importante también es lo que <strong>no</strong> se debe poder hacer. Comprueba cada fila con el usuario indicado.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th class="c">&check;</th><th>Usuario</th><th>Intenta&hellip;</th><th>Debe ocurrir</th></tr></thead>
+          <tbody>
+            <tr><td class="c"><span class="box"></span></td><td>Vendedor</td><td>Ver la ruta, los clientes o los pedidos de otro vendedor.</td><td>No los ve.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Vendedor</td><td>Autorizar un descuento o un crédito.</td><td>No existe esa opción; la bandeja no está disponible.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Bodega</td><td>Registrar una devolución, emitir un recibo o ver importes.</td><td>No tiene acceso. Pedidos no muestra dinero.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Repartidor</td><td>Ver un pedido que no se le asignó.</td><td>No lo ve.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Cobrador</td><td>Anular un recibo, ver comisiones o registrar devoluciones.</td><td>No tiene acceso.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Cobrador</td><td>Entrar a Pedidos.</td><td>No la ve.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Todos menos administrador</td><td>Entregar sin cobro, anular una entrega o regresar una etapa.</td><td>Solo el administrador tiene esos botones.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>15.18 Cómo reportar un hallazgo</h3>
+      <p>Si un resultado no coincide con lo esperado, anota estos datos para que se pueda reproducir:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Dato</th><th>Ejemplo</th></tr></thead>
+          <tbody>
+            <tr><td>Escenario y paso</td><td>Escenario 7, paso 5.</td></tr>
+            <tr><td>Usuario y rol con que lo hiciste</td><td><code>vendedor.prueba</code> (vendedor).</td></tr>
+            <tr><td>Pantalla y datos usados</td><td>Pedidos &middot; pedido 584807430P &middot; CLIENTE CREDITO.</td></tr>
+            <tr><td>Qué esperabas</td><td>&laquo;Queda por autorizar con exceso de Q170.00&raquo;.</td></tr>
+            <tr><td>Qué ocurrió</td><td>Se guardó sin marca de autorización.</td></tr>
+            <tr><td>Mensaje exacto (o captura) y hora</td><td>Una captura de pantalla con la hora visible.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===================== 16 ===================== -->
+    <section class="chapter" id="faq">
+      <h2><span class="num">16</span> Preguntas y problemas frecuentes</h2>
+
+      <details>
+        <summary>Me dice que una proforma mayorista solo puede hacerse a un cliente mayorista con ruta.</summary>
+        <p>El cliente elegido no está marcado como mayorista o no tiene ruta. Edítalo en <strong>Clientes</strong>, activa <em>Es cliente mayorista</em> y elige su ruta (si eres vendedor, debe ser una de tus rutas).</p>
+      </details>
+
+      <details>
+        <summary>No puedo elegir &laquo;Crédito&raquo; en la proforma.</summary>
+        <p>El cliente no tiene <strong>límite de crédito</strong> y <strong>días de crédito</strong>. Pide al administrador que los registre en el cliente. Mientras tanto, el pedido es de contado.</p>
+      </details>
+
+      <details>
+        <summary>La proforma quedó &laquo;Por autorizar&raquo;. ¿Qué hago?</summary>
+        <p>Hay dos causas posibles: una línea con <strong>descuento mayor al 15 %</strong>, o un pedido a crédito que <strong>pasa del límite</strong> del cliente. Avisa al administrador para que la autorice en <strong>Mayoristas &rarr; Autorizaciones</strong>, o baja el descuento o las cantidades. Mientras espera no se puede preparar, entregar ni facturar.</p>
+      </details>
+
+      <details>
+        <summary>Un pedido no tiene el botón &laquo;Iniciar picking&raquo; (u otro botón para avanzar).</summary>
+        <p>Casi siempre es porque el pedido está <strong>por autorizar</strong> o rechazado. También puede ser que tu rol no avance etapas: solo <strong>Administrador</strong> y <strong>Bodega</strong> lo hacen.</p>
+      </details>
+
+      <details>
+        <summary>No me deja registrar la entrega: dice que falta cobrar.</summary>
+        <p>El pedido es de <strong>contado</strong> y no existe un recibo de caja ligado a él que cubra lo que se entrega. Un cobrador o el administrador debe emitir el recibo eligiendo <em>Aplicar pago a</em> ese pedido. Un abono a la cuenta no basta.</p>
+      </details>
+
+      <details>
+        <summary>Necesito entregar aunque no se haya cobrado.</summary>
+        <p>Solo el <strong>administrador</strong> puede marcar <em>Entregar aunque no esté cobrado</em> al registrar la entrega. Queda anotado en las etapas del pedido y el cliente aparecerá con deuda vencida desde ese día.</p>
+      </details>
+
+      <details>
+        <summary>Al cargar el pedido dice que no hay repartidores.</summary>
+        <p>Falta crear el usuario del piloto con el rol <code>ROLE_REPARTIDOR</code> en <strong>Usuarios</strong>. Hasta que exista, no se puede cargar un pedido para salir a ruta.</p>
+      </details>
+
+      <details>
+        <summary>Me dice que no hay existencias suficientes al entregar.</summary>
+        <p>La sucursal que elegiste no tiene todas las unidades. Revisa su inventario o elige otra sucursal. Si el inventario ya se descontó por otro medio, marca <em>El inventario de lo entregado ya se descontó a mano</em> (solo administrador, bodega o vendedor).</p>
+      </details>
+
+      <details>
+        <summary>La fecha de entrega no es válida.</summary>
+        <p>No puede ser futura, ni de hace más de <strong>7 días</strong>, ni anterior a la emisión del pedido.</p>
+      </details>
+
+      <details>
+        <summary>Me equivoqué en una entrega que ya guardé.</summary>
+        <p>Una entrega no se edita. Un <strong>administrador</strong> la anula con un motivo (las unidades regresan al inventario) y se registra una nueva. Si el pedido tiene una factura vigente, primero se anula la factura.</p>
+      </details>
+
+      <details>
+        <summary>Un pedido entregado ya no aparece en Pedidos.</summary>
+        <p>La pantalla de Pedidos muestra lo que <strong>falta por entregar</strong>. Un pedido entregado sale de la lista; su historia queda en el historial y en los documentos (cobranza, recibos, kardex).</p>
+      </details>
+
+      <details>
+        <summary>No veo un pedido, una ruta o un cliente que debería ver.</summary>
+        <p>Si eres <strong>vendedor</strong>, solo ves lo de tus rutas. Si eres <strong>repartidor</strong>, solo los pedidos que te asignaron al cargarlos. Revisa también los filtros de <em>Etapa</em> y <em>Ruta</em>.</p>
+      </details>
+
+      <details>
+        <summary>Emití un recibo con un error. ¿Cómo lo corrijo?</summary>
+        <p>Un recibo no se edita. Un <strong>administrador</strong> lo anula (con motivo) y se emite uno nuevo. El recibo anulado deja de contar para el saldo y, si había liberado la entrega de un pedido de contado, ese pedido vuelve a mostrar lo que falta cobrar.</p>
+      </details>
+
+      <details>
+        <summary>El cliente dice que debe otra cantidad.</summary>
+        <p>Imprime su <strong>estado de cuenta</strong> desde <strong>Cobranza</strong>: muestra cada entrega, devolución y recibo, con el saldo corrido. Compáralo con sus comprobantes.</p>
+      </details>
+
+      <details>
+        <summary>Facturé un pedido y la deuda del cliente no cambió.</summary>
+        <p>Es lo esperado. La deuda nace al <strong>entregar</strong>; la factura es solo el documento fiscal y no suma ni resta al saldo.</p>
+      </details>
+
+      <details>
+        <summary>No me deja registrar una devolución más grande.</summary>
+        <p>Solo se puede devolver, por producto, <strong>lo entregado menos lo que ya se devolvió</strong>. Revisa la columna <em>Se puede devolver</em>. Las devoluciones anuladas no cuentan como devueltas.</p>
+      </details>
+
+      <details>
+        <summary>El pedido está facturado y la devolución me pide una nota de crédito.</summary>
+        <p>Es la regla para pedidos facturados: la devolución debe ligarse a una <strong>nota de crédito</strong> vigente del mismo cliente. Emítela en <strong>Notas de crédito</strong> y vuelve a registrar la devolución.</p>
+      </details>
+
+      <details>
+        <summary>No me deja anular una devolución.</summary>
+        <p>Hay tres causas: está ligada a una <strong>nota de crédito vigente</strong> (anúlala primero), las <strong>comisiones de ese año ya están liquidadas</strong> (el administrador debe deshacer la liquidación) o el producto que reingresó <strong>ya no está</strong> en la sucursal (regulariza el inventario y reintenta).</p>
+      </details>
+
+      <details>
+        <summary>El porcentaje de entregas a tiempo sale vacío (&mdash;).</summary>
+        <p>No hay pedidos <strong>entregados por completo con fecha de entrega estimada</strong> en ese mes. Escribe la fecha estimada al hacer las proformas para poder medirlo.</p>
+      </details>
+
+      <details>
+        <summary>No puedo liquidar las comisiones.</summary>
+        <p>El año todavía no termina: la liquidación se habilita a partir del 1 de enero siguiente. Hasta entonces la pantalla muestra el avance y la comisión que cobraría cada vendedor si completa el año.</p>
+      </details>
+
+      <details>
+        <summary>No me deja guardar un cliente: aparece un error.</summary>
+        <p>Lo más probable es que el <strong>NIT ya exista</strong> (incluido <code>CF</code>). Busca al cliente antes de crearlo. También exige dirección, y la ruta si es mayorista.</p>
+      </details>
+
+      <details>
+        <summary>No me deja facturar: dice que el cliente no tiene NIT o que no es válido.</summary>
+        <p>Cambia el cliente de la factura o pide a un administrador corregir el NIT del cliente. Para consumidor final usa <code>C/F</code>. En <strong>Clientes</strong> la casilla <em>Solo con NIT inválido</em> lista los que hay que corregir.</p>
+      </details>
+
+      <details>
+        <summary>No veo una pantalla del módulo en mi menú.</summary>
+        <p>Cada rol ve solo lo suyo (ver <a href="#roles">capítulo 2</a>). Si crees que te falta acceso, pide al administrador que revise tu rol en <strong>Usuarios</strong>.</p>
+      </details>
+    </section>
+
+    <!-- ===================== 17 ===================== -->
+    <section class="chapter" id="resumen">
+      <h2><span class="num">17</span> Resumen rápido</h2>
+
+      <div class="cards">
+        <div class="card">
+          <h4>Preparar</h4>
+          <p>Usuarios por rol &rarr; <em>Mayoristas &rarr; Rutas</em> &rarr; <em>Clientes</em> (mayorista, ruta, crédito) &rarr; <em>Descuentos</em>.</p>
+        </div>
+        <div class="card">
+          <h4>Vender</h4>
+          <p><em>Proformas &rarr; Nueva</em> &rarr; cliente mayorista &rarr; condición de pago, productos y descuentos &rarr; <em>Guardar</em> e imprimir la copia.</p>
+        </div>
+        <div class="card">
+          <h4>Autorizar</h4>
+          <p>Descuento de más del 15 % o crédito sobre el límite: <em>Mayoristas &rarr; Autorizaciones</em>, con motivo.</p>
+        </div>
+        <div class="card">
+          <h4>Entregar</h4>
+          <p><em>Pedidos</em>: Iniciar picking &rarr; Marcar empacado &rarr; Cargar y salir a ruta (piloto) &rarr; Registrar entrega.</p>
+        </div>
+        <div class="card">
+          <h4>Cobrar</h4>
+          <p><em>Recibos de caja</em> (abono o ligado a un pedido) y <em>Cobranza</em> para ver quién debe y desde cuándo.</p>
+        </div>
+        <div class="card">
+          <h4>Devolver</h4>
+          <p><em>Devoluciones de clientes</em>: cantidad, destino (reingreso o baja) y motivo. Anulable con motivo.</p>
+        </div>
+        <div class="card">
+          <h4>Medir</h4>
+          <p><em>Comisiones</em> (metas del año), <em>Indicadores</em> (mes) y <em>Reportes &rarr; Mayoristas</em>.</p>
+        </div>
+      </div>
+
+      <div class="callout tip">
+        <span class="callout-title">Reglas de oro</span>
+        <ul>
+          <li>La <strong>proforma</strong> es el documento de venta y vale <strong>15 días</strong>. La <strong>factura</strong> es opcional.</li>
+          <li>El inventario baja al <strong>entregar</strong>, y la deuda nace al <strong>entregar</strong>: <strong>Saldo = entregado &minus; devuelto &minus; abonado</strong>.</li>
+          <li><strong>Contado</strong>: no se entrega sin un recibo ligado al pedido (solo el administrador puede exceptuarlo). <strong>Crédito</strong>: solo si el cliente tiene límite y días.</li>
+          <li>Más de <strong>15 %</strong> de descuento, o un pedido que pasa del <strong>límite de crédito</strong>, necesita la autorización del administrador; mientras espera, no se prepara, entrega ni factura.</li>
+          <li>Una <strong>entrega</strong>, un <strong>recibo</strong> o una <strong>devolución</strong> no se editan: se <strong>anulan con motivo</strong> y se registra otro.</li>
+          <li>Una entrega parcial deja lo pendiente abierto; el administrador puede <strong>cerrar</strong> con lo entregado.</li>
+          <li>La <strong>comisión</strong> es un porcentaje plano sobre lo entregado menos lo devuelto, según la meta más alta alcanzada, y se paga a quien el administrador marca como que completó el año.</li>
+          <li>Cada rol ve solo lo suyo: el vendedor, lo de sus rutas; el repartidor, lo que lleva; bodega y repartidor no ven dinero.</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">Manual de usuario &middot; Clientes Mayoristas, Pedidos y Cobranza &middot; D'Todo</footer>
+    </section>
+
+  </main>
+</div>
+
+<a href="#introduccion" class="to-top" aria-label="Volver al inicio del manual">&uarr; Arriba</a>
+
+<script>
+  // Resalta en el índice el capítulo que se está leyendo.
+  (function () {
+    var enlaces = Array.prototype.slice.call(document.querySelectorAll('.toc a'));
+    var capitulos = enlaces
+      .map(function (a) { return document.querySelector(a.getAttribute('href')); })
+      .filter(Boolean);
+    if (!('IntersectionObserver' in window) || capitulos.length === 0) { return; }
+
+    var observador = new IntersectionObserver(function (entradas) {
+      entradas.forEach(function (entrada) {
+        if (!entrada.isIntersecting) { return; }
+        enlaces.forEach(function (a) {
+          a.classList.toggle('active', a.getAttribute('href') === '#' + entrada.target.id);
+        });
+      });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+
+    capitulos.forEach(function (capitulo) { observador.observe(capitulo); });
+  })();
+</script>
+</body>
+</html>

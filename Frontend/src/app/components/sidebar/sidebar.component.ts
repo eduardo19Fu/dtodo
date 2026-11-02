@@ -103,13 +103,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
       return this.coincide('facturas', 'facturas emitidas', 'correlativos');
     }
     if (menu === 'bodegas') {
-      return this.coincide('bodegas', 'inventario', 'despachos', 'despachos de bodega', 'devoluciones', 'tienda',
-        'tutorial', 'manual', 'ayuda');
+      return this.coincide('bodegas', 'inventario', 'despachos', 'despachos de bodega', 'devoluciones', 'tienda');
     }
     if (menu === 'mayoristas') {
       return this.coincide('mayoristas', 'rutas', 'vendedor', 'descuentos', 'precio mayorista', 'autorizaciones',
         'proformas por autorizar', 'crédito', 'credito', 'comisiones', 'metas', 'indicadores', 'kpi', 'ventas',
-        'vendedores', 'a tiempo');
+        'vendedores', 'a tiempo', 'tutorial', 'manual', 'ayuda');
     }
     if (menu === 'cobros') {
       return this.coincide('cuentas por cobrar', 'cobranza', 'saldos', 'vencidos', 'estado de cuenta', 'recibos',

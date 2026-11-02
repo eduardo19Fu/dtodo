@@ -127,9 +127,6 @@
             [class.active]="router.url.startsWith('/despachos-bodega')" (click)="notificarNavegacion()"><span></span>Despachos</a>
           <a *ngIf="coincide('devoluciones', 'devoluciones a bodega', 'tienda')" [routerLink]="['/devoluciones-bodega/index']" class="submenu-link"
             [class.active]="router.url.startsWith('/devoluciones-bodega')" (click)="notificarNavegacion()"><span></span>Devoluciones</a>
-          <a *ngIf="coincide('tutorial', 'manual', 'ayuda')" href="assets/manual/manual-bodegas.html" target="_blank" rel="noopener"
-            class="submenu-link" (click)="notificarNavegacion()" title="Manual de usuario de bodegas y despachos (se abre en una pestaña nueva)">
-            <span></span>Tutorial</a>
         </div>
       </section>
 
@@ -167,6 +164,9 @@
             [class.active]="router.url.startsWith('/comisiones')" (click)="notificarNavegacion()"><span></span>Comisiones</a>
           <a *ngIf="coincide('indicadores', 'kpi', 'ventas', 'vendedores', 'a tiempo', 'mayoristas')" [routerLink]="['/indicadores/index']" class="submenu-link"
             [class.active]="router.url.startsWith('/indicadores')" (click)="notificarNavegacion()"><span></span>Indicadores</a>
+          <a *ngIf="coincide('tutorial', 'manual', 'ayuda', 'mayoristas')" href="assets/manual/manual-mayoristas.html" target="_blank" rel="noopener"
+            class="submenu-link" (click)="notificarNavegacion()" title="Manual de usuario de clientes mayoristas, pedidos y cobranza (se abre en una pestaña nueva)">
+            <span></span>Tutorial<span class="new-badge">Nuevo</span></a>
         </div>
       </section>
 
