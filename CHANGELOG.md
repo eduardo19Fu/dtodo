@@ -6,6 +6,9 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Cambiado — Etiqueta "Nuevo" del menú lateral
+- Se quita de Bodegas (grupo y su opción Devoluciones) y pasa a los módulos nuevos: Pedidos, Mayoristas y Cuentas por cobrar.
+
 ### Cambiado — Devoluciones de clientes: formulario con la estructura de los demás
 - El formulario de creación usa la misma estructura que Productos, Rutas y Recibos: encabezado de página, tarjeta con banner y secciones numeradas (Cliente y pedido, Productos devueltos, Datos de la devolución). Las dos últimas aparecen al elegir el pedido.
 - El cliente se elige en el directorio de clientes (lupa o Enter), solo mayoristas, en lugar de escribirlo. El modal de búsqueda acepta un `tipoCliente` opcional; sin él se comporta igual que antes.
