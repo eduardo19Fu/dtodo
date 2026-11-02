@@ -48,7 +48,8 @@ class ReciboCajaReporteTest {
             statement.execute("INSERT INTO facturas VALUES (40, 1234)");
             statement.execute("INSERT INTO recibos_caja VALUES "
                     + "(1, 2, 15, 5, 30, 40, 1500.50, 'DEPOSITO', 'BANRURAL 99887', 'Abono del mes', DATE '2026-10-20', 1, 0, NULL), "
-                    + "(2, 2, 16, 5, NULL, NULL, 200.00, 'EFECTIVO', NULL, NULL, DATE '2026-10-21', 1, 1, 'Monto equivocado')");
+                    + "(2, 2, 16, 5, NULL, NULL, 200.00, 'EFECTIVO', NULL, NULL, DATE '2026-10-21', 1, 1, 'Monto equivocado'), "
+                    + "(3, 2, 17, 5, NULL, NULL, 350.00, 'CHEQUE', 'CHQ 445566', NULL, DATE '2026-10-22', 1, 0, NULL)");
         }
         return connection;
     }
@@ -75,6 +76,17 @@ class ReciboCajaReporteTest {
             assertTrue(todo.contains("BANRURAL 99887"), todo);
             assertTrue(todo.contains("Emitió: Ana Lopez"), todo);
             assertFalse(todo.contains("RECIBO ANULADO"), todo);
+        }
+    }
+
+    @Test
+    void unPagoConChequeDiceChequeYMuestraSuNumero() throws Exception {
+        try (Connection connection = base("recibo_tres")) {
+            String todo = String.join("|", new TextosImpresos(imprimir(connection, 3)).todos());
+
+            assertTrue(todo.contains("Cheque"), todo);
+            assertTrue(todo.contains("CHQ 445566"), todo);
+            assertFalse(todo.contains("Transferencia"), todo);
         }
     }
 

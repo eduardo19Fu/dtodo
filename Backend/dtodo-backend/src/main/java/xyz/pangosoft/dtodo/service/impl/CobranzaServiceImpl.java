@@ -234,7 +234,8 @@ public class CobranzaServiceImpl implements ICobranzaService {
     private static String detalleRecibo(ReciboCaja recibo) {
         String texto = recibo.getFormaPago() == null ? ""
                 : recibo.getFormaPago() == FormaPagoReciboEnum.DEPOSITO ? "Depósito"
-                : recibo.getFormaPago() == FormaPagoReciboEnum.TRANSFERENCIA ? "Transferencia" : "Efectivo";
+                : recibo.getFormaPago() == FormaPagoReciboEnum.TRANSFERENCIA ? "Transferencia"
+                : recibo.getFormaPago() == FormaPagoReciboEnum.CHEQUE ? "Cheque" : "Efectivo";
         if (recibo.getReferencia() != null) {
             texto += " " + recibo.getReferencia();
         }

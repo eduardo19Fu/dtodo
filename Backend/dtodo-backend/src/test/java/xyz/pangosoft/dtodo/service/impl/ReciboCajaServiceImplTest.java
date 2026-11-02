@@ -204,14 +204,14 @@ class ReciboCajaServiceImplTest {
         assertThrows(ReglaNegocioException.class, () -> service.emitir(sinMonto));
 
         CrearReciboCajaDto formaRara = solicitud();
-        formaRara.setFormaPago("cheque");
+        formaRara.setFormaPago("tarjeta");
         assertThrows(ReglaNegocioException.class, () -> service.emitir(formaRara));
         verify(reciboRepository, never()).save(any());
     }
 
     @Test
-    void elDepositoYLaTransferenciaPidenReferencia() {
-        for (String forma : new String[] { "DEPOSITO", "transferencia" }) {
+    void elDepositoLaTransferenciaYElChequePidenReferencia() {
+        for (String forma : new String[] { "DEPOSITO", "transferencia", "cheque" }) {
             CrearReciboCajaDto dto = solicitud();
             dto.setFormaPago(forma);
             dto.setReferencia("  ");
@@ -221,6 +221,7 @@ class ReciboCajaServiceImplTest {
             assertEquals("998877", service.emitir(dto).getReferencia());
         }
         assertTrue(FormaPagoReciboEnum.DEPOSITO.pideReferencia());
+        assertTrue(FormaPagoReciboEnum.CHEQUE.pideReferencia());
         assertFalse(FormaPagoReciboEnum.EFECTIVO.pideReferencia());
     }
 

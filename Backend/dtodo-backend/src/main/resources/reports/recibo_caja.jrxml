@@ -98,7 +98,7 @@
             <textField isBlankWhenNull="true"><reportElement style="Valor" x="0" y="176" width="572" height="16"/><textFieldExpression><![CDATA[($F{no_proforma} == null && $F{no_factura} == null) ? "Abono a la cuenta del cliente" : "Pago de" + ($F{no_proforma} == null ? "" : " pedido " + $F{no_proforma}) + ($F{no_factura} == null ? "" : " factura " + $F{no_factura})]]></textFieldExpression></textField>
 
             <staticText><reportElement style="Etiqueta" x="0" y="204" width="120" height="12"/><text><![CDATA[Forma de pago]]></text></staticText>
-            <textField><reportElement style="Valor" x="0" y="216" width="200" height="16"/><textFieldExpression><![CDATA["EFECTIVO".equals($F{forma_pago}) ? "Efectivo" : ("DEPOSITO".equals($F{forma_pago}) ? "Depósito" : "Transferencia")]]></textFieldExpression></textField>
+            <textField><reportElement style="Valor" x="0" y="216" width="200" height="16"/><textFieldExpression><![CDATA["EFECTIVO".equals($F{forma_pago}) ? "Efectivo" : ("DEPOSITO".equals($F{forma_pago}) ? "Depósito" : ("CHEQUE".equals($F{forma_pago}) ? "Cheque" : "Transferencia"))]]></textFieldExpression></textField>
             <staticText><reportElement style="Etiqueta" x="220" y="204" width="120" height="12"/><text><![CDATA[Referencia]]></text></staticText>
             <textField isBlankWhenNull="true"><reportElement style="Valor" x="220" y="216" width="352" height="16"/><textFieldExpression><![CDATA[$F{referencia}]]></textFieldExpression></textField>
 
