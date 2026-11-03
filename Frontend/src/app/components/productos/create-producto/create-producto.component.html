@@ -141,9 +141,123 @@
         </div>
       </section>
 
-      <section class="form-section" aria-labelledby="classification-title">
+      <section class="form-section mayorista-section" aria-labelledby="mayorista-title" *ngIf="puedeConfigurarMayoristas">
         <div class="section-heading">
           <span class="section-number">03</span>
+          <div>
+            <h3 id="mayorista-title">Precio mayorista y descuentos</h3>
+            <p>Opcional. Se ofrecen al vender a clientes mayoristas.</p>
+          </div>
+        </div>
+
+        <div class="mayorista-estado" *ngIf="cargandoMayorista" role="status">
+          <span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Consultando el precio y los descuentos del producto...
+        </div>
+
+        <div class="mayorista-aviso" *ngIf="errorMayorista" role="alert">
+          <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+          <span>No se pudieron consultar el precio y los descuentos mayoristas. Mientras no carguen, no se modifican al guardar.</span>
+          <button type="button" class="mayorista-reintentar" (click)="reintentarMayorista()">
+            <i class="fas fa-redo" aria-hidden="true"></i> Reintentar
+          </button>
+        </div>
+
+        <div class="mayorista-contenido" *ngIf="mayoristaDisponible">
+          <div class="mayorista-fila">
+            <!-- Precio fijo -->
+            <div class="mayorista-tarjeta mayorista-precio" [class.is-on]="precioMayorista !== null && precioMayorista !== undefined && precioMayorista !== ''">
+              <div class="mayorista-tarjeta-cabecera">
+                <span class="mayorista-tarjeta-icono" aria-hidden="true"><i class="fas fa-tag"></i></span>
+                <span class="mayorista-tarjeta-copia">
+                  <label class="mayorista-tarjeta-titulo" for="precio-mayorista">Precio mayorista</label>
+                  <span class="mayorista-tarjeta-leyenda">Fijo por unidad</span>
+                </span>
+              </div>
+              <div class="mayorista-tarjeta-campos">
+                <div class="field-group">
+                  <div class="control-with-prefix">
+                    <span>Q</span>
+                    <input type="number" id="precio-mayorista" name="precio-mayorista" class="form-control" min="0.01" step="0.01"
+                      [(ngModel)]="precioMayorista" placeholder="Sin precio" [class.is-invalid]="precioMayoristaInvalido">
+                  </div>
+                  <div class="validation-message" *ngIf="precioMayoristaInvalido">
+                    <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+                    <span>Debe ser menor al precio de venta<ng-container *ngIf="precioVentaActual"> (Q{{precioVentaActual | number: '1.2-2'}})</ng-container>.</span>
+                  </div>
+                  <small class="mayorista-equivalencia" *ngIf="equivalenciaMayorista !== null">
+                    <i class="fas fa-percent" aria-hidden="true"></i> Equivale a <strong>{{equivalenciaMayorista}} %</strong> de descuento.
+                  </small>
+                  <small *ngIf="!precioMayoristaInvalido && equivalenciaMayorista === null">Opcional. Menor al precio de venta.</small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Por ciento -->
+            <div class="mayorista-tarjeta mayorista-regla" [class.is-on]="ciento.activo">
+              <label class="mayorista-tarjeta-cabecera" for="regla-ciento">
+                <span class="mayorista-tarjeta-icono" aria-hidden="true"><i class="fas fa-layer-group"></i></span>
+                <span class="mayorista-tarjeta-copia">
+                  <span class="mayorista-tarjeta-titulo">Por ciento</span>
+                  <span class="mayorista-tarjeta-leyenda">Desde cierta cantidad</span>
+                </span>
+                <input type="checkbox" role="switch" class="listing-switch" id="regla-ciento" name="regla-ciento" [(ngModel)]="ciento.activo">
+              </label>
+              <div class="mayorista-tarjeta-campos mayorista-dos-campos">
+                <div class="field-group">
+                  <label for="ciento-minimo">Cantidad mínima</label>
+                  <div class="control-with-suffix">
+                    <input type="number" id="ciento-minimo" name="ciento-minimo" class="form-control" min="2" step="1"
+                      [(ngModel)]="ciento.cantidadMinima" [disabled]="!ciento.activo" placeholder="100">
+                    <span>uds.</span>
+                  </div>
+                </div>
+                <div class="field-group">
+                  <label for="ciento-porcentaje">Descuento</label>
+                  <div class="control-with-suffix">
+                    <input type="number" id="ciento-porcentaje" name="ciento-porcentaje" class="form-control" min="0.01" max="100" step="0.01"
+                      [(ngModel)]="ciento.porcentaje" [disabled]="!ciento.activo" placeholder="0">
+                    <span>%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Fardo cerrado -->
+            <div class="mayorista-tarjeta mayorista-regla" [class.is-on]="fardo.activo">
+              <label class="mayorista-tarjeta-cabecera" for="regla-fardo">
+                <span class="mayorista-tarjeta-icono" aria-hidden="true"><i class="fas fa-boxes"></i></span>
+                <span class="mayorista-tarjeta-copia">
+                  <span class="mayorista-tarjeta-titulo">Fardo cerrado</span>
+                  <span class="mayorista-tarjeta-leyenda">Por fardos completos</span>
+                </span>
+                <input type="checkbox" role="switch" class="listing-switch" id="regla-fardo" name="regla-fardo" [(ngModel)]="fardo.activo">
+              </label>
+              <div class="mayorista-tarjeta-campos mayorista-dos-campos">
+                <div class="field-group">
+                  <label for="fardo-minimo">Unidades por fardo</label>
+                  <div class="control-with-suffix">
+                    <input type="number" id="fardo-minimo" name="fardo-minimo" class="form-control" min="2" step="1"
+                      [(ngModel)]="fardo.cantidadMinima" [disabled]="!fardo.activo" placeholder="12">
+                    <span>uds.</span>
+                  </div>
+                </div>
+                <div class="field-group">
+                  <label for="fardo-porcentaje">Descuento</label>
+                  <div class="control-with-suffix">
+                    <input type="number" id="fardo-porcentaje" name="fardo-porcentaje" class="form-control" min="0.01" max="100" step="0.01"
+                      [(ngModel)]="fardo.porcentaje" [disabled]="!fardo.activo" placeholder="0">
+                    <span>%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section" aria-labelledby="classification-title">
+        <div class="section-heading">
+          <span class="section-number">{{ puedeConfigurarMayoristas ? '04' : '03' }}</span>
           <div>
             <h3 id="classification-title">Clasificación</h3>
             <p>Organiza el producto dentro de tu inventario.</p>
@@ -188,7 +302,7 @@
 
       <section class="form-section last-section" aria-labelledby="details-title">
         <div class="section-heading">
-          <span class="section-number">04</span>
+          <span class="section-number">{{ puedeConfigurarMayoristas ? '05' : '04' }}</span>
           <div>
             <h3 id="details-title">Detalles adicionales</h3>
             <p>Agrega información útil para consultar el producto.</p>

@@ -643,3 +643,152 @@
 .product-form-page.purchase-family-form-page .primary-action:focus {
   box-shadow: 0 10px 22px rgba(91, 62, 145, 0.36);
 }
+
+/* ---- Precio mayorista y descuentos del producto: tres tarjetas en una fila ---- */
+.mayorista-section .form-control.is-invalid { border-color: #c83e51; }
+
+.mayorista-estado {
+  align-items: center;
+  color: var(--muted);
+  display: flex;
+  font-size: 13px;
+  gap: 10px;
+  padding: 6px 0 2px;
+}
+
+.mayorista-aviso {
+  align-items: center;
+  background: #fff7e6;
+  border: 1px solid #f0c36d;
+  border-radius: 10px;
+  color: #6b4a00;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 13px;
+  gap: 10px 12px;
+  padding: 11px 14px;
+}
+
+.mayorista-aviso > span { flex: 1 1 260px; }
+
+.mayorista-reintentar {
+  background: #fff;
+  border: 1px solid #e0b44f;
+  border-radius: 8px;
+  color: #6b4a00;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 12px;
+}
+
+.mayorista-reintentar:hover { background: #fff3d6; }
+
+.mayorista-fila {
+  align-items: stretch;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.mayorista-tarjeta {
+  --tile-accent: var(--blue-700);
+  --tile-accent-rgb: 39, 131, 183;
+  background: #fff;
+  border: 1px solid #cbd6e2;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mayorista-tarjeta:hover { border-color: #8ebdd6; }
+.mayorista-tarjeta:focus-within { border-color: var(--blue-700); box-shadow: 0 0 0 3px rgba(39, 131, 183, 0.14); }
+.mayorista-tarjeta.is-on { background: var(--blue-50); border-color: #9fcbe0; }
+
+.mayorista-tarjeta-cabecera {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  margin: 0;
+  min-height: 66px;
+  padding: 13px 16px;
+}
+
+.mayorista-regla .mayorista-tarjeta-cabecera { cursor: pointer; }
+
+.mayorista-tarjeta-icono {
+  align-items: center;
+  background: #e6f2f8;
+  border-radius: 10px;
+  color: var(--blue-700);
+  display: inline-flex;
+  flex: 0 0 36px;
+  height: 36px;
+  justify-content: center;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.mayorista-tarjeta.is-on .mayorista-tarjeta-icono { background: var(--blue-700); color: #fff; }
+
+.mayorista-tarjeta-copia { display: flex; flex: 1 1 0; flex-direction: column; gap: 1px; min-width: 0; }
+.mayorista-tarjeta-titulo { color: #27344d; font-size: 15px; font-weight: 700; line-height: 1.35; margin: 0; }
+.mayorista-tarjeta-leyenda { color: #607087; font-size: 12.5px; font-weight: 400; line-height: 1.4; }
+
+.mayorista-tarjeta-campos {
+  border-top: 1px dashed #bcd9e8;
+  display: grid;
+  flex: 1 1 auto;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr);
+  margin: 0 16px;
+  padding: 14px 0 16px;
+}
+
+.mayorista-dos-campos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.mayorista-tarjeta-campos .field-group { margin: 0; min-width: 0; }
+.mayorista-tarjeta-campos .field-group > label { font-size: 12px; margin-bottom: 5px; }
+.mayorista-equivalencia { color: var(--blue-800); }
+.mayorista-equivalencia i { font-size: 11px; margin-right: 4px; }
+.mayorista-equivalencia strong { font-weight: 800; }
+
+/* Interruptor sin activar: los campos siguen a la vista (la tarjeta no cambia de alto) pero apagados. */
+.mayorista-regla:not(.is-on) .mayorista-tarjeta-campos { opacity: 0.55; }
+.mayorista-regla .form-control:disabled { background-color: #f4f7fa; cursor: not-allowed; }
+.mayorista-regla .control-with-suffix .form-control:disabled + span { background: #eef2f6; color: #8b9aad; }
+
+/* Interruptor propio de las tarjetas: más grande y con degradado al encender. */
+.mayorista-regla .listing-switch {
+  flex: 0 0 46px;
+  height: 26px;
+  margin: 0;
+  width: 46px;
+}
+
+.mayorista-regla .listing-switch::after {
+  height: 20px;
+  left: 3px;
+  top: 3px;
+  width: 20px;
+}
+
+.mayorista-regla .listing-switch:checked {
+  background: linear-gradient(135deg, var(--blue-700), var(--blue-800));
+  box-shadow: 0 2px 6px rgba(28, 104, 143, 0.35);
+}
+
+.mayorista-regla .listing-switch:checked::after { transform: translateX(20px); }
+.mayorista-regla .listing-switch:focus-visible { outline: 0; }
+
+@media (forced-colors: active) {
+  .mayorista-regla .listing-switch { appearance: auto; }
+  .mayorista-regla .listing-switch::after { display: none; }
+}
+
+@media (max-width: 1099.98px) {
+  .mayorista-fila { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 575.98px) {
+  .mayorista-dos-campos { grid-template-columns: 1fr; }
+}
