@@ -129,9 +129,15 @@
             : 'El cliente se registra como mayorista en una de tus rutas. La categoría y el crédito los asigna el administrador.' }}
         </p>
 
-        <label class="mayorista-switch" for="esMayorista" *ngIf="!esVendedor">
-          <input type="checkbox" id="esMayorista" name="esMayorista" [(ngModel)]="esMayorista">
-          <span>Es cliente mayorista</span>
+        <label class="mayorista-toggle" for="esMayorista" *ngIf="!esVendedor" [class.is-on]="esMayorista">
+          <span class="mayorista-toggle-icon" aria-hidden="true"><i class="fas fa-route"></i></span>
+          <span class="mayorista-toggle-copy">
+            <span class="mayorista-toggle-title">Es cliente mayorista</span>
+            <span class="mayorista-toggle-description">{{ esMayorista
+              ? 'Completa abajo su ruta, la categoría de descuento y, si se le da crédito, el límite y los días.'
+              : 'Actívalo si compra por volumen para reventa y se atiende por una ruta.' }}</span>
+          </span>
+          <input type="checkbox" role="switch" class="listing-switch" id="esMayorista" name="esMayorista" [(ngModel)]="esMayorista">
         </label>
 
         <div class="form-grid contact-grid" *ngIf="esMayorista">

@@ -6,6 +6,10 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Cambiado — Formulario de cliente y de proforma
+- **Cliente:** la casilla "Es cliente mayorista" pasa a ser una ficha con interruptor (título, explicación e icono), igual que "Solo productos con descuentos" en Descuentos. Los selectores de Ruta y Categoría de descuento pierden la flecha del navegador y usan la misma flecha propia que Rutas y Recibos. Se agrega una prueba de plantilla que mide ambos diseños.
+- **Proforma:** se restaura la fila de Cantidad, Descuento y Agregar en una sola línea. Con un cliente mayorista (tipo de descuento y nivel) pasa a dos columnas con el botón a todo el ancho. Una regla que cambié al agregar el tipo de descuento la apilaba también en las proformas normales.
+
 ### Agregado — Manual de usuario de clientes mayoristas
 - `assets/manual/manual-mayoristas.html`: manual con el formato del de Bodegas. Explica rutas, clientes mayoristas, descuentos, proforma mayorista, autorizaciones, pedidos y entregas, facturación, cuentas por cobrar (recibos, cobranza y devoluciones), comisiones, indicadores y reportes, con la tabla de roles y las preguntas frecuentes.
 - Incluye una guía de pruebas con datos de ejemplo, 15 escenarios con resultado esperado, pruebas negativas por rol y cómo reportar un hallazgo.

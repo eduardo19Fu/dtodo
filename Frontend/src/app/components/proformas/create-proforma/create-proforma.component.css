@@ -187,7 +187,17 @@
   align-items: end;
   display: grid;
   gap: 9px;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) auto;
+  grid-template-columns: repeat(2, minmax(95px, 1fr)) auto;
+}
+
+/* Con un cliente mayorista aparecen el tipo de descuento (y su nivel): dos columnas y el botón a todo el ancho. */
+.quantity-add-control.con-tipo {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.quantity-add-control.con-tipo .add-line-button {
+  grid-column: 1 / -1;
+  width: 100%;
 }
 
 .line-entry-field {

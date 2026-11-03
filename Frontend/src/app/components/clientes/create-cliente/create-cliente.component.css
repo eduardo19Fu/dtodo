@@ -79,6 +79,22 @@
   color: #668c78; font-size: 14px; left: 14px; pointer-events: none; position: absolute; top: 16px; z-index: 2;
 }
 .control-with-icon .form-control { padding-left: 40px; }
+
+/* Selectores: sin la flecha del navegador, con la misma flecha propia que Rutas y Recibos. */
+.field-group select.form-control {
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='m4 6 4 4 4-4' fill='none' stroke='%23607087' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position: right 14px center;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+  cursor: pointer;
+  padding-right: 42px;
+}
+
+@media (forced-colors: active) {
+  .field-group select.form-control { appearance: auto; background-image: none; }
+}
 .validation-message { align-items: center; color: #c83e51; display: flex; font-size: 11px; gap: 5px; margin-top: 7px; }
 
 .form-actions {
@@ -112,16 +128,47 @@
   .primary-action { justify-content: center; width: 100%; }
 }
 
-.mayorista-switch {
+/* Ficha con interruptor: el mismo patrón que "Solo productos con descuentos" en Descuentos. */
+.mayorista-toggle {
+  --tile-accent: #2d7153;
+  --tile-accent-rgb: 45, 113, 83;
   align-items: center;
+  background: #fff;
+  border: 1px solid #cbd6e2;
+  border-radius: 8px;
+  box-sizing: border-box;
   cursor: pointer;
-  display: inline-flex;
-  font-weight: 600;
-  gap: 0.6rem;
-  margin: 0.25rem 0 1rem;
+  display: flex;
+  gap: 16px;
+  margin: 0.25rem 0 1.25rem;
+  min-height: 70px;
+  padding: 12px 16px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  width: 100%;
 }
+.mayorista-toggle:hover { border-color: #81ac9f; }
+.mayorista-toggle:focus-within { border-color: #2d7153; box-shadow: 0 0 0 3px rgba(45, 113, 83, 0.14); }
+.mayorista-toggle.is-on { background: #f1f8f4; border-color: #9fcab4; }
+.mayorista-toggle-icon {
+  align-items: center;
+  background: #e8f3ed;
+  border-radius: 10px;
+  color: #2d7153;
+  display: inline-flex;
+  flex: 0 0 38px;
+  height: 38px;
+  justify-content: center;
+}
+.mayorista-toggle.is-on .mayorista-toggle-icon { background: #2d7153; color: #fff; }
+.mayorista-toggle-copy { display: flex; flex: 1 1 0; flex-direction: column; gap: 3px; min-width: 0; }
+.mayorista-toggle-title { color: #344459; font-size: 15px; font-weight: 600; line-height: 1.4; }
+.mayorista-toggle-description { color: #607087; font-size: 13px; font-weight: 400; line-height: 1.5; }
+.mayorista-toggle .listing-switch { flex: 0 0 40px; margin: 0; }
 
-.mayorista-switch input { height: 1.1rem; width: 1.1rem; }
+@media (forced-colors: active) {
+  .mayorista-toggle .listing-switch { appearance: auto; }
+  .mayorista-toggle .listing-switch::after { display: none; }
+}
 
 .mayorista-nota {
   background: #eef5fb;
