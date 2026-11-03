@@ -6,6 +6,9 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Manual de mayoristas: categorías frente al descuento por producto
+- Sección 6.1 del manual que explica para qué sirve cada uno: la categoría es la regla general por tipo de cliente y el descuento del producto es una excepción puntual. Incluye cómo el sistema sugiere uno al hacer la proforma, un ejemplo con un cliente categoría A y cuál conviene usar. Las secciones siguientes del capítulo 6 se renumeran.
+
 ### Agregado — Precio y descuentos mayoristas en el formulario del producto
 - El formulario de crear y editar un producto tiene la sección **Precio mayorista y descuentos** (solo administrador): tres tarjetas en una sola fila: el precio mayorista fijo (con el descuento que equivale frente al precio de venta) y dos interruptores, **por ciento** y **fardo cerrado**, con su cantidad mínima y su porcentaje. Los campos de una regla siguen a la vista pero atenuados mientras su interruptor está apagado, para que la fila no cambie de alto. Antes solo se podían configurar en Mayoristas → Descuentos.
 - Se guardan después del producto, porque el servidor compara el precio mayorista con el precio de venta ya guardado. Si el servidor los rechaza, el producto queda guardado y se avisa cómo corregirlos. Si no se pudieron cargar al editar, no se modifican.

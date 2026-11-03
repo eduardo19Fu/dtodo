@@ -647,7 +647,53 @@
         </table>
       </div>
 
-      <h3>6.1 Categorías de cliente</h3>
+      <h3>6.1 &iquest;Para qué sirve cada uno?</h3>
+      <p>Parece que hay dos formas de hacer lo mismo, pero responden a <strong>dos preguntas distintas</strong>:</p>
+      <div class="cards">
+        <div class="card">
+          <h4>Categoría: &laquo;&iquest;qué tan bueno es este cliente?&raquo;</h4>
+          <p>Es una regla <strong>general</strong> que depende del <strong>cliente</strong>, no del producto. Si un cliente es categoría A, recibe su porcentaje en <strong>todo lo que compre</strong>, sin tener que configurar nada producto por producto.</p>
+        </div>
+        <div class="card">
+          <h4>Descuento del producto: &laquo;&iquest;qué le conviene a la tienda con este artículo?&raquo;</h4>
+          <p>Es una <strong>excepción puntual</strong> de un <strong>producto</strong>: un precio fijo, o un descuento al comprar cierta cantidad o fardos completos. Sirve cuando el margen de ese producto permite más (o menos) que la regla general.</p>
+        </div>
+      </div>
+      <div class="callout tip">
+        <span class="callout-title">Una comparación sencilla</span>
+        <p>La <strong>categoría</strong> es como una <strong>tarjeta de cliente frecuente</strong>: da un descuento general en toda la tienda. El <strong>descuento del producto</strong> es una <strong>oferta de ese artículo</strong>: &laquo;lleve 100 y le damos 12 %&raquo;. Pueden convivir.</p>
+      </div>
+
+      <h4>Cómo se combinan al hacer una proforma</h4>
+      <p>Para cada producto, el sistema reúne los descuentos que aplican según el <strong>cliente</strong> (su categoría), el <strong>producto</strong> (su precio mayorista, su descuento por ciento o su fardo) y la <strong>cantidad</strong>, y <strong>sugiere uno</strong>:</p>
+      <ol class="steps">
+        <li>Si el producto tiene <strong>precio mayorista fijo</strong>, sugiere ese precio.</li>
+        <li>Si no, sugiere el <strong>mayor porcentaje</strong> entre los que aplican y cuya cantidad mínima se alcanza.</li>
+      </ol>
+      <p>El vendedor puede <strong>cambiar</strong> la sugerencia por otra opción de la lista (<em>Tipo de descuento</em>), o escribir un porcentaje <em>Manual</em>. Si el descuento pasa del <a href="#descuentos">tope</a>, la proforma queda por autorizar.</p>
+
+      <h4>Ejemplo con un cliente de categoría A (10 %)</h4>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Producto</th><th>Qué tiene configurado</th><th>Qué sugiere el sistema</th></tr></thead>
+          <tbody>
+            <tr><td>Un producto sin nada especial</td><td>Solo la categoría</td><td><strong>10 %</strong> (el de la categoría).</td></tr>
+            <tr><td>Un producto de Q50 con precio mayorista de Q45</td><td>Categoría + precio fijo</td><td><strong>Q45</strong>, que equivale a 10 %.</td></tr>
+            <tr><td>Un producto con &laquo;por ciento&raquo; de 12 % desde 100 unidades</td><td>Categoría + por ciento</td><td><strong>10 %</strong> si compra 50 unidades; <strong>12 %</strong> si compra 100.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout note">
+        <span class="callout-title">&iquest;Cuál conviene usar?</span>
+        <ul>
+          <li>Si quieres que <strong>todos los mayoristas</strong> reciban un descuento base sin configurar cada producto, usa las <strong>categorías</strong>. Sin ellas, un producto sin descuento propio no tendría ninguno para el mayorista.</li>
+          <li>Si quieres <strong>mejorar la oferta de artículos concretos</strong> o premiar el volumen, usa el <strong>descuento del producto</strong>.</li>
+          <li>Si prefieres controlar todo producto por producto, puedes dejar una categoría <strong>sin niveles</strong> (&laquo;no ofrece descuento&raquo;); el cliente recibirá solo lo que cada producto tenga configurado.</li>
+        </ul>
+      </div>
+
+      <h3>6.2 Categorías de cliente</h3>
       <p>En la parte superior hay una tarjeta por categoría con sus <strong>niveles de descuento</strong> (por ejemplo A: 10 %, B: 8 %, Volumen: 12 %, 15 % y 20 %). Para cambiarlos:</p>
       <ol class="steps">
         <li>Quita un nivel con la <strong>&times;</strong> de su etiqueta, o escribe un porcentaje en <strong>Nuevo nivel (%)</strong> y pulsa <span class="btn light">+ Agregar</span>.</li>
@@ -658,7 +704,7 @@
         <p>Los porcentajes con que arranca el sistema se pueden cambiar. Lo que ya se vendió <strong>no cambia</strong>: cada línea de una proforma conserva el descuento con que se hizo.</p>
       </div>
 
-      <h3>6.2 Precio mayorista, por ciento y fardo de un producto</h3>
+      <h3>6.3 Precio mayorista, por ciento y fardo de un producto</h3>
       <div class="callout tip">
         <span class="callout-title">También en el formulario del producto</span>
         <p>El administrador puede configurar lo mismo al crear o editar un producto, en <strong>Productos &rarr; Listado &rarr; Nuevo / Editar</strong>, en la sección <strong>Precio mayorista y descuentos</strong>: el <strong>Precio mayorista fijo</strong> (con el descuento que equivale frente al precio de venta) y dos interruptores, <strong>Descuento por ciento</strong> y <strong>Fardo cerrado</strong>, con su cantidad mínima y su porcentaje. Se guardan junto con el producto y siguen las mismas reglas. Los demás roles no ven esa sección.</p>
@@ -671,7 +717,7 @@
         <li>Pulsa <span class="btn">Guardar producto</span>.</li>
       </ol>
 
-      <h3>6.3 El tope de descuento</h3>
+      <h3>6.4 El tope de descuento</h3>
       <p>Un descuento de <strong>hasta 15 %</strong> se aplica sin pedir permiso. Si una línea pasa de ese tope, la proforma queda <span class="pill wait">Por autorizar</span> y un administrador debe aprobarla (<a href="#autorizaciones">capítulo 8</a>). El tope lo fija el sistema; si necesita cambiarse, se solicita a sistemas.</p>
     </section>
 
