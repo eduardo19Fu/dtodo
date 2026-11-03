@@ -615,7 +615,17 @@
       <h3>5.3 Crédito del cliente</h3>
       <p>El crédito se da <strong>únicamente</strong> si el cliente tiene <strong>límite</strong> y <strong>días de crédito</strong>. Sin esos dos datos, todos sus pedidos son <strong>de contado</strong>. El detalle de cómo se controla está en los capítulos <a href="#proformas">7</a> y <a href="#cobranza">11.2</a>.</p>
 
-      <h3>5.4 Buscar y filtrar clientes</h3>
+      <h3>5.4 Ver el detalle de un cliente</h3>
+      <p>En el listado de clientes, cada cliente mayorista tiene un botón con un <strong>ojo</strong> en la columna <em>Opciones</em>. Abre una ficha con:</p>
+      <ul>
+        <li><strong>Ruta, vendedor, sucursal y categoría de descuento</strong> (el vendedor y la sucursal los ve el administrador).</li>
+        <li><strong>La cuenta del cliente</strong> (administrador, cobrador y vendedor de sus clientes): saldo pendiente o a favor, lo entregado, devuelto y abonado, y el <strong>uso de su límite de crédito</strong> en una barra que se pone amarilla cerca del límite y roja si lo excede.</li>
+        <li><strong>Sus datos</strong>: NIT, teléfono, dirección, persona y teléfono de contacto, referencia de ubicación, código y fecha de registro.</li>
+        <li><strong>Sus pedidos con entregas</strong>: condición de pago, total, entregado, cobrado, pendiente y fecha de vencimiento, con la marca <em>Vencido</em> cuando el plazo ya pasó.</li>
+      </ul>
+      <p>El botón <span class="btn light">Editar cliente</span> de la ficha abre su formulario, y se cierra con <span class="btn light">Cerrar</span>, la <strong>X</strong>, la tecla <kbd>Esc</kbd> o pulsando fuera de la ficha.</p>
+
+      <h3>5.5 Buscar y filtrar clientes</h3>
       <p>En el listado de clientes el filtro <strong>Tipo de cliente</strong> permite ver <em>Mayoristas</em>, y la columna <strong>Tipo / Ruta</strong> muestra la etiqueta &laquo;Mayorista&raquo; con su ruta. Hay también un filtro por ruta y la casilla <strong>Solo con NIT inválido</strong>, útil porque algunos clientes antiguos tienen un teléfono en lugar del NIT y la SAT lo rechaza al facturar.</p>
     </section>
 
@@ -649,6 +659,10 @@
       </div>
 
       <h3>6.2 Precio mayorista, por ciento y fardo de un producto</h3>
+      <div class="callout tip">
+        <span class="callout-title">También en el formulario del producto</span>
+        <p>El administrador puede configurar lo mismo al crear o editar un producto, en <strong>Productos &rarr; Listado &rarr; Nuevo / Editar</strong>, en la sección <strong>Precio mayorista y descuentos</strong>: el <strong>Precio mayorista fijo</strong> (con el descuento que equivale frente al precio de venta) y dos interruptores, <strong>Descuento por ciento</strong> y <strong>Fardo cerrado</strong>, con su cantidad mínima y su porcentaje. Se guardan junto con el producto y siguen las mismas reglas. Los demás roles no ven esa sección.</p>
+      </div>
       <p>Abajo, la tabla <strong>Precio mayorista y descuentos por producto</strong> lista los productos con su precio de venta, su precio mayorista y sus descuentos. Busca por nombre o código; el interruptor <strong>Solo productos con descuentos</strong> oculta los que no tienen ninguno.</p>
       <ol class="steps">
         <li>Busca el producto y pulsa el lápiz de su fila. Se abre <strong>Editando: [producto]</strong> con su precio de venta actual.</li>

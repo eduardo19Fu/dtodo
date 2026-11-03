@@ -6,6 +6,21 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Precio y descuentos mayoristas en el formulario del producto
+- El formulario de crear y editar un producto tiene la sección **Precio mayorista y descuentos** (solo administrador): tres tarjetas en una sola fila: el precio mayorista fijo (con el descuento que equivale frente al precio de venta) y dos interruptores, **por ciento** y **fardo cerrado**, con su cantidad mínima y su porcentaje. Los campos de una regla siguen a la vista pero atenuados mientras su interruptor está apagado, para que la fila no cambie de alto. Antes solo se podían configurar en Mayoristas → Descuentos.
+- Se guardan después del producto, porque el servidor compara el precio mayorista con el precio de venta ya guardado. Si el servidor los rechaza, el producto queda guardado y se avisa cómo corregirlos. Si no se pudieron cargar al editar, no se modifican.
+- Se valida antes de guardar (precio mayor a cero y menor al de venta, cantidad mínima entera de 2 o más, porcentaje entre 0.01 y 100). El resto de secciones se renumera para el administrador. 13 pruebas nuevas y sección en el manual.
+
+### Agregado — Detalle del cliente mayorista
+- Botón con un ojo en el listado de clientes (solo para mayoristas) que abre una ficha con el patrón visual de los demás detalles del sistema, en verde: ruta, vendedor, sucursal y categoría de descuento; la cuenta del cliente (saldo o saldo a favor, entregado, devuelto y abonado) con una barra del uso del límite de crédito (amarilla cerca del límite, roja si lo excede); sus datos de contacto y ubicación; y sus pedidos con entregas, con cuánto se ha cobrado y la marca de vencido.
+- La cuenta la ven administrador, cobrador y vendedor (de sus clientes); el vendedor y la sucursal de la ruta, solo el administrador. Si la cuenta no carga, la ficha lo avisa y permite reintentar. Se cierra con la X, Cerrar, Esc o pulsando fuera.
+- Nuevo componente `DetailClienteComponent` con 15 pruebas. Se agrega la sección al manual de mayoristas.
+
+### Cambiado — Listado de clientes
+- El filtro "Solo con NIT inválido" pasa de casilla a interruptor, con el contador de clientes afectados.
+- "Quitar filtros" deja de ser un botón gris de Bootstrap: usa el estilo de acción secundaria de los listados, con icono de borrador y una pastilla con cuántos filtros hay puestos. El interruptor de NIT ya no muestra dos aros de foco.
+- Los filtros Tipo de cliente y Ruta usan el estilo de campo de los demás listados (etiqueta en negrita, caja de 40 px) y la flecha propia en lugar de la del navegador. Los tres controles quedan con la misma altura.
+
 ### Cambiado — Formulario de cliente y de proforma
 - **Cliente:** la casilla "Es cliente mayorista" pasa a ser una ficha con interruptor (título, explicación e icono), igual que "Solo productos con descuentos" en Descuentos. Los selectores de Ruta y Categoría de descuento pierden la flecha del navegador y usan la misma flecha propia que Rutas y Recibos. Se agrega una prueba de plantilla que mide ambos diseños.
 - **Proforma:** se restaura la fila de Cantidad, Descuento y Agregar en una sola línea. Con un cliente mayorista (tipo de descuento y nivel) pasa a dos columnas con el botón a todo el ancho. Una regla que cambié al agregar el tipo de descuento la apilaba también en las proformas normales.
