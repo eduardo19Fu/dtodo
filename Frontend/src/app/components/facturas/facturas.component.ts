@@ -183,7 +183,7 @@ export class FacturasComponent implements OnInit, OnDestroy {
       didOpen: () => Swal.showLoading()
     });
 
-    this.facturaSeleccionada = null;
+    this.facturaSeleccionada;
     setTimeout(() => this.facturaSeleccionada = facturaDto);
   }
 
@@ -217,7 +217,7 @@ export class FacturasComponent implements OnInit, OnDestroy {
 
   printBill(factura: FacturaDto): void {
     const url = 'https://report.feel.com.gt/ingfacereport/ingfacereport_documento?uuid=' + factura.certificacionSat;
-    window.open(url, '_blank').focus();
+    window.open(url, '_blank')?.focus();
   }
 
   irPrimeraPagina(): void { this.cargarFacturas(0); }
