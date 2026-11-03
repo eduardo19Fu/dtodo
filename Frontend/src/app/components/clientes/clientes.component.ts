@@ -116,8 +116,24 @@ export class ClientesComponent implements OnInit, OnDestroy {
     this.cargarClientes(0);
   }
 
+  /** Cliente mayorista cuyo detalle está abierto. */
+  clienteDetalle: ClienteDto = null;
+
+  abrirDetalle(cliente: ClienteDto): void {
+    this.clienteDetalle = cliente;
+  }
+
+  cerrarDetalle(): void {
+    this.clienteDetalle = null;
+  }
+
+  /** Cuántos de los filtros (tipo, ruta y NIT inválido) están puestos. */
+  get cantidadFiltrosActivos(): number {
+    return (this.tipoFiltro ? 1 : 0) + (this.idRutaFiltro ? 1 : 0) + (this.soloNitInvalido ? 1 : 0);
+  }
+
   get hayFiltrosActivos(): boolean {
-    return !!this.tipoFiltro || !!this.idRutaFiltro || this.soloNitInvalido;
+    return this.cantidadFiltrosActivos > 0;
   }
 
   limpiarFiltros(): void {

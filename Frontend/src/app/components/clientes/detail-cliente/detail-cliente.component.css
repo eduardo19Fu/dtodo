@@ -1,0 +1,127 @@
+/* Complementa los estilos del detalle compartidos en ../../bodegas/detail-bodega/detail-bodega.component.css.
+   Aquí va la identidad verde de clientes y mayoristas (el compartido es el ocre de Bodegas) y lo propio de la ficha. */
+
+:host {
+  --green-900: #1f5a4c;
+  --green-800: #2a6f5e;
+  --green-700: #2f7d6b;
+  --green-100: #e3f3ee;
+  --green-50: #f3faf7;
+  --ink: #243247;
+  --muted: #6d7b8f;
+  --border: #d3e6df;
+}
+
+.cliente-detail-dialog { max-width: 1020px; }
+
+.sucursal-detail-body {
+  background: #f5faf8;
+  scrollbar-color: #b3d4c8 transparent;
+}
+
+.total-card { box-shadow: 0 8px 18px rgba(31, 90, 76, 0.22); }
+
+.header-sub {
+  color: rgba(255, 255, 255, 0.78);
+  display: block;
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+/* ---- Ruta, vendedor y categoría ---- */
+.ruta-ribbon {
+  background: linear-gradient(135deg, #f3faf7 0%, #fff 100%);
+  border: 1px solid #cfe5dc;
+  border-radius: 12px;
+  display: grid;
+  gap: 14px 22px;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  margin-bottom: 20px;
+  padding: 16px 20px;
+}
+
+.ribbon-point { align-items: center; display: flex; gap: 12px; min-width: 0; }
+
+.ribbon-icon {
+  align-items: center;
+  background: #fff;
+  border: 2px solid var(--green-700);
+  border-radius: 12px;
+  color: var(--green-700);
+  display: inline-flex;
+  flex: 0 0 40px;
+  height: 40px;
+  justify-content: center;
+}
+
+.ribbon-point > div { min-width: 0; }
+
+.ribbon-kind {
+  color: #4f8b79;
+  display: block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.ribbon-point strong {
+  color: #163d33;
+  display: block;
+  font-size: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ribbon-point small { color: var(--muted); display: block; font-size: 12px; }
+
+/* ---- Secciones ---- */
+.cuenta-section, .datos-section { margin-bottom: 20px; }
+.lines-section { margin-top: 0; }
+
+.loading-state { align-items: center; color: var(--muted); display: flex; gap: 10px; justify-content: center; padding: 18px 0 6px; }
+.empty-state .close-action { margin-top: 10px; }
+
+.codigo-cliente { font-family: Consolas, 'Courier New', monospace; font-size: 12px !important; letter-spacing: 0.02em; }
+
+/* ---- Crédito ---- */
+.credit-card { align-items: flex-start; }
+.credit-body { flex: 1 1 auto; min-width: 0; width: 100%; }
+
+.credit-figures { align-items: baseline; display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.credit-figures strong { font-size: 1.15rem; }
+.credit-figures > span { color: var(--muted); font-size: 13px; }
+.credit-available { margin-left: auto; }
+.credit-available b { color: var(--ink); font-weight: 800; }
+
+.credit-meter { background: #dfeee8; border-radius: 999px; height: 10px; margin-top: 10px; overflow: hidden; }
+
+.credit-meter-fill {
+  background: linear-gradient(90deg, #3a937e, #2f7d6b);
+  border-radius: 999px;
+  display: block;
+  height: 100%;
+  min-width: 4px;
+  transition: width 0.5s ease;
+}
+
+.credit-alto .credit-meter-fill { background: linear-gradient(90deg, #e0a100, #c27c00); }
+.credit-alto .credit-available b { color: #9a6200; }
+.credit-excedido { background: #fdf0f0; border-color: #f2c7c7; }
+.credit-excedido .credit-meter { background: #f6d9d9; }
+.credit-excedido .credit-meter-fill { background: linear-gradient(90deg, #d4535f, #a8323f); }
+.credit-excedido .credit-available b { color: #a8323f; }
+.credit-excedido .card-icon { background: #f8dcdc; color: #a8323f; }
+
+/* ---- Pedidos ---- */
+.vence-pill { margin-left: 6px; padding: 3px 8px; }
+.document-lines-table td[data-label='Condición'],
+.document-lines-table td[data-label='Vence'] { white-space: nowrap; }
+
+.footer-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+
+@media (max-width: 767.98px) {
+  .credit-available { margin-left: 0; }
+  .ruta-ribbon { grid-template-columns: 1fr; }
+}

@@ -1,3 +1,5 @@
+<app-detail-cliente *ngIf="clienteDetalle" [cliente]="clienteDetalle" (cerrar)="cerrarDetalle()"></app-detail-cliente>
+
 <section class="content-header">
   <div class="container-fluid">
     <div class="row mb-2">
@@ -49,7 +51,7 @@
     </div>
 
     <div class="row mb-3 filtros-clientes">
-      <div class="col-sm-4 col-md-3">
+      <div class="col-sm-4 col-md-3 listing-field">
         <label class="mb-1" for="filtroTipo">Tipo de cliente</label>
         <select id="filtroTipo" class="form-control form-control-sm" [(ngModel)]="tipoFiltro"
           (ngModelChange)="cambiarFiltros()">
@@ -58,7 +60,7 @@
           <option value="MAYORISTA">Mayoristas</option>
         </select>
       </div>
-      <div class="col-sm-4 col-md-3">
+      <div class="col-sm-4 col-md-3 listing-field">
         <label class="mb-1" for="filtroRuta">Ruta</label>
         <select id="filtroRuta" class="form-control form-control-sm" [(ngModel)]="idRutaFiltro"
           (ngModelChange)="cambiarFiltros()">
@@ -67,16 +69,21 @@
         </select>
       </div>
       <div class="col-sm-4 col-md-3 d-flex align-items-end" *ngIf="auth.hasRole('ROLE_ADMIN')">
-        <label class="mb-0 filtro-nit" for="filtroNitInvalido"
+        <label class="mb-0 filtro-nit" for="filtroNitInvalido" [class.is-on]="soloNitInvalido"
           appTooltip="Clientes con un NIT escrito que no es válido, por ejemplo un teléfono">
-          <input type="checkbox" id="filtroNitInvalido" [(ngModel)]="soloNitInvalido" (ngModelChange)="cambiarFiltros()">
-          Solo con NIT inválido
+          <span class="filtro-nit-texto">Solo con NIT inválido</span>
           <span class="listing-status-pill listing-status-warning" *ngIf="totalNitInvalidos">{{totalNitInvalidos}}</span>
+          <input type="checkbox" role="switch" class="listing-switch" id="filtroNitInvalido"
+            [(ngModel)]="soloNitInvalido" (ngModelChange)="cambiarFiltros()">
         </label>
       </div>
       <div class="col-sm-4 col-md-3 d-flex align-items-end">
-        <button type="button" class="btn btn-sm btn-outline-secondary" *ngIf="hayFiltrosActivos"
-          (click)="limpiarFiltros()"><i class="fas fa-times"></i> Quitar filtros</button>
+        <button type="button" class="filtros-limpiar" *ngIf="hayFiltrosActivos" (click)="limpiarFiltros()"
+          appTooltip="Quitar todos los filtros y ver todos los clientes">
+          <i class="fas fa-eraser" aria-hidden="true"></i>
+          <span>Quitar filtros</span>
+          <span class="filtros-limpiar-cuenta" [attr.aria-label]="cantidadFiltrosActivos + ' filtros activos'">{{cantidadFiltrosActivos}}</span>
+        </button>
       </div>
     </div>
 
@@ -163,6 +170,10 @@
           <td class="col-opciones mobile-actions-cell" data-label="Opciones"
             *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_COBRADOR') || auth.hasRole('ROLE_VENDEDOR')">
             <div class="action-buttons">
+              <button class="btn btn-sm listing-table-action listing-action-view" type="button" *ngIf="cliente.tipoCliente === 'MAYORISTA'"
+                appTooltip="Ver detalle del cliente" aria-label="Ver detalle del cliente" (click)="abrirDetalle(cliente)">
+                <i class="fas fa-eye"></i>
+              </button>
               <button class="btn btn-sm listing-table-action listing-action-edit" type="button"
                 appTooltip="Editar cliente" aria-label="Editar cliente"
                 [routerLink]="['/clientes/create', cliente.idCliente]">

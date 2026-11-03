@@ -82,6 +82,7 @@ import { ModalBuscarProductoBodegaComponent } from './components/despachos-bodeg
 import { DevolucionesBodegaComponent } from './components/devoluciones-bodega/devoluciones-bodega.component';
 import { CreateDevolucionBodegaComponent } from './components/devoluciones-bodega/create-devolucion-bodega/create-devolucion-bodega.component';
 import { DetailDevolucionBodegaComponent } from './components/devoluciones-bodega/detail-devolucion-bodega/detail-devolucion-bodega.component';
+import { DetailClienteComponent } from './components/clientes/detail-cliente/detail-cliente.component';
 import { ModalBuscarProductoSucursalComponent } from './components/devoluciones-bodega/modal-buscar-producto-sucursal/modal-buscar-producto-sucursal.component';
 import { TooltipDirective } from './directives/tooltip.directive';
 import { DateRangePickerComponent } from './components/shared/date-range-picker/date-range-picker.component';
@@ -165,6 +166,7 @@ import { ReporteSelectorComponent } from './components/reportes/reporte-selector
     DevolucionesBodegaComponent,
     CreateDevolucionBodegaComponent,
     DetailDevolucionBodegaComponent,
+    DetailClienteComponent,
     ModalBuscarProductoSucursalComponent,
     TooltipDirective,
     DateRangePickerComponent,

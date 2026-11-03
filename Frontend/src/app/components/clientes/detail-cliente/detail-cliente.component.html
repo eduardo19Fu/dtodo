@@ -1,0 +1,265 @@
+<div class="sucursal-detail-overlay animacion fadeIn" (click)="cerrarDesdeBackdrop($event)">
+  <section class="sucursal-detail-dialog cliente-detail-dialog" tabindex="-1" role="dialog" aria-modal="true"
+    aria-labelledby="cliente-detail-title" (click)="$event.stopPropagation()">
+    <div class="sucursal-detail-content">
+      <header class="sucursal-detail-header">
+        <div class="header-copy">
+          <span class="header-icon" aria-hidden="true"><i class="fas fa-store"></i></span>
+          <div>
+            <span class="header-eyebrow">Cliente mayorista · #{{cliente.idCliente}}</span>
+            <h5 id="cliente-detail-title">{{cliente.nombre}}</h5>
+            <small class="header-sub" *ngIf="cliente.nombreNegocio">{{cliente.nombreNegocio}}</small>
+          </div>
+        </div>
+        <button (click)="cerrarModal()" type="button" class="close-button" aria-label="Cerrar detalle del cliente">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+      </header>
+
+      <div class="sucursal-detail-body">
+        <section class="ruta-ribbon" aria-label="Ruta del cliente">
+          <div class="ribbon-point">
+            <span class="ribbon-icon" aria-hidden="true"><i class="fas fa-route"></i></span>
+            <div>
+              <span class="ribbon-kind">Ruta</span>
+              <strong>{{cliente.ruta || 'Sin ruta'}}</strong>
+              <small *ngIf="ruta && ruta.zona">{{ruta.zona}}</small>
+            </div>
+          </div>
+          <div class="ribbon-point" *ngIf="ruta">
+            <span class="ribbon-icon" aria-hidden="true"><i class="fas fa-user-tie"></i></span>
+            <div>
+              <span class="ribbon-kind">Vendedor</span>
+              <strong>{{ruta.vendedor || 'Sin vendedor'}}</strong>
+              <small *ngIf="ruta.diasVisita">Visita: {{ruta.diasVisita}}</small>
+            </div>
+          </div>
+          <div class="ribbon-point" *ngIf="ruta">
+            <span class="ribbon-icon" aria-hidden="true"><i class="fas fa-store-alt"></i></span>
+            <div>
+              <span class="ribbon-kind">Sucursal</span>
+              <strong>{{ruta.sucursal}}</strong>
+            </div>
+          </div>
+          <div class="ribbon-point" *ngIf="cliente.categoriaDescuento">
+            <span class="ribbon-icon" aria-hidden="true"><i class="fas fa-tags"></i></span>
+            <div>
+              <span class="ribbon-kind">Categoría de descuento</span>
+              <strong>{{cliente.categoriaDescuento === 'VOLUMEN' ? 'Volumen' : 'Categoría ' + cliente.categoriaDescuento}}</strong>
+              <small>{{descripcionCategoria}}</small>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== Cuenta ===== -->
+        <section class="summary-section cuenta-section" *ngIf="puedeVerCuenta">
+          <div class="section-heading">
+            <span class="section-icon"><i class="fas fa-file-invoice-dollar" aria-hidden="true"></i></span>
+            <div>
+              <strong>Cuenta del cliente</strong>
+              <small>Entregado menos devuelto y abonado, y el uso de su crédito</small>
+            </div>
+          </div>
+
+          <div class="loading-state" *ngIf="cargandoCuenta" role="status">
+            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Consultando la cuenta...
+          </div>
+
+          <div class="empty-state" *ngIf="errorCuenta" role="alert">
+            <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+            <strong>No se pudo consultar la cuenta</strong>
+            <span>Puedes volver a intentarlo.</span>
+            <button type="button" class="close-action mt-2" (click)="cargarCuenta()"><i class="fas fa-redo" aria-hidden="true"></i> Reintentar</button>
+          </div>
+
+          <ng-container *ngIf="saldo">
+            <div class="summary-grid">
+              <article class="summary-card total-card">
+                <span class="card-icon"><i class="fas fa-coins" aria-hidden="true"></i></span>
+                <div>
+                  <span class="summary-label">{{etiquetaSaldo}}</span>
+                  <strong>{{valorSaldo | currency: 'Q' : 'symbol'}}</strong>
+                </div>
+              </article>
+              <article class="summary-card">
+                <span class="card-icon"><i class="fas fa-truck-loading" aria-hidden="true"></i></span>
+                <div>
+                  <span class="summary-label">Entregado</span>
+                  <strong>{{saldo.entregado | currency: 'Q' : 'symbol'}}</strong>
+                </div>
+              </article>
+              <article class="summary-card">
+                <span class="card-icon"><i class="fas fa-undo-alt" aria-hidden="true"></i></span>
+                <div>
+                  <span class="summary-label">Devuelto</span>
+                  <strong>{{saldo.devuelto | currency: 'Q' : 'symbol'}}</strong>
+                </div>
+              </article>
+              <article class="summary-card">
+                <span class="card-icon"><i class="fas fa-receipt" aria-hidden="true"></i></span>
+                <div>
+                  <span class="summary-label">Abonado</span>
+                  <strong>{{saldo.abonado | currency: 'Q' : 'symbol'}}</strong>
+                </div>
+              </article>
+
+              <article class="summary-card wide-card credit-card" *ngIf="tieneCredito" [ngClass]="'credit-' + estadoCredito">
+                <span class="card-icon"><i class="fas fa-hand-holding-usd" aria-hidden="true"></i></span>
+                <div class="credit-body">
+                  <span class="summary-label">Crédito · {{cliente.diasCredito}} días</span>
+                  <div class="credit-figures">
+                    <strong>{{usadoCredito | currency: 'Q' : 'symbol'}}</strong>
+                    <span>de {{cliente.limiteCredito | currency: 'Q' : 'symbol'}}</span>
+                    <span class="credit-available" *ngIf="saldo.disponible != null">
+                      {{saldo.disponible < 0 ? 'Excedido por' : 'Disponible'}}
+                      <b>{{(saldo.disponible < 0 ? -saldo.disponible : saldo.disponible) | currency: 'Q' : 'symbol'}}</b>
+                    </span>
+                  </div>
+                  <div class="credit-meter" role="progressbar" aria-label="Uso del límite de crédito"
+                    [attr.aria-valuenow]="porcentajeCredito" aria-valuemin="0" aria-valuemax="100">
+                    <span class="credit-meter-fill" [style.width.%]="porcentajeCredito"></span>
+                  </div>
+                </div>
+              </article>
+              <article class="summary-card wide-card" *ngIf="!tieneCredito">
+                <span class="card-icon"><i class="fas fa-money-bill-wave" aria-hidden="true"></i></span>
+                <div>
+                  <span class="summary-label">Condición de pago</span>
+                  <strong>De contado: el cliente no tiene límite ni días de crédito</strong>
+                </div>
+              </article>
+            </div>
+          </ng-container>
+        </section>
+
+        <!-- ===== Datos ===== -->
+        <section class="summary-section datos-section">
+          <div class="section-heading">
+            <span class="section-icon"><i class="fas fa-id-card" aria-hidden="true"></i></span>
+            <div>
+              <strong>Datos del cliente</strong>
+              <small>Identificación, contacto y ubicación</small>
+            </div>
+          </div>
+
+          <div class="summary-grid">
+            <article class="summary-card">
+              <span class="card-icon"><i class="fas fa-id-badge" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">NIT</span>
+                <strong>{{cliente.nit || 'Sin NIT'}}</strong>
+              </div>
+            </article>
+            <article class="summary-card">
+              <span class="card-icon"><i class="fas fa-phone" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Teléfono</span>
+                <strong>{{cliente.telefono || 'Sin teléfono'}}</strong>
+              </div>
+            </article>
+            <article class="summary-card">
+              <span class="card-icon"><i class="far fa-calendar-check" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Cliente desde</span>
+                <strong>{{cliente.fechaRegistro | date: 'dd/MM/yyyy'}}</strong>
+              </div>
+            </article>
+            <article class="summary-card">
+              <span class="card-icon"><i class="fas fa-user" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Persona de contacto</span>
+                <strong>{{cliente.contacto || 'Sin registrar'}}</strong>
+              </div>
+            </article>
+            <article class="summary-card">
+              <span class="card-icon"><i class="fas fa-mobile-alt" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Teléfono de contacto</span>
+                <strong>{{cliente.telefonoContacto || 'Sin registrar'}}</strong>
+              </div>
+            </article>
+            <article class="summary-card">
+              <span class="card-icon"><i class="fas fa-barcode" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Código de cliente</span>
+                <strong class="codigo-cliente">{{cliente.codigoCliente || 'Sin código'}}</strong>
+              </div>
+            </article>
+            <article class="summary-card wide-card">
+              <span class="card-icon"><i class="fas fa-map-marker-alt" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Dirección</span>
+                <strong>{{cliente.direccion || 'Sin dirección'}}</strong>
+              </div>
+            </article>
+            <article class="summary-card">
+              <span class="card-icon"><i class="fas fa-map-pin" aria-hidden="true"></i></span>
+              <div>
+                <span class="summary-label">Referencia de ubicación</span>
+                <strong>{{cliente.referenciaUbicacion || 'Sin registrar'}}</strong>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <!-- ===== Pedidos ===== -->
+        <section class="lines-section" *ngIf="saldo && saldo.pedidos.length > 0">
+          <div class="lines-toolbar">
+            <div class="section-heading">
+              <span class="section-icon"><i class="fas fa-dolly" aria-hidden="true"></i></span>
+              <div>
+                <strong>Pedidos con entregas</strong>
+                <small>Cuánto se ha cobrado de cada uno y cuándo vence</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-shell">
+            <table class="document-lines-table mobile-data-table">
+              <thead>
+                <tr>
+                  <th>Pedido</th>
+                  <th>Condición</th>
+                  <th class="money-column">Total</th>
+                  <th class="money-column">Entregado</th>
+                  <th class="money-column">Cobrado</th>
+                  <th class="money-column">Pendiente</th>
+                  <th>Vence</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let pedido of saldo.pedidos">
+                  <td data-label="Pedido"><span class="line-badge">{{pedido.noProforma}}</span></td>
+                  <td data-label="Condición">{{etiquetaCondicion(pedido)}}</td>
+                  <td class="money-cell" data-label="Total">{{pedido.total | currency: 'Q' : 'symbol'}}</td>
+                  <td class="money-cell" data-label="Entregado">{{pedido.entregado | currency: 'Q' : 'symbol'}}</td>
+                  <td class="money-cell" data-label="Cobrado">{{pedido.cobrado | currency: 'Q' : 'symbol'}}</td>
+                  <td class="money-cell final-amount" data-label="Pendiente">{{pedido.pendiente | currency: 'Q' : 'symbol'}}</td>
+                  <td data-label="Vence">
+                    <ng-container *ngIf="pedido.vencimiento; else sinVencimiento">
+                      {{pedido.vencimiento | date: 'dd/MM/yyyy'}}
+                      <span class="status-pill status-inactive vence-pill" *ngIf="estaVencido(pedido)">Vencido</span>
+                    </ng-container>
+                    <ng-template #sinVencimiento><span class="text-muted">—</span></ng-template>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <footer class="sucursal-detail-footer">
+        <span><i class="fas fa-info-circle" aria-hidden="true"></i>Ficha de consulta del cliente mayorista</span>
+        <div class="footer-actions">
+          <button type="button" class="close-action" [routerLink]="['/clientes/create', cliente.idCliente]" (click)="cerrarModal()">
+            <i class="fas fa-edit" aria-hidden="true"></i> Editar cliente
+          </button>
+          <button (click)="cerrarModal()" type="button" class="close-action">
+            <i class="fas fa-times" aria-hidden="true"></i> Cerrar
+          </button>
+        </div>
+      </footer>
+    </div>
+  </section>
+</div>
