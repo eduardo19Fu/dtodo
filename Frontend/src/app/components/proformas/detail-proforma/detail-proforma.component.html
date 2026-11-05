@@ -164,27 +164,47 @@
         </section>
       </div>
 
-      <section *ngIf="proformadto" class="history-section" aria-labelledby="proforma-history-title">
-        <div class="section-heading">
-          <span class="section-icon"><i class="fas fa-history" aria-hidden="true"></i></span>
-          <div>
+      <section *ngIf="proformadto" class="history-section" [class.is-open]="historialAbierto" aria-labelledby="proforma-history-title">
+        <button type="button" class="history-toggle" (click)="alternarHistorial()" [attr.aria-expanded]="historialAbierto"
+          aria-controls="proforma-history-panel">
+          <span class="section-icon" aria-hidden="true"><i class="fas fa-history"></i></span>
+          <span class="history-toggle-copy">
             <strong id="proforma-history-title">Historial</strong>
-            <small *ngIf="proformadto.estadoAutorizacion">{{etiquetaAutorizacion(proformadto.estadoAutorizacion)}}</small>
-            <small *ngIf="!proformadto.estadoAutorizacion">Quién creó, modificó o autorizó la proforma</small>
+            <small *ngIf="!historialAbierto && ultimoMovimiento">
+              Último: {{etiquetaAccion(ultimoMovimiento.accion)}} · {{ultimoMovimiento.usuario}} · {{ultimoMovimiento.fecha | date: 'dd/MM/yyyy HH:mm'}}
+            </small>
+            <small *ngIf="historialAbierto || !ultimoMovimiento">
+              {{historialNoDisponible ? 'No fue posible cargarlo' : 'Quién creó, modificó o autorizó la proforma'}}
+            </small>
+          </span>
+          <span class="history-state" *ngIf="proformadto.estadoAutorizacion"
+            [ngClass]="'history-state-' + proformadto.estadoAutorizacion.toLowerCase()">
+            {{etiquetaAutorizacion(proformadto.estadoAutorizacion)}}
+          </span>
+          <span class="history-count" *ngIf="historial.length > 0"
+            [attr.aria-label]="historial.length + (historial.length === 1 ? ' movimiento' : ' movimientos')">{{historial.length}}</span>
+          <i class="fas fa-chevron-up history-chevron" aria-hidden="true"></i>
+        </button>
+
+        <div class="history-panel" id="proforma-history-panel" [attr.aria-hidden]="!historialAbierto">
+          <div class="history-panel-inner">
+            <p *ngIf="historialNoDisponible" class="history-empty">No fue posible cargar el historial.</p>
+            <p *ngIf="!historialNoDisponible && historial.length === 0" class="history-empty">Sin movimientos registrados.</p>
+            <ol *ngIf="historial.length > 0" class="history-list">
+              <li *ngFor="let registro of historial" [ngClass]="'tono-' + tonoAccion(registro.accion)">
+                <span class="history-dot" aria-hidden="true"><i class="fas" [ngClass]="iconoAccion(registro.accion)"></i></span>
+                <div class="history-body">
+                  <div class="history-head">
+                    <strong>{{etiquetaAccion(registro.accion)}}</strong>
+                    <span>{{registro.usuario}} · {{registro.fecha | date: 'dd/MM/yyyy HH:mm'}}</span>
+                  </div>
+                  <p *ngIf="registro.motivo" class="history-reason"><em>Motivo:</em> {{registro.motivo}}</p>
+                  <p *ngIf="registro.detalle" class="history-detail">{{registro.detalle}}</p>
+                </div>
+              </li>
+            </ol>
           </div>
         </div>
-        <p *ngIf="historialNoDisponible" class="history-empty">No fue posible cargar el historial.</p>
-        <p *ngIf="!historialNoDisponible && historial.length === 0" class="history-empty">Sin movimientos registrados.</p>
-        <ol *ngIf="historial.length > 0" class="history-list">
-          <li *ngFor="let registro of historial">
-            <div class="history-head">
-              <strong>{{etiquetaAccion(registro.accion)}}</strong>
-              <span>{{registro.usuario}} · {{registro.fecha | date: 'dd/MM/yyyy HH:mm'}}</span>
-            </div>
-            <p *ngIf="registro.motivo" class="history-reason"><em>Motivo:</em> {{registro.motivo}}</p>
-            <p *ngIf="registro.detalle" class="history-detail">{{registro.detalle}}</p>
-          </li>
-        </ol>
       </section>
 
       <footer class="document-detail-footer">

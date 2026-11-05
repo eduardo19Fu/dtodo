@@ -143,6 +143,9 @@ export class ProformasComponent implements OnInit, OnDestroy {
     return proforma.tipoProforma === 'MAYORISTA';
   }
 
+  /** Proforma cuyo PDF se está generando: su botón de imprimir muestra un indicador de carga. */
+  imprimiendoId: number = null;
+
   /** La mayorista tiene dos copias; se pregunta cuál imprimir. La minorista se imprime directo. */
   imprimir(proforma: ProformaDto): void {
     if (!this.esMayorista(proforma)) {
@@ -167,12 +170,19 @@ export class ProformasComponent implements OnInit, OnDestroy {
   }
 
   printProforma(proforma: ProformaDto, copia: 'CLIENTE' | 'TIENDA' = 'CLIENTE'): void {
+    if (this.imprimiendoId !== null) {
+      return;
+    }
+    this.imprimiendoId = proforma.idProforma;
     this.proformaService.getProformaPdf(proforma.idProforma, copia).subscribe(response => {
+      this.imprimiendoId = null;
       const url = window.URL.createObjectURL(response.data);
       window.open(url, '_blank');
       window.URL.revokeObjectURL(url);
-    }, error => Swal.fire('Error al generar proforma',
-      error.error?.message || 'Ha ocurrido un error inesperado', 'error'));
+    }, error => {
+      this.imprimiendoId = null;
+      Swal.fire('Error al generar proforma', error.error?.message || 'Ha ocurrido un error inesperado', 'error');
+    });
   }
 
   abrirDetalle(proforma: ProformaDto): void {

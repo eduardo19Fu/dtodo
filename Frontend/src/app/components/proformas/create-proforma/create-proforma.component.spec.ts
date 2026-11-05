@@ -294,6 +294,48 @@ describe('CreateProformaComponent - descuentos del cliente mayorista', () => {
     expect(component.descuentoProducto).toBe(12);
   });
 
+  it('la nota de línea se abre para editar y al cerrar se limpia', () => {
+    const item = new DetalleProforma();
+    item.observacion = '  10 rojos  ';
+    expect(component.notaAbierta(item)).toBeFalse();
+
+    component.abrirNota(item, 0);
+    expect(component.notaAbierta(item)).toBeTrue();
+
+    component.cerrarNota(item);
+    expect(component.notaAbierta(item)).toBeFalse();
+    expect(item.observacion).toBe('10 rojos');
+
+    item.observacion = '   ';
+    component.cerrarNota(item);
+    expect(item.observacion).toBeNull();
+  });
+
+  it('el selector flotante se cierra al elegir un tipo ya definido y con Escape', () => {
+    component.cliente = mayorista();
+    component.cargarOpciones();
+    component.alternarSelectorDescuento();
+    expect(component.selectorDescuentoAbierto).toBeTrue();
+
+    component.elegirOpcionDescuento(component.opciones.opciones.find(o => o.tipo === 'CIENTO'));
+    expect(component.tipoDescuento).toBe('CIENTO');
+    expect(component.selectorDescuentoAbierto).toBeFalse();
+
+    component.alternarSelectorDescuento();
+    component.alPresionarEscape();
+    expect(component.selectorDescuentoAbierto).toBeFalse();
+  });
+
+  it('el selector queda abierto al elegir Manual para escribir el porcentaje', () => {
+    component.cliente = mayorista();
+    component.cargarOpciones();
+    component.alternarSelectorDescuento();
+
+    component.elegirOpcionDescuento(component.opciones.opciones.find(o => o.tipo === 'MANUAL'));
+
+    expect(component.selectorDescuentoAbierto).toBeTrue();
+  });
+
   it('la categoría con varios niveles exige elegir uno antes de agregar la línea', () => {
     component.cliente = mayorista();
     component.cargarOpciones();

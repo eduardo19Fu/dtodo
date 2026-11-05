@@ -172,8 +172,9 @@
             </button>
             <button class="btn btn-sm table-action action-print" type="button"
                     appTooltip="Imprimir proforma" aria-label="Imprimir proforma"
-                    (click)="imprimir(proforma)" [disabled]="proforma.idEstado === 4">
-              <i class="fas fa-print"></i>
+                    (click)="imprimir(proforma)" [disabled]="proforma.idEstado === 4 || imprimiendoId === proforma.idProforma"
+                    [class.is-loading]="imprimiendoId === proforma.idProforma" [attr.aria-busy]="imprimiendoId === proforma.idProforma">
+              <i class="fas" [ngClass]="imprimiendoId === proforma.idProforma ? 'fa-spinner fa-spin' : 'fa-print'"></i>
             </button>
             <button class="btn btn-sm table-action action-edit" type="button"
                     appTooltip="Editar proforma" aria-label="Editar proforma"

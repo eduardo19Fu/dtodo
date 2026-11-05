@@ -33,6 +33,8 @@ export class DetailProformaComponent implements OnChanges, AfterViewInit, OnDest
   cargando = false;
   historial: ProformaAuditoriaDto[] = [];
   historialNoDisponible = false;
+  /** El historial arranca plegado: solo se ve su barra, para que no le quite espacio al detalle. */
+  historialAbierto = false;
   private cargaInicialPendiente = false;
   constructor(
     public detailService: DetailService,
@@ -56,6 +58,7 @@ export class DetailProformaComponent implements OnChanges, AfterViewInit, OnDest
 
   ngOnChanges(): void {
     if (this.proformadto) {
+      this.historialAbierto = false;
       this.cargaInicialPendiente = true;
       this.cargarDetalle(0);
       this.cargarHistorial();
@@ -74,6 +77,44 @@ export class DetailProformaComponent implements OnChanges, AfterViewInit, OnDest
 
   etiquetaAccion(accion: string): string {
     return ETIQUETAS_ACCION_AUDITORIA[accion] || accion;
+  }
+
+  alternarHistorial(): void {
+    this.historialAbierto = !this.historialAbierto;
+  }
+
+  /** El movimiento más reciente: el servidor entrega el historial del más nuevo al más antiguo. */
+  get ultimoMovimiento(): ProformaAuditoriaDto | null {
+    return this.historial.length > 0 ? this.historial[0] : null;
+  }
+
+  /** Icono de cada movimiento en la línea de tiempo. */
+  iconoAccion(accion: string): string {
+    switch (accion) {
+      case 'CREACION': return 'fa-plus';
+      case 'MODIFICACION': return 'fa-pen';
+      case 'ANULACION': return 'fa-ban';
+      case 'AUTORIZACION':
+      case 'AUTORIZACION_CREDITO':
+      case 'AUTORIZACION_VENCIDA': return 'fa-check';
+      case 'RECHAZO':
+      case 'RECHAZO_CREDITO': return 'fa-times';
+      case 'DEVOLUCION_CLIENTE': return 'fa-undo-alt';
+      case 'ANULACION_DEVOLUCION_CLIENTE': return 'fa-ban';
+      case 'CAMBIO_CLIENTE_FACTURA': return 'fa-exchange-alt';
+      default: return 'fa-circle';
+    }
+  }
+
+  /** Tono del punto: verde si se aprobó o creó, rojo si se rechazó o anuló, neutro en lo demás. */
+  tonoAccion(accion: string): 'ok' | 'bad' | 'neutral' {
+    if (['CREACION', 'AUTORIZACION', 'AUTORIZACION_CREDITO', 'AUTORIZACION_VENCIDA'].includes(accion)) {
+      return 'ok';
+    }
+    if (['ANULACION', 'RECHAZO', 'RECHAZO_CREDITO', 'ANULACION_DEVOLUCION_CLIENTE'].includes(accion)) {
+      return 'bad';
+    }
+    return 'neutral';
   }
 
   etiquetaAutorizacion(estado: string): string {

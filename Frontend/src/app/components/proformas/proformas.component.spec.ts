@@ -1,6 +1,6 @@
 import { ProformaDto } from '../../dtos/proforma-dto';
 import Swal from 'sweetalert2';
-import { of } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { ProformasComponent } from './proformas.component';
 
 describe('ProformasComponent - estado de facturación', () => {
@@ -83,5 +83,29 @@ describe('ProformasComponent - impresión de la proforma mayorista', () => {
     await Promise.resolve();
 
     expect(proformaService.getProformaPdf).not.toHaveBeenCalled();
+  });
+
+  it('mientras se genera el PDF marca la proforma como imprimiendo y lo libera al terminar', () => {
+    const respuesta = new Subject<any>();
+    proformaService.getProformaPdf.and.returnValue(respuesta);
+
+    component.imprimir(proforma('MINORISTA'));
+    expect(component.imprimiendoId).toBe(4);
+
+    component.imprimir(proforma('MINORISTA'));
+    expect(proformaService.getProformaPdf).toHaveBeenCalledTimes(1);
+
+    respuesta.next({ data: new Blob(['x']) });
+    expect(component.imprimiendoId).toBeNull();
+  });
+
+  it('si falla la generación libera el botón y avisa del error', () => {
+    spyOn(Swal, 'fire');
+    proformaService.getProformaPdf.and.returnValue(throwError({ error: { message: 'boom' } }));
+
+    component.imprimir(proforma('MINORISTA'));
+
+    expect(component.imprimiendoId).toBeNull();
+    expect(Swal.fire).toHaveBeenCalled();
   });
 });

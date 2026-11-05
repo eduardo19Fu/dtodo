@@ -39,5 +39,9 @@ export const ETIQUETAS_ACCION_AUDITORIA: { [accion: string]: string } = {
   AUTORIZACION: 'Descuento aprobado',
   RECHAZO: 'Descuento rechazado',
   AUTORIZACION_VENCIDA: 'Vencimiento autorizado',
+  AUTORIZACION_CREDITO: 'Crédito autorizado',
+  RECHAZO_CREDITO: 'Crédito rechazado',
+  DEVOLUCION_CLIENTE: 'Devolución de cliente',
+  ANULACION_DEVOLUCION_CLIENTE: 'Devolución anulada',
   CAMBIO_CLIENTE_FACTURA: 'Cambio de cliente al facturar'
 };

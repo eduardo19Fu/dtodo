@@ -1061,7 +1061,6 @@
   }
 }
 
-.tipo-descuento-field { min-width: 190px; }
 
 .discount-hint {
   color: #5a6b7d;
@@ -1088,27 +1087,105 @@
   padding: 0.1rem 0.5rem;
 }
 
-/* Proforma mayorista: entrega estimada, observación general y nota por línea. */
+/* Proforma mayorista: entrega estimada, condición de pago y observaciones en un panel propio. */
+.client-data-grid.con-ruta { grid-template-columns: 0.8fr 1.3fr 1.5fr 1fr; }
+
 .mayorista-extra {
+  background: #fff;
+  border-top: 1px solid #e8eef6;
   display: grid;
-  grid-template-columns: minmax(180px, 240px) 1fr;
-  gap: 16px;
-  margin-top: 16px;
+  gap: 18px 20px;
+  grid-template-columns: minmax(240px, 1fr) minmax(0, 1.4fr);
+  padding: 18px 16px 16px;
 }
 
-.mayorista-extra textarea {
-  resize: vertical;
+.extra-field { min-width: 0; }
+.mayorista-extra { align-items: start; }
+.extra-observaciones { grid-column: 1 / -1; }
+
+/* Misma tipografía que la etiqueta interna del selector de fecha, para que las tres cuadren. */
+.mayorista-extra { --management-control-height: 46px; }
+
+.mayorista-extra .extra-label {
+  color: #344459;
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+  margin: 0 0 6px;
 }
 
-.linea-observacion {
-  margin-top: 6px;
-  font-size: 0.85rem;
+.extra-field small { color: #7a889c; display: block; font-size: 11px; margin-top: 6px; }
+.extra-field .extra-contador { text-align: right; }
+
+.extra-field .form-control {
+  border: 1px solid #d8e3f0;
+  border-radius: 7px;
+  color: #263a55;
+  font-size: 15px;
+  font-weight: 400;
+  padding: 9px 12px;
 }
 
-@media (max-width: 640px) {
-  .mayorista-extra {
-    grid-template-columns: 1fr;
-  }
+.extra-field .form-control:focus {
+  border-color: var(--blue-500);
+  box-shadow: 0 0 0 3px rgba(42, 116, 193, 0.14);
+  outline: 0;
+}
+
+.extra-field select.form-control:not([size]):not([multiple]) {
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='m4 6 4 4 4-4' fill='none' stroke='%23607087' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position: right 14px center;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+  height: var(--management-control-height);
+  padding-right: 42px;
+}
+
+.extra-field textarea.form-control { min-height: 68px; resize: vertical; }
+
+/* Nota por línea: un botón discreto; el campo solo aparece al editarla. */
+.linea-nota { margin-top: 6px; max-width: 420px; }
+
+.linea-nota-boton {
+  align-items: center;
+  background: transparent;
+  border: 1px dashed #cbd6e2;
+  border-radius: 999px;
+  color: #6b7a90;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 11.5px;
+  gap: 6px;
+  max-width: 100%;
+  padding: 3px 11px;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.linea-nota-boton span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.linea-nota-boton:hover,
+.linea-nota-boton:focus-visible { background: var(--blue-50); border-color: var(--blue-500); color: var(--blue-800); outline: 0; }
+
+.linea-nota-boton.tiene-nota {
+  background: #fff8e5;
+  border: 1px solid #f0d9a0;
+  color: #7a5200;
+}
+
+.linea-nota-input.form-control {
+  border: 1px solid var(--blue-500);
+  border-radius: 7px;
+  box-shadow: 0 0 0 3px rgba(113, 131, 204, 0.18);
+  font-size: 13px;
+  height: 36px;
+  padding: 6px 10px;
+}
+
+@media (max-width: 760px) {
+  .client-data-grid.con-ruta { grid-template-columns: 1fr; }
+  .mayorista-extra { grid-template-columns: 1fr; }
 }
 
 /* Aviso de autorización por descuento mayor al tope */
@@ -1128,4 +1205,156 @@
   background: #fdecee;
   border-color: #f1aeb5;
   color: #842029;
+}
+
+/* Selector flotante del tipo de descuento (cliente mayorista): un solo campo que abre un panel con las opciones. */
+.descuento-selector { position: relative; }
+
+.descuento-selector-label {
+  color: #344459;
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+  margin: 0 0 6px;
+}
+
+.descuento-trigger {
+  align-items: center;
+  background: #fff;
+  border: 1px solid #cbd6e2;
+  border-radius: 7px;
+  color: #263a55;
+  cursor: pointer;
+  display: flex;
+  gap: 10px;
+  height: 46px;
+  padding: 0 12px;
+  text-align: left;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  width: 100%;
+}
+
+.descuento-trigger:hover { border-color: var(--blue-500); }
+.descuento-trigger.is-open,
+.descuento-trigger:focus-visible {
+  border-color: var(--blue-500);
+  box-shadow: 0 0 0 3px rgba(113, 131, 204, 0.2);
+  outline: 0;
+}
+
+.descuento-trigger > .fas:first-child { color: var(--blue-600); flex: 0 0 18px; font-size: 15px; text-align: center; }
+.descuento-trigger-copy { display: flex; flex: 1 1 0; flex-direction: column; line-height: 1.15; min-width: 0; }
+.descuento-trigger-copy strong { font-size: 15px; font-weight: 700; }
+.descuento-trigger-copy small {
+  color: #6b7a90;
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.descuento-trigger-chevron { color: #607087; font-size: 12px; transition: transform 0.2s ease; }
+.descuento-trigger.is-open .descuento-trigger-chevron { transform: rotate(180deg); }
+
+.descuento-popover {
+  animation: descuentoReveal 0.16s ease-out;
+  background: #fff;
+  border: 1px solid #dce3f0;
+  border-radius: 12px;
+  box-shadow: 0 18px 38px rgba(42, 53, 102, 0.2);
+  max-height: min(420px, 60vh);
+  overflow-y: auto;
+  padding: 6px;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  width: min(360px, calc(100vw - 32px));
+  z-index: 30;
+}
+
+@keyframes descuentoReveal {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.descuento-popover-head { padding: 8px 10px 10px; }
+.descuento-popover-head strong { color: #263a55; display: block; font-size: 13px; }
+.descuento-popover-head small { color: #7a889c; font-size: 11px; }
+
+.descuento-option { border-radius: 9px; }
+.descuento-option.is-selected { background: var(--blue-50); box-shadow: inset 0 0 0 1px var(--blue-100); }
+
+.descuento-option-main {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 9px;
+  cursor: pointer;
+  display: flex;
+  gap: 11px;
+  padding: 9px 10px;
+  text-align: left;
+  width: 100%;
+}
+
+.descuento-option-main:hover { background: #f1f4fb; }
+.descuento-option-main:focus-visible { box-shadow: inset 0 0 0 2px var(--blue-500); outline: 0; }
+.descuento-option.is-selected .descuento-option-main:hover { background: transparent; }
+
+.descuento-option-icon {
+  align-items: center;
+  background: var(--blue-100);
+  border-radius: 9px;
+  color: var(--blue-800);
+  display: flex;
+  flex: 0 0 34px;
+  font-size: 14px;
+  height: 34px;
+  justify-content: center;
+}
+
+.descuento-option.is-selected .descuento-option-icon { background: var(--blue-600); color: #fff; }
+.descuento-option.is-unreached .descuento-option-copy strong { color: #6b7a90; }
+
+.descuento-option-copy { display: flex; flex: 1 1 0; flex-direction: column; min-width: 0; }
+.descuento-option-copy strong { align-items: center; color: #263a55; display: flex; font-size: 14px; gap: 7px; }
+.descuento-option-copy small { color: #7a889c; font-size: 11.5px; }
+
+.descuento-badge {
+  background: #e4f4ec;
+  border-radius: 999px;
+  color: #1f7a54;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 800;
+  padding: 2px 8px;
+  text-transform: uppercase;
+}
+
+.descuento-option-value { color: var(--blue-800); font-size: 14px; font-weight: 800; }
+
+.descuento-option-check { color: var(--blue-600); font-size: 12px; opacity: 0; width: 12px; }
+.descuento-option.is-selected .descuento-option-check { opacity: 1; }
+
+.descuento-niveles { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 10px 10px 55px; }
+
+.descuento-chip {
+  background: #fff;
+  border: 1px solid #cbd6e2;
+  border-radius: 999px;
+  color: #344459;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+}
+
+.descuento-chip:hover { border-color: var(--blue-500); }
+.descuento-chip.is-active { background: var(--blue-600); border-color: var(--blue-600); color: #fff; }
+
+.descuento-manual { padding: 0 10px 10px 55px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .descuento-popover { animation: none; }
+  .descuento-trigger-chevron { transition: none; }
 }

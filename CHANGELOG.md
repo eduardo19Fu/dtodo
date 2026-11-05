@@ -6,6 +6,24 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Indicador de carga al imprimir proformas
+- El botón de imprimir del listado de proformas muestra un indicador giratorio y se deshabilita mientras se genera el PDF, para que se note que está trabajando y no se pulse dos veces; vuelve a su icono al terminar o si hay un error.
+
+### Cambiado — Reportes de proforma rediseñados y teléfonos
+- La proforma normal y la mayorista tienen un diseño nuevo: encabezado con el panel del número, tarjeta del cliente, tabla con filas alternadas y precios con formato de moneda, total destacado y firma. La observación de cada línea sale en su propia fila solo cuando existe.
+- El logo de la proforma pasa a una versión sin fondo (letras y recuadros en azul sobre el papel blanco) en lugar del bloque azul cuadrado, y se quita la leyenda repetida «Librería · Oficina · Limpieza» del centro.
+- Los teléfonos ya se muestran: la tienda usa el teléfono de la sucursal y, si no tiene, los de la tienda (4582-1048 / 5728-2246); el cliente muestra su teléfono (en mayoristas, el del encargado y, si no hay, el del cliente).
+- La nota por línea del detalle de la proforma mayorista es ahora un botón discreto («Agregar nota») que abre el campo solo al editarla; la nota guardada se ve como una etiqueta.
+
+### Cambiado — Proforma: selector flotante del tipo de descuento
+- En la fila de agregar productos de un cliente mayorista, los selects de tipo de descuento y nivel se reemplazan por un solo campo «Descuento» que abre un panel flotante con las opciones (categoría, por ciento, fardo, precio mayorista, manual), su detalle, el sugerido y los niveles como botones; se cierra al elegir, al hacer clic fuera o con Escape. La fila deja de desbordarse.
+
+### Cambiado — Proforma mayorista: panel de entrega, pago y observaciones
+- Los campos de fecha de entrega estimada, condición de pago y observaciones se reordenan en un panel propio con etiquetas uniformes e iconos, select con flecha estilizada y observaciones a todo el ancho. La ruta del cliente queda en la misma fila que NIT, nombre y dirección.
+
+### Cambiado — Historial del detalle de proforma desplegable
+- El historial ya no ocupa parte fija del modal: arranca plegado como una barra con el último movimiento, el total y el estado de autorización; al abrirlo muestra una línea de tiempo con altura limitada y desplazamiento. Se agregan las etiquetas de crédito autorizado/rechazado y devolución de cliente, que aparecían como código.
+
 ### Agregado — Manual de mayoristas: categorías frente al descuento por producto
 - Sección 6.1 del manual que explica para qué sirve cada uno: la categoría es la regla general por tipo de cliente y el descuento del producto es una excepción puntual. Incluye cómo el sistema sugiere uno al hacer la proforma, un ejemplo con un cliente categoría A y cuál conviene usar. Las secciones siguientes del capítulo 6 se renumeran.
 

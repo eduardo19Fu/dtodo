@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin, Subject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
@@ -56,6 +56,9 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
   opciones: OpcionesDescuento = null;
   tipoDescuento: TipoDescuento = 'MANUAL';
   nivelSeleccionado: number = null;
+  selectorDescuentoAbierto = false;
+  /** Líneas cuya nota se está escribiendo; el resto muestra solo el botón o la nota guardada. */
+  private notasAbiertas = new Set<DetalleProforma>();
   readonly etiquetasTipoDescuento = ETIQUETAS_TIPO_DESCUENTO;
   private tipoElegidoPorUsuario = false;
   private idClienteDescuentos: number = null;
@@ -164,6 +167,88 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
         + 'Puedes agregarlo de todos modos.';
     }
     return '';
+  }
+
+  notaAbierta(item: DetalleProforma): boolean {
+    return this.notasAbiertas.has(item);
+  }
+
+  abrirNota(item: DetalleProforma, indice: number): void {
+    this.notasAbiertas.add(item);
+    setTimeout(() => {
+      const campo = document.getElementById('nota-' + indice) as HTMLInputElement;
+      if (campo) {
+        campo.focus();
+      }
+    });
+  }
+
+  cerrarNota(item: DetalleProforma): void {
+    item.observacion = (item.observacion || '').trim() || null;
+    this.notasAbiertas.delete(item);
+  }
+
+  alternarSelectorDescuento(evento?: Event): void {
+    if (evento) {
+      evento.stopPropagation();
+    }
+    this.selectorDescuentoAbierto = !this.selectorDescuentoAbierto;
+  }
+
+  cerrarSelectorDescuento(): void {
+    this.selectorDescuentoAbierto = false;
+  }
+
+  @HostListener('document:click')
+  alHacerClicFuera(): void {
+    this.selectorDescuentoAbierto = false;
+  }
+
+  @HostListener('document:keydown.escape')
+  alPresionarEscape(): void {
+    this.selectorDescuentoAbierto = false;
+  }
+
+  /** Elige el tipo; si ya queda definido (sin nivel ni porcentaje que escribir) el panel se cierra solo. */
+  elegirOpcionDescuento(opcion: OpcionDescuento): void {
+    this.cambiarTipoDescuento(opcion.tipo);
+    if (opcion.tipo !== 'MANUAL' && this.nivelesDisponibles.length === 0) {
+      this.selectorDescuentoAbierto = false;
+    }
+  }
+
+  elegirNivelDescuento(nivel: number): void {
+    this.elegirNivel(nivel);
+    this.selectorDescuentoAbierto = false;
+  }
+
+  iconoTipo(tipo: TipoDescuento): string {
+    switch (tipo) {
+      case 'CATEGORIA': return 'fa-tags';
+      case 'CIENTO': return 'fa-boxes';
+      case 'FARDO': return 'fa-box';
+      case 'PRECIO_MAYORISTA': return 'fa-dollar-sign';
+      default: return 'fa-pen';
+    }
+  }
+
+  /** Texto de apoyo de cada opción: nivel por elegir, cantidad mínima, precio fijo o escritura libre. */
+  detalleOpcion(opcion: OpcionDescuento): string {
+    if (opcion.tipo === 'MANUAL') {
+      return 'Escribe el porcentaje a mano';
+    }
+    if (opcion.tipo === 'CATEGORIA' && opcion.niveles && opcion.niveles.length > 0) {
+      return 'Elige un nivel según el volumen';
+    }
+    if (opcion.tipo === 'PRECIO_MAYORISTA') {
+      return opcion.precio !== null ? `Precio fijo de Q${Number(opcion.precio).toFixed(2)}` : 'Precio fijo';
+    }
+    if (opcion.cantidadMinima) {
+      return opcion.alcanzaMinimo
+        ? `Aplica desde ${opcion.cantidadMinima} unidades`
+        : `Desde ${opcion.cantidadMinima} unidades · aún no se alcanza`;
+    }
+    return 'Según la categoría del cliente';
   }
 
   etiquetaTipo(tipo: TipoDescuento): string {
