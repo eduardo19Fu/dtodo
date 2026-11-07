@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import {
@@ -11,6 +11,7 @@ import { PedidoService } from '../../services/pedido.service';
 import { SaldoService } from '../../services/saldo.service';
 import { PedidoSaldoDto } from '../../dtos/saldo-dto';
 
+import { dialogo, escaparHtml } from '../../shared/dialogo-swal';
 import Swal from 'sweetalert2';
 
 interface GrupoRuta {
@@ -50,6 +51,10 @@ export class PedidosComponent implements OnInit {
   procesando: number = null;
   detalle: PedidoDetalleDto = null;
   cargandoDetalle = false;
+  /** Paginación de las líneas del detalle (el servidor las manda todas; se reparten en el cliente). */
+  paginaLineas = 0;
+  tamanoPaginaLineas = 10;
+  readonly opcionesTamanoPagina = [5, 10, 15, 25];
 
   /** Formulario de entrega abierto sobre el detalle. */
   registrandoEntrega = false;
@@ -68,8 +73,15 @@ export class PedidosComponent implements OnInit {
     { codigo: 'CONFIRMADA', nombre: ETIQUETAS_ESTADO_PEDIDO.CONFIRMADA },
     { codigo: 'EN_PREPARACION', nombre: ETIQUETAS_ESTADO_PEDIDO.EN_PREPARACION },
     { codigo: 'EMPACADA', nombre: ETIQUETAS_ESTADO_PEDIDO.EMPACADA },
-    { codigo: 'EN_RUTA', nombre: ETIQUETAS_ESTADO_PEDIDO.EN_RUTA }
+    { codigo: 'EN_RUTA', nombre: ETIQUETAS_ESTADO_PEDIDO.EN_RUTA },
+    { codigo: 'ENTREGADA_PARCIAL', nombre: ETIQUETAS_ESTADO_PEDIDO.ENTREGADA_PARCIAL },
+    { codigo: 'ENTREGADA', nombre: ETIQUETAS_ESTADO_PEDIDO.ENTREGADA }
   ];
+
+  /** El repartidor solo ve lo que está en ruta o con entrega parcial; los pedidos entregados no le aplican. */
+  get opcionesEstado(): Array<{ codigo: EstadoPedido | ''; nombre: string }> {
+    return this.esRepartidor ? this.estados.filter(opcion => opcion.codigo !== 'ENTREGADA') : this.estados;
+  }
 
   /** Línea de tiempo del pedido abierto; se carga al abrirla. */
   historial: HistorialEventoDto[] = null;
@@ -160,12 +172,40 @@ export class PedidosComponent implements OnInit {
     return Array.from(porRuta.values());
   }
 
+  /**
+   * `grupos` y `rutas` se calculan en cada ciclo y devuelven objetos nuevos: sin trackBy Angular reconstruiría toda la
+   * tabla cada vez que algo dispara la detección de cambios (por ejemplo, el hover de un tooltip), y el botón bajo el
+   * cursor se reemplazaría antes de recibir el clic.
+   */
+  trackGrupo(_indice: number, grupo: GrupoRuta): string {
+    return String(grupo.idRuta);
+  }
+
+  trackPedido(_indice: number, pedido: PedidoDto): number {
+    return pedido.idProforma;
+  }
+
+  trackRuta(_indice: number, ruta: { idRuta: number }): number {
+    return ruta.idRuta;
+  }
+
   etiquetaEstado(estado: string): string {
     return ETIQUETAS_ESTADO_PEDIDO[estado] || estado;
   }
 
   textoAvance(pedido: PedidoDto): string {
     return ACCION_AVANCE[pedido.estadoPedido] || '';
+  }
+
+  /** Datos del pedido que se muestran dentro de los diálogos, para confirmar que es el pedido correcto. */
+  private resumenPedido(pedido: PedidoDto): string {
+    return `<div class="app-dialog-resumen">
+      <div class="ancho"><span>Cliente</span><strong>${escaparHtml(pedido.negocio || pedido.cliente)}</strong></div>
+      <div><span>Ruta</span><strong>${escaparHtml(pedido.ruta || 'Sin ruta')}</strong></div>
+      <div><span>Unidades</span><strong>${Number(pedido.unidades) || 0}</strong></div>
+      <div><span>Etapa actual</span><strong>${escaparHtml(this.etiquetaEstado(pedido.estadoPedido))}</strong></div>
+      <div><span>Vendedor</span><strong>${escaparHtml(pedido.vendedor)}</strong></div>
+    </div>`;
   }
 
   /** Puede avanzar si bodega lo opera, tiene una etapa siguiente y su descuento no está pendiente ni rechazado. */
@@ -191,10 +231,13 @@ export class PedidosComponent implements OnInit {
       });
       return;
     }
-    Swal.fire({
-      title: `${this.textoAvance(pedido)}: pedido ${pedido.noProforma}`,
+    dialogo({
+      iconoFa: 'fa-dolly',
+      title: `${this.textoAvance(pedido)}`,
+      html: `<p class="mb-2">Pedido <strong>${escaparHtml(pedido.noProforma)}</strong></p>${this.resumenPedido(pedido)}`,
       input: 'text',
       inputLabel: '¿Quién lo hizo? (opcional, si no tiene usuario)',
+      inputPlaceholder: 'Nombre de quien lo preparó',
       inputAttributes: { maxlength: '150' },
       showCancelButton: true,
       confirmButtonText: this.textoAvance(pedido),
@@ -230,7 +273,9 @@ export class PedidosComponent implements OnInit {
         }
         const opciones: { [id: string]: string } = {};
         repartidores.forEach(repartidor => opciones[String(repartidor.valor)] = repartidor.etiqueta);
-        Swal.fire({
+        dialogo({
+          iconoFa: 'fa-truck',
+          tono: 'azul',
           title: titulo,
           input: 'select',
           inputOptions: opciones,
@@ -249,10 +294,14 @@ export class PedidosComponent implements OnInit {
   }
 
   retroceder(pedido: PedidoDto): void {
-    Swal.fire({
-      title: `Regresar el pedido ${pedido.noProforma} a la etapa anterior`,
+    dialogo({
+      iconoFa: 'fa-undo',
+      tono: 'rojo',
+      title: 'Regresar a la etapa anterior',
+      html: `<p class="mb-2">Pedido <strong>${escaparHtml(pedido.noProforma)}</strong></p>${this.resumenPedido(pedido)}`,
       input: 'textarea',
       inputLabel: 'Motivo (obligatorio, queda en el historial)',
+      inputPlaceholder: 'Explica por qué se regresa el pedido',
       inputAttributes: { maxlength: '500' },
       showCancelButton: true,
       confirmButtonText: 'Regresar',
@@ -279,11 +328,26 @@ export class PedidosComponent implements OnInit {
   }
 
   verDetalle(pedido: PedidoDto, abrirEntrega = false): void {
+    if (this.cargandoDetalle) {
+      return;
+    }
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'info',
+      title: 'Cargando detalle',
+      text: `Preparando el pedido ${pedido.noProforma}...`,
+      showConfirmButton: false,
+      customClass: { popup: 'app-loading-toast' },
+      didOpen: () => Swal.showLoading()
+    });
     this.cargandoDetalle = true;
+    this.paginaLineas = 0;
     this.detalle = null;
     this.registrandoEntrega = false;
     this.abrirEntregaAlCargar = abrirEntrega;
     this.pedidoService.detalle(pedido.idProforma).subscribe(detalle => {
+      Swal.close();
       this.detalle = detalle;
       this.reiniciarHistorial();
       this.cargarCobro(detalle);
@@ -296,6 +360,59 @@ export class PedidosComponent implements OnInit {
       this.cargandoDetalle = false;
       Swal.fire('No se pudo cargar el pedido', error.error?.message || 'Ha ocurrido un error inesperado', 'error');
     });
+  }
+
+  /** Escape cierra el detalle, como en los demás modales del sistema. */
+  @HostListener('document:keydown.escape')
+  alPresionarEscape(): void {
+    if (this.detalle && !this.registrandoEntrega) {
+      this.cerrarDetalle();
+    }
+  }
+
+  // ------------------------------------------------------------ paginación de las líneas del detalle
+
+  get totalLineas(): number {
+    return this.detalle ? this.detalle.lineas.length : 0;
+  }
+
+  get totalPaginasLineas(): number {
+    return Math.max(1, Math.ceil(this.totalLineas / this.tamanoPaginaLineas));
+  }
+
+  get lineasPagina(): any[] {
+    if (!this.detalle) {
+      return [];
+    }
+    const inicio = this.paginaLineas * this.tamanoPaginaLineas;
+    return this.detalle.lineas.slice(inicio, inicio + this.tamanoPaginaLineas);
+  }
+
+  get primeraLineaPagina(): number {
+    return this.totalLineas === 0 ? 0 : this.paginaLineas * this.tamanoPaginaLineas + 1;
+  }
+
+  get ultimaLineaPagina(): number {
+    return this.paginaLineas * this.tamanoPaginaLineas + this.lineasPagina.length;
+  }
+
+  get paginasVisiblesLineas(): number[] {
+    const paginas: number[] = [];
+    const inicio = Math.max(0, Math.min(this.paginaLineas - 2, this.totalPaginasLineas - 5));
+    const fin = Math.min(this.totalPaginasLineas - 1, inicio + 4);
+    for (let pagina = inicio; pagina <= fin; pagina++) {
+      paginas.push(pagina);
+    }
+    return paginas;
+  }
+
+  irAPaginaLineas(pagina: number): void {
+    this.paginaLineas = Math.min(Math.max(pagina, 0), this.totalPaginasLineas - 1);
+  }
+
+  cambiarTamanoPaginaLineas(tamano: number): void {
+    this.tamanoPaginaLineas = Number(tamano) || 10;
+    this.paginaLineas = 0;
   }
 
   cerrarDetalle(): void {
@@ -472,10 +589,13 @@ export class PedidosComponent implements OnInit {
   }
 
   private pedirMotivo(titulo: string, boton: string): Promise<string> {
-    return Swal.fire({
+    return dialogo({
+      iconoFa: 'fa-exclamation-triangle',
+      tono: 'rojo',
       title: titulo,
       input: 'textarea',
       inputLabel: 'Motivo (obligatorio, queda en el historial)',
+      inputPlaceholder: 'Explica el motivo',
       inputAttributes: { maxlength: '500' },
       showCancelButton: true,
       confirmButtonText: boton,

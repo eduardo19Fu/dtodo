@@ -988,6 +988,176 @@ select.page-size-select:focus {
 }
 
 /* ==========================================================================
+   Diálogos SweetAlert del sistema (helper `dialogo()` en app/shared/dialogo-swal.ts): barra de acento, icono en
+   círculo, campos como los de los formularios y botones como los de los listados.
+   ========================================================================== */
+.swal2-popup.app-dialog {
+  --dlg-a: #1f5a4c;
+  --dlg-b: #2f7d6b;
+  --dlg-soft: #e3f1ec;
+  --dlg-ring: rgba(47, 125, 107, 0.2);
+  border: 1px solid #dfe8f3;
+  border-radius: 18px;
+  box-shadow: 0 24px 65px rgba(11, 31, 68, 0.28);
+  max-width: 94vw;
+  overflow: hidden;
+  padding: 1.7rem 1.7rem 1.4rem;
+  position: relative;
+  width: 30rem;
+}
+.swal2-popup.app-dialog-rojo { --dlg-a: #9c2f3a; --dlg-b: #c23b4a; --dlg-soft: #fdecee; --dlg-ring: rgba(194, 59, 74, 0.2); }
+.swal2-popup.app-dialog-azul { --dlg-a: #254f96; --dlg-b: #355fa8; --dlg-soft: #e7eefb; --dlg-ring: rgba(53, 95, 168, 0.2); }
+
+.swal2-popup.app-dialog::before {
+  background: linear-gradient(90deg, var(--dlg-a), var(--dlg-b));
+  content: '';
+  height: 6px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.app-dialog .swal2-icon.app-dialog-icon {
+  background: var(--dlg-soft);
+  border: 0;
+  color: var(--dlg-b);
+  font-size: 1.35rem;
+  height: 58px;
+  margin: 0.2rem auto 0.9rem;
+  width: 58px;
+}
+.app-dialog .app-dialog-icon .swal2-icon-content { font-size: 1.45rem; }
+
+.app-dialog .swal2-title.app-dialog-title {
+  color: #1d2b44;
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  line-height: 1.25;
+  padding: 0;
+}
+
+.app-dialog .swal2-html-container.app-dialog-content {
+  color: #536179;
+  font-size: 0.92rem;
+  margin: 0.7rem 0 0;
+  overflow: visible;
+  padding: 0;
+}
+
+/* Resumen del pedido dentro del diálogo */
+.app-dialog .app-dialog-content > p { text-align: center; }
+.app-dialog-resumen {
+  background: #f6f9fd;
+  border: 1px solid #dce7f4;
+  border-left: 4px solid var(--dlg-b);
+  border-radius: 11px;
+  display: grid;
+  gap: 0.55rem 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0.2rem 0 0;
+  padding: 0.8rem 0.95rem;
+  text-align: left;
+}
+.app-dialog-resumen > div { min-width: 0; }
+.app-dialog-resumen span {
+  color: #7a879a;
+  display: block;
+  font-size: 0.64rem;
+  font-weight: 750;
+  letter-spacing: 0.45px;
+  text-transform: uppercase;
+}
+.app-dialog-resumen strong { color: #1d2b44; display: block; font-size: 0.9rem; margin-top: 0.1rem; overflow-wrap: anywhere; }
+.app-dialog-resumen .ancho { grid-column: 1 / -1; }
+
+/* Campos */
+.app-dialog .swal2-input-label.app-dialog-label,
+.app-dialog .swal2-input-label {
+  color: #344459;
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 650;
+  justify-content: flex-start;
+  margin: 1.1rem 0 0.4rem;
+  text-align: left;
+}
+.app-dialog .swal2-input.app-dialog-input,
+.app-dialog .swal2-select.app-dialog-input,
+.app-dialog .swal2-textarea.app-dialog-input {
+  background: #fff;
+  border: 1px solid #cbd6e2;
+  border-radius: 8px;
+  box-shadow: none;
+  color: #243247;
+  font-size: 0.95rem;
+  margin: 0;
+  max-width: 100%;
+  width: 100%;
+}
+.app-dialog .swal2-input.app-dialog-input,
+.app-dialog .swal2-select.app-dialog-input { height: 46px; padding: 0 0.9rem; }
+.app-dialog .swal2-textarea.app-dialog-input { min-height: 104px; padding: 0.7rem 0.9rem; }
+.app-dialog .swal2-select.app-dialog-input {
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='m4 6 4 4 4-4' fill='none' stroke='%23607087' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position: right 14px center;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+  padding-right: 42px;
+}
+.app-dialog .app-dialog-input:focus {
+  border-color: var(--dlg-b);
+  box-shadow: 0 0 0 3px var(--dlg-ring);
+  outline: 0;
+}
+.app-dialog .app-dialog-input::placeholder { color: #8895a8; }
+
+.app-dialog .swal2-validation-message.app-dialog-validation {
+  background: #fdecee;
+  border-radius: 8px;
+  color: #842029;
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin: 0.8rem 0 0;
+  padding: 0.55rem 0.8rem;
+}
+.app-dialog .swal2-validation-message.app-dialog-validation::before { background: #c23b4a; color: #fff; }
+
+/* Botones */
+.app-dialog .swal2-actions.app-dialog-actions { gap: 0.6rem; margin: 1.3rem 0 0; }
+.app-dialog-confirm,
+.app-dialog-cancel {
+  border-radius: 9px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 750;
+  min-height: 42px;
+  padding: 0.65rem 1.35rem;
+  transition: background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+.app-dialog-confirm {
+  background: linear-gradient(135deg, var(--dlg-a), var(--dlg-b));
+  border: 0;
+  box-shadow: 0 7px 16px rgba(20, 40, 60, 0.2);
+  color: #fff;
+}
+.app-dialog-confirm:hover,
+.app-dialog-confirm:focus { box-shadow: 0 10px 21px rgba(20, 40, 60, 0.3); color: #fff; outline: 0; transform: translateY(-1px); }
+.app-dialog-cancel { background: #fff; border: 1px solid #cfd9d4; color: #42544c; }
+.app-dialog-cancel:hover,
+.app-dialog-cancel:focus { background: #f4f7f9; border-color: #9fb0bf; color: #243247; outline: 0; }
+
+@media (max-width: 575px) {
+  .swal2-popup.app-dialog { padding: 1.5rem 1.1rem 1.15rem; }
+  .app-dialog-resumen { grid-template-columns: 1fr; }
+  .app-dialog .swal2-actions.app-dialog-actions { flex-direction: column-reverse; width: 100%; }
+  .app-dialog-confirm, .app-dialog-cancel { width: 100%; }
+}
+
+/* ==========================================================================
    Patrón compartido de pantallas de gestión (comisiones, recibos, cobranza, autorizaciones):
    botones, filtros, campos, resúmenes, avisos y tablas con el mismo lenguaje visual que los listados.
    ========================================================================== */

@@ -129,4 +129,21 @@ describe('AutorizacionesComponent', () => {
     await esperar();
     expect(servicio.rechazarCredito).toHaveBeenCalledWith(9, 'buen pagador');
   });
+
+  it('el diálogo de crédito muestra el resumen con el exceso y usa el estilo de aprobación o rechazo', () => {
+    const fire = spyOn(Swal, 'fire').and.returnValue(Promise.resolve({ isConfirmed: false } as any));
+    const pedido = dto({ idProforma: 9, tipo: 'CREDITO', excesoCredito: 2328.17, limiteCredito: 5000, total: 7328.17 });
+
+    component.aprobarCredito(pedido);
+    const aprobar: any = fire.calls.mostRecent().args[0];
+    expect(aprobar.title).toBe('Autorizar el crédito');
+    expect(aprobar.html).toContain('123P');
+    expect(aprobar.html).toContain('Q2,328.17');
+    expect(aprobar.customClass.popup).toContain('app-dialog-verde');
+
+    component.rechazarCredito(pedido);
+    const rechazar: any = fire.calls.mostRecent().args[0];
+    expect(rechazar.customClass.popup).toContain('app-dialog-rojo');
+    expect(rechazar.confirmButtonText).toBe('Rechazar');
+  });
 });

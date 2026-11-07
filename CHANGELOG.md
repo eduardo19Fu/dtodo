@@ -6,6 +6,25 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Corregido — Pedidos entregados en el filtro de etapa
+- Al entregarse por completo un pedido desaparecía del listado, porque «Por entregar» solo muestra lo pendiente y el filtro de etapa no ofrecía «Entregado». Ahora el filtro incluye «Entrega parcial» y «Entregado» (el repartidor no ve esta última, porque solo trabaja lo que está en ruta).
+
+### Cambiado — Formulario de registrar entrega
+- Sucursal, fecha de entrega y «Entregó» comparten etiqueta, altura (46px) y línea base en una cuadrícula de tres columnas (dos en tabletas y una en móvil); la fecha ya no se desalinea por los márgenes de la fila de Bootstrap. La cantidad entregada de cada producto usa el mismo campo redondeado con foco verde.
+- Las casillas «Entregar aunque no esté cobrado» y «El inventario ya se descontó a mano» son tarjetas con una caja dibujada (verde con marca al activarse), título y línea de ayuda, accesibles con teclado.
+
+### Cambiado — Diálogos de pedidos con el estilo del sistema
+- Las alertas de «Iniciar picking» (y demás avances de etapa), cambiar piloto, regresar de etapa, anular entrega y cerrar pedido usan un SweetAlert con estilo propio (`dialogo()` en `app/shared/dialogo-swal.ts` y `.app-dialog` en `styles.css`): barra de acento, icono en círculo, resumen del pedido (cliente, ruta, unidades, etapa y vendedor), campos con la altura y el foco de los formularios y botones como los de los listados. Verde para avanzar, azul para el piloto y rojo para regresar o anular. Las decisiones de la bandeja de Autorizaciones (descuento, crédito y proforma vencida) usan el mismo estilo, con una tarjeta de resumen (cliente, total, límite y exceso de crédito o descuento máximo) para decidir con los datos a la vista.
+
+### Cambiado — Detalle del pedido con el diseño de los demás modales
+- El detalle del pedido usa el mismo patrón que los de bodegas y proformas: encabezado con degradado e icono, secciones en tarjetas (resumen con tarjetas de datos, productos, entrega, entregas, etapas e historial plegable), avisos de crédito y cobro con icono y pie con botón «Cerrar». La tabla de productos se pagina como en proformas (5, 10, 15 o 25 líneas por página, con «Mostrando X a Y de Z»); el formulario de entrega sigue mostrando todas las líneas. Se cierra con Escape. Mientras se cargan los datos se muestra el toast «Cargando detalle», igual que en proformas y facturas, y el modal se abre solo cuando llegan.
+- Corrección: los botones de acción de la tabla de pedidos dejaban de responder y no mostraban tooltip porque la tabla se reconstruía en cada ciclo de detección de cambios (`grupos` genera objetos nuevos); ahora la lista usa `trackBy`. El tooltip también se oculta al hacer clic para no quedar sobre el modal.
+
+### Cambiado — Botonera del listado de pedidos
+- Los botones de acción usan los mismos botones de icono y tooltips (`appTooltip`) que el resto de listados, en lugar del tooltip nativo del navegador; cada acción tiene su color al pasar el cursor.
+- La acción principal de la etapa («Iniciar picking», «Registrar entrega»…) pasa a ser una píldora pequeña bajo la etiqueta de la etapa, sin caja ni sombra (se rellena con su color al pasar el cursor); en la columna de acciones solo quedan los iconos, en una fila. Los botones de icono pasan a 40×40 para coincidir con la altura mínima que fuerza la hoja compartida de listados.
+- «Nota de envío» es un botón discreto con tooltip, pegado a la derecha del encabezado de cada ruta.
+
 ### Agregado — Indicador de carga al imprimir proformas
 - El botón de imprimir del listado de proformas muestra un indicador giratorio y se deshabilita mientras se genera el PDF, para que se note que está trabajando y no se pulse dos veces; vuelve a su icono al terminar o si hay un error.
 

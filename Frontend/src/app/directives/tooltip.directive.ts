@@ -43,6 +43,7 @@ export class TooltipDirective implements OnDestroy {
 
   @HostListener('mouseleave')
   @HostListener('focusout')
+  @HostListener('click')
   @HostListener('window:scroll')
   @HostListener('window:resize')
   hide(): void {

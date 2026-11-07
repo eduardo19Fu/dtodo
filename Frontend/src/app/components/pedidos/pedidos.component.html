@@ -14,14 +14,14 @@
       <label class="filtro">
         <span>Etapa</span>
         <select class="form-control form-control-sm" [(ngModel)]="estado" (ngModelChange)="cargar()" name="estado">
-          <option *ngFor="let opcion of estados" [ngValue]="opcion.codigo">{{opcion.nombre}}</option>
+          <option *ngFor="let opcion of opcionesEstado" [ngValue]="opcion.codigo">{{opcion.nombre}}</option>
         </select>
       </label>
       <label class="filtro">
         <span>Ruta</span>
         <select class="form-control form-control-sm" [(ngModel)]="idRuta" name="ruta" (ngModelChange)="cargar()">
           <option [ngValue]="''">Todas las rutas</option>
-          <option *ngFor="let ruta of rutas" [ngValue]="ruta.idRuta">{{ruta.nombre}}</option>
+          <option *ngFor="let ruta of rutas; trackBy: trackRuta" [ngValue]="ruta.idRuta">{{ruta.nombre}}</option>
         </select>
       </label>
       <div class="row listing-date-range">
@@ -52,15 +52,15 @@
   </div>
 </div>
 
-<div class="card listing-card" *ngFor="let grupo of grupos">
+<div class="card listing-card" *ngFor="let grupo of grupos; trackBy: trackGrupo">
   <div class="card-header listing-card-header grupo-encabezado">
     <div class="grupo-titulo">
       <i class="fas fa-route" aria-hidden="true"></i> {{grupo.ruta}}
       <span class="grupo-resumen">{{grupo.pedidos.length}} {{grupo.pedidos.length === 1 ? 'pedido' : 'pedidos'}} ·
         {{grupo.unidades | number}} unidades</span>
     </div>
-    <button *ngIf="puedeOperar && grupo.idRuta" type="button" class="btn btn-sm btn-light" (click)="imprimirNotaEnvio(grupo)"
-      [attr.aria-label]="'Imprimir la nota de envío de ' + grupo.ruta">
+    <button *ngIf="puedeOperar && grupo.idRuta" type="button" class="nota-envio" (click)="imprimirNotaEnvio(grupo)"
+      appTooltip="Imprimir la nota de envío de la ruta" [attr.aria-label]="'Imprimir la nota de envío de ' + grupo.ruta">
       <i class="fas fa-print" aria-hidden="true"></i> Nota de envío
     </button>
   </div>
@@ -79,7 +79,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let pedido of grupo.pedidos">
+        <tr *ngFor="let pedido of grupo.pedidos; trackBy: trackPedido">
           <td data-label="Pedido"><span class="listing-id-pill">#{{pedido.noProforma}}</span></td>
           <td data-label="Cliente">
             <strong>{{pedido.negocio || pedido.cliente}}</strong>
@@ -89,46 +89,50 @@
           <td data-label="Piloto">{{pedido.repartidor || '—'}}</td>
           <td data-label="Entrega est.">{{pedido.fechaEntregaEstimada ? (pedido.fechaEntregaEstimada | date: 'dd/MM/yyyy') : '—'}}</td>
           <td data-label="Unidades" class="text-right">{{pedido.unidades | number}}</td>
-          <td data-label="Etapa">
+          <td data-label="Etapa" class="etapa-celda">
             <span class="etapa-pill" [ngClass]="'etapa-' + pedido.estadoPedido">{{etiquetaEstado(pedido.estadoPedido)}}</span>
             <span *ngIf="bloqueadoPorAutorizacion(pedido)" class="etapa-pill etapa-bloqueada"
-              title="El descuento espera la decisión de un administrador">
+              appTooltip="El descuento espera la decisión de un administrador">
               {{pedido.estadoAutorizacion === 'PENDIENTE' ? 'Por autorizar' : 'Rechazado'}}
             </span>
+            <button *ngIf="puedeAvanzar(pedido)" type="button" class="accion-principal accion-avance" (click)="avanzar(pedido)"
+              [disabled]="procesando === pedido.idProforma">
+              <i class="fas" [ngClass]="procesando === pedido.idProforma ? 'fa-spinner fa-spin' : 'fa-arrow-right'" aria-hidden="true"></i>
+              {{textoAvance(pedido)}}
+            </button>
+            <button *ngIf="puedeEntregar(pedido)" type="button" class="accion-principal accion-entrega" (click)="verDetalle(pedido, true)"
+              [attr.aria-label]="'Registrar la entrega del pedido ' + pedido.noProforma">
+              <i class="fas fa-truck" aria-hidden="true"></i> Registrar entrega
+            </button>
           </td>
           <td data-label="Acciones" class="text-center">
-            <div class="acciones">
-              <button type="button" class="btn btn-sm btn-outline-secondary" (click)="verDetalle(pedido)"
-                [attr.aria-label]="'Ver el pedido ' + pedido.noProforma" title="Ver detalle">
-                <i class="fas fa-eye" aria-hidden="true"></i>
-              </button>
-              <ng-container *ngIf="puedeOperar">
-                <button type="button" class="btn btn-sm btn-outline-secondary" (click)="imprimirPicking(pedido)"
-                  [attr.aria-label]="'Imprimir la hoja de picking del pedido ' + pedido.noProforma" title="Hoja de picking">
-                  <i class="fas fa-clipboard-list" aria-hidden="true"></i>
+            <div class="acciones action-buttons">
+              <div class="acciones-iconos">
+                <button type="button" class="btn btn-sm table-action action-detail" (click)="verDetalle(pedido)"
+                  appTooltip="Ver detalle del pedido" [attr.aria-label]="'Ver el pedido ' + pedido.noProforma">
+                  <i class="fas fa-eye" aria-hidden="true"></i>
                 </button>
-                <button type="button" class="btn btn-sm btn-outline-secondary" (click)="imprimirEmpaque(pedido)"
-                  [attr.aria-label]="'Imprimir la lista de empaque del pedido ' + pedido.noProforma" title="Lista de empaque">
-                  <i class="fas fa-box-open" aria-hidden="true"></i>
+                <ng-container *ngIf="puedeOperar">
+                  <button type="button" class="btn btn-sm table-action action-picking" (click)="imprimirPicking(pedido)"
+                    appTooltip="Imprimir hoja de picking" [attr.aria-label]="'Imprimir la hoja de picking del pedido ' + pedido.noProforma">
+                    <i class="fas fa-clipboard-list" aria-hidden="true"></i>
+                  </button>
+                  <button type="button" class="btn btn-sm table-action action-empaque" (click)="imprimirEmpaque(pedido)"
+                    appTooltip="Imprimir lista de empaque" [attr.aria-label]="'Imprimir la lista de empaque del pedido ' + pedido.noProforma">
+                    <i class="fas fa-box-open" aria-hidden="true"></i>
+                  </button>
+                </ng-container>
+                <button *ngIf="puedeCambiarPiloto(pedido)" type="button" class="btn btn-sm table-action action-piloto" (click)="cambiarPiloto(pedido)"
+                  [disabled]="procesando === pedido.idProforma" appTooltip="Cambiar piloto"
+                  [attr.aria-label]="'Cambiar el piloto del pedido ' + pedido.noProforma">
+                  <i class="fas fa-user-edit" aria-hidden="true"></i>
                 </button>
-              </ng-container>
-              <button *ngIf="puedeAvanzar(pedido)" type="button" class="btn btn-sm btn-success" (click)="avanzar(pedido)"
-                [disabled]="procesando === pedido.idProforma">
-                <i class="fas fa-arrow-right" aria-hidden="true"></i> {{textoAvance(pedido)}}
-              </button>
-              <button *ngIf="puedeEntregar(pedido)" type="button" class="btn btn-sm btn-primary" (click)="verDetalle(pedido, true)"
-                [attr.aria-label]="'Registrar la entrega del pedido ' + pedido.noProforma">
-                <i class="fas fa-truck" aria-hidden="true"></i> Registrar entrega
-              </button>
-              <button *ngIf="puedeCambiarPiloto(pedido)" type="button" class="btn btn-sm btn-outline-secondary" (click)="cambiarPiloto(pedido)"
-                [disabled]="procesando === pedido.idProforma" [attr.aria-label]="'Cambiar el piloto del pedido ' + pedido.noProforma" title="Cambiar piloto">
-                <i class="fas fa-user-edit" aria-hidden="true"></i>
-              </button>
-              <button *ngIf="puedeRetroceder(pedido)" type="button" class="btn btn-sm btn-outline-danger" (click)="retroceder(pedido)"
-                [disabled]="procesando === pedido.idProforma" [attr.aria-label]="'Regresar de etapa el pedido ' + pedido.noProforma"
-                title="Regresar a la etapa anterior">
-                <i class="fas fa-undo" aria-hidden="true"></i>
-              </button>
+                <button *ngIf="puedeRetroceder(pedido)" type="button" class="btn btn-sm table-action action-retroceso" (click)="retroceder(pedido)"
+                  [disabled]="procesando === pedido.idProforma" appTooltip="Regresar a la etapa anterior"
+                  [attr.aria-label]="'Regresar de etapa el pedido ' + pedido.noProforma">
+                  <i class="fas fa-undo" aria-hidden="true"></i>
+                </button>
+              </div>
             </div>
           </td>
         </tr>
@@ -137,209 +141,352 @@
   </div>
 </div>
 
-<div *ngIf="cargandoDetalle || detalle" class="detalle-fondo" (click)="cerrarDetalle()" (keydown.escape)="cerrarDetalle()">
-  <section class="detalle-dialogo" role="dialog" aria-modal="true" aria-labelledby="detalle-pedido-titulo"
+<div *ngIf="detalle" class="pedido-overlay animacion fadeIn" (click)="cerrarDetalle()">
+  <section class="pedido-dialog" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="detalle-pedido-titulo"
     (click)="$event.stopPropagation()">
-    <header class="detalle-encabezado">
-      <h3 id="detalle-pedido-titulo">Pedido {{detalle ? detalle.noProforma : ''}}</h3>
-      <button type="button" class="detalle-cerrar" (click)="cerrarDetalle()" aria-label="Cerrar detalle del pedido">
-        <i class="fas fa-times" aria-hidden="true"></i>
-      </button>
-    </header>
-
-    <div *ngIf="cargandoDetalle" class="estado-vacio">Cargando...</div>
-
-    <div *ngIf="detalle" class="detalle-cuerpo">
-      <div class="detalle-datos">
-        <div><span>Cliente</span><strong>{{detalle.negocio || detalle.cliente}}</strong></div>
-        <div><span>Dirección</span><strong>{{detalle.direccion || '—'}}</strong></div>
-        <div><span>Encargado</span><strong>{{detalle.contacto || '—'}} {{detalle.telefonoContacto}}</strong></div>
-        <div><span>Ruta</span><strong>{{detalle.ruta || '—'}}</strong></div>
-        <div><span>Vendedor</span><strong>{{detalle.vendedor}}</strong></div>
-        <div *ngIf="detalle.repartidor"><span>Piloto</span><strong>{{detalle.repartidor}}</strong></div>
-        <div><span>Etapa</span><strong>{{etiquetaEstado(detalle.estadoPedido)}}</strong></div>
-        <div *ngIf="detalle.condicionPago">
-          <span>Pago</span>
-          <strong>
-            {{detalle.condicionPago === 'CREDITO' ? 'Crédito a ' + (detalle.diasCredito || 0) + ' días' : 'Contado'}}
-            <ng-container *ngIf="cobro"> · cobrado {{cobro.cobrado | currency: 'Q' : 'symbol'}}</ng-container>
-          </strong>
+    <div class="pedido-content">
+      <header class="pedido-header">
+        <div class="header-copy">
+          <span class="header-icon" aria-hidden="true"><i class="fas fa-dolly"></i></span>
+          <div>
+            <span class="header-eyebrow">Pedido mayorista</span>
+            <h5 id="detalle-pedido-titulo">Pedido {{detalle ? detalle.noProforma : ''}}</h5>
+          </div>
         </div>
-      </div>
-      <p *ngIf="detalle.creditoAutorizacion === 'PENDIENTE' || detalle.creditoAutorizacion === 'RECHAZADA'" class="detalle-observacion falta-cobro">
-        <strong>Crédito {{detalle.creditoAutorizacion === 'PENDIENTE' ? 'pendiente de autorización' : 'rechazado'}}:</strong>
-        el pedido pasa del límite de crédito del cliente por {{detalle.excesoCredito | currency: 'Q' : 'symbol'}}.
-        {{detalle.creditoAutorizacion === 'PENDIENTE' ? 'Un administrador debe autorizarlo para prepararlo y entregarlo.' : 'Debe corregirse la proforma.'}}
-      </p>
-      <p *ngIf="cobro && faltaCobrar > 0" class="detalle-observacion falta-cobro">
-        <strong>Pedido de contado:</strong> falta cobrar {{faltaCobrar | currency: 'Q' : 'symbol'}} de lo entregado.
-        Emita un recibo de caja ligado a este pedido antes de entregar más.
-      </p>
-
-      <p *ngIf="detalle.observaciones" class="detalle-observacion"><strong>Observaciones del pedido:</strong> {{detalle.observaciones}}</p>
-
-      <h4>Productos</h4>
-      <div class="table-responsive">
-        <table class="table table-sm">
-          <thead>
-            <tr><th scope="col">Código</th><th scope="col">Producto</th><th scope="col" class="text-right">Cant.</th><th scope="col" class="text-right">Entregado</th>
-              <th scope="col" class="text-right">Pendiente</th><th scope="col">Observación</th></tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let linea of detalle.lineas">
-              <td>{{linea.codigo}}</td>
-              <td>{{linea.producto}}</td>
-              <td class="text-right">{{linea.cantidad | number}}</td>
-              <td class="text-right">{{linea.cantidadEntregada | number}}</td>
-              <td class="text-right" [class.pendiente-alto]="linea.pendiente > 0 && detalle.estadoPedido === 'ENTREGADA_PARCIAL'">
-                {{linea.pendiente | number}}</td>
-              <td>{{linea.observacion}}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="entregas-acciones" *ngIf="puedeEntregarDetalle(detalle) && !registrandoEntrega">
-        <button type="button" class="btn btn-sm btn-primary" (click)="abrirEntrega()">
-          <i class="fas fa-truck" aria-hidden="true"></i> Registrar entrega
+        <button type="button" class="close-button" (click)="cerrarDetalle()" aria-label="Cerrar detalle del pedido">
+          <i class="fas fa-times" aria-hidden="true"></i>
         </button>
-      </div>
+      </header>
 
-      <form *ngIf="registrandoEntrega" class="entrega-form" (ngSubmit)="confirmarEntrega()" novalidate>
-        <h4>Registrar entrega</h4>
-        <div class="entrega-campos">
-          <label *ngIf="!esRepartidor">
-            <span>Sucursal de la que se descuenta</span>
-            <select class="form-control form-control-sm" [(ngModel)]="entrega.idSucursal" name="entregaSucursal">
-              <option [ngValue]="null">Elegir sucursal</option>
-              <option *ngFor="let sucursal of sucursales" [ngValue]="sucursal.valor">{{sucursal.etiqueta}}</option>
-            </select>
-          </label>
-          <div class="row listing-date-range listing-date-single">
-            <app-date-range-picker apariencia="campo" modo="fecha" [(fecha)]="entrega.fechaEntrega" etiquetaFecha="Fecha de entrega" tema="proformas"></app-date-range-picker>
-          </div>
-          <label *ngIf="!esRepartidor">
-            <span>Entregó (opcional)</span>
-            <input type="text" class="form-control form-control-sm" [(ngModel)]="entrega.entregadoPor" name="entregaPor"
-              maxlength="150" placeholder="Nombre del piloto o vendedor">
-          </label>
-        </div>
-
-        <div class="table-responsive">
-          <table class="table table-sm">
-            <thead><tr><th scope="col">Producto</th><th scope="col" class="text-right">Pendiente</th><th scope="col" class="text-right">Entregado ahora</th></tr></thead>
-            <tbody>
-              <tr *ngFor="let linea of detalle.lineas">
-                <td>{{linea.producto}}</td>
-                <td class="text-right">{{linea.pendiente | number}}</td>
-                <td class="text-right">
-                  <input type="number" min="0" [max]="linea.pendiente" step="1" class="form-control form-control-sm cantidad-entrega"
-                    [(ngModel)]="cantidades[linea.idDetalle]" [name]="'cantidad-' + linea.idDetalle" [disabled]="linea.pendiente === 0"
-                    [attr.aria-label]="'Cantidad entregada de ' + linea.producto">
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <label class="entrega-casilla" *ngIf="esAdmin && detalle.condicionPago === 'CONTADO'">
-          <input type="checkbox" [(ngModel)]="entrega.entregarSinPago" name="entregaSinPago">
-          <span>Entregar aunque no esté cobrado (queda anotado en las etapas del pedido)</span>
-        </label>
-        <label class="entrega-casilla" *ngIf="!esRepartidor">
-          <input type="checkbox" [(ngModel)]="entrega.descontadoAMano" name="entregaMano">
-          <span>El inventario de lo entregado ya se descontó a mano (la entrega no lo descontará otra vez)</span>
-        </label>
-        <label class="entrega-observaciones">
-          <span>Observaciones (opcional)</span>
-          <input type="text" class="form-control form-control-sm" [(ngModel)]="entrega.observaciones" name="entregaObs" maxlength="255">
-        </label>
-
-        <p *ngIf="errorEntrega" class="entrega-error" role="alert">{{errorEntrega}}</p>
-        <div class="entrega-botones">
-          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="cancelarEntrega()">Cancelar</button>
-          <button type="submit" class="btn btn-sm btn-success" [disabled]="guardandoEntrega">
-            <i class="fas fa-check" aria-hidden="true"></i> Guardar entrega
-          </button>
-        </div>
-      </form>
-
-      <ng-container *ngIf="detalle.entregas.length > 0">
-        <h4>Entregas</h4>
-        <ul class="entregas-lista">
-          <li *ngFor="let entrega of detalle.entregas" [class.anulada]="entrega.anulada">
-            <div class="entrega-cabecera">
-              <strong>Entrega #{{entrega.idEntrega}} · {{entrega.fechaEntrega | date: 'dd/MM/yyyy'}}</strong>
-              <span *ngIf="entrega.anulada" class="etapa-pill etapa-bloqueada">Anulada</span>
-              <span *ngIf="entrega.descontadoAMano" class="etapa-pill">Descontado a mano</span>
-              <button *ngIf="esAdmin && !entrega.anulada" type="button" class="btn btn-sm btn-outline-danger"
-                (click)="anularEntrega(entrega)" [attr.aria-label]="'Anular la entrega ' + entrega.idEntrega">Anular</button>
-            </div>
-            <span class="entrega-meta">{{entrega.sucursal}} · registró {{entrega.usuario}}
-              <ng-container *ngIf="entrega.entregadoPor"> · entregó {{entrega.entregadoPor}}</ng-container>
-              · {{entrega.fechaRegistro | date: 'dd/MM/yyyy HH:mm'}}</span>
-            <span class="entrega-lineas">
-              <ng-container *ngFor="let fila of entrega.lineas; let ultimo = last">{{fila.producto}} × {{fila.cantidad | number}}{{ultimo ? '' : ', '}}</ng-container>
-            </span>
-            <em *ngIf="entrega.observaciones">{{entrega.observaciones}}</em>
-            <em *ngIf="entrega.anulada">Motivo de la anulación: {{entrega.motivoAnulacion}}</em>
-          </li>
-        </ul>
-        <button *ngIf="esAdmin && detalle.estadoPedido === 'ENTREGADA_PARCIAL'" type="button" class="btn btn-sm btn-outline-secondary"
-          (click)="cerrarPedido()">Cerrar con lo entregado</button>
-      </ng-container>
-
-      <div class="historial-pedido" *ngIf="puedeVerHistorial">
-        <button type="button" class="btn listing-page-action listing-secondary-action listing-compact" (click)="alternarHistorial()"
-          [attr.aria-expanded]="historialAbierto">
-          <i class="fas" [ngClass]="historialAbierto ? 'fa-chevron-up' : 'fa-history'"></i>
-          {{historialAbierto ? 'Ocultar el historial' : 'Ver el historial completo'}}
-        </button>
-
-        <div *ngIf="historialAbierto" class="mt-3">
-          <div *ngIf="cargandoHistorial" class="text-center p-3">
-            <div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div>
-          </div>
-          <div *ngIf="errorHistorial" class="listing-alert listing-alert-warning" role="alert">
-            <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
-            <span class="listing-alert-text">No fue posible cargar el historial.</span>
-            <button type="button" class="btn listing-page-action listing-secondary-action listing-compact" (click)="historialAbierto = false; alternarHistorial()">
-              <i class="fas fa-redo"></i> Reintentar
-            </button>
-          </div>
-          <p *ngIf="historial && historial.length === 0" class="listing-note">Este pedido todavía no tiene hechos registrados.</p>
-
-          <ol class="listing-timeline" *ngIf="historial && historial.length > 0">
-            <li *ngFor="let evento of historial" [ngClass]="'tl-' + evento.categoria.toLowerCase()">
-              <span class="listing-timeline-icon" aria-hidden="true"><i class="fas" [ngClass]="iconoHistorial(evento.categoria)"></i></span>
-              <div class="listing-timeline-body">
-                <div class="listing-timeline-head">
-                  <strong>{{evento.titulo}}</strong>
-                  <time>{{evento.fecha | date: 'dd/MM/yyyy HH:mm'}}</time>
-                </div>
-                <div class="listing-timeline-who" *ngIf="evento.usuario || evento.responsable">
-                  <i class="fas fa-user" aria-hidden="true"></i> {{evento.usuario}}<ng-container *ngIf="evento.responsable"> · {{evento.responsable}}</ng-container>
-                </div>
-                <p class="listing-timeline-motivo" *ngIf="evento.motivo">{{evento.motivo}}</p>
-                <details class="listing-timeline-detalle" *ngIf="evento.detalle && evento.detalle.length > 90">
-                  <summary>Ver el detalle</summary>{{evento.detalle}}
-                </details>
-                <p class="listing-timeline-motivo" *ngIf="evento.detalle && evento.detalle.length <= 90">{{evento.detalle}}</p>
+      <div class="pedido-body">
+        <ng-container *ngIf="detalle">
+          <section class="pedido-section">
+            <div class="section-heading">
+              <span class="section-icon"><i class="fas fa-info-circle" aria-hidden="true"></i></span>
+              <div>
+                <strong>Resumen del pedido</strong>
+                <small>Cliente, ruta y condición de pago</small>
               </div>
-            </li>
-          </ol>
-        </div>
+              <span class="etapa-pill etapa-grande" [ngClass]="'etapa-' + detalle.estadoPedido">{{etiquetaEstado(detalle.estadoPedido)}}</span>
+            </div>
+
+            <div class="summary-grid">
+              <article class="summary-card wide-card">
+                <span class="card-icon"><i class="fas fa-building" aria-hidden="true"></i></span>
+                <div>
+                  <span class="summary-label">Cliente</span>
+                  <strong>{{detalle.negocio || detalle.cliente}}</strong>
+                </div>
+              </article>
+              <article class="summary-card">
+                <span class="card-icon"><i class="fas fa-route" aria-hidden="true"></i></span>
+                <div>
+                  <span class="summary-label">Ruta</span>
+                  <strong>{{detalle.ruta || 'Sin ruta'}}</strong>
+                </div>
+              </article>
+              <article class="summary-card wide-card">
+                <span class="card-icon"><i class="fas fa-map-marker-alt" aria-hidden="true"></i></span>
+                <div>
+                  <span class="summary-label">Dirección</span>
+                  <strong>{{detalle.direccion || 'Sin dirección'}}</strong>
+                </div>
+              </article>
+              <article class="summary-card">
+                <span class="card-icon"><i class="fas fa-user-friends" aria-hidden="true"></i></span>
+                <div>
+                  <span class="summary-label">Encargado</span>
+                  <strong>{{detalle.contacto || 'Sin encargado'}}<ng-container *ngIf="detalle.telefonoContacto"> · {{detalle.telefonoContacto}}</ng-container></strong>
+                </div>
+              </article>
+              <article class="summary-card">
+                <span class="card-icon"><i class="fas fa-user-tie" aria-hidden="true"></i></span>
+                <div>
+                  <span class="summary-label">Vendedor</span>
+                  <strong>{{detalle.vendedor}}</strong>
+                </div>
+              </article>
+              <article class="summary-card" *ngIf="detalle.repartidor">
+                <span class="card-icon"><i class="fas fa-truck" aria-hidden="true"></i></span>
+                <div>
+                  <span class="summary-label">Piloto</span>
+                  <strong>{{detalle.repartidor}}</strong>
+                </div>
+              </article>
+              <article class="summary-card" *ngIf="detalle.condicionPago">
+                <span class="card-icon"><i class="fas fa-wallet" aria-hidden="true"></i></span>
+                <div>
+                  <span class="summary-label">Pago</span>
+                  <strong>
+                    {{detalle.condicionPago === 'CREDITO' ? 'Crédito a ' + (detalle.diasCredito || 0) + ' días' : 'Contado'}}
+                    <ng-container *ngIf="cobro"> · cobrado {{cobro.cobrado | currency: 'Q' : 'symbol'}}</ng-container>
+                  </strong>
+                </div>
+              </article>
+            </div>
+
+            <div class="pedido-avisos">
+              <p *ngIf="detalle.creditoAutorizacion === 'PENDIENTE' || detalle.creditoAutorizacion === 'RECHAZADA'" class="pedido-aviso aviso-alerta">
+                <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                <span><strong>Crédito {{detalle.creditoAutorizacion === 'PENDIENTE' ? 'pendiente de autorización' : 'rechazado'}}:</strong>
+                  el pedido pasa del límite de crédito del cliente por {{detalle.excesoCredito | currency: 'Q' : 'symbol'}}.
+                  {{detalle.creditoAutorizacion === 'PENDIENTE' ? 'Un administrador debe autorizarlo para prepararlo y entregarlo.' : 'Debe corregirse la proforma.'}}</span>
+              </p>
+              <p *ngIf="cobro && faltaCobrar > 0" class="pedido-aviso aviso-alerta">
+                <i class="fas fa-cash-register" aria-hidden="true"></i>
+                <span><strong>Pedido de contado:</strong> falta cobrar {{faltaCobrar | currency: 'Q' : 'symbol'}} de lo entregado.
+                  Emita un recibo de caja ligado a este pedido antes de entregar más.</span>
+              </p>
+              <p *ngIf="detalle.observaciones" class="pedido-aviso aviso-nota">
+                <i class="fas fa-comment-alt" aria-hidden="true"></i>
+                <span><strong>Observaciones del pedido:</strong> {{detalle.observaciones}}</span>
+              </p>
+            </div>
+          </section>
+
+          <section class="pedido-section">
+            <div class="section-heading">
+              <span class="section-icon"><i class="fas fa-list-ul" aria-hidden="true"></i></span>
+              <div>
+                <strong>Productos</strong>
+                <small>{{detalle.lineas.length}} {{detalle.lineas.length === 1 ? 'línea' : 'líneas'}} · cantidades pedidas, entregadas y pendientes</small>
+              </div>
+              <label class="page-size-control" *ngIf="totalLineas > opcionesTamanoPagina[0]">
+                <span>Mostrar</span>
+                <select class="form-control form-control-sm page-size-select" [ngModel]="tamanoPaginaLineas" name="tamanoPaginaLineas"
+                  (ngModelChange)="cambiarTamanoPaginaLineas($event)" aria-label="Líneas por página">
+                  <option *ngFor="let opcion of opcionesTamanoPagina" [ngValue]="opcion">{{opcion}}</option>
+                </select>
+              </label>
+            </div>
+            <div class="table-shell">
+              <table class="document-lines-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Código</th><th scope="col">Producto</th>
+                    <th scope="col" class="num">Cant.</th><th scope="col" class="num">Entregado</th><th scope="col" class="num">Pendiente</th>
+                    <th scope="col">Observación</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let linea of lineasPagina">
+                    <td><span class="line-badge">{{linea.codigo}}</span></td>
+                    <td class="product-name">{{linea.producto}}</td>
+                    <td class="num">{{linea.cantidad | number}}</td>
+                    <td class="num">{{linea.cantidadEntregada | number}}</td>
+                    <td class="num" [class.pendiente-alto]="linea.pendiente > 0 && detalle.estadoPedido === 'ENTREGADA_PARCIAL'">
+                      {{linea.pendiente | number}}</td>
+                    <td class="obs-cell">{{linea.observacion}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="table-navigation" *ngIf="totalLineas > 0">
+              <span class="pagination-info">Mostrando {{primeraLineaPagina}} a {{ultimaLineaPagina}} de {{totalLineas}}</span>
+              <nav *ngIf="totalPaginasLineas > 1" aria-label="Paginación de los productos del pedido">
+                <ul class="pagination">
+                  <li class="page-item" [ngClass]="{'disabled': paginaLineas === 0}">
+                    <button class="page-link" type="button" [disabled]="paginaLineas === 0" (click)="irAPaginaLineas(paginaLineas - 1)"
+                      aria-label="Página anterior"><i class="fas fa-angle-left" aria-hidden="true"></i></button>
+                  </li>
+                  <li class="page-item" *ngFor="let pagina of paginasVisiblesLineas" [ngClass]="{'active': pagina === paginaLineas}">
+                    <button class="page-link" type="button" (click)="irAPaginaLineas(pagina)">{{pagina + 1}}</button>
+                  </li>
+                  <li class="page-item" [ngClass]="{'disabled': paginaLineas >= totalPaginasLineas - 1}">
+                    <button class="page-link" type="button" [disabled]="paginaLineas >= totalPaginasLineas - 1"
+                      (click)="irAPaginaLineas(paginaLineas + 1)" aria-label="Página siguiente"><i class="fas fa-angle-right" aria-hidden="true"></i></button>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+
+            <div class="entregas-acciones" *ngIf="puedeEntregarDetalle(detalle) && !registrandoEntrega">
+              <button type="button" class="pedido-boton pedido-boton-primario" (click)="abrirEntrega()">
+                <i class="fas fa-truck" aria-hidden="true"></i> Registrar entrega
+              </button>
+            </div>
+          </section>
+
+          <section class="pedido-section" *ngIf="registrandoEntrega">
+            <form class="entrega-form" (ngSubmit)="confirmarEntrega()" novalidate>
+              <div class="section-heading">
+                <span class="section-icon"><i class="fas fa-clipboard-check" aria-hidden="true"></i></span>
+                <div>
+                  <strong>Registrar entrega</strong>
+                  <small>Indica cuánto se entregó ahora de cada producto</small>
+                </div>
+              </div>
+              <div class="entrega-campos">
+                <label *ngIf="!esRepartidor">
+                  <span>Sucursal de la que se descuenta</span>
+                  <select class="form-control form-control-sm" [(ngModel)]="entrega.idSucursal" name="entregaSucursal">
+                    <option [ngValue]="null">Elegir sucursal</option>
+                    <option *ngFor="let sucursal of sucursales" [ngValue]="sucursal.valor">{{sucursal.etiqueta}}</option>
+                  </select>
+                </label>
+                <div class="entrega-fecha">
+                  <app-date-range-picker apariencia="campo" modo="fecha" [(fecha)]="entrega.fechaEntrega" etiquetaFecha="Fecha de entrega" tema="proformas"></app-date-range-picker>
+                </div>
+                <label *ngIf="!esRepartidor">
+                  <span>Entregó (opcional)</span>
+                  <input type="text" class="form-control form-control-sm" [(ngModel)]="entrega.entregadoPor" name="entregaPor"
+                    maxlength="150" placeholder="Nombre del piloto o vendedor">
+                </label>
+              </div>
+
+              <div class="table-shell">
+                <table class="document-lines-table">
+                  <thead><tr><th scope="col">Producto</th><th scope="col" class="num">Pendiente</th><th scope="col" class="num">Entregado ahora</th></tr></thead>
+                  <tbody>
+                    <tr *ngFor="let linea of detalle.lineas">
+                      <td class="product-name">{{linea.producto}}</td>
+                      <td class="num">{{linea.pendiente | number}}</td>
+                      <td class="num">
+                        <input type="number" min="0" [max]="linea.pendiente" step="1" class="form-control form-control-sm cantidad-entrega"
+                          [(ngModel)]="cantidades[linea.idDetalle]" [name]="'cantidad-' + linea.idDetalle" [disabled]="linea.pendiente === 0"
+                          [attr.aria-label]="'Cantidad entregada de ' + linea.producto">
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="entrega-opciones" *ngIf="(esAdmin && detalle.condicionPago === 'CONTADO') || !esRepartidor">
+                <label class="entrega-casilla" *ngIf="esAdmin && detalle.condicionPago === 'CONTADO'" [class.marcada]="entrega.entregarSinPago">
+                  <input type="checkbox" [(ngModel)]="entrega.entregarSinPago" name="entregaSinPago">
+                  <span class="casilla-caja" aria-hidden="true"><i class="fas fa-check"></i></span>
+                  <span class="casilla-texto">
+                    <strong>Entregar aunque no esté cobrado</strong>
+                    <small>Queda anotado en las etapas del pedido.</small>
+                  </span>
+                </label>
+                <label class="entrega-casilla" *ngIf="!esRepartidor" [class.marcada]="entrega.descontadoAMano">
+                  <input type="checkbox" [(ngModel)]="entrega.descontadoAMano" name="entregaMano">
+                  <span class="casilla-caja" aria-hidden="true"><i class="fas fa-check"></i></span>
+                  <span class="casilla-texto">
+                    <strong>El inventario ya se descontó a mano</strong>
+                    <small>La entrega no lo descontará otra vez.</small>
+                  </span>
+                </label>
+              </div>
+              <label class="entrega-observaciones">
+                <span>Observaciones (opcional)</span>
+                <input type="text" class="form-control form-control-sm" [(ngModel)]="entrega.observaciones" name="entregaObs" maxlength="255">
+              </label>
+
+              <p *ngIf="errorEntrega" class="entrega-error" role="alert">{{errorEntrega}}</p>
+              <div class="entrega-botones">
+                <button type="button" class="pedido-boton" (click)="cancelarEntrega()">Cancelar</button>
+                <button type="submit" class="pedido-boton pedido-boton-primario" [disabled]="guardandoEntrega">
+                  <i class="fas" [ngClass]="guardandoEntrega ? 'fa-spinner fa-spin' : 'fa-check'" aria-hidden="true"></i> Guardar entrega
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <section class="pedido-section" *ngIf="detalle.entregas.length > 0">
+            <div class="section-heading">
+              <span class="section-icon"><i class="fas fa-box-open" aria-hidden="true"></i></span>
+              <div>
+                <strong>Entregas</strong>
+                <small>{{detalle.entregas.length}} {{detalle.entregas.length === 1 ? 'entrega registrada' : 'entregas registradas'}}</small>
+              </div>
+              <button *ngIf="esAdmin && detalle.estadoPedido === 'ENTREGADA_PARCIAL'" type="button" class="pedido-boton"
+                (click)="cerrarPedido()">Cerrar con lo entregado</button>
+            </div>
+            <ul class="entregas-lista">
+              <li *ngFor="let entrega of detalle.entregas" [class.anulada]="entrega.anulada">
+                <div class="entrega-cabecera">
+                  <strong>Entrega #{{entrega.idEntrega}} · {{entrega.fechaEntrega | date: 'dd/MM/yyyy'}}</strong>
+                  <span *ngIf="entrega.anulada" class="etapa-pill etapa-bloqueada">Anulada</span>
+                  <span *ngIf="entrega.descontadoAMano" class="etapa-pill">Descontado a mano</span>
+                  <button *ngIf="esAdmin && !entrega.anulada" type="button" class="pedido-boton pedido-boton-peligro"
+                    (click)="anularEntrega(entrega)" [attr.aria-label]="'Anular la entrega ' + entrega.idEntrega">Anular</button>
+                </div>
+                <span class="entrega-meta">{{entrega.sucursal}} · registró {{entrega.usuario}}
+                  <ng-container *ngIf="entrega.entregadoPor"> · entregó {{entrega.entregadoPor}}</ng-container>
+                  · {{entrega.fechaRegistro | date: 'dd/MM/yyyy HH:mm'}}</span>
+                <span class="entrega-lineas">
+                  <ng-container *ngFor="let fila of entrega.lineas; let ultimo = last">{{fila.producto}} × {{fila.cantidad | number}}{{ultimo ? '' : ', '}}</ng-container>
+                </span>
+                <em *ngIf="entrega.observaciones">{{entrega.observaciones}}</em>
+                <em *ngIf="entrega.anulada">Motivo de la anulación: {{entrega.motivoAnulacion}}</em>
+              </li>
+            </ul>
+          </section>
+
+          <section class="pedido-section" *ngIf="detalle.etapas.length > 0">
+            <div class="section-heading">
+              <span class="section-icon"><i class="fas fa-stream" aria-hidden="true"></i></span>
+              <div>
+                <strong>Etapas</strong>
+                <small>Por dónde ha pasado el pedido</small>
+              </div>
+            </div>
+            <ol class="etapas-lista">
+              <li *ngFor="let etapa of detalle.etapas">
+                <strong>{{etiquetaEstado(etapa.etapa)}}</strong>
+                <span>{{etapa.usuario}}<ng-container *ngIf="etapa.responsable"> · {{etapa.responsable}}</ng-container>
+                  · {{etapa.fecha | date: 'dd/MM/yyyy HH:mm'}}</span>
+                <em *ngIf="etapa.motivo">{{etapa.motivo}}</em>
+              </li>
+            </ol>
+          </section>
+
+          <section class="pedido-section historial-pedido" *ngIf="puedeVerHistorial">
+            <button type="button" class="historial-toggle" (click)="alternarHistorial()" [attr.aria-expanded]="historialAbierto">
+              <span class="section-icon" aria-hidden="true"><i class="fas fa-history"></i></span>
+              <span class="historial-toggle-copy">
+                <strong>Historial completo</strong>
+                <small>Todo lo que se ha hecho con el pedido, en orden</small>
+              </span>
+              <i class="fas fa-chevron-down historial-chevron" [class.abierto]="historialAbierto" aria-hidden="true"></i>
+            </button>
+
+            <div *ngIf="historialAbierto" class="historial-contenido">
+              <div *ngIf="cargandoHistorial" class="loading-state">
+                <div class="spinner-border" role="status"><span class="sr-only">Cargando...</span></div>
+              </div>
+              <div *ngIf="errorHistorial" class="listing-alert listing-alert-warning" role="alert">
+                <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+                <span class="listing-alert-text">No fue posible cargar el historial.</span>
+                <button type="button" class="pedido-boton" (click)="historialAbierto = false; alternarHistorial()">
+                  <i class="fas fa-redo"></i> Reintentar
+                </button>
+              </div>
+              <p *ngIf="historial && historial.length === 0" class="listing-note">Este pedido todavía no tiene hechos registrados.</p>
+
+              <ol class="listing-timeline" *ngIf="historial && historial.length > 0">
+                <li *ngFor="let evento of historial" [ngClass]="'tl-' + evento.categoria.toLowerCase()">
+                  <span class="listing-timeline-icon" aria-hidden="true"><i class="fas" [ngClass]="iconoHistorial(evento.categoria)"></i></span>
+                  <div class="listing-timeline-body">
+                    <div class="listing-timeline-head">
+                      <strong>{{evento.titulo}}</strong>
+                      <time>{{evento.fecha | date: 'dd/MM/yyyy HH:mm'}}</time>
+                    </div>
+                    <div class="listing-timeline-who" *ngIf="evento.usuario || evento.responsable">
+                      <i class="fas fa-user" aria-hidden="true"></i> {{evento.usuario}}<ng-container *ngIf="evento.responsable"> · {{evento.responsable}}</ng-container>
+                    </div>
+                    <p class="listing-timeline-motivo" *ngIf="evento.motivo">{{evento.motivo}}</p>
+                    <details class="listing-timeline-detalle" *ngIf="evento.detalle && evento.detalle.length > 90">
+                      <summary>Ver el detalle</summary>{{evento.detalle}}
+                    </details>
+                    <p class="listing-timeline-motivo" *ngIf="evento.detalle && evento.detalle.length <= 90">{{evento.detalle}}</p>
+                  </div>
+                </li>
+              </ol>
+            </div>
+          </section>
+        </ng-container>
       </div>
 
-      <h4>Etapas</h4>
-      <ol class="etapas-lista">
-        <li *ngFor="let etapa of detalle.etapas">
-          <strong>{{etiquetaEstado(etapa.etapa)}}</strong>
-          <span>{{etapa.usuario}}<ng-container *ngIf="etapa.responsable"> · {{etapa.responsable}}</ng-container>
-            · {{etapa.fecha | date: 'dd/MM/yyyy HH:mm'}}</span>
-          <em *ngIf="etapa.motivo">{{etapa.motivo}}</em>
-        </li>
-      </ol>
+      <footer class="pedido-footer">
+        <span><i class="fas fa-shield-alt" aria-hidden="true"></i>Información operativa del pedido</span>
+        <button type="button" class="close-action" (click)="cerrarDetalle()">
+          <i class="fas fa-times" aria-hidden="true"></i> Cerrar
+        </button>
+      </footer>
     </div>
   </section>
 </div>
