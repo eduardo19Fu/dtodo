@@ -1,6 +1,5 @@
 package xyz.pangosoft.dtodo.service.impl;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -9,7 +8,15 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.Map;
 
 import javax.sql.DataSource;
@@ -19,21 +26,18 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
-import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
-import net.sf.jasperreports.export.SimpleExporterInput;
-import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
-import net.sf.jasperreports.export.SimpleXlsxReportConfiguration;
 import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
 import xyz.pangosoft.dtodo.error.exceptions.ReportGenerationException;
 import xyz.pangosoft.dtodo.repository.IRutaRepository;
 import xyz.pangosoft.dtodo.repository.IUsuarioRepository;
 import xyz.pangosoft.dtodo.service.IReporteMayoristasService;
+import xyz.pangosoft.dtodo.util.ExcelTabla;
+import xyz.pangosoft.dtodo.util.ExcelTabla.Columna;
 
 @Service
 @RequiredArgsConstructor
@@ -98,7 +102,6 @@ public class ReporteMayoristasServiceImpl implements IReporteMayoristasService {
 
     private Map<String, Object> parametrosBase(Integer idRuta, String formato) {
         Map<String, Object> parametros = new HashMap<>();
-        parametros.put(JRParameter.IS_IGNORE_PAGINATION, "XLSX".equals(formato));
         parametros.put("ID_RUTA", idRuta);
         parametros.put("RUTA", idRuta == null ? "Todas las rutas"
                 : rutaRepository.findById(idRuta).map(ruta -> ruta.getNombre()).orElse("Ruta #" + idRuta));
@@ -119,28 +122,92 @@ public class ReporteMayoristasServiceImpl implements IReporteMayoristasService {
                 throw new ReportGenerationException("No se encontró la plantilla del reporte " + plantilla + ".", null);
             }
             JasperReport report = JasperCompileManager.compileReport(template);
+            if ("XLSX".equals(formato)) {
+                return tablaExcel(plantilla, report, parametros, connection, hoja);
+            }
             JasperPrint print = JasperFillManager.fillReport(report, parametros, connection);
-            return "XLSX".equals(formato) ? exportarXlsx(print, hoja) : JasperExportManager.exportReportToPdf(print);
+            return JasperExportManager.exportReportToPdf(print);
         } catch (JRException | SQLException | IOException exception) {
             log.error("No fue posible generar el reporte {}. formato={}", plantilla, formato, exception);
             throw new ReportGenerationException("No fue posible generar el reporte de mayoristas.", exception);
         }
     }
 
-    private byte[] exportarXlsx(JasperPrint print, String hoja) throws JRException, IOException {
-        try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-            JRXlsxExporter exporter = new JRXlsxExporter();
-            exporter.setExporterInput(new SimpleExporterInput(print));
-            exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(output));
-            SimpleXlsxReportConfiguration configuration = new SimpleXlsxReportConfiguration();
-            configuration.setDetectCellType(true);
-            configuration.setRemoveEmptySpaceBetweenRows(true);
-            configuration.setWhitePageBackground(false);
-            configuration.setOnePagePerSheet(false);
-            configuration.setSheetNames(new String[] { hoja });
-            exporter.setConfiguration(configuration);
-            exporter.exportReport();
-            return output.toByteArray();
+    private static final Pattern PARAMETRO_SQL = Pattern.compile("\\$P\\{(\\w+)}");
+
+    /**
+     * Excel como tabla plana: se ejecuta la misma consulta de la plantilla (así el PDF y el Excel nunca difieren en datos) y se
+     * escribe una fila por registro con celdas reales.
+     */
+    private byte[] tablaExcel(String plantilla, JasperReport report, Map<String, Object> parametros, Connection connection,
+            String hoja) throws SQLException {
+        String consulta = report.getMainDataset().getQuery().getText();
+        List<String> orden = new ArrayList<>();
+        Matcher matcher = PARAMETRO_SQL.matcher(consulta);
+        while (matcher.find()) {
+            orden.add(matcher.group(1));
+        }
+        List<Map<String, Object>> filas = new ArrayList<>();
+        try (PreparedStatement statement = connection.prepareStatement(matcher.replaceAll("?"))) {
+            for (int i = 0; i < orden.size(); i++) {
+                statement.setObject(i + 1, parametros.get(orden.get(i)));
+            }
+            try (ResultSet resultado = statement.executeQuery()) {
+                ResultSetMetaData meta = resultado.getMetaData();
+                while (resultado.next()) {
+                    Map<String, Object> fila = new LinkedHashMap<>();
+                    for (int c = 1; c <= meta.getColumnCount(); c++) {
+                        fila.put(meta.getColumnLabel(c).toLowerCase(), resultado.getObject(c));
+                    }
+                    filas.add(fila);
+                }
+            }
+        }
+        return excelDe(plantilla, filas, parametros, hoja);
+    }
+
+    static byte[] excelDe(String plantilla, List<Map<String, Object>> filas, Map<String, Object> parametros, String hoja) {
+        List<String> contexto = new ArrayList<>();
+        contexto.add("Ruta: " + parametros.get("RUTA"));
+        if (parametros.get("VENDEDOR") != null) {
+            contexto.add("Vendedor: " + parametros.get("VENDEDOR"));
+        }
+        if (parametros.get("RANGO") != null) {
+            contexto.add(String.valueOf(parametros.get("RANGO")));
+        }
+        return ExcelTabla.generar(hoja, hoja, contexto, columnasDe(plantilla), filas);
+    }
+
+    private static Columna<Map<String, Object>> texto(String titulo, String campo) {
+        return Columna.texto(titulo, fila -> fila.get(campo));
+    }
+
+    private static List<Columna<Map<String, Object>>> columnasDe(String plantilla) {
+        switch (plantilla) {
+            case PLANTILLA_CLIENTES_RUTA:
+                return List.of(texto("Ruta", "ruta"), texto("Vendedor", "vendedor"), texto("Código", "codigo"), texto("Negocio", "negocio"),
+                        texto("Cliente", "cliente"), texto("Contacto", "contacto"), texto("Teléfono", "telefono"),
+                        texto("Dirección", "direccion"), texto("Categoría de descuento", "categoria"),
+                        Columna.entero("Días de crédito", fila -> fila.get("dias_credito"), false));
+            case PLANTILLA_SIN_COMPRAS:
+                return List.of(texto("Ruta", "ruta"), texto("Vendedor", "vendedor"), texto("Código", "codigo"), texto("Negocio", "negocio"),
+                        texto("Cliente", "cliente"), texto("Contacto", "contacto"), texto("Teléfono", "telefono"),
+                        Columna.fecha("Última compra", fila -> fila.get("ultima_compra")),
+                        Columna.entero("Días sin comprar", fila -> fila.get("dias_sin_compra"), false));
+            case PLANTILLA_PROFORMAS_VENDEDOR:
+                return List.of(texto("Vendedor", "vendedor"),
+                        Columna.entero("Proformas generadas", fila -> fila.get("generadas"), true),
+                        Columna.dinero("Valor proformado", fila -> fila.get("valor_proformado"), true),
+                        Columna.entero("Facturadas", fila -> fila.get("facturadas"), true),
+                        Columna.dinero("Valor facturado", fila -> fila.get("valor_facturado"), true),
+                        Columna.entero("Por autorizar", fila -> fila.get("por_autorizar"), true),
+                        Columna.porcentaje("Conversión", fila -> fila.get("tasa_conversion") == null ? null
+                                : new java.math.BigDecimal(String.valueOf(fila.get("tasa_conversion"))).multiply(new java.math.BigDecimal(100))));
+            default:
+                return List.of(texto("Ruta", "ruta"), texto("Vendedor", "vendedor"),
+                        Columna.entero("Pedidos", fila -> fila.get("pedidos"), true),
+                        Columna.entero("Unidades", fila -> fila.get("unidades"), true),
+                        Columna.dinero("Valor entregado", fila -> fila.get("valor_entregado"), true));
         }
     }
 

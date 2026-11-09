@@ -110,6 +110,28 @@ class ReporteComisionesServiceImplTest {
     }
 
     @Test
+    void elExcelEsUnaTablaPlanaConCeldasNumericasFiltroYTotales() throws Exception {
+        when(comisionService.avance(2026)).thenReturn(avance(true));
+
+        try (Workbook libro = new XSSFWorkbook(new ByteArrayInputStream(service.comisionesDelAnio(2026, "XLSX")))) {
+            Sheet hoja = libro.getSheetAt(0);
+            Row encabezado = null;
+            for (Row fila : hoja) {
+                if (fila.getCell(0) != null && "Vendedor".equals(fila.getCell(0).getStringCellValue())) {
+                    encabezado = fila;
+                }
+            }
+            assertTrue(encabezado != null, "debe existir la fila de encabezados");
+            int r = encabezado.getRowNum();
+            assertEquals("Ana Lopez", hoja.getRow(r + 1).getCell(0).getStringCellValue());
+            assertEquals(org.apache.poi.ss.usermodel.CellType.NUMERIC, hoja.getRow(r + 1).getCell(3).getCellType());
+            assertEquals(org.apache.poi.ss.usermodel.CellType.FORMULA, hoja.getRow(r + 3).getCell(3).getCellType());
+            assertTrue(((org.apache.poi.xssf.usermodel.XSSFSheet) hoja).getCTWorksheet().isSetAutoFilter(), "debe tener autofiltro");
+            assertEquals(r + 1, hoja.getPaneInformation().getHorizontalSplitPosition());
+        }
+    }
+
+    @Test
     void sinLiquidarLaDecisionQuedaSinDefinir() throws Exception {
         when(comisionService.avance(2026)).thenReturn(avance(false));
 
@@ -128,7 +150,7 @@ class ReporteComisionesServiceImplTest {
 
         String texto = textoDe(service.comisionesDelAnio(2026, "XLSX"));
 
-        assertTrue(texto.contains("No hay vendedores para este año."), texto);
+        assertTrue(texto.contains("No hay registros"), texto);
         assertTrue(texto.contains("sin metas definidas"), texto);
     }
 

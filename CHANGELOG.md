@@ -6,6 +6,15 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Cambiado — Excel como tabla editable en los reportes de mayoristas
+- Cuentas por cobrar, comisiones del año y los cuatro reportes de Reportes → Mayoristas se exportan a Excel como una tabla normal (ya no es el PDF convertido): título y filtros arriba, una fila de encabezados fija, una fila por registro, cifras y fechas reales para ordenar, filtrar y sumar, autofiltro y fila de totales con fórmulas. El PDF no cambia. Nueva utilidad `ExcelTabla` (Apache POI) reutilizable para el resto de reportes.
+
+### Cambiado — Reporte de cuentas por cobrar rediseñado
+- El reporte de cuentas por cobrar (PDF) sigue el diseño de la proforma: logo sin fondo, panel azul con el filtro y la fecha de corte, tarjeta con la regla de vencimiento, cuatro recuadros de resumen (total por cobrar, por vencer, total vencido y vencido a más de 60 días), tabla con filas alternadas, días de atraso en color según su gravedad y fila de totales en azul alineada con las columnas.
+
+### Cambiado — Estado de cuenta del cliente rediseñado
+- El estado de cuenta (PDF) sigue el diseño de la proforma: logo sin fondo, panel azul con la fecha de corte, tarjeta con los datos del cliente, tres recuadros de resumen (total entregado, total abonado y saldo al día), tabla con filas alternadas y abonos en verde, fila de totales alineada con las columnas y pie con el número de página.
+
 ### Agregado — Protección al cambiar las metas de comisión
 - Al guardar las metas se abre una ventana de confirmación con las metas de antes y de después y el aviso de que se recalcula la comisión de todos los vendedores del año.
 - Si el año ya terminó y no se ha liquidado, el motivo del cambio es obligatorio (en el año en curso es opcional). Si las metas no cambian, no se guarda ni se registra nada.

@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Cuentas por cobrar de los clientes mayoristas, por antigüedad. Plantilla escrita a mano en formato JasperReports 6.x; no abrir ni
      guardar con Jaspersoft Studio 7, que cambia el formato y la librería del proyecto no lo entiende. Se llena con una lista de
-     CobranzaClienteDto, no con SQL. -->
+     CobranzaClienteDto, no con SQL. Mismo lenguaje visual que la proforma; se exporta a PDF y a Excel (la cabecera, las filas y los
+     totales son celdas con estilo para que el Excel conserve colores y alineación). -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
@@ -13,12 +14,32 @@
     <property name="net.sf.jasperreports.export.xlsx.remove.empty.space.between.rows" value="true"/>
     <property name="net.sf.jasperreports.export.xlsx.white.page.background" value="false"/>
 
-    <style name="Base" isDefault="true" fontName="DejaVu Sans" fontSize="8" forecolor="#23344D"/>
-    <style name="Header" style="Base" mode="Opaque" backcolor="#1769D2" forecolor="#FFFFFF"
+    <style name="Base" isDefault="true" fontName="DejaVu Sans" fontSize="8" forecolor="#1F2A44"/>
+    <style name="Header" style="Base" mode="Opaque" backcolor="#2B3990" forecolor="#FFFFFF"
            fontSize="8" isBold="true" vTextAlign="Middle"/>
     <style name="Cell" style="Base" mode="Opaque" backcolor="#FFFFFF" vTextAlign="Middle">
-        <box><pen lineWidth="0.35" lineColor="#D9E3EF"/></box>
+        <box><bottomPen lineWidth="0.5" lineColor="#E1E7F3"/></box>
+        <conditionalStyle>
+            <conditionExpression><![CDATA[$V{REPORT_COUNT}.intValue() % 2 == 0]]></conditionExpression>
+            <style backcolor="#F6F8FD"/>
+        </conditionalStyle>
     </style>
+    <style name="Vencido" style="Cell" isBold="true" forecolor="#B42318"/>
+    <style name="Atraso" style="Cell" isBold="true" forecolor="#6B7A90">
+        <conditionalStyle>
+            <conditionExpression><![CDATA[$F{diasMaxAtraso} != null && $F{diasMaxAtraso}.intValue() > 60]]></conditionExpression>
+            <style forecolor="#B42318"/>
+        </conditionalStyle>
+        <conditionalStyle>
+            <conditionExpression><![CDATA[$F{diasMaxAtraso} != null && $F{diasMaxAtraso}.intValue() > 30]]></conditionExpression>
+            <style forecolor="#C77700"/>
+        </conditionalStyle>
+        <conditionalStyle>
+            <conditionExpression><![CDATA[$F{diasMaxAtraso} != null && $F{diasMaxAtraso}.intValue() > 0]]></conditionExpression>
+            <style forecolor="#8A5A00"/>
+        </conditionalStyle>
+    </style>
+    <style name="Etiqueta" style="Base" fontSize="7.5" isBold="true" forecolor="#6B7A90"/>
 
     <parameter name="FORMATO" class="java.lang.String"/>
     <parameter name="FECHA" class="java.lang.String"/>
@@ -42,74 +63,132 @@
     <field name="diasMaxAtraso" class="java.lang.Integer"/>
 
     <title>
-        <band height="88">
-            <rectangle radius="8">
-                <reportElement x="90" y="0" width="712" height="48" forecolor="#1769D2" backcolor="#1769D2"/>
-            </rectangle>
-            <image scaleImage="RetainShape" hAlign="Center">
-                <reportElement x="0" y="0" width="72" height="48"/>
-                <imageExpression><![CDATA[this.getClass().getResourceAsStream("/static/images/reports-image/logo-dtodo.jpg")]]></imageExpression>
+        <band height="182">
+            <!-- Logo sin fondo y panel azul del reporte -->
+            <image scaleImage="RetainShape" hAlign="Left">
+                <reportElement x="0" y="2" width="130" height="68"/>
+                <imageExpression><![CDATA[this.getClass().getResourceAsStream("/static/images/reports-image/logo-dtodo-proforma.png")]]></imageExpression>
             </image>
+            <rectangle radius="9">
+                <reportElement mode="Opaque" x="236" y="2" width="566" height="66" forecolor="#2B3990" backcolor="#2B3990"/>
+                <graphicElement><pen lineWidth="0.5" lineColor="#2B3990"/></graphicElement>
+            </rectangle>
             <staticText>
-                <reportElement x="90" y="0" width="478" height="24" forecolor="#FFFFFF" backcolor="#1769D2" mode="Opaque"/>
-                <textElement verticalAlignment="Middle"><font size="16" isBold="true"/><paragraph leftIndent="18"/></textElement>
+                <reportElement x="252" y="8" width="260" height="11" forecolor="#C3CFFF"/>
+                <textElement verticalAlignment="Middle"><font size="7.5" isBold="true"/></textElement>
+                <text><![CDATA[VENTAS MAYORISTAS · COBRANZA]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="252" y="19" width="380" height="26" forecolor="#FFFFFF"/>
+                <textElement verticalAlignment="Middle"><font size="17" isBold="true"/></textElement>
                 <text><![CDATA[Cuentas por cobrar]]></text>
             </staticText>
-            <textField isBlankWhenNull="true">
-                <reportElement x="90" y="24" width="478" height="24" forecolor="#DCEBFF" backcolor="#1769D2" mode="Opaque"/>
-                <textElement verticalAlignment="Middle"><font size="8"/><paragraph leftIndent="18"/></textElement>
+            <textField isBlankWhenNull="true" textAdjust="ScaleFont">
+                <reportElement x="252" y="46" width="380" height="16" forecolor="#FFFFFF"/>
+                <textElement verticalAlignment="Middle"><font size="10" isBold="true"/></textElement>
                 <textFieldExpression><![CDATA["Clientes mayoristas · " + $P{FILTRO}]]></textFieldExpression>
             </textField>
+            <staticText>
+                <reportElement x="660" y="10" width="130" height="10" forecolor="#C3CFFF"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="7" isBold="true"/></textElement>
+                <text><![CDATA[FECHA DE CORTE]]></text>
+            </staticText>
             <textField isBlankWhenNull="true">
-                <reportElement x="568" y="24" width="234" height="24" forecolor="#DCEBFF" backcolor="#1769D2" mode="Opaque"/>
-                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="8"/><paragraph rightIndent="18"/></textElement>
+                <reportElement x="640" y="21" width="150" height="16" forecolor="#FFFFFF"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="12" isBold="true"/></textElement>
                 <textFieldExpression><![CDATA["Al " + $P{FECHA}]]></textFieldExpression>
             </textField>
+
+            <!-- Cómo se lee -->
+            <rectangle radius="8">
+                <reportElement mode="Opaque" x="0" y="80" width="802" height="34" forecolor="#D3DBEE" backcolor="#F2F5FC"/>
+                <graphicElement><pen lineWidth="0.75" lineColor="#D3DBEE"/></graphicElement>
+            </rectangle>
+            <rectangle>
+                <reportElement mode="Opaque" x="0" y="80" width="5" height="34" forecolor="#2B3990" backcolor="#2B3990"/>
+                <graphicElement><pen lineWidth="0.5" lineColor="#2B3990"/></graphicElement>
+            </rectangle>
             <staticText>
-                <reportElement x="0" y="56" width="802" height="28" forecolor="#66758A"/>
-                <textElement><font size="8" isItalic="true"/></textElement>
+                <reportElement x="16" y="84" width="776" height="26" forecolor="#6B7A90"/>
+                <textElement verticalAlignment="Middle"><font size="8" isItalic="true"/></textElement>
                 <text><![CDATA[Un pedido vence cuando pasan los días de crédito desde su primera entrega; el de contado entregado sin cobrar vence el día de la entrega. "Por vencer" es lo que todavía está dentro del plazo.]]></text>
             </staticText>
+
+            <!-- Resumen -->
+            <rectangle radius="8">
+                <reportElement mode="Opaque" x="0" y="126" width="193" height="46" forecolor="#2B3990" backcolor="#2B3990"/>
+                <graphicElement><pen lineWidth="0.5" lineColor="#2B3990"/></graphicElement>
+            </rectangle>
+            <staticText><reportElement x="14" y="132" width="170" height="11" forecolor="#C3CFFF"/><textElement><font size="7.5" isBold="true"/></textElement><text><![CDATA[Total por cobrar]]></text></staticText>
+            <textField pattern="Q #,##0.00"><reportElement x="14" y="144" width="172" height="22" forecolor="#FFFFFF"/><textElement verticalAlignment="Middle"><font size="14" isBold="true"/></textElement><textFieldExpression><![CDATA[$P{TOTAL}]]></textFieldExpression></textField>
+            <rectangle radius="8">
+                <reportElement mode="Opaque" x="203" y="126" width="193" height="46" forecolor="#D3DBEE" backcolor="#FFFFFF"/>
+                <graphicElement><pen lineWidth="0.75" lineColor="#D3DBEE"/></graphicElement>
+            </rectangle>
+            <staticText><reportElement style="Etiqueta" x="217" y="132" width="170" height="11"/><text><![CDATA[Por vencer (dentro del plazo)]]></text></staticText>
+            <textField pattern="Q #,##0.00"><reportElement x="217" y="144" width="172" height="22" forecolor="#087453"/><textElement verticalAlignment="Middle"><font size="14" isBold="true"/></textElement><textFieldExpression><![CDATA[$P{TOTAL_POR_VENCER}]]></textFieldExpression></textField>
+            <rectangle radius="8">
+                <reportElement mode="Opaque" x="406" y="126" width="193" height="46" forecolor="#F1B5B0" backcolor="#FDECEB"/>
+                <graphicElement><pen lineWidth="0.75" lineColor="#F1B5B0"/></graphicElement>
+            </rectangle>
+            <staticText><reportElement style="Etiqueta" x="420" y="132" width="170" height="11" forecolor="#B42318"/><text><![CDATA[Total vencido]]></text></staticText>
+            <textField pattern="Q #,##0.00"><reportElement x="420" y="144" width="172" height="22" forecolor="#B42318"/><textElement verticalAlignment="Middle"><font size="14" isBold="true"/></textElement><textFieldExpression><![CDATA[$P{TOTAL_VENCIDO}]]></textFieldExpression></textField>
+            <rectangle radius="8">
+                <reportElement mode="Opaque" x="609" y="126" width="193" height="46" forecolor="#D3DBEE" backcolor="#FFFFFF"/>
+                <graphicElement><pen lineWidth="0.75" lineColor="#D3DBEE"/></graphicElement>
+            </rectangle>
+            <staticText><reportElement style="Etiqueta" x="623" y="132" width="170" height="11"/><text><![CDATA[Vencido más de 60 días]]></text></staticText>
+            <textField pattern="Q #,##0.00"><reportElement x="623" y="144" width="172" height="22" forecolor="#B42318"/><textElement verticalAlignment="Middle"><font size="14" isBold="true"/></textElement><textFieldExpression><![CDATA[$P{TOTAL_MAS_60}]]></textFieldExpression></textField>
         </band>
     </title>
     <columnHeader>
-        <band height="28">
-            <staticText><reportElement style="Header" x="0" y="0" width="190" height="28"/><textElement textAlignment="Left"/><text><![CDATA[Cliente]]></text></staticText>
-            <staticText><reportElement style="Header" x="190" y="0" width="100" height="28"/><textElement textAlignment="Left"/><text><![CDATA[Ruta]]></text></staticText>
-            <staticText><reportElement style="Header" x="290" y="0" width="80" height="28"/><textElement textAlignment="Right"/><text><![CDATA[Por vencer]]></text></staticText>
-            <staticText><reportElement style="Header" x="370" y="0" width="80" height="28"/><textElement textAlignment="Right"/><text><![CDATA[Vencido 1-30]]></text></staticText>
-            <staticText><reportElement style="Header" x="450" y="0" width="80" height="28"/><textElement textAlignment="Right"/><text><![CDATA[Vencido 31-60]]></text></staticText>
-            <staticText><reportElement style="Header" x="530" y="0" width="80" height="28"/><textElement textAlignment="Right"/><text><![CDATA[Vencido +60]]></text></staticText>
-            <staticText><reportElement style="Header" x="610" y="0" width="80" height="28"/><textElement textAlignment="Right"/><text><![CDATA[Total vencido]]></text></staticText>
-            <staticText><reportElement style="Header" x="690" y="0" width="62" height="28"/><textElement textAlignment="Right"/><text><![CDATA[Total]]></text></staticText>
-            <staticText><reportElement style="Header" x="752" y="0" width="50" height="28"/><textElement textAlignment="Right"/><text><![CDATA[Días atraso]]></text></staticText>
+        <band height="30">
+            <staticText><reportElement style="Header" x="0" y="2" width="190" height="26"/><textElement textAlignment="Left"><paragraph leftIndent="8"/></textElement><text><![CDATA[Cliente]]></text></staticText>
+            <staticText><reportElement style="Header" x="190" y="2" width="100" height="26"/><textElement textAlignment="Left"><paragraph leftIndent="6"/></textElement><text><![CDATA[Ruta]]></text></staticText>
+            <staticText><reportElement style="Header" x="290" y="2" width="80" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><text><![CDATA[Por vencer]]></text></staticText>
+            <staticText><reportElement style="Header" x="370" y="2" width="80" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><text><![CDATA[Vencido 1-30]]></text></staticText>
+            <staticText><reportElement style="Header" x="450" y="2" width="80" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><text><![CDATA[Vencido 31-60]]></text></staticText>
+            <staticText><reportElement style="Header" x="530" y="2" width="80" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><text><![CDATA[Vencido +60]]></text></staticText>
+            <staticText><reportElement style="Header" x="610" y="2" width="80" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><text><![CDATA[Total vencido]]></text></staticText>
+            <staticText><reportElement style="Header" x="690" y="2" width="62" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><text><![CDATA[Total]]></text></staticText>
+            <staticText><reportElement style="Header" x="752" y="2" width="50" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><text><![CDATA[Días atraso]]></text></staticText>
         </band>
     </columnHeader>
     <detail>
-        <band height="22">
-            <textField isBlankWhenNull="true"><reportElement style="Cell" x="0" y="0" width="190" height="22"/><textElement textAlignment="Left"><paragraph leftIndent="4"/></textElement><textFieldExpression><![CDATA[$F{cliente} + ($F{negocio} == null || $F{negocio}.isEmpty() ? "" : " · " + $F{negocio})]]></textFieldExpression></textField>
-            <textField isBlankWhenNull="true"><reportElement style="Cell" x="190" y="0" width="100" height="22"/><textElement textAlignment="Left"><paragraph leftIndent="4"/></textElement><textFieldExpression><![CDATA[$F{ruta}]]></textFieldExpression></textField>
-            <textField pattern="#,##0.00"><reportElement style="Cell" x="290" y="0" width="80" height="22"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{porVencer}]]></textFieldExpression></textField>
-            <textField pattern="#,##0.00"><reportElement style="Cell" x="370" y="0" width="80" height="22"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{vencido1a30}]]></textFieldExpression></textField>
-            <textField pattern="#,##0.00"><reportElement style="Cell" x="450" y="0" width="80" height="22"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{vencido31a60}]]></textFieldExpression></textField>
-            <textField pattern="#,##0.00"><reportElement style="Cell" x="530" y="0" width="80" height="22"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{vencidoMasDe60}]]></textFieldExpression></textField>
-            <textField pattern="#,##0.00"><reportElement style="Cell" x="610" y="0" width="80" height="22" forecolor="#B42318"/><textElement textAlignment="Right"><font isBold="true"/><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{vencido}]]></textFieldExpression></textField>
-            <textField pattern="#,##0.00"><reportElement style="Cell" x="690" y="0" width="62" height="22"/><textElement textAlignment="Right"><font isBold="true"/><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{total}]]></textFieldExpression></textField>
-            <textField pattern="#,##0"><reportElement style="Cell" x="752" y="0" width="50" height="22"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{diasMaxAtraso}]]></textFieldExpression></textField>
+        <band height="26">
+            <textField isBlankWhenNull="true" textAdjust="ScaleFont"><reportElement style="Cell" x="0" y="0" width="190" height="26"/><textElement textAlignment="Left"><font size="8.5" isBold="true"/><paragraph leftIndent="8"/></textElement><textFieldExpression><![CDATA[$F{cliente} + ($F{negocio} == null || $F{negocio}.isEmpty() ? "" : " · " + $F{negocio})]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true" textAdjust="ScaleFont"><reportElement style="Cell" x="190" y="0" width="100" height="26"/><textElement textAlignment="Left"><paragraph leftIndent="6"/></textElement><textFieldExpression><![CDATA[$F{ruta}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00"><reportElement style="Cell" x="290" y="0" width="80" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><textFieldExpression><![CDATA[$F{porVencer}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00"><reportElement style="Cell" x="370" y="0" width="80" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><textFieldExpression><![CDATA[$F{vencido1a30}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00"><reportElement style="Cell" x="450" y="0" width="80" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><textFieldExpression><![CDATA[$F{vencido31a60}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00"><reportElement style="Cell" x="530" y="0" width="80" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><textFieldExpression><![CDATA[$F{vencidoMasDe60}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00"><reportElement style="Vencido" x="610" y="0" width="80" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><textFieldExpression><![CDATA[$F{vencido}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00"><reportElement style="Cell" x="690" y="0" width="62" height="26"/><textElement textAlignment="Right"><font size="9" isBold="true"/><paragraph rightIndent="6"/></textElement><textFieldExpression><![CDATA[$F{total}]]></textFieldExpression></textField>
+            <textField pattern="#,##0"><reportElement style="Atraso" x="752" y="0" width="50" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><textFieldExpression><![CDATA[$F{diasMaxAtraso}]]></textFieldExpression></textField>
         </band>
     </detail>
 
     <pageFooter>
-        <band height="18">
+        <band height="20">
+            <line><reportElement x="0" y="2" width="802" height="1" forecolor="#E1E7F3">
+                <printWhenExpression><![CDATA["PDF".equals($P{FORMATO})]]></printWhenExpression>
+            </reportElement></line>
+            <staticText>
+                <reportElement x="0" y="5" width="300" height="14" forecolor="#7B8798">
+                    <printWhenExpression><![CDATA["PDF".equals($P{FORMATO})]]></printWhenExpression>
+                </reportElement>
+                <textElement><font size="8"/></textElement>
+                <text><![CDATA[Cuentas por cobrar · D'Todo]]></text>
+            </staticText>
             <textField>
-                <reportElement x="642" y="2" width="115" height="14" forecolor="#7B8798">
+                <reportElement x="642" y="5" width="115" height="14" forecolor="#7B8798">
                     <printWhenExpression><![CDATA["PDF".equals($P{FORMATO})]]></printWhenExpression>
                 </reportElement>
                 <textElement textAlignment="Right"><font size="8"/></textElement>
                 <textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER}]]></textFieldExpression>
             </textField>
             <textField evaluationTime="Report">
-                <reportElement x="757" y="2" width="35" height="14" forecolor="#7B8798">
+                <reportElement x="757" y="5" width="35" height="14" forecolor="#7B8798">
                     <printWhenExpression><![CDATA["PDF".equals($P{FORMATO})]]></printWhenExpression>
                 </reportElement>
                 <textElement textAlignment="Left"><font size="8"/></textElement>
@@ -120,20 +199,21 @@
 
     <summary>
         <band height="76">
-            <line><reportElement x="0" y="8" width="802" height="1" forecolor="#B9C9DC"/></line>
-            <staticText><reportElement x="190" y="16" width="100" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Totales:]]></text></staticText>
-            <textField pattern="#,##0.00"><reportElement x="290" y="16" width="80" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$P{TOTAL_POR_VENCER}]]></textFieldExpression></textField>
-            <textField pattern="#,##0.00"><reportElement x="370" y="16" width="80" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$P{TOTAL_1_30}]]></textFieldExpression></textField>
-            <textField pattern="#,##0.00"><reportElement x="450" y="16" width="80" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$P{TOTAL_31_60}]]></textFieldExpression></textField>
-            <textField pattern="#,##0.00"><reportElement x="530" y="16" width="80" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$P{TOTAL_MAS_60}]]></textFieldExpression></textField>
-            <textField pattern="#,##0.00"><reportElement x="610" y="16" width="80" height="20" forecolor="#B42318"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$P{TOTAL_VENCIDO}]]></textFieldExpression></textField>
-            <textField pattern="#,##0.00"><reportElement x="690" y="16" width="62" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$P{TOTAL}]]></textFieldExpression></textField>
+            <!-- Fila de totales alineada con las columnas -->
+            <staticText><reportElement style="Header" x="0" y="8" width="290" height="26"/><textElement textAlignment="Right"><font size="9"/><paragraph rightIndent="8"/></textElement><text><![CDATA[Totales:]]></text></staticText>
+            <textField pattern="#,##0.00"><reportElement style="Header" x="290" y="8" width="80" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><textFieldExpression><![CDATA[$P{TOTAL_POR_VENCER}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00"><reportElement style="Header" x="370" y="8" width="80" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><textFieldExpression><![CDATA[$P{TOTAL_1_30}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00"><reportElement style="Header" x="450" y="8" width="80" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><textFieldExpression><![CDATA[$P{TOTAL_31_60}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00"><reportElement style="Header" x="530" y="8" width="80" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><textFieldExpression><![CDATA[$P{TOTAL_MAS_60}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00"><reportElement style="Header" x="610" y="8" width="80" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><textFieldExpression><![CDATA[$P{TOTAL_VENCIDO}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00"><reportElement style="Header" x="690" y="8" width="62" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><textFieldExpression><![CDATA[$P{TOTAL}]]></textFieldExpression></textField>
+            <staticText><reportElement style="Header" x="752" y="8" width="50" height="26"/><text><![CDATA[]]></text></staticText>
             <staticText>
-                <reportElement x="0" y="48" width="400" height="24" forecolor="#52647C" backcolor="#F4F8FC" mode="Opaque">
+                <reportElement x="0" y="46" width="400" height="26" forecolor="#52647C" backcolor="#F4F8FC" mode="Opaque">
                     <printWhenExpression><![CDATA[$V{REPORT_COUNT} == null || $V{REPORT_COUNT}.intValue() == 0]]></printWhenExpression>
                 </reportElement>
                 <box><pen lineWidth="0.5" lineColor="#D6E2F0"/></box>
-                <textElement verticalAlignment="Middle"><font size="9" isItalic="true"/></textElement>
+                <textElement verticalAlignment="Middle"><font size="9" isItalic="true"/><paragraph leftIndent="8"/></textElement>
                 <text><![CDATA[No hay clientes con saldo pendiente para los filtros seleccionados.]]></text>
             </staticText>
         </band>

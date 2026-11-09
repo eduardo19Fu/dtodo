@@ -61,4 +61,32 @@ class ReporteMayoristasServiceImplTest {
 
         verifyNoInteractions(dataSource);
     }
+
+    @Test
+    void elExcelDeProformasPorVendedorEsUnaTablaConNumerosYTotales() throws Exception {
+        java.util.Map<String, Object> fila = new java.util.HashMap<>();
+        fila.put("vendedor", "Bryan Vargas");
+        fila.put("generadas", 10L);
+        fila.put("valor_proformado", new java.math.BigDecimal("5000.00"));
+        fila.put("facturadas", 4L);
+        fila.put("valor_facturado", new java.math.BigDecimal("2500.00"));
+        fila.put("por_autorizar", 1L);
+        fila.put("tasa_conversion", new java.math.BigDecimal("0.4"));
+        java.util.Map<String, Object> parametros = new java.util.HashMap<>();
+        parametros.put("RUTA", "Todas las rutas");
+        parametros.put("RANGO", "Del 01/10/2026 al 31/10/2026");
+
+        byte[] xlsx = ReporteMayoristasServiceImpl.excelDe(ReporteMayoristasServiceImpl.PLANTILLA_PROFORMAS_VENDEDOR,
+                java.util.Collections.singletonList(fila), parametros, "Proformas por vendedor");
+
+        try (org.apache.poi.ss.usermodel.Workbook libro = new org.apache.poi.xssf.usermodel.XSSFWorkbook(new java.io.ByteArrayInputStream(xlsx))) {
+            org.apache.poi.ss.usermodel.Sheet hoja = libro.getSheetAt(0);
+            org.apache.poi.ss.usermodel.Row datos = hoja.getRow(5);
+            assertEquals("Bryan Vargas", datos.getCell(0).getStringCellValue());
+            assertEquals(10.0, datos.getCell(1).getNumericCellValue());
+            assertEquals(5000.0, datos.getCell(2).getNumericCellValue());
+            assertEquals(40.0, datos.getCell(6).getNumericCellValue(), 0.001);
+            assertEquals(10.0, hoja.getRow(6).getCell(1).getNumericCellValue());
+        }
+    }
 }

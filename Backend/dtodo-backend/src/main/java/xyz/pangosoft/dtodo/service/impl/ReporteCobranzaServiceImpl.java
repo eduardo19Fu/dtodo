@@ -1,6 +1,5 @@
 package xyz.pangosoft.dtodo.service.impl;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -15,17 +14,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
-import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
-import net.sf.jasperreports.export.SimpleExporterInput;
-import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
-import net.sf.jasperreports.export.SimpleXlsxReportConfiguration;
+import xyz.pangosoft.dtodo.dto.CobranzaClienteDto;
 import xyz.pangosoft.dtodo.dto.CobranzaDto;
 import xyz.pangosoft.dtodo.dto.MovimientoEstadoCuentaDto;
 import xyz.pangosoft.dtodo.error.exceptions.BadRequestException;
@@ -36,6 +31,8 @@ import xyz.pangosoft.dtodo.repository.IClienteRepository;
 import xyz.pangosoft.dtodo.repository.IRutaRepository;
 import xyz.pangosoft.dtodo.service.ICobranzaService;
 import xyz.pangosoft.dtodo.service.IReporteCobranzaService;
+import xyz.pangosoft.dtodo.util.ExcelTabla;
+import xyz.pangosoft.dtodo.util.ExcelTabla.Columna;
 
 @Service
 @RequiredArgsConstructor
@@ -57,7 +54,6 @@ public class ReporteCobranzaServiceImpl implements IReporteCobranzaService {
         String ruta = idRuta == null ? "todas las rutas"
                 : rutaRepository.findById(idRuta).map(r -> r.getNombre()).orElse("ruta " + idRuta);
         Map<String, Object> parametros = new HashMap<>();
-        parametros.put(JRParameter.IS_IGNORE_PAGINATION, "XLSX".equals(formatoValido));
         parametros.put("FORMATO", formatoValido);
         parametros.put("FECHA", CobranzaServiceImpl.FECHA_VISIBLE.format(cobranza.getFecha()));
         parametros.put("FILTRO", ruta + (soloVencidos ? " · solo con saldo vencido" : ""));
@@ -67,8 +63,27 @@ public class ReporteCobranzaServiceImpl implements IReporteCobranzaService {
         parametros.put("TOTAL_MAS_60", cobranza.getVencidoMasDe60());
         parametros.put("TOTAL_VENCIDO", cobranza.getVencido());
         parametros.put("TOTAL", cobranza.getTotal());
+        if ("XLSX".equals(formatoValido)) {
+            return ExcelTabla.generar("Cuentas por cobrar", "Cuentas por cobrar",
+                    List.of("Ruta: " + parametros.get("FILTRO"), "Al " + parametros.get("FECHA")), columnasSaldos(), cobranza.getClientes());
+        }
         return generar(PLANTILLA_SALDOS, parametros, new JRBeanCollectionDataSource(cobranza.getClientes()), formatoValido,
                 "Cuentas por cobrar");
+    }
+
+    static List<Columna<CobranzaClienteDto>> columnasSaldos() {
+        return List.of(
+                Columna.texto("Cliente", CobranzaClienteDto::getCliente),
+                Columna.texto("Negocio", CobranzaClienteDto::getNegocio),
+                Columna.texto("Ruta", CobranzaClienteDto::getRuta),
+                Columna.dinero("Límite de crédito", CobranzaClienteDto::getLimiteCredito, false),
+                Columna.dinero("Por vencer", CobranzaClienteDto::getPorVencer, true),
+                Columna.dinero("Vencido 1-30 días", CobranzaClienteDto::getVencido1a30, true),
+                Columna.dinero("Vencido 31-60 días", CobranzaClienteDto::getVencido31a60, true),
+                Columna.dinero("Vencido más de 60 días", CobranzaClienteDto::getVencidoMasDe60, true),
+                Columna.dinero("Total vencido", CobranzaClienteDto::getVencido, true),
+                Columna.dinero("Total adeudado", CobranzaClienteDto::getTotal, true),
+                Columna.entero("Días de atraso", CobranzaClienteDto::getDiasMaxAtraso, false));
     }
 
     @Override
@@ -98,27 +113,10 @@ public class ReporteCobranzaServiceImpl implements IReporteCobranzaService {
             }
             JasperReport report = JasperCompileManager.compileReport(template);
             JasperPrint print = JasperFillManager.fillReport(report, parametros, datos);
-            return "XLSX".equals(formato) ? exportarXlsx(print, hoja) : JasperExportManager.exportReportToPdf(print);
+            return JasperExportManager.exportReportToPdf(print);
         } catch (JRException | IOException exception) {
             log.error("No fue posible generar el reporte {}. formato={}", plantilla, formato, exception);
             throw new ReportGenerationException("No fue posible generar el reporte de cobranza.", exception);
-        }
-    }
-
-    private byte[] exportarXlsx(JasperPrint print, String hoja) throws JRException, IOException {
-        try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-            JRXlsxExporter exporter = new JRXlsxExporter();
-            exporter.setExporterInput(new SimpleExporterInput(print));
-            exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(output));
-            SimpleXlsxReportConfiguration configuration = new SimpleXlsxReportConfiguration();
-            configuration.setDetectCellType(true);
-            configuration.setRemoveEmptySpaceBetweenRows(true);
-            configuration.setWhitePageBackground(false);
-            configuration.setOnePagePerSheet(false);
-            configuration.setSheetNames(new String[] { hoja });
-            exporter.setConfiguration(configuration);
-            exporter.exportReport();
-            return output.toByteArray();
         }
     }
 }

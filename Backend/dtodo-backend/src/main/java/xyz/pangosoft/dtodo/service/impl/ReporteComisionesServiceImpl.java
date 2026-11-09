@@ -1,11 +1,11 @@
 package xyz.pangosoft.dtodo.service.impl;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -17,22 +17,20 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
-import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
-import net.sf.jasperreports.export.SimpleExporterInput;
-import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
-import net.sf.jasperreports.export.SimpleXlsxReportConfiguration;
 import xyz.pangosoft.dtodo.dto.AvanceComisionDto;
+import xyz.pangosoft.dtodo.dto.FilaComisionDto;
 import xyz.pangosoft.dtodo.dto.MetaComisionDto;
 import xyz.pangosoft.dtodo.error.exceptions.ReportGenerationException;
 import xyz.pangosoft.dtodo.service.IComisionService;
 import xyz.pangosoft.dtodo.service.IReporteComisionesService;
+import xyz.pangosoft.dtodo.util.ExcelTabla;
+import xyz.pangosoft.dtodo.util.ExcelTabla.Columna;
 
 @Service
 @RequiredArgsConstructor
@@ -50,7 +48,6 @@ public class ReporteComisionesServiceImpl implements IReporteComisionesService {
         String formatoValido = ReporteMayoristasServiceImpl.validarFormato(formato);
         AvanceComisionDto avance = comisionService.avance(anio);
         Map<String, Object> parametros = new HashMap<>();
-        parametros.put(JRParameter.IS_IGNORE_PAGINATION, "XLSX".equals(formatoValido));
         parametros.put("ANIO", anio);
         parametros.put("FORMATO", formatoValido);
         parametros.put("ESTADO", estado(avance));
@@ -60,7 +57,35 @@ public class ReporteComisionesServiceImpl implements IReporteComisionesService {
         parametros.put("TOTAL_NETO", avance.getTotalNeto());
         parametros.put("TOTAL_COMISION", avance.getTotalComision());
         parametros.put("LIQUIDADO", avance.isLiquidado());
+        if ("XLSX".equals(formatoValido)) {
+            return ExcelTabla.generar("Comisiones", "Comisiones de vendedores " + anio,
+                    List.of(estado(avance), "Metas: " + metas(avance.getMetas())), columnas(), avance.getFilas());
+        }
         return generar(parametros, avance, formatoValido);
+    }
+
+    static List<Columna<FilaComisionDto>> columnas() {
+        List<Columna<FilaComisionDto>> columnas = new ArrayList<>(List.of(
+                Columna.texto("Vendedor", FilaComisionDto::getVendedor),
+                Columna.texto("Situación", f -> situacion(f.getSituacion())),
+                Columna.fecha("Cuenta desde", FilaComisionDto::getPeriodoDesde),
+                Columna.dinero("Entregado", FilaComisionDto::getMontoEntregado, true),
+                Columna.dinero("Devuelto", FilaComisionDto::getMontoDevuelto, true),
+                Columna.dinero("Base (neto)", FilaComisionDto::getMontoNeto, true),
+                Columna.dinero("Meta alcanzada", FilaComisionDto::getMetaAlcanzada, false),
+                Columna.porcentaje("Porcentaje", FilaComisionDto::getPorcentaje),
+                Columna.dinero("Comisión", FilaComisionDto::getComision, true),
+                Columna.dinero("Siguiente meta", FilaComisionDto::getSiguienteMeta, false),
+                Columna.dinero("Falta para la siguiente", FilaComisionDto::getFaltaParaSiguiente, false)));
+        columnas.add(Columna.texto("Completó el año", f -> f.getCompletoAnio() == null ? "Sin definir" : f.getCompletoAnio() ? "Sí" : "No"));
+        return columnas;
+    }
+
+    private static String situacion(String codigo) {
+        if ("BLOQUE".equals(codigo)) {
+            return "Se paga en bloque";
+        }
+        return "PENDIENTE".equals(codigo) ? "Aún no cumple 365 días" : "Año completo";
     }
 
     static String estado(AvanceComisionDto avance) {
@@ -87,27 +112,10 @@ public class ReporteComisionesServiceImpl implements IReporteComisionesService {
             }
             JasperReport report = JasperCompileManager.compileReport(template);
             JasperPrint print = JasperFillManager.fillReport(report, parametros, new JRBeanCollectionDataSource(avance.getFilas()));
-            return "XLSX".equals(formato) ? exportarXlsx(print) : JasperExportManager.exportReportToPdf(print);
+            return JasperExportManager.exportReportToPdf(print);
         } catch (JRException | IOException exception) {
             log.error("No fue posible generar el reporte de comisiones. formato={}", formato, exception);
             throw new ReportGenerationException("No fue posible generar el reporte de comisiones.", exception);
-        }
-    }
-
-    private byte[] exportarXlsx(JasperPrint print) throws JRException, IOException {
-        try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-            JRXlsxExporter exporter = new JRXlsxExporter();
-            exporter.setExporterInput(new SimpleExporterInput(print));
-            exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(output));
-            SimpleXlsxReportConfiguration configuration = new SimpleXlsxReportConfiguration();
-            configuration.setDetectCellType(true);
-            configuration.setRemoveEmptySpaceBetweenRows(true);
-            configuration.setWhitePageBackground(false);
-            configuration.setOnePagePerSheet(false);
-            configuration.setSheetNames(new String[] { "Comisiones" });
-            exporter.setConfiguration(configuration);
-            exporter.exportReport();
-            return output.toByteArray();
         }
     }
 }

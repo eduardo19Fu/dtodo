@@ -81,9 +81,9 @@ class ReporteCobranzaServiceImplTest {
 
         assertTrue(excel.contains("Cuentas por cobrar"), excel);
         assertTrue(excel.contains("Al 30/11/2026"), excel);
-        assertTrue(excel.contains("Libreria Uno · Elizyov"), excel);
-        assertTrue(excel.contains("RUTA 1"), excel);
-        assertTrue(excel.contains("300.00"), excel);
+        assertTrue(excel.contains("Cliente|Negocio|Ruta|Límite de crédito|Por vencer"), excel);
+        assertTrue(excel.contains("Libreria Uno|Elizyov|RUTA 1"), excel);
+        assertTrue(excel.contains("Q300.00"), excel);
         assertEquals("%PDF", new String(pdf, 0, 4, StandardCharsets.US_ASCII));
     }
 
@@ -95,7 +95,7 @@ class ReporteCobranzaServiceImplTest {
 
         String excel = texto(service.cuentasPorCobrar(null, true, "XLSX"));
 
-        assertTrue(excel.contains("No hay clientes con saldo pendiente"), excel);
+        assertTrue(excel.contains("No hay registros"), excel);
         assertTrue(excel.contains("solo con saldo vencido"), excel);
     }
 

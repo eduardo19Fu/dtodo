@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Estado de cuenta de un cliente mayorista. Plantilla escrita a mano en formato JasperReports 6.x; no abrir ni guardar con
      Jaspersoft Studio 7, que cambia el formato y la librería del proyecto no lo entiende. Se llena con una lista de
-     MovimientoEstadoCuentaDto, no con SQL. -->
+     MovimientoEstadoCuentaDto, no con SQL. Mismo lenguaje visual que la proforma: logo sin fondo, panel azul del documento,
+     tarjeta del cliente, resumen del saldo y filas alternadas. -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
@@ -10,14 +11,19 @@
               topMargin="18" bottomMargin="18" isSummaryWithPageHeaderAndFooter="true"
               uuid="c4a82e19-73d5-4b0f-a6e8-1d9f5037b2c6">
 
-    <style name="Base" isDefault="true" fontName="DejaVu Sans" fontSize="8" forecolor="#23344D"/>
-    <style name="Header" style="Base" mode="Opaque" backcolor="#1769D2" forecolor="#FFFFFF"
+    <style name="Base" isDefault="true" fontName="DejaVu Sans" fontSize="8.5" forecolor="#1F2A44"/>
+    <style name="Header" style="Base" mode="Opaque" backcolor="#2B3990" forecolor="#FFFFFF"
            fontSize="8" isBold="true" vTextAlign="Middle"/>
     <style name="Cell" style="Base" mode="Opaque" backcolor="#FFFFFF" vTextAlign="Middle">
-        <box><pen lineWidth="0.35" lineColor="#D9E3EF"/></box>
+        <box><bottomPen lineWidth="0.5" lineColor="#E1E7F3"/></box>
+        <conditionalStyle>
+            <conditionExpression><![CDATA[$V{REPORT_COUNT}.intValue() % 2 == 0]]></conditionExpression>
+            <style backcolor="#F6F8FD"/>
+        </conditionalStyle>
     </style>
-    <style name="Etiqueta" style="Base" fontSize="7" forecolor="#66758A"/>
-    <style name="Valor" style="Base" fontSize="9" isBold="true"/>
+    <style name="Abono" style="Cell" isBold="true" forecolor="#087453"/>
+    <style name="Etiqueta" style="Base" fontSize="7.5" isBold="true" forecolor="#6B7A90"/>
+    <style name="Valor" style="Base" fontSize="10.5" isBold="true"/>
 
     <parameter name="CLIENTE" class="java.lang.String"/>
     <parameter name="NIT" class="java.lang.String"/>
@@ -34,73 +40,147 @@
     <field name="abono" class="java.math.BigDecimal"/>
     <field name="saldo" class="java.math.BigDecimal"/>
 
+    <variable name="TOTAL_CARGOS" class="java.math.BigDecimal" calculation="Sum">
+        <variableExpression><![CDATA[$F{cargo} == null ? java.math.BigDecimal.ZERO : $F{cargo}]]></variableExpression>
+        <initialValueExpression><![CDATA[java.math.BigDecimal.ZERO]]></initialValueExpression>
+    </variable>
+    <variable name="TOTAL_ABONOS" class="java.math.BigDecimal" calculation="Sum">
+        <variableExpression><![CDATA[$F{abono} == null ? java.math.BigDecimal.ZERO : $F{abono}]]></variableExpression>
+        <initialValueExpression><![CDATA[java.math.BigDecimal.ZERO]]></initialValueExpression>
+    </variable>
+
     <title>
-        <band height="112">
-            <rectangle radius="8">
-                <reportElement x="90" y="0" width="482" height="48" forecolor="#1769D2" backcolor="#1769D2"/>
-            </rectangle>
-            <image scaleImage="RetainShape" hAlign="Center">
-                <reportElement x="0" y="0" width="72" height="48"/>
-                <imageExpression><![CDATA[this.getClass().getResourceAsStream("/static/images/reports-image/logo-dtodo.jpg")]]></imageExpression>
+        <band height="196">
+            <!-- Logo sin fondo y panel azul del documento -->
+            <image scaleImage="RetainShape" hAlign="Left">
+                <reportElement x="0" y="2" width="130" height="62"/>
+                <imageExpression><![CDATA[this.getClass().getResourceAsStream("/static/images/reports-image/logo-dtodo-proforma.png")]]></imageExpression>
             </image>
+            <rectangle radius="9">
+                <reportElement mode="Opaque" x="146" y="2" width="426" height="60" forecolor="#2B3990" backcolor="#2B3990"/>
+                <graphicElement><pen lineWidth="0.5" lineColor="#2B3990"/></graphicElement>
+            </rectangle>
             <staticText>
-                <reportElement x="90" y="0" width="300" height="48" forecolor="#FFFFFF" backcolor="#1769D2" mode="Opaque"/>
-                <textElement verticalAlignment="Middle"><font size="16" isBold="true"/><paragraph leftIndent="18"/></textElement>
+                <reportElement x="162" y="9" width="200" height="11" forecolor="#C3CFFF"/>
+                <textElement verticalAlignment="Middle"><font size="7.5" isBold="true"/></textElement>
+                <text><![CDATA[CUENTAS POR COBRAR]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="162" y="21" width="260" height="30" forecolor="#FFFFFF"/>
+                <textElement verticalAlignment="Middle"><font size="19" isBold="true"/></textElement>
                 <text><![CDATA[Estado de cuenta]]></text>
             </staticText>
+            <staticText>
+                <reportElement x="440" y="12" width="116" height="10" forecolor="#C3CFFF"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="7" isBold="true"/></textElement>
+                <text><![CDATA[FECHA DE CORTE]]></text>
+            </staticText>
             <textField>
-                <reportElement x="390" y="0" width="182" height="48" forecolor="#DCEBFF" backcolor="#1769D2" mode="Opaque"/>
-                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="8"/><paragraph rightIndent="18"/></textElement>
+                <reportElement x="400" y="25" width="156" height="22" forecolor="#FFFFFF"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="12" isBold="true"/></textElement>
                 <textFieldExpression><![CDATA["Al " + $P{FECHA}]]></textFieldExpression>
             </textField>
 
-            <staticText><reportElement style="Etiqueta" x="0" y="58" width="100" height="10"/><text><![CDATA[Cliente]]></text></staticText>
-            <textField isBlankWhenNull="true"><reportElement style="Valor" x="0" y="68" width="360" height="14"/><textFieldExpression><![CDATA[$P{CLIENTE}]]></textFieldExpression></textField>
-            <staticText><reportElement style="Etiqueta" x="380" y="58" width="100" height="10"/><text><![CDATA[NIT]]></text></staticText>
-            <textField isBlankWhenNull="true"><reportElement style="Valor" x="380" y="68" width="192" height="14"/><textFieldExpression><![CDATA[$P{NIT}]]></textFieldExpression></textField>
-            <staticText><reportElement style="Etiqueta" x="0" y="86" width="100" height="10"/><text><![CDATA[Código]]></text></staticText>
-            <textField isBlankWhenNull="true"><reportElement style="Valor" x="0" y="96" width="260" height="14"/><textFieldExpression><![CDATA[$P{CODIGO}]]></textFieldExpression></textField>
-            <staticText><reportElement style="Etiqueta" x="380" y="86" width="100" height="10"/><text><![CDATA[Límite · días de crédito]]></text></staticText>
-            <textField isBlankWhenNull="true"><reportElement style="Valor" x="380" y="96" width="192" height="14"/><textFieldExpression><![CDATA[$P{LIMITE} + " · " + $P{DIAS_CREDITO}]]></textFieldExpression></textField>
+            <!-- Datos del cliente -->
+            <rectangle radius="8">
+                <reportElement mode="Opaque" x="0" y="76" width="572" height="64" forecolor="#D3DBEE" backcolor="#F2F5FC"/>
+                <graphicElement><pen lineWidth="0.75" lineColor="#D3DBEE"/></graphicElement>
+            </rectangle>
+            <rectangle>
+                <reportElement mode="Opaque" x="0" y="76" width="5" height="64" forecolor="#2B3990" backcolor="#2B3990"/>
+                <graphicElement><pen lineWidth="0.5" lineColor="#2B3990"/></graphicElement>
+            </rectangle>
+            <staticText><reportElement style="Etiqueta" x="18" y="83" width="100" height="11"/><text><![CDATA[Cliente]]></text></staticText>
+            <textField isBlankWhenNull="true" textAdjust="ScaleFont"><reportElement style="Valor" x="18" y="95" width="350" height="16"/><textElement verticalAlignment="Middle"/><textFieldExpression><![CDATA[$P{CLIENTE}]]></textFieldExpression></textField>
+            <staticText><reportElement style="Etiqueta" x="18" y="115" width="100" height="10"/><text><![CDATA[Código]]></text></staticText>
+            <textField isBlankWhenNull="true"><reportElement style="Base" x="60" y="115" width="320" height="11" forecolor="#6B7A90"/><textElement verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression><![CDATA[$P{CODIGO}]]></textFieldExpression></textField>
+            <line><reportElement x="392" y="86" width="1" height="44" forecolor="#D3DBEE"/></line>
+            <staticText><reportElement style="Etiqueta" x="408" y="83" width="100" height="11"/><text><![CDATA[NIT]]></text></staticText>
+            <textField isBlankWhenNull="true"><reportElement style="Valor" x="408" y="95" width="156" height="16"/><textElement verticalAlignment="Middle"/><textFieldExpression><![CDATA[$P{NIT}]]></textFieldExpression></textField>
+            <staticText><reportElement style="Etiqueta" x="408" y="113" width="150" height="10"/><text><![CDATA[Límite · días de crédito]]></text></staticText>
+            <textField isBlankWhenNull="true"><reportElement style="Base" x="408" y="124" width="156" height="12"/><textElement verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$P{LIMITE} + " · " + $P{DIAS_CREDITO}]]></textFieldExpression></textField>
+
+            <!-- Resumen: cargos, abonos y saldo -->
+            <rectangle radius="8">
+                <reportElement mode="Opaque" x="0" y="150" width="184" height="38" forecolor="#D3DBEE" backcolor="#FFFFFF"/>
+                <graphicElement><pen lineWidth="0.75" lineColor="#D3DBEE"/></graphicElement>
+            </rectangle>
+            <staticText><reportElement style="Etiqueta" x="12" y="155" width="160" height="11"/><text><![CDATA[Total entregado (cargos)]]></text></staticText>
+            <textField evaluationTime="Report" pattern="Q #,##0.00"><reportElement x="12" y="166" width="164" height="18" forecolor="#1F2A44"/><textElement verticalAlignment="Middle"><font size="12" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_CARGOS}]]></textFieldExpression></textField>
+            <rectangle radius="8">
+                <reportElement mode="Opaque" x="194" y="150" width="184" height="38" forecolor="#D3DBEE" backcolor="#FFFFFF"/>
+                <graphicElement><pen lineWidth="0.75" lineColor="#D3DBEE"/></graphicElement>
+            </rectangle>
+            <staticText><reportElement style="Etiqueta" x="206" y="155" width="160" height="11"/><text><![CDATA[Total abonado (recibos)]]></text></staticText>
+            <textField evaluationTime="Report" pattern="Q #,##0.00"><reportElement x="206" y="166" width="164" height="18" forecolor="#087453"/><textElement verticalAlignment="Middle"><font size="12" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_ABONOS}]]></textFieldExpression></textField>
+            <rectangle radius="8">
+                <reportElement mode="Opaque" x="388" y="150" width="184" height="38" forecolor="#2B3990" backcolor="#2B3990"/>
+                <graphicElement><pen lineWidth="0.5" lineColor="#2B3990"/></graphicElement>
+            </rectangle>
+            <staticText><reportElement x="400" y="155" width="160" height="11" forecolor="#C3CFFF"/><textElement><font size="7.5" isBold="true"/></textElement><text><![CDATA[Saldo al día]]></text></staticText>
+            <textField pattern="Q #,##0.00"><reportElement x="400" y="166" width="164" height="18" forecolor="#FFFFFF"/><textElement verticalAlignment="Middle"><font size="13" isBold="true"/></textElement><textFieldExpression><![CDATA[$P{SALDO}]]></textFieldExpression></textField>
         </band>
     </title>
     <columnHeader>
-        <band height="22">
-            <staticText><reportElement style="Header" x="0" y="0" width="60" height="22"/><textElement textAlignment="Left"><paragraph leftIndent="4"/></textElement><text><![CDATA[Fecha]]></text></staticText>
-            <staticText><reportElement style="Header" x="60" y="0" width="120" height="22"/><textElement textAlignment="Left"><paragraph leftIndent="4"/></textElement><text><![CDATA[Documento]]></text></staticText>
-            <staticText><reportElement style="Header" x="180" y="0" width="152" height="22"/><textElement textAlignment="Left"><paragraph leftIndent="4"/></textElement><text><![CDATA[Detalle]]></text></staticText>
-            <staticText><reportElement style="Header" x="332" y="0" width="80" height="22"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><text><![CDATA[Cargo]]></text></staticText>
-            <staticText><reportElement style="Header" x="412" y="0" width="80" height="22"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><text><![CDATA[Abono]]></text></staticText>
-            <staticText><reportElement style="Header" x="492" y="0" width="80" height="22"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><text><![CDATA[Saldo]]></text></staticText>
+        <band height="24">
+            <staticText><reportElement style="Header" x="0" y="0" width="62" height="24"/><textElement textAlignment="Left"><paragraph leftIndent="8"/></textElement><text><![CDATA[Fecha]]></text></staticText>
+            <staticText><reportElement style="Header" x="62" y="0" width="118" height="24"/><textElement textAlignment="Left"><paragraph leftIndent="6"/></textElement><text><![CDATA[Documento]]></text></staticText>
+            <staticText><reportElement style="Header" x="180" y="0" width="152" height="24"/><textElement textAlignment="Left"><paragraph leftIndent="6"/></textElement><text><![CDATA[Detalle]]></text></staticText>
+            <staticText><reportElement style="Header" x="332" y="0" width="80" height="24"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><text><![CDATA[Cargo]]></text></staticText>
+            <staticText><reportElement style="Header" x="412" y="0" width="80" height="24"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><text><![CDATA[Abono]]></text></staticText>
+            <staticText><reportElement style="Header" x="492" y="0" width="80" height="24"/><textElement textAlignment="Right"><paragraph rightIndent="8"/></textElement><text><![CDATA[Saldo]]></text></staticText>
         </band>
     </columnHeader>
     <detail>
-        <band height="20">
-            <textField isBlankWhenNull="true"><reportElement style="Cell" x="0" y="0" width="60" height="20"/><textElement textAlignment="Left"><paragraph leftIndent="4"/></textElement><textFieldExpression><![CDATA[$F{fechaTexto}]]></textFieldExpression></textField>
-            <textField isBlankWhenNull="true"><reportElement style="Cell" x="60" y="0" width="120" height="20"/><textElement textAlignment="Left"><paragraph leftIndent="4"/></textElement><textFieldExpression><![CDATA[$F{documento}]]></textFieldExpression></textField>
-            <textField isBlankWhenNull="true"><reportElement style="Cell" x="180" y="0" width="152" height="20"/><textElement textAlignment="Left"><paragraph leftIndent="4"/></textElement><textFieldExpression><![CDATA[$F{detalle}]]></textFieldExpression></textField>
-            <textField pattern="#,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="332" y="0" width="80" height="20"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{cargo}]]></textFieldExpression></textField>
-            <textField pattern="#,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="412" y="0" width="80" height="20"/><textElement textAlignment="Right"><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{abono}]]></textFieldExpression></textField>
-            <textField pattern="#,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="492" y="0" width="80" height="20"/><textElement textAlignment="Right"><font isBold="true"/><paragraph rightIndent="4"/></textElement><textFieldExpression><![CDATA[$F{saldo}]]></textFieldExpression></textField>
+        <band height="24">
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="0" y="0" width="62" height="24"/><textElement textAlignment="Left"><paragraph leftIndent="8"/></textElement><textFieldExpression><![CDATA[$F{fechaTexto}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Cell" x="62" y="0" width="118" height="24"/><textElement textAlignment="Left"><font isBold="true"/><paragraph leftIndent="6"/></textElement><textFieldExpression><![CDATA[$F{documento}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true" textAdjust="ScaleFont"><reportElement style="Cell" x="180" y="0" width="152" height="24"/><textElement textAlignment="Left"><font size="8"/><paragraph leftIndent="6"/></textElement><textFieldExpression><![CDATA[$F{detalle}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="332" y="0" width="80" height="24"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><textFieldExpression><![CDATA[$F{cargo}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00" isBlankWhenNull="true"><reportElement style="Abono" x="412" y="0" width="80" height="24"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><textFieldExpression><![CDATA[$F{abono}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="492" y="0" width="80" height="24"/><textElement textAlignment="Right"><font size="9" isBold="true"/><paragraph rightIndent="8"/></textElement><textFieldExpression><![CDATA[$F{saldo}]]></textFieldExpression></textField>
         </band>
     </detail>
 
-    <summary>
-        <band height="84">
-            <line><reportElement x="0" y="8" width="572" height="1" forecolor="#B9C9DC"/></line>
-            <staticText><reportElement x="332" y="16" width="160" height="22" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><text><![CDATA[Saldo al día:]]></text></staticText>
-            <textField pattern="Q #,##0.00"><reportElement x="492" y="16" width="80" height="22" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="10" isBold="true"/></textElement><textFieldExpression><![CDATA[$P{SALDO}]]></textFieldExpression></textField>
+    <pageFooter>
+        <band height="20">
+            <line><reportElement x="0" y="2" width="572" height="1" forecolor="#E1E7F3"/></line>
             <staticText>
-                <reportElement x="0" y="44" width="572" height="24" forecolor="#52647C" backcolor="#F4F8FC" mode="Opaque">
+                <reportElement x="0" y="5" width="300" height="14" forecolor="#7B8798"/>
+                <textElement><font size="8"/></textElement>
+                <text><![CDATA[Estado de cuenta · D'Todo]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="412" y="5" width="100" height="14" forecolor="#7B8798"/>
+                <textElement textAlignment="Right"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+            <textField evaluationTime="Report">
+                <reportElement x="512" y="5" width="60" height="14" forecolor="#7B8798"/>
+                <textElement textAlignment="Left"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA[" de " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+        </band>
+    </pageFooter>
+
+    <summary>
+        <band height="96">
+            <staticText>
+                <reportElement x="0" y="62" width="572" height="26" forecolor="#52647C" backcolor="#F4F8FC" mode="Opaque">
                     <printWhenExpression><![CDATA[$V{REPORT_COUNT} == null || $V{REPORT_COUNT}.intValue() == 0]]></printWhenExpression>
                 </reportElement>
                 <box><pen lineWidth="0.5" lineColor="#D6E2F0"/></box>
-                <textElement verticalAlignment="Middle"><font size="9" isItalic="true"/></textElement>
+                <textElement verticalAlignment="Middle"><font size="9" isItalic="true"/><paragraph leftIndent="8"/></textElement>
                 <text><![CDATA[Este cliente no tiene entregas ni recibos registrados.]]></text>
             </staticText>
+            <!-- Fila de totales alineada con las columnas -->
+            <staticText><reportElement style="Header" x="0" y="8" width="332" height="24"/><textElement textAlignment="Right"><font size="9"/><paragraph rightIndent="8"/></textElement><text><![CDATA[Totales:]]></text></staticText>
+            <textField pattern="#,##0.00"><reportElement style="Header" x="332" y="8" width="80" height="24"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_CARGOS}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00"><reportElement style="Header" x="412" y="8" width="80" height="24"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_ABONOS}]]></textFieldExpression></textField>
+            <textField pattern="#,##0.00"><reportElement style="Header" x="492" y="8" width="80" height="24"/><textElement textAlignment="Right"><paragraph rightIndent="8"/></textElement><textFieldExpression><![CDATA[$P{SALDO}]]></textFieldExpression></textField>
             <staticText>
-                <reportElement x="0" y="70" width="572" height="12" forecolor="#7B8798"/>
-                <textElement><font size="7" isItalic="true"/></textElement>
+                <reportElement x="0" y="40" width="572" height="14" forecolor="#7B8798"/>
+                <textElement><font size="7.5" isItalic="true"/></textElement>
                 <text><![CDATA[Cargo: valor de lo entregado. Abono: recibo de caja. Un saldo negativo es dinero a favor del cliente.]]></text>
             </staticText>
         </band>
