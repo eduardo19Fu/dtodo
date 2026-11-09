@@ -6,6 +6,20 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Protección al cambiar las metas de comisión
+- Al guardar las metas se abre una ventana de confirmación con las metas de antes y de después y el aviso de que se recalcula la comisión de todos los vendedores del año.
+- Si el año ya terminó y no se ha liquidado, el motivo del cambio es obligatorio (en el año en curso es opcional). Si las metas no cambian, no se guarda ni se registra nada.
+- Cada cambio (crear, modificar o copiar) queda en un historial con usuario, fecha, motivo y metas de antes y después, que se consulta en un panel plegable bajo las metas. Servidor: `PUT /api/comisiones/metas?motivo=`, `GET /api/comisiones/metas/historial?anio=` y la tabla `comisiones_metas_historial` (script `sql/mayoristas/21_create_comisiones_metas_historial.sql`, aplicado en dev; **producción sin aplicar**).
+
+### Corregido — Indicador de carga en los reportes de comisiones
+- Los botones «Reporte PDF» y «Reporte Excel» del avance de los vendedores muestran un indicador giratorio y el texto «Generando PDF...» o «Generando Excel...» mientras se arma el reporte, y vuelven a su aspecto al terminar o si hay un error.
+
+### Cambiado — Reporte de comisiones rediseñado
+- El reporte de comisiones de vendedores (PDF y Excel) sigue el diseño de la proforma: logo sin fondo, panel azul con el año, el estado y la fecha de generación, tarjeta con las metas y la regla de cálculo, tabla con filas alternadas, comisión destacada, «Completó el año» en verde, rojo o gris según el caso, y una fila de totales en azul alineada con las columnas.
+
+### Corregido — Pedidos con crédito por autorizar
+- El listado de pedidos ya no ofrece «Iniciar picking» (ni el siguiente paso, ni «Registrar entrega» o cambiar piloto) cuando el crédito del pedido está pendiente o rechazado, y muestra junto a la etapa la etiqueta «Crédito por autorizar» o «Crédito rechazado» con su explicación (si también hay un descuento sin autorizar salen las dos). Antes solo se bloqueaba por descuento y el servidor respondía con un error al intentarlo. El servidor envía `creditoAutorizacion` en cada fila de `GET /api/pedidos`.
+
 ### Cambiado — Manual de mayoristas actualizado
 - El manual refleja los últimos cambios: rutas plegables y filtros de etapa (incluido «Entregado») en Pedidos, nueva botonera y acción bajo la etapa, notas de envío por ruta y de todas las rutas, hojas de picking, empaque y nota de envío rediseñadas, detalle del pedido con paginación, formulario de entrega con tarjetas, ventanas de confirmación, panel de entrega y selector de descuento de la proforma, nota por línea, historial desplegable, recibo de caja y proforma rediseñados, filtro «Mayorista» en Productos, y un escenario nuevo (15.18) para probar varias rutas con los datos de prueba. También 4 preguntas frecuentes nuevas.
 

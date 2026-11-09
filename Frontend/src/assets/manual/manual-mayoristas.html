@@ -860,7 +860,7 @@
       </ol>
       <div class="callout warn">
         <span class="callout-title">Pedidos que no avanzan</span>
-        <p>Un pedido <span class="pill wait">Por autorizar</span> (por descuento o por crédito) <strong>no puede prepararse</strong>. Pide al administrador que lo autorice en la bandeja de Autorizaciones.</p>
+        <p>Un pedido con una etiqueta <span class="pill wait">Por autorizar</span> (descuento) o <span class="pill wait">Crédito por autorizar</span> (pasa del límite de crédito) <strong>no puede prepararse</strong>: la lista no muestra su botón de avance. Pide al administrador que lo autorice en la bandeja de Autorizaciones; al hacerlo, el botón reaparece. Si fue rechazado, la etiqueta dice <em>Rechazado</em> o <em>Crédito rechazado</em> y hay que corregir la proforma.</p>
       </div>
       <p>Mientras el pedido está en ruta, el administrador o bodega pueden <strong>cambiar el piloto</strong> con el icono del usuario (en una ventana azul con la lista de pilotos).</p>
       <p>Los botones de icono de cada pedido son, en este orden: <strong>ojo</strong> (ver el detalle), <strong>lista</strong> (hoja de picking), <strong>caja</strong> (lista de empaque), <strong>usuario</strong> (cambiar piloto) y <strong>flecha</strong> (regresar de etapa, solo administrador).</p>
@@ -1081,7 +1081,14 @@
         <li>Pulsa <span class="btn light">+ Agregar meta</span> para una fila nueva, o <span class="btn light">Copiar de otro año</span> para partir de las metas de otro año. El bote de basura quita una fila.</li>
         <li>Cada meta debe pedir un monto <strong>y</strong> un porcentaje <strong>mayores</strong> que los de la anterior.</li>
         <li>Pulsa <span class="btn">Guardar metas</span>. Si cambias algo y no quieres guardarlo, usa <em>Descartar cambios</em>.</li>
+        <li>Antes de guardar se abre una ventana que muestra las metas <strong>Antes</strong> y <strong>Después</strong> y avisa que se <strong>recalcula la comisión de todos los vendedores</strong> del año. Revisa y pulsa <span class="btn">Guardar metas</span>, o <em>Cancelar</em> para volver sin cambiar nada.</li>
       </ol>
+      <div class="callout warn">
+        <span class="callout-title">Motivo del cambio</span>
+        <p>Si el año <strong>ya terminó</strong> y aún no se liquida, la ventana pide el <strong>motivo</strong> del cambio y es obligatorio, porque cambiar las metas en ese momento mueve pagos reales. Durante el año en curso el motivo es opcional. Si no cambias nada, no se guarda ni se registra nada. Un año <strong>liquidado</strong> no se puede editar: primero hay que deshacer la liquidación.</p>
+      </div>
+      <h4>Historial de cambios de las metas</h4>
+      <p>Cada vez que se crean, modifican o copian las metas de un año queda constancia. Bajo las metas aparece la barra <strong>Historial de cambios de las metas</strong> (con el número de cambios): al desplegarla ves, del más reciente al más antiguo, <strong>quién</strong> lo hizo, <strong>cuándo</strong>, el <strong>motivo</strong> y las metas de <strong>antes</strong> y <strong>después</strong>. Sirve para reconstruir qué metas regían cuando un vendedor reclama su comisión.</p>
 
       <h3>12.2 El avance de los vendedores</h3>
       <p>La tabla muestra, por vendedor: la fecha de <strong>Alta</strong>, lo <strong>Entregado</strong>, lo <strong>Devuelto</strong>, la <strong>Base (neto)</strong>, la <strong>Meta alcanzada</strong> y su <strong>%</strong>, la <strong>Comisión si completó</strong> el año y lo que <strong>Falta para la siguiente</strong> meta. Las tarjetas de arriba suman la <strong>Base de comisión</strong> y lo <strong>A pagar a los marcados</strong>.</p>
@@ -1532,7 +1539,7 @@
 
       <details>
         <summary>Un pedido no tiene el botón &laquo;Iniciar picking&raquo; (u otro botón para avanzar).</summary>
-        <p>Casi siempre es porque el pedido está <strong>por autorizar</strong> o rechazado. También puede ser que tu rol no avance etapas: solo <strong>Administrador</strong> y <strong>Bodega</strong> lo hacen.</p>
+        <p>Casi siempre es porque el pedido está <strong>por autorizar</strong> o rechazado (junto a la etapa aparece la etiqueta <em>Por autorizar</em> o <em>Crédito por autorizar</em>). También puede ser que tu rol no avance etapas: solo <strong>Administrador</strong> y <strong>Bodega</strong> lo hacen.</p>
       </details>
 
       <details>

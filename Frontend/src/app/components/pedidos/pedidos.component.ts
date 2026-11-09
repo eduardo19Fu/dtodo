@@ -279,8 +279,31 @@ export class PedidosComponent implements OnInit {
     return this.puedeOperar && !!ACCION_AVANCE[pedido.estadoPedido] && !this.bloqueadoPorAutorizacion(pedido);
   }
 
+  /** Un descuento o un crédito sin autorizar (pendiente o rechazado) impide que el pedido avance. */
   bloqueadoPorAutorizacion(pedido: PedidoDto): boolean {
-    return pedido.estadoAutorizacion === 'PENDIENTE' || pedido.estadoAutorizacion === 'RECHAZADA';
+    return pedido.estadoAutorizacion === 'PENDIENTE' || pedido.estadoAutorizacion === 'RECHAZADA'
+      || pedido.creditoAutorizacion === 'PENDIENTE' || pedido.creditoAutorizacion === 'RECHAZADA';
+  }
+
+  /** Las etiquetas junto a la etapa que explican por qué el pedido no avanza. */
+  bloqueos(pedido: PedidoDto): Array<{ texto: string; ayuda: string }> {
+    const etiquetas: Array<{ texto: string; ayuda: string }> = [];
+    if (pedido.estadoAutorizacion === 'PENDIENTE' || pedido.estadoAutorizacion === 'RECHAZADA') {
+      const pendiente = pedido.estadoAutorizacion === 'PENDIENTE';
+      etiquetas.push({
+        texto: pendiente ? 'Por autorizar' : 'Rechazado',
+        ayuda: pendiente ? 'El descuento espera la decisión de un administrador' : 'El descuento fue rechazado: hay que corregir la proforma'
+      });
+    }
+    if (pedido.creditoAutorizacion === 'PENDIENTE' || pedido.creditoAutorizacion === 'RECHAZADA') {
+      const pendiente = pedido.creditoAutorizacion === 'PENDIENTE';
+      etiquetas.push({
+        texto: pendiente ? 'Crédito por autorizar' : 'Crédito rechazado',
+        ayuda: pendiente ? 'El pedido pasa del límite de crédito y espera la decisión de un administrador'
+          : 'El crédito fue rechazado: hay que corregir la proforma'
+      });
+    }
+    return etiquetas;
   }
 
   puedeRetroceder(pedido: PedidoDto): boolean {

@@ -21,7 +21,18 @@ public interface IComisionService {
      * Reemplaza las metas del año. Cada nivel pide un monto y un porcentaje mayores que el anterior, y el porcentaje no
      * pasa de 100. No se puede en un año ya liquidado.
      */
-    List<MetaComisionDto> guardarMetas(int anio, List<MetaComisionDto> metas);
+    default List<MetaComisionDto> guardarMetas(int anio, List<MetaComisionDto> metas) {
+        return guardarMetas(anio, metas, null);
+    }
+
+    /**
+     * Igual que {@link #guardarMetas(int, List)} y deja constancia del cambio (quién, cuándo, antes y después). Si el año ya
+     * terminó y aún no se liquida, el motivo es obligatorio. Si las metas no cambian, no se guarda ni se registra nada.
+     */
+    List<MetaComisionDto> guardarMetas(int anio, List<MetaComisionDto> metas, String motivo);
+
+    /** Los cambios de las metas del año, del más reciente al más antiguo. */
+    List<xyz.pangosoft.dtodo.dto.HistorialMetaComisionDto> historialMetas(int anio);
 
     /** Copia las metas de un año a otro que todavía no tiene (y no está liquidado). */
     List<MetaComisionDto> copiarMetas(int desde, int hacia);

@@ -56,8 +56,10 @@ class ComisionServiceImplTest {
     private final IUsuarioService usuarioService = mock(IUsuarioService.class);
     private final IAmbitoVendedorService ambito = mock(IAmbitoVendedorService.class);
     private final IProformaAuditoriaService auditoria = mock(IProformaAuditoriaService.class);
+    private final xyz.pangosoft.dtodo.repository.IComisionMetaHistorialRepository historialRepository =
+            mock(xyz.pangosoft.dtodo.repository.IComisionMetaHistorialRepository.class);
     private final ComisionServiceImpl service = new ComisionServiceImpl(metaRepository, liquidacionRepository, deshechaRepository,
-            entregaRepository, devolucionRepository, usuarioRepository, usuarioService, ambito, auditoria);
+            entregaRepository, devolucionRepository, usuarioRepository, usuarioService, ambito, auditoria, historialRepository);
 
     private final int pasado = LocalDate.now().getYear() - 1;
     private final Usuario ana = Usuario.builder().idUsuario(1).primerNombre("Ana").apellido("Lopez").enabled(true)
@@ -82,6 +84,10 @@ class ComisionServiceImplTest {
             return motivo.trim();
         });
         when(metaRepository.saveAll(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(auditoria.motivoOpcional(any())).thenAnswer(inv -> {
+            String motivo = inv.getArgument(0);
+            return motivo == null || motivo.trim().isEmpty() ? null : motivo.trim();
+        });
     }
 
     private static List<ComisionMeta> metasActuales(int anio) {
@@ -118,7 +124,7 @@ class ComisionServiceImplTest {
 
     @Test
     void unaMetaValidaSeGuardaConDosDecimalesReemplazandoLasDelAnio() {
-        List<MetaComisionDto> guardadas = service.guardarMetas(pasado, Arrays.asList(dto("100000", "0.5"), dto("500000.456", "1.25")));
+        List<MetaComisionDto> guardadas = service.guardarMetas(pasado, Arrays.asList(dto("100000", "0.5"), dto("500000.456", "1.25")), "ajuste del esquema");
 
         verify(metaRepository).deleteByAnio(pasado);
         assertEquals(2, guardadas.size());
@@ -563,5 +569,87 @@ class ComisionServiceImplTest {
         assertEquals(new BigDecimal("1000.00"), fila(avance, 2).getMontoNeto());
         assertEquals(new BigDecimal("0"), fila(avance, 2).getMontoDevuelto());
         assertEquals(new BigDecimal("651000.00"), avance.getTotalNeto());
+    }
+
+    // ------------------------------------------------------------------------------------------ historial de metas
+
+    @Test
+    void cambiarLasMetasDejaConstanciaDeQuienCuandoPorQueYComoEranAntesYDespues() {
+        service.guardarMetas(pasado, Arrays.asList(dto("100000", "0.5"), dto("500000", "1.25")), "  ajuste del esquema ");
+
+        ArgumentCaptor<xyz.pangosoft.dtodo.model.ComisionMetaHistorial> captor =
+                ArgumentCaptor.forClass(xyz.pangosoft.dtodo.model.ComisionMetaHistorial.class);
+        verify(historialRepository).save(captor.capture());
+        xyz.pangosoft.dtodo.model.ComisionMetaHistorial registro = captor.getValue();
+        assertEquals("CAMBIAR", registro.getAccion());
+        assertEquals(irene, registro.getUsuario());
+        assertEquals("ajuste del esquema", registro.getMotivo());
+        assertEquals("300000.00:0.50;700000.00:1.00;1000000.00:1.50;2000000.00:2.00", registro.getAntes());
+        assertEquals("100000.00:0.50;500000.00:1.25", registro.getDespues());
+        assertTrue(registro.getFecha() != null);
+    }
+
+    @Test
+    void conElAnioTerminadoYSinLiquidarElMotivoEsObligatorioYNoSeCambiaNada() {
+        assertThrows(ReglaNegocioException.class, () -> service.guardarMetas(pasado, Arrays.asList(dto("100000", "0.5")), "  "));
+        assertThrows(ReglaNegocioException.class, () -> service.guardarMetas(pasado, Arrays.asList(dto("100000", "0.5"))));
+
+        verify(metaRepository, never()).deleteByAnio(anyInt());
+        verify(historialRepository, never()).save(any());
+    }
+
+    @Test
+    void duranteElAnioEnCursoElMotivoEsOpcional() {
+        int actual = LocalDate.now().getYear();
+        service.guardarMetas(actual, Arrays.asList(dto("100000", "0.5")), null);
+
+        ArgumentCaptor<xyz.pangosoft.dtodo.model.ComisionMetaHistorial> captor =
+                ArgumentCaptor.forClass(xyz.pangosoft.dtodo.model.ComisionMetaHistorial.class);
+        verify(historialRepository).save(captor.capture());
+        assertEquals("CREAR", captor.getValue().getAccion());
+        assertNull(captor.getValue().getMotivo());
+        assertEquals("", captor.getValue().getAntes());
+    }
+
+    @Test
+    void siLasMetasNoCambianNoSeGuardaNiSeRegistraNada() {
+        List<MetaComisionDto> iguales = Arrays.asList(dto("300000", "0.5"), dto("700000", "1"), dto("1000000", "1.5"), dto("2000000", "2"));
+
+        List<MetaComisionDto> resultado = service.guardarMetas(pasado, iguales, "sin cambios");
+
+        assertEquals(4, resultado.size());
+        verify(metaRepository, never()).deleteByAnio(anyInt());
+        verify(historialRepository, never()).save(any());
+    }
+
+    @Test
+    void copiarMetasTambienQuedaEnElHistorial() {
+        int destino = LocalDate.now().getYear();
+        when(metaRepository.findByAnioOrderByMontoMinimo(destino)).thenReturn(Collections.emptyList());
+
+        service.copiarMetas(pasado, destino);
+
+        ArgumentCaptor<xyz.pangosoft.dtodo.model.ComisionMetaHistorial> captor =
+                ArgumentCaptor.forClass(xyz.pangosoft.dtodo.model.ComisionMetaHistorial.class);
+        verify(historialRepository).save(captor.capture());
+        assertEquals("COPIAR", captor.getValue().getAccion());
+        assertEquals(destino, captor.getValue().getAnio().intValue());
+        assertTrue(captor.getValue().getMotivo().contains(String.valueOf(pasado)));
+    }
+
+    @Test
+    void elHistorialSeDevuelveConLasMetasDeAntesYDespuesYElNombreDeQuienLasCambio() {
+        xyz.pangosoft.dtodo.model.ComisionMetaHistorial cambio = xyz.pangosoft.dtodo.model.ComisionMetaHistorial.builder()
+                .anio(pasado).accion("CAMBIAR").usuario(irene).motivo("ajuste").antes("100.00:1.00").despues("100.00:1.00;200.00:2.00")
+                .fecha(LocalDateTime.of(2026, 11, 9, 10, 0)).build();
+        when(historialRepository.findByAnioOrderByFechaDescIdHistorialDesc(pasado)).thenReturn(Arrays.asList(cambio));
+
+        List<xyz.pangosoft.dtodo.dto.HistorialMetaComisionDto> historial = service.historialMetas(pasado);
+
+        assertEquals(1, historial.size());
+        assertEquals("Irene Ortega", historial.get(0).getUsuario());
+        assertEquals(1, historial.get(0).getAntes().size());
+        assertEquals(2, historial.get(0).getDespues().size());
+        assertEquals(new BigDecimal("2.00"), historial.get(0).getDespues().get(1).getPorcentaje());
     }
 }

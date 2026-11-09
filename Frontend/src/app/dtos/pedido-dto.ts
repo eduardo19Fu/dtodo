@@ -24,6 +24,8 @@ export class PedidoDto {
   estadoPedido: EstadoPedido;
   unidades: number;
   estadoAutorizacion?: 'PENDIENTE' | 'APROBADA' | 'RECHAZADA' | null;
+  /** Autorización del crédito cuando el pedido pasa del límite del cliente. */
+  creditoAutorizacion?: 'PENDIENTE' | 'APROBADA' | 'RECHAZADA' | null;
   /** Piloto asignado al cargar el pedido a ruta. */
   idRepartidor?: number | null;
   repartidor?: string | null;

@@ -1,4 +1,4 @@
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 
 import { AvanceComisionDto, FilaComisionDto } from '../../dtos/comision-dto';
 import { ComisionesComponent } from './comisiones.component';
@@ -41,6 +41,7 @@ describe('ComisionesComponent', () => {
       copiarMetas: jasmine.createSpy('copiarMetas').and.returnValue(of([])),
       liquidar: jasmine.createSpy('liquidar').and.returnValue(of(avance({ liquidado: true }))),
       deshacer: jasmine.createSpy('deshacer').and.returnValue(of(avance())),
+      historialMetas: jasmine.createSpy('historialMetas').and.returnValue(of([])),
       reporte: jasmine.createSpy('reporte')
     };
     component = new ComisionesComponent(servicio);
@@ -94,14 +95,66 @@ describe('ComisionesComponent', () => {
     expect(component.metasModificadas).toBeFalse();
   });
 
-  it('guardar las metas manda las editadas y recarga', () => {
+  it('guardar las metas pide confirmar con el antes y el después y manda las editadas con el motivo', async () => {
+    confirmar('Corrección del esquema');
     component.metas[0].montoMinimo = 250000;
 
     component.guardarMetas();
+    await esperar();
 
+    const opciones = (Swal.fire as jasmine.Spy).calls.first().args[0];
+    expect(opciones.html).toContain('Antes');
+    expect(opciones.html).toContain('Q300,000');
+    expect(opciones.html).toContain('Q250,000');
+    expect(opciones.html).toContain('2 vendedores');
     expect(servicio.guardarMetas).toHaveBeenCalledWith(2025,
-      [{ montoMinimo: 250000, porcentaje: 0.5 }, { montoMinimo: 700000, porcentaje: 1 }]);
+      [{ montoMinimo: 250000, porcentaje: 0.5 }, { montoMinimo: 700000, porcentaje: 1 }], 'Corrección del esquema');
     expect(servicio.avance).toHaveBeenCalledTimes(2);
+  });
+
+  it('si el año ya terminó el motivo es obligatorio; si no, es opcional', () => {
+    expect(component.motivoObligatorioMetas).toBeTrue();
+    const opciones = () => (Swal.fire as jasmine.Spy).calls.mostRecent().args[0];
+
+    spyOn(Swal, 'fire').and.returnValue(Promise.resolve({ isConfirmed: false } as any));
+    component.guardarMetas();
+    expect(opciones().inputValidator('  ')).toBe('Indica el motivo del cambio.');
+    expect(opciones().inputValidator('ajuste')).toBeNull();
+
+    servicio.avance.and.returnValue(of(avance({ anioTerminado: false })));
+    component.cargar();
+    expect(component.motivoObligatorioMetas).toBeFalse();
+    component.guardarMetas();
+    expect(opciones().inputValidator('')).toBeNull();
+  });
+
+  it('si se cancela la confirmación no se guarda nada', async () => {
+    spyOn(Swal, 'fire').and.returnValue(Promise.resolve({ isConfirmed: false } as any));
+    component.metas[0].montoMinimo = 250000;
+
+    component.guardarMetas();
+    await esperar();
+
+    expect(servicio.guardarMetas).not.toHaveBeenCalled();
+  });
+
+  it('carga el historial de cambios y lo describe', () => {
+    const cambio: any = {
+      accion: 'CAMBIAR', usuario: 'Irene Ortega', fecha: '2026-11-09T10:00:00', motivo: 'ajuste',
+      antes: [{ montoMinimo: 300000, porcentaje: 0.5 }], despues: [{ montoMinimo: 250000, porcentaje: 0.75 }]
+    };
+    servicio.historialMetas.and.returnValue(of([cambio]));
+
+    component.cargar();
+
+    expect(servicio.historialMetas).toHaveBeenCalledWith(2025);
+    expect(component.historial.length).toBe(1);
+    expect(component.textoMetas(cambio.antes)).toBe('Q300,000 → 0.5 %');
+    expect(component.textoMetas([])).toBe('Sin metas');
+    expect(component.etiquetaCambio('COPIAR')).toContain('copiadas');
+    expect(component.historialAbierto).toBeFalse();
+    component.alternarHistorial();
+    expect(component.historialAbierto).toBeTrue();
   });
 
   it('un año sin terminar o sin metas no se puede liquidar y dice por qué', () => {
@@ -188,5 +241,30 @@ describe('ComisionesComponent', () => {
     expect(component.completaron[1]).toBeTrue();
     expect(component.completaron[2]).toBeFalse();
     expect(component.puedeLiquidar).toBeFalse();
+  });
+
+  it('mientras se genera el reporte marca el formato, deshabilita los botones y lo libera al terminar', () => {
+    const respuesta = new Subject<any>();
+    servicio.reporte.and.returnValue(respuesta);
+    spyOn(window, 'open');
+    spyOn(window.URL, 'createObjectURL').and.returnValue('blob:x');
+
+    component.descargar('PDF');
+    expect(component.generandoReporte).toBe('PDF');
+    expect(component.trabajando).toBeTrue();
+
+    respuesta.next({ body: new Blob(['x']) });
+    expect(component.generandoReporte).toBeNull();
+    expect(component.trabajando).toBeFalse();
+  });
+
+  it('si falla el reporte libera el indicador de carga', () => {
+    servicio.reporte.and.returnValue(throwError({ status: 500, error: {} }));
+    spyOn(Swal, 'fire');
+
+    component.descargar('XLSX');
+
+    expect(component.generandoReporte).toBeNull();
+    expect(component.trabajando).toBeFalse();
   });
 });

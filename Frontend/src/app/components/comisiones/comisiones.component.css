@@ -54,3 +54,23 @@
 @media (max-width: 767.98px) {
   .selector-anio { justify-content: flex-start; margin-top: 0.5rem; }
 }
+
+/* Historial de cambios de las metas: encabezado plegable y comparación antes / después. */
+.historial-metas-encabezado { align-items: center; cursor: pointer; display: flex; gap: 0.55rem; user-select: none; }
+.historial-metas-encabezado:hover { background: #f6f9fc; }
+.historial-metas-encabezado:focus-visible { box-shadow: inset 0 0 0 2px #2f7d6b; outline: 0; }
+.historial-metas-encabezado:not(.abierto) { border-bottom: 0; }
+.historial-metas-contador {
+  background: #e3f1ec;
+  border-radius: 999px;
+  color: #1f5a4c;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 0.1rem 0.6rem;
+}
+.historial-metas-chevron { color: #6d7b8f; font-size: 0.8rem; margin-left: auto; transition: transform 0.2s ease; }
+.historial-metas-encabezado.abierto .historial-metas-chevron { transform: rotate(180deg); }
+.cambio-metas { display: grid; gap: 8px 16px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin-top: 6px; }
+.cambio-metas > div { background: #f6f9fc; border: 1px solid #e1e8f1; border-radius: 8px; font-size: 0.85rem; padding: 8px 12px; }
+.cambio-metas span { color: #6d7b8f; display: block; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; }
+@media (prefers-reduced-motion: reduce) { .historial-metas-chevron { transition: none; } }

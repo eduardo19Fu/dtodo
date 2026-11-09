@@ -64,7 +64,7 @@ public interface IProformaRepository extends JpaRepository<Proforma, Long> {
             "c.nombre, c.nombreNegocio, rt.idRuta, rt.nombre, " +
             "trim(concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, ''))), p.estadoPedido, " +
             "(select coalesce(sum(i.cantidad), 0) from Proforma p2 join p2.itemsProforma i where p2.idProforma = p.idProforma), " +
-            "p.estadoAutorizacion, rp.idUsuario, " +
+            "p.estadoAutorizacion, p.creditoAutorizacion, rp.idUsuario, " +
             "trim(concat(coalesce(rp.primerNombre, ''), ' ', coalesce(rp.apellido, '')))) " +
             "from Proforma p join p.cliente c join p.usuario u left join p.ruta rt left join p.repartidor rp " +
             "where p.tipoProforma = :tipo and p.estadoPedido in :estados " +

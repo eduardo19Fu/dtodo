@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-import { AvanceComisionDto, DecisionComisionDto, MetaComisionDto } from '../dtos/comision-dto';
+import { AvanceComisionDto, HistorialMetaComisionDto, DecisionComisionDto, MetaComisionDto } from '../dtos/comision-dto';
 import { global } from './global';
 
 /**
@@ -24,8 +24,19 @@ export class ComisionService {
     return this.http.get<MetaComisionDto[]>(`${this.url}/metas`, { params: new HttpParams().set('anio', String(anio)) });
   }
 
-  guardarMetas(anio: number, metas: MetaComisionDto[]): Observable<MetaComisionDto[]> {
-    return this.http.put<MetaComisionDto[]>(`${this.url}/metas`, metas, { params: new HttpParams().set('anio', String(anio)) });
+  /** Guarda las metas; el motivo es obligatorio si el año ya terminó y aún no se liquida. */
+  guardarMetas(anio: number, metas: MetaComisionDto[], motivo?: string): Observable<MetaComisionDto[]> {
+    let params = new HttpParams().set('anio', String(anio));
+    if (motivo) {
+      params = params.set('motivo', motivo);
+    }
+    return this.http.put<MetaComisionDto[]>(`${this.url}/metas`, metas, { params });
+  }
+
+  /** Los cambios de las metas del año, del más reciente al más antiguo. */
+  historialMetas(anio: number): Observable<HistorialMetaComisionDto[]> {
+    return this.http.get<HistorialMetaComisionDto[]>(`${this.url}/metas/historial`,
+      { params: new HttpParams().set('anio', String(anio)) });
   }
 
   copiarMetas(desde: number, hacia: number): Observable<MetaComisionDto[]> {

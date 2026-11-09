@@ -28,6 +28,8 @@ public class PedidoDto {
     private Long unidades;
     /** PENDIENTE o RECHAZADA impiden que el pedido avance. */
     private EstadoAutorizacionEnum estadoAutorizacion;
+    /** Autorización del crédito: PENDIENTE o RECHAZADA (el pedido pasa del límite) también impiden que avance. */
+    private EstadoAutorizacionEnum creditoAutorizacion;
     /** Piloto asignado; nulo mientras el pedido no sale a ruta. */
     private Integer idRepartidor;
     private String repartidor;

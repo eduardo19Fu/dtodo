@@ -4,6 +4,17 @@ export class MetaComisionDto {
   porcentaje: number;
 }
 
+/** Un cambio de las metas de un año: quién, cuándo, por qué y cómo eran las metas antes y después. */
+export class HistorialMetaComisionDto {
+  /** CREAR, CAMBIAR o COPIAR. */
+  accion: 'CREAR' | 'CAMBIAR' | 'COPIAR';
+  usuario: string;
+  fecha: string;
+  motivo?: string | null;
+  antes: MetaComisionDto[];
+  despues: MetaComisionDto[];
+}
+
 /** Un vendedor en el avance o la liquidación de comisiones de un año. */
 export class FilaComisionDto {
   idVendedor: number;

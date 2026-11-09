@@ -109,9 +109,8 @@
           <td data-label="Unidades" class="text-right">{{pedido.unidades | number}}</td>
           <td data-label="Etapa" class="etapa-celda">
             <span class="etapa-pill" [ngClass]="'etapa-' + pedido.estadoPedido">{{etiquetaEstado(pedido.estadoPedido)}}</span>
-            <span *ngIf="bloqueadoPorAutorizacion(pedido)" class="etapa-pill etapa-bloqueada"
-              appTooltip="El descuento espera la decisión de un administrador">
-              {{pedido.estadoAutorizacion === 'PENDIENTE' ? 'Por autorizar' : 'Rechazado'}}
+            <span *ngFor="let bloqueo of bloqueos(pedido)" class="etapa-pill etapa-bloqueada" [appTooltip]="bloqueo.ayuda">
+              {{bloqueo.texto}}
             </span>
             <button *ngIf="puedeAvanzar(pedido)" type="button" class="accion-principal accion-avance" (click)="avanzar(pedido)"
               [disabled]="procesando === pedido.idProforma">

@@ -18,6 +18,8 @@ describe('Botonera del listado de pedidos', () => {
   let detalleRespuesta: Subject<any>;
 
   beforeEach(async () => {
+    // restos de otros specs (avisos, tooltips o diálogos) pueden tapar los botones al medir su centro
+    document.querySelectorAll('.swal2-container, .app-tooltip, .pedido-overlay').forEach(elemento => elemento.remove());
     detalleRespuesta = new Subject<any>();
     const pedido = Object.assign(new PedidoDto(), {
       idProforma: 7, noProforma: '123P', cliente: 'ANA PEREZ', negocio: 'LIBRERIA', vendedor: 'Bryan', idRuta: 1,
@@ -225,5 +227,35 @@ describe('Botonera del listado de pedidos', () => {
     componente.pedidos.push(pedidoDeRuta(5, 3, 'RUTA C', 'EMPACADA'));
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.barra-boton-principal').textContent).toContain('(2)');
+  });
+
+  it('un pedido con el crédito por autorizar no ofrece avanzar y lo explica junto a la etapa', () => {
+    const componente = fixture.componentInstance;
+    componente.pedidos = [
+      pedidoDeRuta(1, 1, 'RUTA A', 'CONFIRMADA'),
+      Object.assign(pedidoDeRuta(2, 1, 'RUTA A', 'CONFIRMADA'), { creditoAutorizacion: 'PENDIENTE' } as any),
+      Object.assign(pedidoDeRuta(3, 1, 'RUTA A', 'CONFIRMADA'), { creditoAutorizacion: 'RECHAZADA' } as any)
+    ];
+    fixture.detectChanges();
+
+    expect(componente.puedeAvanzar(componente.pedidos[0])).toBeTrue();
+    expect(componente.puedeAvanzar(componente.pedidos[1])).toBeFalse();
+    expect(componente.puedeAvanzar(componente.pedidos[2])).toBeFalse();
+    expect(componente.bloqueos(componente.pedidos[1]).map(b => b.texto)).toEqual(['Crédito por autorizar']);
+    expect(componente.bloqueos(componente.pedidos[2]).map(b => b.texto)).toEqual(['Crédito rechazado']);
+
+    const filas = Array.from(fixture.nativeElement.querySelectorAll('.pedidos-table tbody tr')) as HTMLElement[];
+    expect(filas.length).toBe(3);
+    expect(filas[0].querySelector('.accion-avance')).not.toBeNull();
+    expect(filas[1].querySelector('.accion-avance')).toBeNull();
+    expect(filas[1].querySelector('.etapa-bloqueada').textContent).toContain('Crédito por autorizar');
+    expect(filas[2].querySelector('.accion-avance')).toBeNull();
+  });
+
+  it('si el descuento y el crédito esperan autorización se muestran las dos etiquetas', () => {
+    const pedido = Object.assign(pedidoDeRuta(9, 1, 'RUTA A', 'CONFIRMADA'),
+      { estadoAutorizacion: 'PENDIENTE', creditoAutorizacion: 'PENDIENTE' } as any);
+
+    expect(fixture.componentInstance.bloqueos(pedido).map(b => b.texto)).toEqual(['Por autorizar', 'Crédito por autorizar']);
   });
 });

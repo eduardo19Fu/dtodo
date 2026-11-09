@@ -87,6 +87,34 @@
   </div>
 </div>
 
+<div class="card listing-card mt-3" *ngIf="historial.length > 0">
+  <div class="card-header listing-card-header historial-metas-encabezado" role="button" tabindex="0" [class.abierto]="historialAbierto"
+    [attr.aria-expanded]="historialAbierto" (click)="alternarHistorial()" (keydown.enter)="alternarHistorial()" (keydown.space)="$event.preventDefault(); alternarHistorial()">
+    <i class="fas fa-history" aria-hidden="true"></i>Historial de cambios de las metas
+    <span class="historial-metas-contador">{{historial.length}}</span>
+    <i class="fas fa-chevron-down historial-metas-chevron" aria-hidden="true"></i>
+  </div>
+  <div class="card-body" *ngIf="historialAbierto">
+    <ol class="listing-timeline">
+      <li *ngFor="let cambio of historial">
+        <span class="listing-timeline-icon" aria-hidden="true"><i class="fas" [ngClass]="cambio.accion === 'COPIAR' ? 'fa-copy' : (cambio.accion === 'CREAR' ? 'fa-plus' : 'fa-pen')"></i></span>
+        <div class="listing-timeline-body">
+          <div class="listing-timeline-head">
+            <strong>{{etiquetaCambio(cambio.accion)}}</strong>
+            <time>{{cambio.fecha | date: 'dd/MM/yyyy HH:mm'}}</time>
+          </div>
+          <div class="listing-timeline-who"><i class="fas fa-user" aria-hidden="true"></i> {{cambio.usuario}}</div>
+          <p class="listing-timeline-motivo" *ngIf="cambio.motivo"><em>Motivo:</em> {{cambio.motivo}}</p>
+          <div class="cambio-metas">
+            <div><span>Antes</span>{{textoMetas(cambio.antes)}}</div>
+            <div><span>Después</span>{{textoMetas(cambio.despues)}}</div>
+          </div>
+        </div>
+      </li>
+    </ol>
+  </div>
+</div>
+
 <div class="listing-stats" *ngIf="avance && avance.filas.length > 0">
   <div class="listing-stat">
     <span>Base de comisión</span><strong>{{avance.totalNeto | currency: 'Q' : 'symbol'}}</strong>
@@ -186,11 +214,15 @@
       <button type="button" class="btn listing-page-action listing-primary-action" (click)="liquidar()" *ngIf="!liquidado" [disabled]="!puedeLiquidar">
         <i class="fas fa-check-double"></i> Liquidar el año
       </button>
-      <button type="button" class="btn listing-page-action listing-secondary-action" (click)="descargar('PDF')" [disabled]="trabajando">
-        <i class="fas fa-file-pdf"></i> Reporte PDF
+      <button type="button" class="btn listing-page-action listing-secondary-action" (click)="descargar('PDF')" [disabled]="trabajando"
+        [attr.aria-busy]="generandoReporte === 'PDF'">
+        <i class="fas" [ngClass]="generandoReporte === 'PDF' ? 'fa-spinner fa-spin' : 'fa-file-pdf'" aria-hidden="true"></i>
+        {{generandoReporte === 'PDF' ? 'Generando PDF...' : 'Reporte PDF'}}
       </button>
-      <button type="button" class="btn listing-page-action listing-secondary-action" (click)="descargar('XLSX')" [disabled]="trabajando">
-        <i class="fas fa-file-excel"></i> Reporte Excel
+      <button type="button" class="btn listing-page-action listing-secondary-action" (click)="descargar('XLSX')" [disabled]="trabajando"
+        [attr.aria-busy]="generandoReporte === 'XLSX'">
+        <i class="fas" [ngClass]="generandoReporte === 'XLSX' ? 'fa-spinner fa-spin' : 'fa-file-excel'" aria-hidden="true"></i>
+        {{generandoReporte === 'XLSX' ? 'Generando Excel...' : 'Reporte Excel'}}
       </button>
     </div>
   </div>

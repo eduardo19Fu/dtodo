@@ -18,16 +18,19 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import xyz.pangosoft.dtodo.dto.AvanceComisionDto;
 import xyz.pangosoft.dtodo.dto.FilaComisionDto;
+import xyz.pangosoft.dtodo.dto.HistorialMetaComisionDto;
 import xyz.pangosoft.dtodo.dto.LiquidarComisionDto;
 import xyz.pangosoft.dtodo.dto.MetaComisionDto;
 import xyz.pangosoft.dtodo.error.exceptions.ReglaNegocioException;
 import xyz.pangosoft.dtodo.model.ComisionDeshecha;
 import xyz.pangosoft.dtodo.model.ComisionLiquidacion;
 import xyz.pangosoft.dtodo.model.ComisionMeta;
+import xyz.pangosoft.dtodo.model.ComisionMetaHistorial;
 import xyz.pangosoft.dtodo.model.Usuario;
 import xyz.pangosoft.dtodo.model.enums.TipoProformaEnum;
 import xyz.pangosoft.dtodo.repository.IComisionDeshechaRepository;
 import xyz.pangosoft.dtodo.repository.IComisionLiquidacionRepository;
+import xyz.pangosoft.dtodo.repository.IComisionMetaHistorialRepository;
 import xyz.pangosoft.dtodo.repository.IComisionMetaRepository;
 import xyz.pangosoft.dtodo.repository.IDevolucionClienteRepository;
 import xyz.pangosoft.dtodo.repository.IProformaEntregaRepository;
@@ -56,6 +59,7 @@ public class ComisionServiceImpl implements IComisionService {
     private final IUsuarioService usuarioService;
     private final IAmbitoVendedorService ambito;
     private final IProformaAuditoriaService auditoria;
+    private final IComisionMetaHistorialRepository historialRepository;
 
     // ------------------------------------------------------------------------------------------ metas
 
@@ -68,17 +72,72 @@ public class ComisionServiceImpl implements IComisionService {
 
     @Transactional
     @Override
-    public List<MetaComisionDto> guardarMetas(int anio, List<MetaComisionDto> metas) {
+    public List<MetaComisionDto> guardarMetas(int anio, List<MetaComisionDto> metas, String motivo) {
         validarAnio(anio);
         exigirSinLiquidar(anio);
         validarMetas(metas);
+        List<MetaComisionDto> antes = aDtos(metaRepository.findByAnioOrderByMontoMinimo(anio));
+        List<MetaComisionDto> despues = metas.stream()
+                .map(meta -> new MetaComisionDto(meta.getMontoMinimo().setScale(2, RoundingMode.HALF_UP),
+                        meta.getPorcentaje().setScale(2, RoundingMode.HALF_UP)))
+                .sorted(Comparator.comparing(MetaComisionDto::getMontoMinimo)).collect(Collectors.toList());
+        if (!antes.isEmpty() && textoDeMetas(antes).equals(textoDeMetas(despues))) {
+            return antes;
+        }
+        // Con el año ya terminado y sin liquidar, cambiar las metas mueve pagos reales: se exige explicar por qué.
+        String motivoLimpio = anioTerminado(anio)
+                ? auditoria.motivoObligatorio(motivo, "cambiar las metas de un año que ya terminó")
+                : auditoria.motivoOpcional(motivo);
         metaRepository.deleteByAnio(anio);
         metaRepository.flush();
-        List<ComisionMeta> nuevas = metas.stream()
-                .map(meta -> ComisionMeta.builder().anio(anio).montoMinimo(meta.getMontoMinimo().setScale(2, RoundingMode.HALF_UP))
-                        .porcentaje(meta.getPorcentaje().setScale(2, RoundingMode.HALF_UP)).build())
+        List<ComisionMeta> nuevas = despues.stream()
+                .map(meta -> ComisionMeta.builder().anio(anio).montoMinimo(meta.getMontoMinimo()).porcentaje(meta.getPorcentaje()).build())
                 .collect(Collectors.toList());
-        return aDtos(metaRepository.saveAll(nuevas));
+        List<MetaComisionDto> guardadas = aDtos(metaRepository.saveAll(nuevas));
+        registrarCambioDeMetas(anio, antes.isEmpty() ? "CREAR" : "CAMBIAR", motivoLimpio, antes, guardadas);
+        return guardadas;
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<HistorialMetaComisionDto> historialMetas(int anio) {
+        validarAnio(anio);
+        return historialRepository.findByAnioOrderByFechaDescIdHistorialDesc(anio).stream()
+                .map(h -> new HistorialMetaComisionDto(h.getAccion(), nombre(h.getUsuario()), h.getFecha(), h.getMotivo(),
+                        metasDeTexto(h.getAntes()), metasDeTexto(h.getDespues())))
+                .collect(Collectors.toList());
+    }
+
+    /** Deja constancia de un cambio de metas: usuario de la sesión, fecha, motivo y las metas de antes y de después. */
+    private void registrarCambioDeMetas(int anio, String accion, String motivo, List<MetaComisionDto> antes, List<MetaComisionDto> despues) {
+        Integer idUsuario = ambito.idUsuarioActual();
+        if (idUsuario == null) {
+            throw new ReglaNegocioException("No se pudo identificar al usuario de la sesión.");
+        }
+        historialRepository.save(ComisionMetaHistorial.builder().anio(anio).accion(accion).usuario(usuarioService.findById(idUsuario))
+                .motivo(motivo).antes(textoDeMetas(antes)).despues(textoDeMetas(despues)).fecha(LocalDateTime.now()).build());
+    }
+
+    /** Las metas como texto {@code monto:porcentaje;monto:porcentaje}, ordenadas por monto. */
+    static String textoDeMetas(List<MetaComisionDto> metas) {
+        return metas.stream().sorted(Comparator.comparing(MetaComisionDto::getMontoMinimo))
+                .map(meta -> meta.getMontoMinimo().setScale(2, RoundingMode.HALF_UP).toPlainString() + ":"
+                        + meta.getPorcentaje().setScale(2, RoundingMode.HALF_UP).toPlainString())
+                .collect(Collectors.joining(";"));
+    }
+
+    static List<MetaComisionDto> metasDeTexto(String texto) {
+        List<MetaComisionDto> metas = new ArrayList<>();
+        if (texto == null || texto.trim().isEmpty()) {
+            return metas;
+        }
+        for (String par : texto.split(";")) {
+            String[] partes = par.split(":");
+            if (partes.length == 2) {
+                metas.add(new MetaComisionDto(new BigDecimal(partes[0]), new BigDecimal(partes[1])));
+            }
+        }
+        return metas;
     }
 
     @Transactional
@@ -100,7 +159,9 @@ public class ComisionServiceImpl implements IComisionService {
         List<ComisionMeta> copias = origen.stream()
                 .map(meta -> ComisionMeta.builder().anio(hacia).montoMinimo(meta.getMontoMinimo()).porcentaje(meta.getPorcentaje()).build())
                 .collect(Collectors.toList());
-        return aDtos(metaRepository.saveAll(copias));
+        List<MetaComisionDto> copiadas = aDtos(metaRepository.saveAll(copias));
+        registrarCambioDeMetas(hacia, "COPIAR", "Copiadas de las metas de " + desde, new ArrayList<>(), copiadas);
+        return copiadas;
     }
 
     static void validarMetas(List<MetaComisionDto> metas) {

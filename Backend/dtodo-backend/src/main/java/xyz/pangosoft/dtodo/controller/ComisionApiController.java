@@ -44,9 +44,16 @@ public class ComisionApiController {
 
     @Secured("ROLE_ADMIN")
     @PutMapping("/metas")
-    public ResponseEntity<List<MetaComisionDto>> guardarMetas(@RequestParam int anio, @RequestBody List<MetaComisionDto> metas) {
+    public ResponseEntity<List<MetaComisionDto>> guardarMetas(@RequestParam int anio, @RequestParam(required = false) String motivo,
+            @RequestBody List<MetaComisionDto> metas) {
         log.info("Guardando las metas de comisión del año {}", anio);
-        return ResponseEntity.ok(comisionService.guardarMetas(anio, metas));
+        return ResponseEntity.ok(comisionService.guardarMetas(anio, metas, motivo));
+    }
+
+    @Secured("ROLE_ADMIN")
+    @GetMapping("/metas/historial")
+    public ResponseEntity<List<xyz.pangosoft.dtodo.dto.HistorialMetaComisionDto>> historialMetas(@RequestParam int anio) {
+        return ResponseEntity.ok(comisionService.historialMetas(anio));
     }
 
     @Secured("ROLE_ADMIN")
