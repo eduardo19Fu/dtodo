@@ -66,13 +66,17 @@ export class ProductoService {
     );
   }
 
+  /** Búsqueda por texto; `mayorista` (ALGUNO, PRECIO, CIENTO, FARDO o NINGUNO) filtra por descuentos mayoristas. */
   buscarProductosDto(page: number, filtro: string, size: number = 5,
-                     orden: string = 'nombre', direccion: 'asc' | 'desc' = 'asc'): Observable<any> {
-    const params = this.conSucursal(new HttpParams()
-      .set('filtro', filtro)
+                     orden: string = 'nombre', direccion: 'asc' | 'desc' = 'asc', mayorista: string = ''): Observable<any> {
+    let params = this.conSucursal(new HttpParams()
+      .set('filtro', filtro || '')
       .set('size', size.toString())
       .set('orden', orden)
       .set('direccion', direccion));
+    if (mayorista) {
+      params = params.set('mayorista', mayorista);
+    }
     return this.http.get<any>(`${this.url}/productos-dto/search/${page}`, {params}).pipe(
       catchError(e => {
         console.error(e);

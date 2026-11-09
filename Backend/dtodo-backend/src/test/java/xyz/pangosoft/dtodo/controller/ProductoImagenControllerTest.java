@@ -28,7 +28,7 @@ class ProductoImagenControllerTest {
             }
         });
         MockMvc mvc = MockMvcBuilders.standaloneSetup(
-                new ProductoApiController(service, null, null, null, null)).build();
+                new ProductoApiController(service, null, null, null, null, null)).build();
 
         mvc.perform(get("/api/uploads/img/producto.jpeg"))
                 .andExpect(status().isOk())

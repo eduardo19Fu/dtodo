@@ -191,4 +191,61 @@ describe('ProductosComponent - detalle de producto', () => {
     component.cerrarDetalleProducto();
     expect(component.productoSeleccionado).toBeNull();
   });
+
+  it('reconoce los productos con precio o descuento mayorista y los describe', () => {
+    const sin = new ProductoDto();
+    expect(component.tieneMayorista(sin)).toBeFalse();
+
+    const conPrecio = Object.assign(new ProductoDto(), { precioMayorista: 45 });
+    const conAmbos = Object.assign(new ProductoDto(), { precioMayorista: null, descuentoCiento: true, descuentoFardo: true });
+    expect(component.tieneMayorista(conPrecio)).toBeTrue();
+    expect(component.resumenMayorista(conPrecio)).toBe('Precio mayorista Q45.00');
+    expect(component.tieneMayorista(conAmbos)).toBeTrue();
+    expect(component.resumenMayorista(conAmbos)).toBe('Descuento por ciento · Descuento por fardo');
+  });
+});
+
+
+describe('ProductosComponent - filtro mayorista', () => {
+  let component: ProductosComponent;
+  let servicio: any;
+  const pagina = { content: [], number: 0, totalPages: 0, totalElements: 0, size: 5, first: true, last: true };
+
+  beforeEach(() => {
+    servicio = {
+      buscarProductosDto: jasmine.createSpy('buscarProductosDto').and.returnValue(of(pagina)),
+      getProductosDtoPaginados: jasmine.createSpy('getProductosDtoPaginados').and.returnValue(of(pagina))
+    };
+    component = new ProductosComponent(servicio, null, null, null);
+  });
+
+  it('sin filtro ni búsqueda usa el listado normal', () => {
+    component.cargarProductos(0);
+
+    expect(servicio.getProductosDtoPaginados).toHaveBeenCalled();
+    expect(servicio.buscarProductosDto).not.toHaveBeenCalled();
+  });
+
+  it('con el filtro mayorista usa la búsqueda y manda el valor elegido', () => {
+    component.cambiarMayorista('FARDO');
+
+    expect(servicio.buscarProductosDto).toHaveBeenCalledWith(0, '', 5, 'nombre', 'asc', 'FARDO');
+    component.cambiarMayorista('');
+    expect(servicio.getProductosDtoPaginados).toHaveBeenCalled();
+  });
+
+  it('puede abrirse con el filtro ya aplicado desde la pantalla de Descuentos', () => {
+    const ruta: any = { snapshot: { queryParamMap: { get: (nombre: string) => nombre === 'mayorista' ? 'algUno' : null } } };
+    const auth: any = { hasRole: () => false };
+    const sucursales: any = { getSucursales: () => of([]) };
+    const inventario: any = { getSucursalActiva: () => of(null) };
+    component = new ProductosComponent(servicio, inventario, sucursales, auth, ruta);
+    spyOn<any>(component, 'resolverSucursalActiva');
+
+    component.ngOnInit();
+
+    expect(component.mayorista).toBe('ALGUNO');
+    expect(servicio.buscarProductosDto).toHaveBeenCalledWith(0, '', 5, 'nombre', 'asc', 'ALGUNO');
+    component.ngOnDestroy();
+  });
 });

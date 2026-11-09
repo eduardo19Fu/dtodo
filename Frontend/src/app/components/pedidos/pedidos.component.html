@@ -52,19 +52,37 @@
   </div>
 </div>
 
+<div class="pedidos-toolbar" *ngIf="grupos.length > 1">
+  <span class="pedidos-toolbar-resumen"><i class="fas fa-route" aria-hidden="true"></i> {{grupos.length}} rutas</span>
+  <div class="pedidos-toolbar-acciones">
+    <button type="button" class="barra-boton" (click)="expandirTodo()"><i class="fas fa-angle-double-down" aria-hidden="true"></i> Expandir todo</button>
+    <button type="button" class="barra-boton" (click)="plegarTodo()"><i class="fas fa-angle-double-up" aria-hidden="true"></i> Plegar todo</button>
+    <button *ngIf="puedeOperar && rutasConNotaEnvio > 1" type="button" class="barra-boton barra-boton-principal" (click)="imprimirNotasDeEnvio()"
+      appTooltip="Un PDF con la nota de envío de cada ruta que tenga algo por cargar o que salió hoy">
+      <i class="fas fa-print" aria-hidden="true"></i> Imprimir notas de envío ({{rutasConNotaEnvio}})
+    </button>
+  </div>
+</div>
+
 <div class="card listing-card" *ngFor="let grupo of grupos; trackBy: trackGrupo">
-  <div class="card-header listing-card-header grupo-encabezado">
+  <div class="card-header listing-card-header grupo-encabezado" [class.abierto]="estaAbierto(grupo)" role="button" tabindex="0"
+    [attr.aria-expanded]="estaAbierto(grupo)" [attr.aria-label]="'Ruta ' + grupo.ruta + ': ' + (estaAbierto(grupo) ? 'plegar' : 'desplegar')"
+    (click)="alternarGrupo(grupo)" (keydown.enter)="alTeclaEncabezado($event, grupo)" (keydown.space)="alTeclaEncabezado($event, grupo)">
+    <i class="fas fa-chevron-right grupo-chevron" aria-hidden="true"></i>
     <div class="grupo-titulo">
-      <i class="fas fa-route" aria-hidden="true"></i> {{grupo.ruta}}
+      <span class="grupo-nombre"><i class="fas fa-route" aria-hidden="true"></i> {{grupo.ruta}}</span>
       <span class="grupo-resumen">{{grupo.pedidos.length}} {{grupo.pedidos.length === 1 ? 'pedido' : 'pedidos'}} ·
         {{grupo.unidades | number}} unidades</span>
     </div>
-    <button *ngIf="puedeOperar && grupo.idRuta" type="button" class="nota-envio" (click)="imprimirNotaEnvio(grupo)"
+    <div class="grupo-chips">
+      <span *ngFor="let etapa of resumenEtapas(grupo)" class="etapa-pill grupo-chip" [ngClass]="'etapa-' + etapa.estado">{{etapa.texto}}</span>
+    </div>
+    <button *ngIf="puedeOperar && tieneNotaEnvio(grupo)" type="button" class="nota-envio" (click)="$event.stopPropagation(); imprimirNotaEnvio(grupo)"
       appTooltip="Imprimir la nota de envío de la ruta" [attr.aria-label]="'Imprimir la nota de envío de ' + grupo.ruta">
       <i class="fas fa-print" aria-hidden="true"></i> Nota de envío
     </button>
   </div>
-  <div class="card-body table-responsive">
+  <div class="card-body table-responsive" *ngIf="estaAbierto(grupo)">
     <table class="table table-sm pedidos-table">
       <thead>
         <tr>

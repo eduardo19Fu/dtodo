@@ -147,6 +147,13 @@ public class PedidoApiController {
         return pdf(documentoService.notaEnvio(idRuta, fecha), "nota_envio_ruta_" + idRuta);
     }
 
+    /** Un solo PDF con la nota de envío de cada ruta que tenga pedidos por cargar o que salieron en la fecha. */
+    @Secured({ "ROLE_ADMIN", "ROLE_BODEGA" })
+    @GetMapping("/nota-envio-todas")
+    public ResponseEntity<byte[]> notaEnvioTodas(@RequestParam(required = false) String fecha) {
+        return pdf(documentoService.notaEnvioTodasLasRutas(fecha), "notas_envio_todas_las_rutas");
+    }
+
     private ResponseEntity<byte[]> pdf(byte[] contenido, String nombre) {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_PDF)

@@ -38,6 +38,7 @@ import xyz.pangosoft.dtodo.model.Estado;
 import xyz.pangosoft.dtodo.model.InventarioSucursal;
 import xyz.pangosoft.dtodo.model.Producto;
 import xyz.pangosoft.dtodo.model.Sucursal;
+import xyz.pangosoft.dtodo.service.IDescuentoService;
 import xyz.pangosoft.dtodo.service.IEstadoService;
 import xyz.pangosoft.dtodo.service.IInventarioSucursalService;
 import xyz.pangosoft.dtodo.service.IProductoService;
@@ -53,6 +54,8 @@ import xyz.pangosoft.dtodo.service.IUploadFileService;
 public class ProductoApiController {
 
 	private final IProductoService serviceProducto;
+
+	private final IDescuentoService serviceDescuento;
 
 	private final IEstadoService serviceEstado;
 
@@ -84,21 +87,26 @@ public class ProductoApiController {
 																@RequestParam(value = "direccion", defaultValue = "asc") String direccion,
 																@RequestParam(value = "idSucursal", required = false) Integer idSucursal)
 	{
-		return ResponseEntity.ok(serviceProducto.findAllDtoMejorado(
-				validarOrden(orden), validarDireccion(direccion), resolverSucursal(idSucursal), PageRequest.of(page, size)));
+		Page<ProductoDtoMejorado> resultado = serviceProducto.findAllDtoMejorado(
+				validarOrden(orden), validarDireccion(direccion), resolverSucursal(idSucursal), PageRequest.of(page, size));
+		serviceDescuento.completarResumenMayorista(resultado.getContent());
+		return ResponseEntity.ok(resultado);
 	}
 
 	@GetMapping(value = "/productos-dto/search/{page}")
 	public ResponseEntity<Page<ProductoDtoMejorado>> searchProductosDto(
 																@PathVariable("page") Integer page,
 																@RequestParam(required = false) String filtro,
+																@RequestParam(required = false) String mayorista,
 																@RequestParam(value = "size", defaultValue = "5") Integer size,
 																@RequestParam(value = "orden", defaultValue = "nombre") String orden,
 																@RequestParam(value = "direccion", defaultValue = "asc") String direccion,
 																@RequestParam(value = "idSucursal", required = false) Integer idSucursal)
 	{
-		return ResponseEntity.ok(serviceProducto.searchProductoDtoMejorado(
-				filtro, validarOrden(orden), validarDireccion(direccion), resolverSucursal(idSucursal), PageRequest.of(page, size)));
+		Page<ProductoDtoMejorado> resultado = serviceProducto.searchProductoDtoMejorado(
+				filtro, mayorista, validarOrden(orden), validarDireccion(direccion), resolverSucursal(idSucursal), PageRequest.of(page, size));
+		serviceDescuento.completarResumenMayorista(resultado.getContent());
+		return ResponseEntity.ok(resultado);
 	}
 
 	/**

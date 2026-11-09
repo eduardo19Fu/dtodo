@@ -171,4 +171,59 @@ describe('Botonera del listado de pedidos', () => {
     expect(codigos).toContain('ENTREGADA_PARCIAL');
     expect(codigos).toContain('ENTREGADA');
   });
+
+  function pedidoDeRuta(id: number, idRuta: number, ruta: string, estado: string, unidades = 10): PedidoDto {
+    return Object.assign(new PedidoDto(), {
+      idProforma: id, noProforma: id + 'P', cliente: 'CLIENTE ' + id, vendedor: 'Ana', idRuta, ruta, estadoPedido: estado, unidades
+    });
+  }
+
+  it('con varias rutas solo se abre la primera y las demás se pueden abrir, plegar o expandir', () => {
+    const componente = fixture.componentInstance;
+    componente.pedidos = [
+      pedidoDeRuta(1, 1, 'RUTA A', 'EMPACADA'), pedidoDeRuta(2, 1, 'RUTA A', 'EN_RUTA'),
+      pedidoDeRuta(3, 2, 'RUTA B', 'CONFIRMADA'), pedidoDeRuta(4, 3, 'RUTA C', 'EN_PREPARACION'),
+      pedidoDeRuta(5, 4, 'RUTA D', 'EMPACADA')
+    ];
+    fixture.detectChanges();
+
+    const tarjetas = () => Array.from(fixture.nativeElement.querySelectorAll('.grupo-encabezado')).map((e: HTMLElement) => e.closest('.listing-card') as HTMLElement);
+    const abiertas = () => tarjetas().filter(t => t.querySelector('.pedidos-table')).length;
+    expect(tarjetas().length).toBe(4);
+    expect(abiertas()).toBe(1);
+    expect(tarjetas()[0].querySelector('.pedidos-table')).not.toBeNull();   // solo la primera
+
+    (tarjetas()[1].querySelector('.grupo-encabezado') as HTMLElement).click();   // abrir la segunda a mano
+    fixture.detectChanges();
+    expect(abiertas()).toBe(2);
+
+    (fixture.nativeElement.querySelectorAll('.pedidos-toolbar .barra-boton')[1] as HTMLElement).click();   // plegar todo
+    fixture.detectChanges();
+    expect(abiertas()).toBe(0);
+
+    (fixture.nativeElement.querySelectorAll('.pedidos-toolbar .barra-boton')[0] as HTMLElement).click();   // expandir todo
+    fixture.detectChanges();
+    expect(abiertas()).toBe(4);
+  });
+
+  it('el encabezado de la ruta resume sus etapas y la nota de envío solo aparece donde hay algo por cargar', () => {
+    const componente = fixture.componentInstance;
+    componente.pedidos = [
+      pedidoDeRuta(1, 1, 'RUTA A', 'EMPACADA'), pedidoDeRuta(2, 1, 'RUTA A', 'EMPACADA', 5), pedidoDeRuta(3, 1, 'RUTA A', 'EN_RUTA'),
+      pedidoDeRuta(4, 2, 'RUTA B', 'CONFIRMADA')
+    ];
+    fixture.detectChanges();
+
+    const [a, b] = Array.from(fixture.nativeElement.querySelectorAll('.grupo-encabezado')).map((e: HTMLElement) => e.closest('.listing-card') as HTMLElement);
+    const chipsA = Array.from(a.querySelectorAll('.grupo-chip')).map(c => c.textContent.trim());
+    expect(chipsA).toEqual(['2 empacado', '1 en ruta']);
+    expect(a.querySelector('.nota-envio')).not.toBeNull();
+    expect(b.querySelector('.nota-envio')).toBeNull();
+    // solo una ruta con nota: no hace falta el botón general
+    expect(fixture.nativeElement.querySelector('.barra-boton-principal')).toBeNull();
+
+    componente.pedidos.push(pedidoDeRuta(5, 3, 'RUTA C', 'EMPACADA'));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.barra-boton-principal').textContent).toContain('(2)');
+  });
 });

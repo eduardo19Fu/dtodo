@@ -34,4 +34,10 @@ public class ProductoDtoMejorado {
     private String marcaProducto;
     private String tipoProducto;
     private String estado;
+    /** Precio mayorista fijo del producto; nulo si no tiene. Se completa al listar. */
+    private BigDecimal precioMayorista;
+    /** Tiene un descuento activo por ciento (cantidad mínima). */
+    private boolean descuentoCiento;
+    /** Tiene un descuento activo por fardo cerrado. */
+    private boolean descuentoFardo;
 }

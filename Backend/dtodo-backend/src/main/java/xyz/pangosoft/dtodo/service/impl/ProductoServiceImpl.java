@@ -148,6 +148,13 @@ public class ProductoServiceImpl implements IProductoService {
 	@Override
 	public Page<ProductoDtoMejorado> searchProductoDtoMejorado(
 			String filtro, String orden, String direccion, Integer idSucursal, Pageable pageable) {
+		return searchProductoDtoMejorado(filtro, null, orden, direccion, idSucursal, pageable);
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public Page<ProductoDtoMejorado> searchProductoDtoMejorado(
+			String filtro, String mayorista, String orden, String direccion, Integer idSucursal, Pageable pageable) {
 		String __method = new Object() {}.getClass().getEnclosingClass().getSimpleName() + "::" + new Object() {}.getClass().getEnclosingMethod().getName();
 		log.debug("Enter {}", __method);
 
@@ -155,7 +162,7 @@ public class ProductoServiceImpl implements IProductoService {
 			log.debug("Consultando productos desde la base de datos que conicidan con la busqueda...");
 			List<String> terminos = obtenerTerminosBusqueda(filtro);
 			Page<Producto> results = repoProducto.findAll(
-					crearEspecificacionBusqueda(terminos, idSucursal), crearPageableOrdenado(pageable, orden, direccion));
+					crearEspecificacionBusqueda(terminos, idSucursal, mayorista), crearPageableOrdenado(pageable, orden, direccion));
 
 			return results.map(producto -> mapProductoToProductoDtoMejorado(producto, idSucursal));
 		} catch (DataAccessException dax) {
@@ -176,10 +183,14 @@ public class ProductoServiceImpl implements IProductoService {
 				.collect(Collectors.toList());
 	}
 
-	private Specification<Producto> crearEspecificacionBusqueda(List<String> terminos, Integer idSucursal) {
+	private Specification<Producto> crearEspecificacionBusqueda(List<String> terminos, Integer idSucursal, String mayorista) {
 		return (root, query, criteriaBuilder) -> {
 			List<Predicate> condiciones = new ArrayList<>();
 			condiciones.add(existeEnInventarioDeSucursal(root, query, criteriaBuilder, idSucursal));
+			Predicate filtroMayorista = filtroMayorista(mayorista, root, query, criteriaBuilder);
+			if (filtroMayorista != null) {
+				condiciones.add(filtroMayorista);
+			}
 
 			if (!terminos.isEmpty()) {
 				Join<Producto, MarcaProducto> marca = root.join("marcaProducto", JoinType.LEFT);
@@ -202,6 +213,49 @@ public class ProductoServiceImpl implements IProductoService {
 
 			return criteriaBuilder.and(condiciones.toArray(new Predicate[0]));
 		};
+	}
+
+	/** Valores válidos del filtro de descuentos mayoristas del listado de productos. */
+	static final java.util.Set<String> FILTROS_MAYORISTA = new java.util.HashSet<>(
+			Arrays.asList("ALGUNO", "PRECIO", "CIENTO", "FARDO", "NINGUNO"));
+
+	/**
+	 * Condición del filtro de descuentos mayoristas: ALGUNO (precio mayorista o cualquier descuento activo), PRECIO,
+	 * CIENTO, FARDO o NINGUNO. Un valor vacío o desconocido no filtra.
+	 */
+	private Predicate filtroMayorista(String mayorista, Root<Producto> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+		String valor = mayorista == null ? "" : mayorista.trim().toUpperCase(Locale.ROOT);
+		if (!FILTROS_MAYORISTA.contains(valor)) {
+			return null;
+		}
+		Predicate conPrecio = existePrecioMayorista(root, query, cb);
+		Predicate conCiento = existeDescuentoActivo(root, query, cb, xyz.pangosoft.dtodo.model.enums.TipoDescuentoEnum.CIENTO);
+		Predicate conFardo = existeDescuentoActivo(root, query, cb, xyz.pangosoft.dtodo.model.enums.TipoDescuentoEnum.FARDO);
+		switch (valor) {
+			case "PRECIO": return conPrecio;
+			case "CIENTO": return conCiento;
+			case "FARDO": return conFardo;
+			case "NINGUNO": return cb.not(cb.or(conPrecio, conCiento, conFardo));
+			default: return cb.or(conPrecio, conCiento, conFardo);
+		}
+	}
+
+	private Predicate existePrecioMayorista(Root<Producto> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+		Subquery<Long> subquery = query.subquery(Long.class);
+		Root<xyz.pangosoft.dtodo.model.PrecioMayorista> precio = subquery.from(xyz.pangosoft.dtodo.model.PrecioMayorista.class);
+		subquery.select(cb.literal(1L)).where(cb.equal(precio.get("idProducto"), root.get("idProducto")));
+		return cb.exists(subquery);
+	}
+
+	private Predicate existeDescuentoActivo(Root<Producto> root, CriteriaQuery<?> query, CriteriaBuilder cb,
+			xyz.pangosoft.dtodo.model.enums.TipoDescuentoEnum tipo) {
+		Subquery<Long> subquery = query.subquery(Long.class);
+		Root<xyz.pangosoft.dtodo.model.DescuentoProducto> descuento = subquery.from(xyz.pangosoft.dtodo.model.DescuentoProducto.class);
+		subquery.select(cb.literal(1L)).where(
+				cb.equal(descuento.get("producto"), root),
+				cb.equal(descuento.get("tipo"), tipo),
+				cb.isTrue(descuento.get("activo")));
+		return cb.exists(subquery);
 	}
 
 	/**

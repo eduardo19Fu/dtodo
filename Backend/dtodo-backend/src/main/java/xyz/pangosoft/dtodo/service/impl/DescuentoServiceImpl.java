@@ -225,6 +225,27 @@ public class DescuentoServiceImpl implements IDescuentoService {
 
     @Transactional(readOnly = true)
     @Override
+    public void completarResumenMayorista(List<xyz.pangosoft.dtodo.dto.ProductoDtoMejorado> productos) {
+        if (productos == null || productos.isEmpty()) {
+            return;
+        }
+        List<Integer> ids = productos.stream().map(producto -> producto.getIdProducto()).collect(Collectors.toList());
+        Map<Integer, BigDecimal> precios = new HashMap<>();
+        precioRepository.findByIdProductoIn(ids).forEach(precio -> precios.put(precio.getIdProducto(), precio.getPrecio()));
+        Map<Integer, Set<TipoDescuentoEnum>> especiales = new HashMap<>();
+        descuentoRepository.findByProducto_IdProductoIn(ids).stream().filter(DescuentoProducto::isActivo)
+                .forEach(descuento -> especiales.computeIfAbsent(descuento.getProducto().getIdProducto(),
+                        k -> EnumSet.noneOf(TipoDescuentoEnum.class)).add(descuento.getTipo()));
+        for (xyz.pangosoft.dtodo.dto.ProductoDtoMejorado producto : productos) {
+            producto.setPrecioMayorista(precios.get(producto.getIdProducto()));
+            Set<TipoDescuentoEnum> tipos = especiales.getOrDefault(producto.getIdProducto(), EnumSet.noneOf(TipoDescuentoEnum.class));
+            producto.setDescuentoCiento(tipos.contains(TipoDescuentoEnum.CIENTO));
+            producto.setDescuentoFardo(tipos.contains(TipoDescuentoEnum.FARDO));
+        }
+    }
+
+    @Transactional(readOnly = true)
+    @Override
     public ProductoDescuentosDto findProducto(Integer idProducto) {
         Producto producto = cargarProducto(idProducto);
         return aDto(producto, precioRepository.findById(idProducto).map(PrecioMayorista::getPrecio).orElse(null),

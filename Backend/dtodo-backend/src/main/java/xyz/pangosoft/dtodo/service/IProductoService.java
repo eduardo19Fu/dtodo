@@ -24,6 +24,13 @@ public interface IProductoService {
 	public Page<ProductoDtoMejorado> searchProductoDtoMejorado(
 			String filtro, String orden, String direccion, Integer idSucursal, Pageable pageable);
 
+	/**
+	 * Igual que la búsqueda por texto, con un filtro opcional de descuentos mayoristas: ALGUNO, PRECIO, CIENTO, FARDO o NINGUNO
+	 * (nulo o vacío no filtra).
+	 */
+	public Page<ProductoDtoMejorado> searchProductoDtoMejorado(
+			String filtro, String mayorista, String orden, String direccion, Integer idSucursal, Pageable pageable);
+
 	public List<ProductoDto> findAllByEstado(Estado estado, Integer idSucursal);
 	
 	public Page<Producto> findAll(Pageable pageable);

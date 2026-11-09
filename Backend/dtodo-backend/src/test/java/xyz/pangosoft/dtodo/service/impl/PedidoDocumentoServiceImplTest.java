@@ -48,6 +48,17 @@ class PedidoDocumentoServiceImplTest {
     }
 
     @Test
+    void lasNotasDeTodasLasRutasValidanLaFechaYAvisanSiNoHayNada() {
+        assertThrows(BadRequestException.class, () -> service.notaEnvioTodasLasRutas("28/10/2026"));
+
+        when(proformaRepository.idRutasConNotaDeEnvio(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
+                .thenReturn(java.util.Collections.emptyList());
+        assertThrows(NotFoundException.class, () -> service.notaEnvioTodasLasRutas("2026-10-28"));
+
+        verifyNoInteractions(dataSource);
+    }
+
+    @Test
     void elPickingYElEmpaqueSoloSeImprimenDeUnPedidoMayorista() {
         when(proformaRepository.findById(404L)).thenReturn(Optional.empty());
         assertThrows(NotFoundException.class, () -> service.picking(404L));

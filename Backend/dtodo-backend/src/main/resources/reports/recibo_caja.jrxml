@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Recibo de caja (media carta). Plantilla escrita a mano en formato JasperReports 6.x; no abrir ni guardar con Jaspersoft Studio 7,
-     que cambia el formato y la librería del proyecto no lo entiende. -->
+     que cambia el formato y la librería del proyecto no lo entiende. Mismo lenguaje visual que la proforma: logo sin fondo,
+     panel azul del documento, monto destacado y tarjeta con los datos del pago. -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
@@ -9,9 +10,9 @@
               topMargin="18" bottomMargin="14"
               uuid="a3f1c8d2-6b47-4e09-8d15-2c9e7b40f318">
 
-    <style name="Base" isDefault="true" fontName="DejaVu Sans" fontSize="9" forecolor="#23344D"/>
-    <style name="Etiqueta" style="Base" fontSize="8" forecolor="#66758A"/>
-    <style name="Valor" style="Base" fontSize="10" isBold="true"/>
+    <style name="Base" isDefault="true" fontName="DejaVu Sans" fontSize="9" forecolor="#1F2A44"/>
+    <style name="Etiqueta" style="Base" fontSize="7.5" isBold="true" forecolor="#6B7A90"/>
+    <style name="Valor" style="Base" fontSize="10.5" isBold="true"/>
 
     <parameter name="ID_RECIBO" class="java.lang.Long"/>
 
@@ -59,67 +60,86 @@
     <field name="motivo_anulacion" class="java.lang.String"/>
 
     <detail>
-        <band height="360">
-            <rectangle radius="6">
-                <reportElement x="90" y="0" width="482" height="48" forecolor="#1769D2" backcolor="#1769D2"/>
-            </rectangle>
-            <image scaleImage="RetainShape" hAlign="Center">
-                <reportElement x="0" y="0" width="72" height="48"/>
-                <imageExpression><![CDATA[this.getClass().getResourceAsStream("/static/images/reports-image/logo-dtodo.jpg")]]></imageExpression>
+        <band height="364">
+            <!-- Encabezado: logo sin fondo y panel azul con el documento y su número -->
+            <image scaleImage="RetainShape" hAlign="Left">
+                <reportElement x="0" y="0" width="130" height="62"/>
+                <imageExpression><![CDATA[this.getClass().getResourceAsStream("/static/images/reports-image/logo-dtodo-proforma.png")]]></imageExpression>
             </image>
+            <rectangle radius="9">
+                <reportElement mode="Opaque" x="146" y="0" width="426" height="60" forecolor="#2B3990" backcolor="#2B3990"/>
+            <graphicElement><pen lineWidth="0.5" lineColor="#2B3990"/></graphicElement></rectangle>
             <staticText>
-                <reportElement x="90" y="0" width="300" height="48" forecolor="#FFFFFF" backcolor="#1769D2" mode="Opaque"/>
-                <textElement verticalAlignment="Middle"><font size="18" isBold="true"/><paragraph leftIndent="16"/></textElement>
+                <reportElement x="162" y="7" width="200" height="11" forecolor="#C3CFFF"/>
+                <textElement verticalAlignment="Middle"><font size="7.5" isBold="true"/></textElement>
+                <text><![CDATA[COMPROBANTE DE PAGO]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="162" y="19" width="260" height="30" forecolor="#FFFFFF"/>
+                <textElement verticalAlignment="Middle"><font size="19" isBold="true"/></textElement>
                 <text><![CDATA[RECIBO DE CAJA]]></text>
             </staticText>
             <textField>
-                <reportElement x="390" y="0" width="182" height="26" forecolor="#FFFFFF" backcolor="#1769D2" mode="Opaque"/>
-                <textElement textAlignment="Right" verticalAlignment="Bottom"><font size="13" isBold="true"/><paragraph rightIndent="14"/></textElement>
+                <reportElement x="400" y="8" width="156" height="22" forecolor="#FFFFFF"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="13" isBold="true"/></textElement>
                 <textFieldExpression><![CDATA["No. S" + $F{id_sucursal} + "-" + String.format("%06d", $F{numero})]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
-                <reportElement x="390" y="26" width="182" height="22" forecolor="#DCEBFF" backcolor="#1769D2" mode="Opaque"/>
-                <textElement textAlignment="Right" verticalAlignment="Top"><font size="8"/><paragraph rightIndent="14"/></textElement>
+                <reportElement x="400" y="32" width="156" height="16" forecolor="#C3CFFF"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="8.5" isBold="true"/></textElement>
                 <textFieldExpression><![CDATA[$F{sucursal}]]></textFieldExpression>
             </textField>
 
-            <staticText><reportElement style="Etiqueta" x="0" y="64" width="120" height="12"/><text><![CDATA[Fecha de pago]]></text></staticText>
-            <textField pattern="dd/MM/yyyy"><reportElement style="Valor" x="0" y="76" width="140" height="16"/><textFieldExpression><![CDATA[$F{fecha_pago}]]></textFieldExpression></textField>
-            <staticText><reportElement style="Etiqueta" x="400" y="64" width="172" height="12"/><textElement textAlignment="Right"/><text><![CDATA[Monto recibido]]></text></staticText>
-            <textField pattern="Q #,##0.00"><reportElement x="400" y="74" width="172" height="22" forecolor="#17233B"/><textElement textAlignment="Right"><font size="16" isBold="true"/></textElement><textFieldExpression><![CDATA[$F{monto}]]></textFieldExpression></textField>
+            <!-- Fecha y monto -->
+            <staticText><reportElement style="Etiqueta" x="0" y="76" width="140" height="12"/><text><![CDATA[Fecha de pago]]></text></staticText>
+            <textField pattern="dd/MM/yyyy"><reportElement x="0" y="89" width="200" height="22" forecolor="#1F2A44"/><textElement verticalAlignment="Middle"><font size="14" isBold="true"/></textElement><textFieldExpression><![CDATA[$F{fecha_pago}]]></textFieldExpression></textField>
+            <rectangle radius="9">
+                <reportElement mode="Opaque" x="322" y="68" width="250" height="52" forecolor="#D3DBEE" backcolor="#F2F5FC"/>
+            <graphicElement><pen lineWidth="0.75" lineColor="#D3DBEE"/></graphicElement></rectangle>
+            <staticText><reportElement style="Etiqueta" x="336" y="75" width="222" height="12"/><textElement textAlignment="Right"/><text><![CDATA[Monto recibido]]></text></staticText>
+            <textField pattern="Q #,##0.00"><reportElement x="336" y="88" width="222" height="26" forecolor="#2B3990"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="20" isBold="true"/></textElement><textFieldExpression><![CDATA[$F{monto}]]></textFieldExpression></textField>
 
-            <line><reportElement x="0" y="104" width="572" height="1" forecolor="#B9C9DC"/></line>
+            <!-- Tarjeta con los datos del pago -->
+            <rectangle radius="8">
+                <reportElement mode="Opaque" x="0" y="134" width="572" height="124" forecolor="#D3DBEE" backcolor="#FFFFFF"/>
+            <graphicElement><pen lineWidth="0.75" lineColor="#D3DBEE"/></graphicElement></rectangle>
+            <rectangle>
+                <reportElement mode="Opaque" x="0" y="134" width="5" height="124" forecolor="#2B3990" backcolor="#2B3990"/>
+            <graphicElement><pen lineWidth="0.5" lineColor="#2B3990"/></graphicElement></rectangle>
 
-            <staticText><reportElement style="Etiqueta" x="0" y="112" width="120" height="12"/><text><![CDATA[Recibimos de]]></text></staticText>
-            <textField isBlankWhenNull="true"><reportElement style="Valor" x="0" y="124" width="572" height="16"/><textFieldExpression><![CDATA[$F{cliente} + ($F{negocio} == null || $F{negocio}.isEmpty() ? "" : " · " + $F{negocio})]]></textFieldExpression></textField>
-            <textField isBlankWhenNull="true"><reportElement style="Etiqueta" x="0" y="140" width="572" height="12"/><textFieldExpression><![CDATA[$F{nit} == null || $F{nit}.isEmpty() ? "" : "NIT: " + $F{nit}]]></textFieldExpression></textField>
+            <staticText><reportElement style="Etiqueta" x="18" y="142" width="200" height="12"/><text><![CDATA[Recibimos de]]></text></staticText>
+            <textField isBlankWhenNull="true" textAdjust="ScaleFont"><reportElement style="Valor" x="18" y="155" width="350" height="17"/><textElement verticalAlignment="Middle"/><textFieldExpression><![CDATA[$F{cliente} + ($F{negocio} == null || $F{negocio}.isEmpty() ? "" : " · " + $F{negocio})]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true"><reportElement style="Base" x="18" y="173" width="350" height="13" forecolor="#6B7A90"/><textElement><font size="8.5"/></textElement><textFieldExpression><![CDATA[$F{nit} == null || $F{nit}.isEmpty() ? "" : "NIT: " + $F{nit}]]></textFieldExpression></textField>
 
-            <staticText><reportElement style="Etiqueta" x="0" y="164" width="200" height="12"/><text><![CDATA[Por concepto de]]></text></staticText>
-            <textField isBlankWhenNull="true"><reportElement style="Valor" x="0" y="176" width="572" height="16"/><textFieldExpression><![CDATA[($F{no_proforma} == null && $F{no_factura} == null) ? "Abono a la cuenta del cliente" : "Pago de" + ($F{no_proforma} == null ? "" : " pedido " + $F{no_proforma}) + ($F{no_factura} == null ? "" : " factura " + $F{no_factura})]]></textFieldExpression></textField>
+            <staticText><reportElement style="Etiqueta" x="18" y="198" width="200" height="12"/><text><![CDATA[Por concepto de]]></text></staticText>
+            <textField isBlankWhenNull="true" textAdjust="ScaleFont"><reportElement style="Valor" x="18" y="211" width="350" height="17"/><textElement verticalAlignment="Middle"/><textFieldExpression><![CDATA[($F{no_proforma} == null && $F{no_factura} == null) ? "Abono a la cuenta del cliente" : "Pago de" + ($F{no_proforma} == null ? "" : " pedido " + $F{no_proforma}) + ($F{no_factura} == null ? "" : " factura " + $F{no_factura})]]></textFieldExpression></textField>
 
-            <staticText><reportElement style="Etiqueta" x="0" y="204" width="120" height="12"/><text><![CDATA[Forma de pago]]></text></staticText>
-            <textField><reportElement style="Valor" x="0" y="216" width="200" height="16"/><textFieldExpression><![CDATA["EFECTIVO".equals($F{forma_pago}) ? "Efectivo" : ("DEPOSITO".equals($F{forma_pago}) ? "Depósito" : ("CHEQUE".equals($F{forma_pago}) ? "Cheque" : "Transferencia"))]]></textFieldExpression></textField>
-            <staticText><reportElement style="Etiqueta" x="220" y="204" width="120" height="12"/><text><![CDATA[Referencia]]></text></staticText>
-            <textField isBlankWhenNull="true"><reportElement style="Valor" x="220" y="216" width="352" height="16"/><textFieldExpression><![CDATA[$F{referencia}]]></textFieldExpression></textField>
+            <line><reportElement x="388" y="144" width="1" height="104" forecolor="#E1E7F3"/></line>
+            <staticText><reportElement style="Etiqueta" x="404" y="142" width="150" height="12"/><text><![CDATA[Forma de pago]]></text></staticText>
+            <textField><reportElement style="Valor" x="404" y="155" width="158" height="17"/><textElement verticalAlignment="Middle"/><textFieldExpression><![CDATA["EFECTIVO".equals($F{forma_pago}) ? "Efectivo" : ("DEPOSITO".equals($F{forma_pago}) ? "Depósito" : ("CHEQUE".equals($F{forma_pago}) ? "Cheque" : "Transferencia"))]]></textFieldExpression></textField>
+            <staticText><reportElement style="Etiqueta" x="404" y="198" width="150" height="12"/><text><![CDATA[Referencia]]></text></staticText>
+            <textField isBlankWhenNull="true" textAdjust="ScaleFont"><reportElement style="Valor" x="404" y="211" width="158" height="17"/><textElement verticalAlignment="Middle"/><textFieldExpression><![CDATA[($F{referencia} == null || $F{referencia}.trim().isEmpty()) ? "—" : $F{referencia}]]></textFieldExpression></textField>
 
+            <!-- Observaciones y aviso de anulación -->
             <textField isBlankWhenNull="true" isStretchWithOverflow="false">
-                <reportElement style="Base" x="0" y="244" width="572" height="26" forecolor="#53647A"/>
-                <textElement><font size="8" isItalic="true"/></textElement>
+                <reportElement style="Base" x="0" y="266" width="572" height="24" forecolor="#53647A"/>
+                <textElement verticalAlignment="Middle"><font size="8.5" isItalic="true"/></textElement>
                 <textFieldExpression><![CDATA[$F{observaciones}]]></textFieldExpression>
             </textField>
-
-            <line><reportElement x="40" y="318" width="200" height="1" forecolor="#23344D"/></line>
-            <textField isBlankWhenNull="true"><reportElement style="Etiqueta" x="40" y="321" width="200" height="12"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA["Emitió: " + $F{emitido_por}]]></textFieldExpression></textField>
-            <line><reportElement x="332" y="318" width="200" height="1" forecolor="#23344D"/></line>
-            <staticText><reportElement style="Etiqueta" x="332" y="321" width="200" height="12"/><textElement textAlignment="Center"/><text><![CDATA[Recibí conforme (cliente)]]></text></staticText>
-
             <textField isBlankWhenNull="true">
-                <reportElement x="0" y="276" width="572" height="30" forecolor="#B42318">
+                <reportElement mode="Opaque" backcolor="#FDECEB" x="0" y="294" width="572" height="26" forecolor="#B42318">
                     <printWhenExpression><![CDATA[$F{anulado}]]></printWhenExpression>
                 </reportElement>
-                <textElement textAlignment="Center" verticalAlignment="Middle"><font size="14" isBold="true"/></textElement>
+                <box><pen lineWidth="0.75" lineColor="#F1B5B0"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle"><font size="12" isBold="true"/></textElement>
                 <textFieldExpression><![CDATA["RECIBO ANULADO" + ($F{motivo_anulacion} == null ? "" : " · " + $F{motivo_anulacion})]]></textFieldExpression>
             </textField>
+
+            <!-- Firmas -->
+            <line><reportElement x="40" y="340" width="200" height="1" forecolor="#8C9BB5"/></line>
+            <textField isBlankWhenNull="true"><reportElement style="Etiqueta" x="40" y="343" width="200" height="12"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA["Emitió: " + $F{emitido_por}]]></textFieldExpression></textField>
+            <line><reportElement x="332" y="340" width="200" height="1" forecolor="#8C9BB5"/></line>
+            <staticText><reportElement style="Etiqueta" x="332" y="343" width="200" height="12"/><textElement textAlignment="Center"/><text><![CDATA[Recibí conforme (cliente)]]></text></staticText>
         </band>
     </detail>
 </jasperReport>

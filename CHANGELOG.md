@@ -6,6 +6,26 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Cambiado — Manual de mayoristas actualizado
+- El manual refleja los últimos cambios: rutas plegables y filtros de etapa (incluido «Entregado») en Pedidos, nueva botonera y acción bajo la etapa, notas de envío por ruta y de todas las rutas, hojas de picking, empaque y nota de envío rediseñadas, detalle del pedido con paginación, formulario de entrega con tarjetas, ventanas de confirmación, panel de entrega y selector de descuento de la proforma, nota por línea, historial desplegable, recibo de caja y proforma rediseñados, filtro «Mayorista» en Productos, y un escenario nuevo (15.18) para probar varias rutas con los datos de prueba. También 4 preguntas frecuentes nuevas.
+
+### Cambiado — Recibo de caja rediseñado
+- El recibo de caja sigue el diseño de la proforma: logo sin fondo, panel azul con «RECIBO DE CAJA», el número y la sucursal, la fecha de pago, el monto en un recuadro destacado, una tarjeta con «Recibimos de», «Por concepto de», forma de pago y referencia (sin referencia se muestra «—»), las observaciones y el aviso de recibo anulado en un recuadro rojo, y las líneas de firma.
+
+### Cambiado — Descuentos por producto se consultan en Productos
+- El listado de Productos tiene un filtro «Mayorista» (todos, con algún descuento mayorista, con precio mayorista, con descuento por ciento, con descuento por fardo o sin descuento mayorista), que se combina con la búsqueda por texto, y una etiqueta «Mayorista» en los productos que tienen precio o descuento (con un tooltip que dice cuáles). El servidor acepta `mayorista` en `GET /api/productos-dto/search/{page}` y completa en cada producto `precioMayorista`, `descuentoCiento` y `descuentoFardo`.
+- La pantalla de Descuentos mayoristas deja solo las categorías de cliente: se quitan la tabla «Precio mayorista y descuentos por producto» y su editor, que duplicaban el listado y el formulario de producto, y se agrega un acceso «Ver productos con descuento mayorista» que abre Productos con el filtro ya aplicado. El manual de mayoristas se actualizó.
+
+### Cambiado — Pedidos: rutas plegables y notas de envío de todas las rutas
+- Cada ruta del listado de pedidos es una fila plegable con su resumen (pedidos, unidades y chips por etapa, por ejemplo «2 empacado · 1 en ruta»); la tabla solo se ve al desplegarla. Por defecto solo se abre la primera ruta y las demás quedan contraídas; la elección del usuario se conserva. Con varias rutas aparece una barra con «Expandir todo» y «Plegar todo».
+- El botón «Nota de envío» de cada ruta solo aparece cuando la ruta tiene pedidos empacados o en ruta.
+- Nuevo botón «Imprimir notas de envío (N)»: un solo PDF con la nota de cada ruta que tenga algo por cargar o que salió hoy, una página por ruta (`GET /api/pedidos/nota-envio-todas`, roles Admin y Bodega). Aparece cuando hay más de una ruta con nota.
+- Scripts de datos de prueba para ver el listado con varias rutas: `sql/pruebas/seed_pedidos_rutas.sql` y `sql/pruebas/unseed_pedidos_rutas.sql`.
+
+### Cambiado — Hoja de picking y lista de empaque rediseñadas
+- La hoja de picking y la lista de empaque (misma plantilla `pedido_bodega.jrxml`) siguen el lenguaje de la proforma: logo de D'Todo sin fondo, panel azul con el tipo de documento y el pedido, tarjeta con los datos del cliente y del pedido, tabla con cabecera azul, filas alternadas y casillas para marcar lo preparado, total de unidades destacado y líneas de firma. Los datos que faltan se muestran como «—» (y «Sin fecha» en la entrega) en lugar de quedar en blanco.
+- La nota de envío de la ruta tiene el mismo diseño: logo sin fondo, panel azul con la ruta, la fecha y la hora de generación, tabla con filas alternadas, estado de cada pedido en color («Por cargar» en ámbar, «En ruta» en violeta), recuadro con el total de pedidos y de unidades y líneas de firma.
+
 ### Corregido — Pedidos entregados en el filtro de etapa
 - Al entregarse por completo un pedido desaparecía del listado, porque «Por entregar» solo muestra lo pendiente y el filtro de etapa no ofrecía «Entregado». Ahora el filtro incluye «Entrega parcial» y «Entregado» (el repartidor no ve esta última, porque solo trabaja lo que está en ruta).
 

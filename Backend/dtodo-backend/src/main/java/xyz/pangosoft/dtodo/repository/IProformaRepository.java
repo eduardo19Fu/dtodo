@@ -26,6 +26,17 @@ public interface IProformaRepository extends JpaRepository<Proforma, Long> {
             + "and p.estadoPedido is not null and p.estado.estado <> 'ANULADO' order by p.idProforma")
     List<Proforma> pedidosVigentes();
 
+    /**
+     * Rutas que tienen algo para la nota de envío: pedidos empacados por cargar o que salieron a ruta entre las dos fechas.
+     * Es el mismo criterio de la plantilla {@code nota_envio.jrxml}.
+     */
+    @Query(value = "SELECT DISTINCT pr.id_ruta FROM proformas pr "
+            + "WHERE pr.id_ruta IS NOT NULL AND pr.tipo_proforma = 'MAYORISTA' AND pr.id_estado != 4 "
+            + "AND (pr.estado_pedido = 'EMPACADA' OR (pr.estado_pedido = 'EN_RUTA' "
+            + "AND EXISTS (SELECT 1 FROM proformas_etapas e WHERE e.id_proforma = pr.id_proforma AND e.etapa = 'EN_RUTA' "
+            + "AND e.fecha >= :inicio AND e.fecha < :fin))) ORDER BY pr.id_ruta", nativeQuery = true)
+    List<Integer> idRutasConNotaDeEnvio(@Param("inicio") java.sql.Timestamp inicio, @Param("fin") java.sql.Timestamp fin);
+
     /** Pedidos mayoristas vigentes (no anulados) de un cliente, del más antiguo al más reciente. */
     @Query("select p from Proforma p where p.cliente.idCliente = :idCliente "
             + "and p.tipoProforma = xyz.pangosoft.dtodo.model.enums.TipoProformaEnum.MAYORISTA "

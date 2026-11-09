@@ -15,4 +15,8 @@ export class ProductoDto {
     marcaProducto: string;
     tipoProducto: string;
     estado: string;
+    /** Precio mayorista fijo; nulo si no tiene. */
+    precioMayorista?: number | null;
+    descuentoCiento?: boolean;
+    descuentoFardo?: boolean;
 }

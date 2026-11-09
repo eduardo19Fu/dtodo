@@ -52,55 +52,29 @@
 
 .btn-descuentos:hover:not(:disabled) { color: #fff; filter: brightness(1.08); }
 
-.especial-row { align-items: center; }
-
-:host .filtros-productos {
-  box-sizing: border-box;
-  align-items: end;
-  background: #f7f9fb;
-  border: 1px solid #dce4ec;
-  border-radius: 8px;
-  display: grid;
-  gap: 16px 24px;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
-  margin: 0 0 20px;
-  padding: 16px;
-}
-:host .filtros-productos > div { min-width: 0; }
-.productos-descuentos-table { min-width: 880px; }
-.productos-descuentos-table th {
-  background: #343a40;
-  border-color: #454d55;
-  color: #fff;
-  font-size: 0.83rem;
-  font-weight: 600;
-}
-.productos-descuentos-table td { font-size: 0.88rem; vertical-align: middle; }
-
-.spinner-border { color: var(--desc-accent); }
-
-:host .discount-filter-toggle {
-  box-sizing: border-box;
+/* Aviso que lleva a Productos, donde ahora se consultan el precio mayorista y los descuentos por producto. */
+.descuentos-aviso-cuerpo { align-items: center; display: flex; flex-wrap: wrap; gap: 14px 18px; }
+.descuentos-aviso-icono {
   align-items: center;
-  background: #fff;
-  border: 1px solid #cbd6e2;
-  border-radius: 8px;
-  cursor: pointer;
+  background: var(--desc-tint);
+  border-radius: 12px;
+  color: var(--desc-accent);
   display: flex;
-  gap: 16px;
-  margin: 0;
-  min-height: 70px;
-  padding: 12px 16px;
-  width: 100%;
+  flex: 0 0 46px;
+  font-size: 1.15rem;
+  height: 46px;
+  justify-content: center;
 }
-:host .discount-filter-toggle:hover { border-color: #81ac9f; }
-:host .discount-filter-toggle:focus-within { border-color: #2f7d6b; box-shadow: 0 0 0 3px rgba(47, 125, 107, 0.14); }
-:host .discount-filter-copy { display: flex; flex: 1 1 0; flex-direction: column; gap: 4px; min-width: 0; overflow-wrap: anywhere; }
-:host .discount-filter-title { color: #344459; display: block; font-size: 14px; font-weight: 600; line-height: 1.5; }
-:host .discount-filter-description { color: #607087; display: block; font-size: 12px; font-weight: 400; line-height: 1.5; }
-:host .discount-filter-toggle .listing-switch { flex: 0 0 40px; margin: 0; }
-
-@media (forced-colors: active) {
-  .discount-filter-toggle .listing-switch { appearance: auto; }
-  .discount-filter-toggle .listing-switch::after { display: none; }
+.descuentos-aviso-texto { display: flex; flex: 1 1 280px; flex-direction: column; gap: 2px; min-width: 0; }
+.descuentos-aviso-texto strong { color: #24344d; }
+.descuentos-aviso-texto span { color: #607087; font-size: 0.88rem; }
+.descuentos-aviso-enlace {
+  background: #fff;
+  border: 1px solid #e3c5a5;
+  border-radius: 8px;
+  color: var(--desc-dark);
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.55rem 1rem;
 }
+.descuentos-aviso-enlace:hover, .descuentos-aviso-enlace:focus { background: var(--desc-accent); border-color: var(--desc-accent); color: #fff; text-decoration: none; }

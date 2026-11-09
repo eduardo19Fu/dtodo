@@ -103,4 +103,13 @@ export class PedidoService {
     }
     return this.http.get(`${this.url}/nota-envio`, { params, responseType: 'blob' });
   }
+
+  /** Un solo PDF con la nota de envío de cada ruta que tenga algo por cargar o que salió ese día (hoy si no se indica). */
+  notaEnvioTodas(fecha?: string): Observable<Blob> {
+    let params = new HttpParams();
+    if (fecha) {
+      params = params.set('fecha', fecha);
+    }
+    return this.http.get(`${this.url}/nota-envio-todas`, { params, responseType: 'blob' });
+  }
 }

@@ -1,28 +1,10 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Subject, Subscription } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { Component, OnInit } from '@angular/core';
 
-import { CategoriaNiveles, DescuentoProducto, ProductoDescuentos } from 'src/app/dtos/descuento-dto';
+import { CategoriaNiveles } from 'src/app/dtos/descuento-dto';
 import { CategoriaCliente } from 'src/app/models/cliente';
 import { DescuentoService } from 'src/app/services/descuento.service';
 
 import Swal from 'sweetalert2';
-
-/** Descuento especial en edición: se guarda solo si está activo. */
-class DescuentoEnEdicion {
-  activo = false;
-  cantidadMinima: number = null;
-  porcentaje: number = null;
-}
-
-class ProductoEnEdicion {
-  idProducto: number;
-  nombre: string;
-  precioVenta: number;
-  precioMayorista: number = null;
-  ciento = new DescuentoEnEdicion();
-  fardo = new DescuentoEnEdicion();
-}
 
 const DESCRIPCION_CATEGORIA: Record<CategoriaCliente, string> = {
   A: 'Compra frecuente',
@@ -30,12 +12,16 @@ const DESCRIPCION_CATEGORIA: Record<CategoriaCliente, string> = {
   VOLUMEN: 'Frecuente, pide fardos o cientos (varios niveles: el vendedor elige)'
 };
 
+/**
+ * Niveles de descuento por categoría de cliente. El precio mayorista y los descuentos por producto se configuran
+ * en el formulario de cada producto y se consultan en Productos con el filtro «Mayorista».
+ */
 @Component({
   selector: 'app-descuentos',
   templateUrl: './descuentos.component.html',
   styleUrls: ['./descuentos.component.css', '../shared/management-page.css']
 })
-export class DescuentosComponent implements OnInit, OnDestroy {
+export class DescuentosComponent implements OnInit {
 
   title = 'Descuentos mayoristas';
 
@@ -43,45 +29,15 @@ export class DescuentosComponent implements OnInit, OnDestroy {
   nuevoPorcentaje: { [categoria: string]: number } = {};
   guardandoCategoria: string = null;
 
-  productos: ProductoDescuentos[] = [];
-  paginaActual = 0;
-  totalPaginas = 0;
-  totalElementos = 0;
-  readonly pageSize = 10;
-  isFirst = true;
-  isLast = true;
-  filtro = '';
-  soloConDescuentos = true;
-  cargando = false;
-
-  edicion: ProductoEnEdicion = null;
-  guardandoProducto = false;
-
-  private busquedaSubject = new Subject<string>();
-  private busquedaSubscription: Subscription;
-
   constructor(private descuentoService: DescuentoService) { }
 
   ngOnInit(): void {
     this.cargarCategorias();
-    this.cargarProductos(0);
-    this.busquedaSubscription = this.busquedaSubject.pipe(debounceTime(300), distinctUntilChanged()).subscribe(filtro => {
-      this.filtro = filtro;
-      this.cargarProductos(0);
-    });
-  }
-
-  ngOnDestroy(): void {
-    if (this.busquedaSubscription) {
-      this.busquedaSubscription.unsubscribe();
-    }
   }
 
   descripcionCategoria(categoria: CategoriaCliente): string {
     return DESCRIPCION_CATEGORIA[categoria] || '';
   }
-
-  // ------------------------------------------------------------ categorías de cliente
 
   cargarCategorias(): void {
     this.descuentoService.getCategorias().subscribe(
@@ -120,94 +76,6 @@ export class DescuentosComponent implements OnInit, OnDestroy {
       error => {
         this.guardandoCategoria = null;
         this.mostrarError('No se pudo guardar la categoría', error);
-      }
-    );
-  }
-
-  // ------------------------------------------------------------ productos
-
-  cargarProductos(page: number): void {
-    this.cargando = true;
-    this.descuentoService.getProductos(page, this.pageSize, this.filtro, this.soloConDescuentos).subscribe(
-      response => {
-        this.productos = response.content;
-        this.paginaActual = response.number;
-        this.totalPaginas = response.totalPages;
-        this.totalElementos = response.totalElements;
-        this.isFirst = response.first;
-        this.isLast = response.last;
-        this.cargando = false;
-      },
-      error => {
-        this.cargando = false;
-        this.mostrarError('No se pudieron cargar los productos', error);
-      }
-    );
-  }
-
-  onBuscar(valor: string): void { this.busquedaSubject.next(valor); }
-
-  cambiarSoloConDescuentos(): void { this.cargarProductos(0); }
-  irPaginaAnterior(): void { if (!this.isFirst) { this.cargarProductos(this.paginaActual - 1); } }
-  irPaginaSiguiente(): void { if (!this.isLast) { this.cargarProductos(this.paginaActual + 1); } }
-
-  especial(producto: ProductoDescuentos, tipo: 'CIENTO' | 'FARDO'): DescuentoProducto {
-    return producto.descuentos.find(descuento => descuento.tipo === tipo) || null;
-  }
-
-  editar(producto: ProductoDescuentos): void {
-    const edicion = new ProductoEnEdicion();
-    edicion.idProducto = producto.idProducto;
-    edicion.nombre = producto.nombre;
-    edicion.precioVenta = producto.precioVenta;
-    edicion.precioMayorista = producto.precioMayorista;
-    for (const [tipo, destino] of [['CIENTO', edicion.ciento], ['FARDO', edicion.fardo]] as const) {
-      const existente = this.especial(producto, tipo);
-      if (existente) {
-        destino.activo = true;
-        destino.cantidadMinima = existente.cantidadMinima;
-        destino.porcentaje = existente.porcentaje;
-      }
-    }
-    if (!this.especial(producto, 'CIENTO')) {
-      edicion.ciento.cantidadMinima = 100;
-    }
-    this.edicion = edicion;
-  }
-
-  cancelarEdicion(): void {
-    this.edicion = null;
-  }
-
-  guardarProducto(): void {
-    if (!this.edicion || this.guardandoProducto) {
-      return;
-    }
-    const edicion = this.edicion;
-    const precio = edicion.precioMayorista === null || (edicion.precioMayorista as any) === ''
-      ? null : Number(edicion.precioMayorista);
-    const descuentos: DescuentoProducto[] = [];
-    for (const [tipo, fila] of [['CIENTO', edicion.ciento], ['FARDO', edicion.fardo]] as const) {
-      if (fila.activo) {
-        const descuento = new DescuentoProducto();
-        descuento.tipo = tipo;
-        descuento.cantidadMinima = Number(fila.cantidadMinima);
-        descuento.porcentaje = Number(fila.porcentaje);
-        descuentos.push(descuento);
-      }
-    }
-
-    this.guardandoProducto = true;
-    this.descuentoService.guardarProducto(edicion.idProducto, { precioMayorista: precio, descuentos }).subscribe(
-      guardado => {
-        this.guardandoProducto = false;
-        this.edicion = null;
-        Swal.fire('Producto actualizado', `${guardado.nombre} se guardó con éxito.`, 'success');
-        this.cargarProductos(this.paginaActual);
-      },
-      error => {
-        this.guardandoProducto = false;
-        this.mostrarError('No se pudo guardar el producto', error);
       }
     );
   }

@@ -1,7 +1,7 @@
 <header class="management-header">
   <div class="management-heading">
     <h1>{{title}}</h1>
-    <p>Configura niveles por categoría, precios mayoristas y descuentos por volumen.</p>
+    <p>Configura los niveles de descuento de cada categoría de cliente.</p>
   </div>
 
 </header>
@@ -49,137 +49,15 @@
   </div>
 </div>
 
-<div class="card listing-card mt-3" *ngIf="edicion">
-  <div class="card-header listing-card-header"><i class="fas fa-tags" aria-hidden="true"></i>Editando: {{edicion.nombre}}</div>
-  <div class="card-body">
-    <p class="text-muted">Precio de venta actual: <strong>Q{{edicion.precioVenta | number: '1.2-2'}}</strong></p>
-    <form #edicionForm="ngForm" (ngSubmit)="guardarProducto()">
-      <div class="row">
-        <div class="col-md-4 mb-3 listing-field">
-          <label for="precioMayorista">Precio mayorista fijo (Q)</label>
-          <input type="number" min="0.01" step="0.01" id="precioMayorista" name="precioMayorista"
-            class="form-control" [(ngModel)]="edicion.precioMayorista" placeholder="Sin precio mayorista">
-          <small class="text-muted">Opcional. Debe ser menor al precio de venta.</small>
-        </div>
-      </div>
-
-      <div class="row especial-row" *ngFor="let fila of [
-          {nombre: 'Por ciento', modelo: edicion.ciento, id: 'ciento'},
-          {nombre: 'Fardo cerrado', modelo: edicion.fardo, id: 'fardo'}]">
-        <div class="col-md-3 mb-2 d-flex align-items-center">
-          <label class="mb-0">
-            <input type="checkbox" [name]="'activo-' + fila.id" [(ngModel)]="fila.modelo.activo">
-            <strong>{{fila.nombre}}</strong>
-          </label>
-        </div>
-        <div class="col-md-3 mb-2 listing-field">
-          <label [for]="'minimo-' + fila.id">{{fila.id === 'fardo' ? 'Unidades por fardo' : 'Cantidad mínima'}}</label>
-          <input type="number" min="2" step="1" class="form-control form-control-sm" [id]="'minimo-' + fila.id" [name]="'minimo-' + fila.id"
-            [(ngModel)]="fila.modelo.cantidadMinima" [disabled]="!fila.modelo.activo"
-            [placeholder]="fila.id === 'fardo' ? 'Unidades por fardo' : 'Desde (unidades)'">
-        </div>
-        <div class="col-md-3 mb-2 listing-field">
-          <label [for]="'porcentaje-' + fila.id">Descuento (%)</label>
-          <input type="number" min="0.01" max="100" step="0.01" class="form-control form-control-sm"
-            [id]="'porcentaje-' + fila.id" [name]="'porcentaje-' + fila.id" [(ngModel)]="fila.modelo.porcentaje" [disabled]="!fila.modelo.activo"
-            placeholder="Descuento %">
-        </div>
-      </div>
-
-      <div class="management-form-actions">
-        <button type="submit" class="btn btn-sm btn-descuentos mr-2" [disabled]="guardandoProducto">
-          <i class="fas fa-save"></i> Guardar producto
-        </button>
-        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="cancelarEdicion()">Cancelar</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<div class="card listing-card mt-3">
-  <div class="card-header listing-card-header"><i class="fas fa-tags" aria-hidden="true"></i>Precio mayorista y descuentos por producto</div>
-  <div class="card-body table-responsive">
-    <div class="filtros-productos">
-      <div class="listing-field">
-        <label for="buscar-producto-descuento">Buscar producto</label>
-        <input id="buscar-producto-descuento" type="search" class="form-control form-control-sm" [value]="filtro"
-          (input)="onBuscar($event.target.value)" placeholder="Buscar por nombre o código del producto">
-      </div>
-      <div class="discount-filter-option">
-        <label class="discount-filter-toggle" for="solo-productos-descuentos">
-          <span class="discount-filter-copy">
-            <span class="discount-filter-title">Solo productos con descuentos</span>
-            <span class="discount-filter-description">Incluye productos con precio mayorista.</span>
-          </span>
-          <input id="solo-productos-descuentos" type="checkbox" role="switch" class="listing-switch"
-            [(ngModel)]="soloConDescuentos" (ngModelChange)="cambiarSoloConDescuentos()">
-        </label>
-      </div>
+<div class="card listing-card mt-3 descuentos-aviso">
+  <div class="card-body descuentos-aviso-cuerpo">
+    <span class="descuentos-aviso-icono" aria-hidden="true"><i class="fas fa-box-open"></i></span>
+    <div class="descuentos-aviso-texto">
+      <strong>¿Y el precio mayorista y los descuentos por producto?</strong>
+      <span>Se configuran en cada producto (formulario de producto) y se consultan en Productos con el filtro «Mayorista».</span>
     </div>
-
-    <div *ngIf="cargando" class="text-center p-4">
-      <div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div>
-    </div>
-
-    <div *ngIf="!cargando && productos.length === 0" class="listing-empty-state">
-      <span class="listing-empty-icon" aria-hidden="true"><i class="fas fa-tags"></i></span>
-      <div class="listing-empty-state-body">
-        <h5>No hay productos para mostrar</h5>
-        <p>Quita el filtro "solo productos con descuentos" o busca un producto para asignarle uno.</p>
-      </div>
-    </div>
-
-    <table class="table table-hover table-sm listing-data-table productos-descuentos-table"
-      *ngIf="!cargando && productos.length > 0">
-      <thead>
-        <tr>
-          <th scope="col">Código</th>
-          <th scope="col">Producto</th>
-          <th scope="col" class="text-right">Venta (Q)</th>
-          <th scope="col" class="text-right">Mayorista (Q)</th>
-          <th scope="col">Por ciento</th>
-          <th scope="col">Fardo cerrado</th>
-          <th scope="col" class="text-center">Opciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let producto of productos">
-          <td data-label="Código">{{producto.codProducto}}</td>
-          <td data-label="Producto"><strong>{{producto.nombre}}</strong></td>
-          <td data-label="Venta (Q)" class="text-money">{{producto.precioVenta | number: '1.2-2'}}</td>
-          <td data-label="Mayorista (Q)" class="text-money">{{producto.precioMayorista !== null ? (producto.precioMayorista | number: '1.2-2') : '—'}}</td>
-          <td data-label="Por ciento">
-            <ng-container *ngIf="especial(producto, 'CIENTO') as c; else sinCiento">
-              {{c.porcentaje}} % desde {{c.cantidadMinima}}
-            </ng-container>
-            <ng-template #sinCiento>—</ng-template>
-          </td>
-          <td data-label="Fardo cerrado">
-            <ng-container *ngIf="especial(producto, 'FARDO') as f; else sinFardo">
-              {{f.porcentaje}} % · fardo de {{f.cantidadMinima}}
-            </ng-container>
-            <ng-template #sinFardo>—</ng-template>
-          </td>
-          <td data-label="Opciones" class="text-center">
-            <button type="button" class="btn btn-sm listing-table-action listing-action-edit" (click)="editar(producto)"
-              aria-label="Editar descuentos del producto" title="Editar">
-              <i class="fas fa-edit"></i>
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <nav *ngIf="!cargando && totalPaginas > 1" aria-label="Paginación de productos">
-      <ul class="pagination justify-content-center mt-3 mb-0">
-        <li class="page-item" [ngClass]="{'disabled': isFirst}">
-          <button type="button" class="page-link" (click)="irPaginaAnterior()" [disabled]="isFirst" aria-label="Página anterior"><i class="fas fa-angle-left"></i></button>
-        </li>
-        <li class="page-item disabled"><span class="page-link">{{paginaActual + 1}} de {{totalPaginas}}</span></li>
-        <li class="page-item" [ngClass]="{'disabled': isLast}">
-          <button type="button" class="page-link" (click)="irPaginaSiguiente()" [disabled]="isLast" aria-label="Página siguiente"><i class="fas fa-angle-right"></i></button>
-        </li>
-      </ul>
-    </nav>
+    <a class="btn descuentos-aviso-enlace" routerLink="/productos/index" [queryParams]="{mayorista: 'ALGUNO'}">
+      <i class="fas fa-tags" aria-hidden="true"></i> Ver productos con descuento mayorista
+    </a>
   </div>
 </div>

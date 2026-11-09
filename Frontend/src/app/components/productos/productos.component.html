@@ -55,6 +55,11 @@
               <option *ngFor="let opt of pageSizeOptions" [ngValue]="opt">{{opt}}</option>
             </select>
           </label>
+          <label for="productMayorista" class="mayorista-filtro">Mayorista
+            <select id="productMayorista" [ngModel]="mayorista" (ngModelChange)="cambiarMayorista($event)">
+              <option *ngFor="let opcion of opcionesMayorista" [value]="opcion.valor">{{opcion.etiqueta}}</option>
+            </select>
+          </label>
           <span *ngIf="productosDto?.length > 0" class="info-paginacion">
             {{paginaActual * pageSize + 1}}–{{paginaActual * pageSize + productosDto.length}} de {{totalElementos}} productos
           </span>
@@ -82,15 +87,15 @@
             </div>
         </div>
 
-        <div *ngIf="!cargando && productosDto?.length === 0 && filtro" class="empty-state">
+        <div *ngIf="!cargando && productosDto?.length === 0 && (filtro || mayorista)" class="empty-state">
             <div class="empty-state-icon empty-state-icon-info"><i class="fas fa-search"></i></div>
             <div class="empty-state-body">
                 <h5>No se encontraron productos</h5>
-                <p>No hay resultados para tu b&uacute;squeda. Intenta con otro t&eacute;rmino.</p>
+                <p>No hay resultados para tu b&uacute;squeda o filtro. Intenta con otro t&eacute;rmino o cambia el filtro Mayorista.</p>
             </div>
         </div>
 
-        <div *ngIf="!cargando && productosDto?.length === 0 && !filtro" class="empty-state">
+        <div *ngIf="!cargando && productosDto?.length === 0 && !filtro && !mayorista" class="empty-state">
             <div class="empty-state-icon empty-state-icon-warning"><i class="fas fa-boxes"></i></div>
             <div class="empty-state-body">
                 <h5>Esta sucursal no tiene inventario registrado</h5>
@@ -203,6 +208,8 @@
                     <button type="button" class="product-name" (click)="abrirModal(producto)"
                       [title]="producto.nombre">{{producto.nombre || 'Sin nombre'}}</button>
                     <span class="product-code">{{producto.codProducto || 'Sin código'}}</span>
+                    <span *ngIf="tieneMayorista(producto)" class="mayorista-etiqueta" [appTooltip]="resumenMayorista(producto)">
+                      <i class="fas fa-tags" aria-hidden="true"></i> Mayorista</span>
                   </div>
                 </div>
               </td>
@@ -230,6 +237,8 @@
             <div class="gallery-copy">
               <button type="button" class="product-name" (click)="abrirModal(producto)">{{producto.nombre || 'Sin nombre'}}</button>
               <span class="product-code">{{producto.codProducto || 'Sin código'}}</span>
+              <span *ngIf="tieneMayorista(producto)" class="mayorista-etiqueta" [appTooltip]="resumenMayorista(producto)">
+                <i class="fas fa-tags" aria-hidden="true"></i> Mayorista</span>
               <p class="gallery-classification">{{producto.tipoProducto || 'Sin categoría'}} · {{producto.marcaProducto || 'Sin marca'}}</p>
               <div class="gallery-price-stock">
                 <strong class="sale-price">{{producto.precioVenta | currency: 'Q' : 'symbol'}}</strong>

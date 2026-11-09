@@ -632,7 +632,7 @@
     <!-- ===================== 6 ===================== -->
     <section class="chapter" id="descuentos">
       <h2><span class="num">6</span> Descuentos</h2>
-      <p>Los descuentos mayoristas se configuran en <strong>Mayoristas &rarr; Descuentos</strong> (solo administrador) y se aplican al armar la proforma. Hay <strong>cuatro formas</strong> de dar descuento y una quinta manual:</p>
+      <p>Los descuentos mayoristas se configuran en <strong>Mayoristas &rarr; Descuentos</strong> (las categorías de cliente) y en el formulario de cada producto (solo administrador), y se aplican al armar la proforma. Hay <strong>cuatro formas</strong> de dar descuento y una quinta manual:</p>
 
       <div class="table-wrap">
         <table>
@@ -705,17 +705,17 @@
       </div>
 
       <h3>6.3 Precio mayorista, por ciento y fardo de un producto</h3>
-      <div class="callout tip">
-        <span class="callout-title">También en el formulario del producto</span>
-        <p>El administrador puede configurar lo mismo al crear o editar un producto, en <strong>Productos &rarr; Listado &rarr; Nuevo / Editar</strong>, en la sección <strong>Precio mayorista y descuentos</strong>: el <strong>Precio mayorista fijo</strong> (con el descuento que equivale frente al precio de venta) y dos interruptores, <strong>Descuento por ciento</strong> y <strong>Fardo cerrado</strong>, con su cantidad mínima y su porcentaje. Se guardan junto con el producto y siguen las mismas reglas. Los demás roles no ven esa sección.</p>
-      </div>
-      <p>Abajo, la tabla <strong>Precio mayorista y descuentos por producto</strong> lista los productos con su precio de venta, su precio mayorista y sus descuentos. Busca por nombre o código; el interruptor <strong>Solo productos con descuentos</strong> oculta los que no tienen ninguno.</p>
+      <p>El precio mayorista y los descuentos por producto se configuran <strong>en el formulario de cada producto</strong> y se consultan en el listado de <strong>Productos</strong>. La pantalla de Descuentos solo administra los niveles de las categorías de cliente; desde ella, el botón <span class="btn">Ver productos con descuento mayorista</span> te lleva a Productos con el filtro ya aplicado.</p>
       <ol class="steps">
-        <li>Busca el producto y pulsa el lápiz de su fila. Se abre <strong>Editando: [producto]</strong> con su precio de venta actual.</li>
-        <li>En <strong>Precio mayorista fijo (Q)</strong> escribe el precio (opcional; debe ser menor al de venta).</li>
-        <li>Para dar descuento por cantidad, marca <strong>Por ciento</strong> e indica la <strong>Cantidad mínima</strong> y el <strong>Descuento (%)</strong>. Para <strong>Fardo cerrado</strong>, indica las <strong>Unidades por fardo</strong> y el descuento.</li>
-        <li>Pulsa <span class="btn">Guardar producto</span>.</li>
+        <li>Entra a <strong>Productos &rarr; Listado</strong> y busca el producto. Pulsa <strong>Editar</strong>.</li>
+        <li>En la sección <strong>Precio mayorista y descuentos</strong> escribe el <strong>Precio mayorista fijo</strong> (opcional; debe ser menor al de venta). El sistema muestra el descuento que equivale frente al precio de venta.</li>
+        <li>Para dar descuento por cantidad, activa <strong>Descuento por ciento</strong> e indica la <strong>Cantidad mínima</strong> y el <strong>Descuento (%)</strong>. Para <strong>Fardo cerrado</strong>, indica las <strong>Unidades por fardo</strong> y el descuento.</li>
+        <li>Guarda el producto. Esa sección solo la ve el administrador.</li>
       </ol>
+      <div class="callout tip">
+        <span class="callout-title">Cómo ver qué productos tienen descuento</span>
+        <p>En <strong>Productos &rarr; Listado</strong> usa el filtro <strong>Mayorista</strong>: <em>Con algún descuento mayorista</em>, <em>Con precio mayorista</em>, <em>Con descuento por ciento</em>, <em>Con descuento por fardo</em> o <em>Sin descuento mayorista</em>. Se combina con la búsqueda por texto. Los productos que tienen alguno llevan una etiqueta <strong>Mayorista</strong>; al pasar el cursor por ella ves qué tienen configurado.</p>
+      </div>
 
       <h3>6.4 El tope de descuento</h3>
       <p>Un descuento de <strong>hasta 15 %</strong> se aplica sin pedir permiso. Si una línea pasa de ese tope, la proforma queda <span class="pill wait">Por autorizar</span> y un administrador debe aprobarla (<a href="#autorizaciones">capítulo 8</a>). El tope lo fija el sistema; si necesita cambiarse, se solicita a sistemas.</p>
@@ -730,16 +730,16 @@
       <ol class="steps">
         <li>Entra a <strong>Proformas</strong> y pulsa <span class="btn">+ Nueva proforma</span>. En <strong>Vendedor</strong> aparece tu nombre.</li>
         <li>En <strong>Buscar cliente</strong> escribe el NIT y presiona <kbd>Enter</kbd>, o usa la lupa para buscar en el directorio. Al elegirlo ves su NIT, nombre, dirección y <strong>ruta</strong>.</li>
-        <li>Completa los datos del pedido:
+        <li>Al elegir al cliente aparece, bajo sus datos (NIT, nombre, dirección y ruta), un panel para completar el pedido:
           <ul>
-            <li><strong>Fecha de entrega estimada</strong> (opcional): con ella se mide el porcentaje de entregas a tiempo (<a href="#indicadores">capítulo 13</a>).</li>
+            <li><strong>Fecha de entrega estimada</strong> (opcional): con ella se mide el porcentaje de entregas a tiempo (<a href="#indicadores">capítulo 13</a>). Debajo se recuerda la vigencia de la proforma.</li>
             <li><strong>Condición de pago</strong>: <em>Contado</em> (se cobra antes de entregar) o <em>Crédito</em> (los días del cliente, contados desde la entrega).</li>
-            <li><strong>Observaciones del pedido</strong> (hasta 500 caracteres): solo se imprimen en la copia de la tienda.</li>
+            <li><strong>Observaciones del pedido</strong> (hasta 500 caracteres, a todo el ancho): solo se imprimen en la copia de la tienda.</li>
           </ul>
         </li>
         <li>En <strong>Agregar productos</strong>, escribe o escanea el <strong>código</strong> y presiona <kbd>Enter</kbd>, o usa la lupa. Indica la <strong>Cantidad</strong>.</li>
-        <li>Elige el <strong>Tipo de descuento</strong>. El sistema propone el que corresponde al cliente, al producto y a la cantidad; solo aparecen los tipos que aplican. Si el tipo tiene varios <strong>Niveles</strong> (categoría Volumen), elige uno. Con <em>Manual</em> escribes el porcentaje.</li>
-        <li>Pulsa <span class="btn">+ Agregar</span>. Repite para cada producto. En la tabla del detalle puedes cambiar la cantidad o el descuento con el lápiz y escribir una <strong>observación de la línea</strong> (opcional, hasta 255 caracteres).</li>
+        <li>Elige el <strong>Descuento</strong>. El campo muestra el porcentaje y, debajo, el tipo (por ejemplo <em>Categoría &middot; nivel 10 %</em>). Al pulsarlo se abre un <strong>panel flotante</strong> con las opciones que aplican al cliente, al producto y a la cantidad: <em>Categoría, Por ciento, Fardo cerrado, Precio mayorista</em> y <em>Manual</em>. Cada una indica su porcentaje y su condición (por ejemplo &laquo;Aplica desde 100 unidades&raquo;), y la que propone el sistema lleva la etiqueta <span class="pill ok">Sugerido</span>. Si el tipo tiene varios niveles (categoría Volumen), elige uno con los botones que aparecen debajo; con <em>Manual</em> escribes el porcentaje en el mismo panel. El panel se cierra solo al elegir, con <kbd>Esc</kbd> o al hacer clic fuera.</li>
+        <li>Pulsa <span class="btn">+ Agregar</span>. Repite para cada producto. En la tabla del detalle puedes cambiar la cantidad o el descuento con el lápiz. Para anotar algo de una línea (por ejemplo, &laquo;10 rojos, 6 azules&raquo;), pulsa <strong>Agregar nota</strong> bajo el nombre del producto: se abre un campo (hasta 255 caracteres) que se cierra con <kbd>Enter</kbd>, y la nota guardada queda como una etiqueta que puedes pulsar para editar.</li>
         <li>La barra superior muestra el <strong>total</strong>. Pulsa <span class="btn">Guardar proforma</span>.</li>
       </ol>
 
@@ -756,7 +756,8 @@
       <p>La proforma mayorista <strong>vale 15 días</strong> desde su emisión (se indica en el formulario). Pasado ese plazo se puede seguir entregando, pero <strong>para facturarla hace falta que un administrador lo autorice</strong>.</p>
 
       <h3>7.3 Imprimir la proforma</h3>
-      <p>En el listado de proformas, el botón de imprimir de una proforma mayorista pregunta <strong>qué copia</strong> quieres: <span class="btn light">Copia cliente</span> o <span class="btn light">Copia tienda</span>. La copia de la tienda incluye la observación general del pedido; la del cliente no.</p>
+      <p>En el listado de proformas, el botón de imprimir muestra un <strong>indicador de carga</strong> mientras se genera el PDF (no hace falta pulsarlo dos veces). Para una proforma mayorista, el botón de una proforma mayorista pregunta <strong>qué copia</strong> quieres: <span class="btn light">Copia cliente</span> o <span class="btn light">Copia tienda</span>. La copia de la tienda incluye la observación general del pedido; la del cliente no.</p>
+      <p>El PDF tiene un diseño renovado, igual para la proforma normal y la mayorista: logo de D'Todo sin fondo, un panel azul con el número, la fecha y la página, la tarjeta con los datos del cliente (incluido su <strong>teléfono</strong>; en la mayorista, el del encargado), la tabla con filas alternadas, el total destacado y la firma. Las observaciones de línea salen bajo su producto. Los teléfonos de la tienda salen de la sucursal; si no tiene, se usan los de la tienda.</p>
 
       <h3>7.4 Cómo se ve en el listado</h3>
       <ul>
@@ -766,7 +767,10 @@
         <li>El vendedor solo ve <strong>sus</strong> proformas.</li>
       </ul>
 
-      <h3>7.5 Editar o anular una proforma mayorista</h3>
+      <h3>7.5 El detalle y su historial</h3>
+      <p>Con el ojo del listado abres el <strong>detalle</strong> de la proforma. Al final tiene una barra <strong>Historial</strong>, plegada por defecto: muestra el último movimiento, cuántos hay y, si aplica, el estado de la autorización. Pulsa la barra para desplegar la línea de tiempo (creación, cambios, autorizaciones, devoluciones), con su usuario, fecha y motivo.</p>
+
+      <h3>7.6 Editar o anular una proforma mayorista</h3>
       <p>Al <strong>guardar cambios</strong> de una proforma mayorista el sistema pide el <strong>motivo del cambio</strong> (obligatorio) y lo guarda en el historial. Lo mismo ocurre al anularla.</p>
       <div class="callout warn">
         <span class="callout-title">Si bodega ya empezó</span>
@@ -787,6 +791,7 @@
       <p>La bandeja <strong>Mayoristas &rarr; Autorizaciones</strong> (solo administrador) reúne lo que espera una decisión. Tiene <strong>tres secciones</strong>; cada una indica con un número cuántos casos hay.</p>
 
       <h3>8.1 Descuentos por autorizar</h3>
+      <p>Todas las decisiones de esta bandeja (descuento, crédito y proforma vencida) se toman en una ventana con una <strong>tarjeta de resumen</strong> (cliente, total, vendedor y, según el caso, el descuento máximo, el límite de crédito con lo que lo excede, o la fecha de vencimiento) y un cuadro de <strong>motivo</strong> obligatorio. Aprobar va en verde, rechazar en rojo y autorizar una proforma vencida en azul.</p>
       <p>Proformas con una línea de más del <strong>15 %</strong>. La tabla muestra el número de proforma, la fecha, el cliente y su ruta, el vendedor, el total y el <strong>descuento máximo</strong> de la proforma.</p>
       <ul>
         <li><span class="btn">Autorizar</span>: aprueba el descuento. La proforma puede prepararse, entregarse y facturarse.</li>
@@ -818,7 +823,7 @@
     <!-- ===================== 9 ===================== -->
     <section class="chapter" id="pedidos">
       <h2><span class="num">9</span> Pedidos y entregas</h2>
-      <p>Entra a <strong>Pedidos</strong>. Cada proforma mayorista aparece como un pedido, agrupado por <strong>ruta</strong>. La lista es operativa: <strong>no muestra importes</strong>.</p>
+      <p>Entra a <strong>Pedidos</strong>. Cada proforma mayorista aparece como un pedido, agrupado por <strong>ruta</strong> en filas plegables. La lista es operativa: <strong>no muestra importes</strong>.</p>
 
       <h3>9.1 Las etapas de un pedido</h3>
       <div class="table-wrap">
@@ -835,32 +840,42 @@
         </table>
       </div>
 
-      <h3>9.2 Filtros de la lista</h3>
-      <p>Arriba puedes filtrar por <strong>Etapa</strong> (por defecto <em>Por entregar</em>, que reúne todo lo no entregado), por <strong>Ruta</strong> y por <strong>fechas</strong>, y pulsar <span class="btn light">Actualizar</span>. Cada fila muestra el pedido, el cliente (y su negocio), el vendedor, el piloto, la fecha de entrega estimada, las unidades y la etapa. Con el ojo abres el <strong>detalle</strong>.</p>
+      <h3>9.2 Filtros y rutas</h3>
+      <p>Arriba puedes filtrar por <strong>Etapa</strong> (por defecto <em>Por entregar</em>, que reúne todo lo no entregado), por <strong>Ruta</strong> y por <strong>fechas</strong>, y pulsar <span class="btn light">Actualizar</span>. El filtro de etapa incluye <em>Entrega parcial</em> y <strong>Entregado</strong>: un pedido entregado por completo sale de &laquo;Por entregar&raquo;, y así es como se consulta (el repartidor no ve esa opción).</p>
+      <p>Cada ruta es una <strong>fila plegable</strong> con su nombre, el total de pedidos y unidades, y unos <strong>chips por etapa</strong> (por ejemplo <em>1 empacado &middot; 1 en ruta</em>). Por defecto solo se abre la <strong>primera</strong> ruta; pulsa la fila (o <kbd>Enter</kbd> sobre ella) para abrir o cerrar las demás. Con varias rutas aparece una barra con <span class="btn light">Expandir todo</span> y <span class="btn light">Plegar todo</span>. Lo que abras o cierres se recuerda aunque la lista se actualice.</p>
+      <p>Cada pedido muestra el pedido, el cliente (y su negocio), el vendedor, el piloto, la fecha de entrega estimada, las unidades, la etapa y sus acciones.</p>
 
       <h3>9.3 Preparar el pedido (Bodega)</h3>
       <ol class="steps">
-        <li>Pulsa <span class="btn green">Iniciar picking</span>. El sistema pregunta <em>&iquest;Quién lo hizo? (opcional, si no tiene usuario)</em>: sirve cuando quien trabaja no tiene usuario propio. Confirma.</li>
-        <li>Imprime la <strong>hoja de picking</strong> con el icono de la lista (<em>Hoja de picking</em>) para juntar los productos.</li>
+        <li>Pulsa <span class="btn green">Iniciar picking</span>, la píldora que aparece <strong>bajo la etiqueta de la etapa</strong> (el siguiente paso de cada pedido). Se abre una ventana con el resumen del pedido (cliente, ruta, unidades, etapa y vendedor) que pregunta <em>&iquest;Quién lo hizo? (opcional, si no tiene usuario)</em>: sirve cuando quien trabaja no tiene usuario propio. Confirma.</li>
+        <li>Imprime la <strong>hoja de picking</strong> con el icono de la lista (al pasar el cursor, un tooltip dice qué hace cada icono) para juntar los productos. La hoja lleva el logo, los datos del cliente y del pedido, la tabla con casillas para marcar lo preparado, el total de unidades y las líneas de firma.</li>
         <li>Al terminar pulsa <span class="btn green">Marcar empacado</span> y, si quieres, imprime la <strong>lista de empaque</strong> con el icono de la caja.</li>
         <li>Pulsa <span class="btn green">Cargar y salir a ruta</span>. El sistema pide el <strong>piloto</strong> (obligatorio): un usuario con rol Repartidor. Si no hay ninguno, avisa que el administrador debe crearlo.</li>
-        <li>Para llevar un resumen de la ruta, pulsa <span class="btn light">Nota de envío</span> en el encabezado del grupo de la ruta: imprime los pedidos de esa ruta que muestra la lista.</li>
+        <li>Para cargar el camión, imprime la <strong>nota de envío</strong>:
+          <ul>
+            <li><span class="btn light">Nota de envío</span> en la fila de una ruta imprime solo esa ruta. Aparece <strong>únicamente si la ruta tiene pedidos empacados por cargar o en ruta</strong> que salieron hoy.</li>
+            <li><span class="btn green">Imprimir notas de envío (N)</span>, en la barra superior, genera <strong>un solo PDF con una página por ruta</strong> que tenga algo para cargar. El número entre paréntesis son las rutas con nota (puede ser menor que el total de rutas). Aparece cuando hay más de una ruta con nota.</li>
+          </ul>
+        </li>
       </ol>
       <div class="callout warn">
         <span class="callout-title">Pedidos que no avanzan</span>
         <p>Un pedido <span class="pill wait">Por autorizar</span> (por descuento o por crédito) <strong>no puede prepararse</strong>. Pide al administrador que lo autorice en la bandeja de Autorizaciones.</p>
       </div>
-      <p>Mientras el pedido está en ruta, el administrador o bodega pueden <strong>cambiar el piloto</strong> con el icono del usuario.</p>
+      <p>Mientras el pedido está en ruta, el administrador o bodega pueden <strong>cambiar el piloto</strong> con el icono del usuario (en una ventana azul con la lista de pilotos).</p>
+      <p>Los botones de icono de cada pedido son, en este orden: <strong>ojo</strong> (ver el detalle), <strong>lista</strong> (hoja de picking), <strong>caja</strong> (lista de empaque), <strong>usuario</strong> (cambiar piloto) y <strong>flecha</strong> (regresar de etapa, solo administrador).</p>
 
       <h3>9.4 Registrar una entrega</h3>
-      <p>Un pedido <em>En ruta</em> se entrega con <span class="btn">Registrar entrega</span>, que abre su detalle con el formulario de entrega.</p>
+      <p>Un pedido <em>En ruta</em> se entrega con <span class="btn">Registrar entrega</span>, que abre su detalle con el formulario de entrega. Mientras carga aparece el aviso <em>Cargando detalle</em> arriba a la derecha, y el detalle se abre cuando llegan los datos (se cierra con <kbd>Esc</kbd>, con la X o con <strong>Cerrar</strong>).</p>
+      <p>El detalle tiene el mismo diseño que los demás: un resumen en tarjetas, los avisos de crédito o de cobro, la tabla de <strong>Productos</strong> con paginación (5, 10, 15 o 25 líneas por página, con &laquo;Mostrando X a Y de Z&raquo;), las entregas, las etapas y el historial plegable.</p>
       <ol class="steps">
         <li>Si eres administrador, bodega o vendedor, elige la <strong>Sucursal de la que se descuenta</strong> el inventario. El repartidor no la elige: se usa la del pedido.</li>
         <li>Confirma la <strong>Fecha de entrega</strong>. No puede ser futura, ni de hace más de <strong>7 días</strong>, ni anterior a la emisión del pedido.</li>
         <li>Opcionalmente escribe quién <strong>Entregó</strong> (nombre del piloto o vendedor).</li>
-        <li>En la tabla, escribe en <strong>Entregado ahora</strong> la cantidad de cada producto. Puede ser menos que lo pendiente.</li>
+        <li>En la tabla, escribe en <strong>Entregado ahora</strong> la cantidad de cada producto (esta tabla muestra siempre todas las líneas). Puede ser menos que lo pendiente.</li>
         <li>Pulsa <span class="btn green">Guardar entrega</span>.</li>
       </ol>
+      <p>Las dos opciones del final del formulario, <em>Entregar aunque no esté cobrado</em> (solo administrador, en pedidos de contado) y <em>El inventario ya se descontó a mano</em>, son <strong>tarjetas con una casilla</strong>: pulsa la tarjeta para marcarla; al activarse se rellena de verde.</p>
       <p>Qué pasa al guardar:</p>
       <ul>
         <li>Las unidades <strong>salen del inventario</strong> de la sucursal elegida (con origen &laquo;Entrega de pedido&raquo;).</li>
@@ -883,7 +898,7 @@
       <ul>
         <li><strong>Anular una entrega:</strong> en el detalle, <span class="btn red">Anular</span> junto a la entrega, con un motivo obligatorio. Las unidades <strong>regresan al inventario</strong> y el pedido vuelve a mostrar lo pendiente. No se puede anular si el pedido tiene una <strong>factura vigente</strong>: primero se anula la factura.</li>
         <li><strong>Cerrar con lo entregado:</strong> en un pedido con entrega parcial, da por entregado el pedido aunque falte parte. Pide un motivo.</li>
-        <li><strong>Regresar a la etapa anterior:</strong> el botón rojo de la flecha regresa el pedido una etapa (por ejemplo, de Empacado a En preparación). Pide un motivo. No está disponible en pedidos Confirmados ni en los que ya tienen entregas.</li>
+        <li><strong>Regresar a la etapa anterior:</strong> el icono rojo de la flecha (con su resumen del pedido y un cuadro de motivo) regresa el pedido una etapa (por ejemplo, de Empacado a En preparación). Pide un motivo. No está disponible en pedidos Confirmados ni en los que ya tienen entregas.</li>
       </ul>
 
       <h3>9.6 El historial del pedido</h3>
@@ -891,7 +906,7 @@
 
       <h3>9.7 Lo que ve cada rol</h3>
       <ul>
-        <li><strong>Administrador y bodega:</strong> todos los pedidos, con picking, empaque, nota de envío y avance de etapas.</li>
+        <li><strong>Administrador y bodega:</strong> todos los pedidos, con picking, empaque, notas de envío (por ruta y de todas las rutas) y avance de etapas.</li>
         <li><strong>Vendedor:</strong> solo los pedidos de sus clientes, y puede registrar entregas de ellos. Ve cuánto se ha cobrado.</li>
         <li><strong>Repartidor:</strong> solo los pedidos que se le asignaron al cargarlos. No ve dinero. Registra la entrega con la sucursal del pedido.</li>
       </ul>
@@ -969,6 +984,8 @@
         <span class="callout-title">Pedidos de contado</span>
         <p>Para entregar un pedido de contado hace falta un recibo <strong>ligado a ese pedido</strong> (elegido en <em>Aplicar pago a</em>) por lo menos por lo que se va a entregar. Un abono a la cuenta <strong>no</strong> sirve para liberar la entrega de un pedido de contado.</p>
       </div>
+
+      <p>El PDF del recibo tiene el mismo estilo de la proforma: logo sin fondo, un panel azul con &laquo;RECIBO DE CAJA&raquo;, el número y la sucursal, la fecha de pago, el <strong>monto</strong> en un recuadro destacado, una tarjeta con <em>Recibimos de, Por concepto de</em>, forma de pago y referencia, las observaciones y las líneas de firma. Un recibo anulado lleva un recuadro rojo con el motivo.</p>
 
       <h4>La lista de recibos emitidos</h4>
       <p>Filtra por <strong>fechas</strong> (sin fechas, los últimos 30 días), por <strong>sucursal</strong> (administrador) y activa <strong>Incluir anulados</strong> para verlos. Cada fila muestra el número y la sucursal, la fecha de pago, el cliente (con el pedido o factura a que se ligó), la forma de pago y su referencia, el monto y quién lo emitió. Con la impresora vuelves a imprimirlo.</p>
@@ -1132,7 +1149,7 @@
       </div>
       <p>Otros documentos del módulo se obtienen en sus propias pantallas:</p>
       <ul>
-        <li><strong>Hoja de picking, lista de empaque y nota de envío:</strong> en <a href="#pedidos">Pedidos</a>.</li>
+        <li><strong>Hoja de picking, lista de empaque y nota de envío</strong> (de una ruta o de todas): en <a href="#pedidos">Pedidos</a>. Las tres comparten el diseño de la proforma, con logo y totales.</li>
         <li><strong>Proforma mayorista</strong> (copia cliente y copia tienda): en Proformas.</li>
         <li><strong>Recibo de caja:</strong> al emitirlo y desde la lista de recibos.</li>
         <li><strong>Cobranza (PDF y Excel) y estado de cuenta del cliente:</strong> en <a href="#cobranza">Cobranza</a>.</li>
@@ -1431,7 +1448,7 @@
           <thead><tr><th class="c">&check;</th><th>Qué hacer</th><th>Resultado esperado</th></tr></thead>
           <tbody>
             <tr><td class="c"><span class="box"></span></td><td>En <strong>Reportes &rarr; Mayoristas</strong>, genera los cuatro reportes en PDF y en Excel.</td><td>Se descargan: Clientes por ruta, Clientes sin compras, Proformas por vendedor y Ventas entregadas. Las cifras de <em>Ventas entregadas</em> coinciden con lo entregado.</td></tr>
-            <tr><td class="c"><span class="box"></span></td><td>En Pedidos, imprime una <strong>hoja de picking</strong>, una <strong>lista de empaque</strong> y la <strong>nota de envío</strong> de la ruta.</td><td>Los tres documentos se generan con los productos y las cantidades del pedido.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>En Pedidos, imprime una <strong>hoja de picking</strong>, una <strong>lista de empaque</strong> y la <strong>nota de envío</strong> de la ruta.</td><td>Los tres documentos se generan con el logo, los productos y las cantidades del pedido. La nota de envío solo muestra la ruta si tiene pedidos empacados o en ruta.</td></tr>
             <tr><td class="c"><span class="box"></span></td><td>En Cobranza, exporta a PDF y a Excel con y sin <em>Solo vencidos</em>.</td><td>Las cifras coinciden con las tarjetas del resumen.</td></tr>
             <tr><td class="c"><span class="box"></span></td><td>Reimprime un recibo de caja.</td><td>Muestra su número, el cliente, el concepto (pedido o abono a la cuenta) y la forma de pago.</td></tr>
           </tbody>
@@ -1456,7 +1473,28 @@
         </table>
       </div>
 
-      <h3>15.18 Cómo reportar un hallazgo</h3>
+      <h3>15.18 Escenario 16 &mdash; Varias rutas, notas de envío y filtros <small style="font-weight:400;color:var(--muted)">(administrador)</small></h3>
+      <p>Para probarlo sin armar los pedidos a mano, pide a sistemas cargar los <strong>datos de prueba de pedidos por ruta</strong> (script <code>sql/pruebas/seed_pedidos_rutas.sql</code>, solo en la base de pruebas). Crea 3 rutas nuevas y 6 pedidos <code>PRB&hellip;P</code> repartidos en 4 rutas, en distintas etapas.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th class="c">&check;</th><th>Qué hacer</th><th>Resultado esperado</th></tr></thead>
+          <tbody>
+            <tr><td class="c"><span class="box"></span></td><td>Entra a <strong>Pedidos</strong> con la etapa <em>Por entregar</em> y todas las rutas.</td><td>Ves <em>4 rutas</em>. Solo la <strong>primera</strong> está desplegada; las otras tres, contraídas, cada una con sus chips por etapa.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Pulsa <span class="btn light">Expandir todo</span> y luego <span class="btn light">Plegar todo</span>. Abre una ruta pulsando su fila.</td><td>Se abren y cierran todas; la fila abre o cierra su ruta y lo elegido se conserva al pulsar <span class="btn light">Actualizar</span>.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Mira qué rutas muestran el botón <strong>Nota de envío</strong>.</td><td>Solo las que tienen pedidos <em>Empacado</em> o <em>En ruta</em>. <strong>RUTA SUR</strong> (confirmado y en preparación) no lo muestra.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Pulsa el botón de una ruta, por ejemplo <strong>RUTA ORIENTE</strong>.</td><td>Un PDF con sus 2 pedidos (uno <em>Por cargar</em> y otro <em>En ruta</em>), con el total de pedidos y unidades y las líneas Cargó y Piloto.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Pulsa <span class="btn green">Imprimir notas de envío (3)</span> en la barra superior.</td><td>Un solo PDF de <strong>3 páginas</strong> (una por ruta con algo por cargar), cada una con su numeración. El 3 es menor que las 4 rutas porque Sur no tiene nada por cargar.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Imprime la hoja de picking de <strong>PRB4001P</strong>.</td><td>El cliente sin encargado ni teléfono muestra &laquo;&mdash;&raquo; y la entrega sin fecha dice &laquo;Sin fecha&raquo;.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Pulsa <span class="btn green">Iniciar picking</span> en un pedido <em>Confirmado</em>.</td><td>Se abre la ventana con el resumen del pedido y el campo opcional <em>&iquest;Quién lo hizo?</em>. Al confirmar pasa a <em>En preparación</em>.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Cambia el filtro <strong>Etapa</strong> a <em>Entregado</em>.</td><td>Ves los pedidos entregados (los de <em>RUTA PRUEBA</em> de los escenarios anteriores), sin botones de avance.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Abre el detalle de un pedido y pulsa <kbd>Esc</kbd>.</td><td>Aparece <em>Cargando detalle</em> y luego el detalle; <kbd>Esc</kbd> lo cierra.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>En <strong>Productos</strong>, abre el filtro <strong>Mayorista</strong> y elige <em>Con algún descuento mayorista</em>. Desde <strong>Mayoristas &rarr; Descuentos</strong> usa <span class="btn light">Ver productos con descuento mayorista</span>.</td><td>El listado muestra solo los productos con precio o descuento mayorista, con la etiqueta <strong>Mayorista</strong> (su tooltip dice qué tienen). El botón de Descuentos abre Productos con el filtro ya aplicado.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Cuando termines, pide a sistemas quitar los datos con <code>unseed_pedidos_rutas.sql</code>.</td><td>Desaparecen los pedidos <code>PRB&hellip;P</code>, sus clientes y las rutas de prueba.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>15.19 Cómo reportar un hallazgo</h3>
       <p>Si un resultado no coincide con lo esperado, anota estos datos para que se pueda reproducir:</p>
       <div class="table-wrap">
         <table>
@@ -1588,6 +1626,26 @@
       </details>
 
       <details>
+        <summary>Un pedido entregado desapareció de la lista de Pedidos.</summary>
+        <p>No se perdió: la vista <em>Por entregar</em> solo muestra lo que sigue pendiente. Cambia el filtro <strong>Etapa</strong> a <strong>Entregado</strong> (o <em>Entrega parcial</em>) y pulsa <strong>Actualizar</strong>.</p>
+      </details>
+
+      <details>
+        <summary>El botón &laquo;Imprimir notas de envío&raquo; dice (3) y tengo 4 rutas.</summary>
+        <p>El número cuenta las rutas que <strong>tienen algo para cargar</strong>: pedidos empacados, o en ruta que salieron hoy. Una ruta con pedidos solo confirmados o en preparación no tiene nada que cargar, así que no entra en el PDF ni muestra su propio botón de nota de envío.</p>
+      </details>
+
+      <details>
+        <summary>Hay muchas rutas y tengo que hacer scroll sin parar.</summary>
+        <p>Las rutas son filas plegables: solo se abre la primera. Pulsa la fila de la ruta que necesitas, o usa <strong>Plegar todo</strong> y abre solo esa. Los chips de cada fila resumen sus pedidos por etapa sin abrirla.</p>
+      </details>
+
+      <details>
+        <summary>&iquest;Dónde veo qué productos tienen precio o descuento mayorista?</summary>
+        <p>En <strong>Productos &rarr; Listado</strong>, con el filtro <strong>Mayorista</strong>, o desde <strong>Mayoristas &rarr; Descuentos</strong> con el botón <em>Ver productos con descuento mayorista</em>. Los productos que tienen alguno llevan la etiqueta <strong>Mayorista</strong>. Para configurarlos, edita el producto.</p>
+      </details>
+
+      <details>
         <summary>No veo una pantalla del módulo en mi menú.</summary>
         <p>Cada rol ve solo lo suyo (ver <a href="#roles">capítulo 2</a>). Si crees que te falta acceso, pide al administrador que revise tu rol en <strong>Usuarios</strong>.</p>
       </details>
@@ -1600,7 +1658,7 @@
       <div class="cards">
         <div class="card">
           <h4>Preparar</h4>
-          <p>Usuarios por rol &rarr; <em>Mayoristas &rarr; Rutas</em> &rarr; <em>Clientes</em> (mayorista, ruta, crédito) &rarr; <em>Descuentos</em>.</p>
+          <p>Usuarios por rol &rarr; <em>Mayoristas &rarr; Rutas</em> &rarr; <em>Clientes</em> (mayorista, ruta, crédito) &rarr; <em>Descuentos</em> (categorías) y precio o descuento de cada producto en su formulario.</p>
         </div>
         <div class="card">
           <h4>Vender</h4>
@@ -1612,7 +1670,7 @@
         </div>
         <div class="card">
           <h4>Entregar</h4>
-          <p><em>Pedidos</em>: Iniciar picking &rarr; Marcar empacado &rarr; Cargar y salir a ruta (piloto) &rarr; Registrar entrega.</p>
+          <p><em>Pedidos</em> (rutas plegables): Iniciar picking &rarr; Marcar empacado &rarr; Cargar y salir a ruta (piloto) con su nota de envío &rarr; Registrar entrega.</p>
         </div>
         <div class="card">
           <h4>Cobrar</h4>

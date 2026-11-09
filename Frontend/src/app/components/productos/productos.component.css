@@ -169,3 +169,20 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px s
   .gallery-classification, .product-name { overflow-wrap: anywhere; }
   .empty-state { padding: 16px; }
 }
+
+/* Etiqueta de los productos con precio o descuento mayorista y su filtro. */
+.mayorista-etiqueta {
+  align-items: center;
+  align-self: flex-start;
+  background: #fbefe3;
+  border-radius: 999px;
+  color: #8f5518;
+  display: inline-flex;
+  font-size: 0.7rem;
+  font-weight: 800;
+  gap: 5px;
+  margin-top: 4px;
+  padding: 2px 9px;
+}
+.mayorista-etiqueta i { font-size: 0.65rem; }
+.mayorista-filtro select { min-width: 190px; }

@@ -1,4 +1,5 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, Optional, ViewChild } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
@@ -56,6 +57,17 @@ export class ProductosComponent implements OnInit, OnDestroy {
   isFirst: boolean = true;
   isLast: boolean = false;
 
+  // Filtro de descuentos mayoristas (se puede abrir ya aplicado desde la pantalla de Descuentos con ?mayorista=ALGUNO)
+  readonly opcionesMayorista = [
+    { valor: '', etiqueta: 'Todos' },
+    { valor: 'ALGUNO', etiqueta: 'Con algún descuento mayorista' },
+    { valor: 'PRECIO', etiqueta: 'Con precio mayorista' },
+    { valor: 'CIENTO', etiqueta: 'Con descuento por ciento' },
+    { valor: 'FARDO', etiqueta: 'Con descuento por fardo' },
+    { valor: 'NINGUNO', etiqueta: 'Sin descuento mayorista' }
+  ];
+  mayorista = '';
+
   // Búsqueda
   filtro: string = '';
   orden: string = 'nombre';
@@ -84,12 +96,17 @@ export class ProductosComponent implements OnInit, OnDestroy {
     private productoService: ProductoService,
     private inventarioSucursalService: InventarioSucursalService,
     private sucursalService: SucursalService,
-    public auth: AuthService
+    public auth: AuthService,
+    @Optional() private route: ActivatedRoute = null
   ) {
     this.title = 'Productos';
   }
 
   ngOnInit(): void {
+    const inicial = this.route ? this.route.snapshot.queryParamMap.get('mayorista') : null;
+    if (inicial && this.opcionesMayorista.some(opcion => opcion.valor === inicial.toUpperCase())) {
+      this.mayorista = inicial.toUpperCase();
+    }
     this.cargarProductos(0);
     this.resolverSucursalActiva();
 
@@ -197,8 +214,8 @@ export class ProductosComponent implements OnInit, OnDestroy {
 
   cargarProductos(page: number): void {
     this.cargando = true;
-    const request = this.filtro
-      ? this.productoService.buscarProductosDto(page, this.filtro, this.pageSize, this.orden, this.direccion)
+    const request = this.filtro || this.mayorista
+      ? this.productoService.buscarProductosDto(page, this.filtro, this.pageSize, this.orden, this.direccion, this.mayorista)
       : this.productoService.getProductosDtoPaginados(page, this.pageSize, this.orden, this.direccion);
 
     request.subscribe(
@@ -218,6 +235,32 @@ export class ProductosComponent implements OnInit, OnDestroy {
         Swal.fire('Error al cargar productos', error.error?.message || 'Ha ocurrido un error inesperado', 'error');
       }
     );
+  }
+
+  cambiarMayorista(valor: string): void {
+    this.mayorista = valor || '';
+    this.cargarProductos(0);
+  }
+
+  /** El producto tiene precio mayorista o algún descuento especial configurado. */
+  tieneMayorista(producto: ProductoDto): boolean {
+    return producto.precioMayorista !== null && producto.precioMayorista !== undefined
+      || !!producto.descuentoCiento || !!producto.descuentoFardo;
+  }
+
+  /** Texto del tooltip de la etiqueta «Mayorista». */
+  resumenMayorista(producto: ProductoDto): string {
+    const partes: string[] = [];
+    if (producto.precioMayorista !== null && producto.precioMayorista !== undefined) {
+      partes.push(`Precio mayorista Q${Number(producto.precioMayorista).toFixed(2)}`);
+    }
+    if (producto.descuentoCiento) {
+      partes.push('Descuento por ciento');
+    }
+    if (producto.descuentoFardo) {
+      partes.push('Descuento por fardo');
+    }
+    return partes.join(' · ');
   }
 
   irPrimeraPagina(): void {

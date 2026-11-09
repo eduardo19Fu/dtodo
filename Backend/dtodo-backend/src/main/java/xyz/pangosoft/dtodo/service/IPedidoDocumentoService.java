@@ -14,4 +14,10 @@ public interface IPedidoDocumentoService {
      * indicada ({@code yyyy-MM-dd}; hoy si viene vacía).
      */
     byte[] notaEnvio(Integer idRuta, String fecha);
+
+    /**
+     * Las notas de envío de todas las rutas que tienen algo por cargar o que salieron en la fecha, en un solo PDF
+     * (una nota por ruta, cada una con su propia numeración de páginas).
+     */
+    byte[] notaEnvioTodasLasRutas(String fecha);
 }

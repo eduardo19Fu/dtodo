@@ -33,6 +33,9 @@ public interface IDescuentoService {
 
     Page<ProductoDescuentosDto> findProductos(String filtro, boolean soloConDescuentos, Pageable pageable);
 
+    /** Marca en cada producto del listado si tiene precio mayorista o descuentos por ciento o por fardo. */
+    void completarResumenMayorista(java.util.List<xyz.pangosoft.dtodo.dto.ProductoDtoMejorado> productos);
+
     ProductoDescuentosDto findProducto(Integer idProducto);
 
     /** Guarda el precio mayorista y los descuentos especiales de un producto (reemplaza los anteriores). */

@@ -189,6 +189,72 @@ export class PedidosComponent implements OnInit {
     return ruta.idRuta;
   }
 
+  // ------------------------------------------------------------ rutas plegables
+
+  /** Apertura que el usuario eligió a mano; mientras no toque una ruta, manda la apertura por defecto. */
+  private aperturaManual = new Map<string, boolean>();
+
+  private claveGrupo(grupo: GrupoRuta): string {
+    return String(grupo.idRuta);
+  }
+
+  /** Por defecto solo se abre la primera ruta; las demás quedan contraídas hasta que el usuario las abra. */
+  private abiertoPorDefecto(grupo: GrupoRuta, todos: GrupoRuta[]): boolean {
+    return todos.length > 0 && this.claveGrupo(todos[0]) === this.claveGrupo(grupo);
+  }
+
+  estaAbierto(grupo: GrupoRuta): boolean {
+    const manual = this.aperturaManual.get(this.claveGrupo(grupo));
+    return manual !== undefined ? manual : this.abiertoPorDefecto(grupo, this.grupos);
+  }
+
+  alternarGrupo(grupo: GrupoRuta): void {
+    this.aperturaManual.set(this.claveGrupo(grupo), !this.estaAbierto(grupo));
+  }
+
+  expandirTodo(): void {
+    this.grupos.forEach(grupo => this.aperturaManual.set(this.claveGrupo(grupo), true));
+  }
+
+  plegarTodo(): void {
+    this.grupos.forEach(grupo => this.aperturaManual.set(this.claveGrupo(grupo), false));
+  }
+
+  /** Al pulsar Enter o espacio sobre el encabezado, no sobre un botón que lleve dentro. */
+  alTeclaEncabezado(evento: Event, grupo: GrupoRuta): void {
+    if (evento.target === evento.currentTarget) {
+      evento.preventDefault();
+      this.alternarGrupo(grupo);
+    }
+  }
+
+  private tienePorCargar(grupo: GrupoRuta): boolean {
+    return grupo.pedidos.some(pedido => pedido.estadoPedido === 'EMPACADA');
+  }
+
+  /** La ruta tiene algo para su nota de envío: pedidos empacados por cargar o ya en ruta. */
+  tieneNotaEnvio(grupo: GrupoRuta): boolean {
+    return !!grupo.idRuta && grupo.pedidos.some(pedido => pedido.estadoPedido === 'EMPACADA' || pedido.estadoPedido === 'EN_RUTA');
+  }
+
+  /** Cantidad de rutas con nota de envío, para el botón que las imprime todas. */
+  get rutasConNotaEnvio(): number {
+    return this.grupos.filter(grupo => this.tieneNotaEnvio(grupo)).length;
+  }
+
+  /** Cuántos pedidos hay en cada etapa de la ruta, en el orden del flujo, para los chips del encabezado. */
+  resumenEtapas(grupo: GrupoRuta): Array<{ estado: string; cantidad: number; texto: string }> {
+    const orden = ['CONFIRMADA', 'EN_PREPARACION', 'EMPACADA', 'EN_RUTA', 'ENTREGADA_PARCIAL', 'ENTREGADA'];
+    return orden
+      .map(estado => ({ estado, cantidad: grupo.pedidos.filter(pedido => pedido.estadoPedido === estado).length }))
+      .filter(etapa => etapa.cantidad > 0)
+      .map(etapa => ({ ...etapa, texto: `${etapa.cantidad} ${this.etiquetaEstado(etapa.estado).toLowerCase()}` }));
+  }
+
+  imprimirNotasDeEnvio(): void {
+    this.abrirPdf(this.pedidoService.notaEnvioTodas());
+  }
+
   etiquetaEstado(estado: string): string {
     return ETIQUETAS_ESTADO_PEDIDO[estado] || estado;
   }
