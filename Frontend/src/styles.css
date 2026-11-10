@@ -1950,7 +1950,7 @@ input.listing-tile-input::placeholder {
   overflow: visible;
 }
 
-.filter-card-header {
+.filter-card > .filter-card-header {
   align-items: center;
   background: #5f6b75;
   border: 0;
@@ -1964,7 +1964,7 @@ input.listing-tile-input::placeholder {
 
 .filter-heading { align-items: center; display: flex; min-width: 0; }
 
-.filter-heading .card-title {
+.filter-card .filter-heading .card-title {
   color: #fff;
   float: none;
   font-size: 1rem;
@@ -1973,7 +1973,7 @@ input.listing-tile-input::placeholder {
   margin: 0;
 }
 
-.filter-heading small {
+.filter-card .filter-heading small {
   color: rgba(255, 255, 255, 0.75);
   display: block;
   font-size: 0.78rem;
@@ -2000,7 +2000,7 @@ input.listing-tile-input::placeholder {
   white-space: nowrap;
 }
 
-.filter-card-body { background: #fff; border-radius: 0 0 0.5rem 0.5rem; padding: 1.1rem 1.25rem; }
+.filter-card > .filter-card-body { background: #fff; border-radius: 0 0 0.5rem 0.5rem; padding: 1.1rem 1.25rem; }
 
 .filter-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: flex-end; }
 
@@ -2054,6 +2054,6 @@ input.listing-tile-input::placeholder {
 }
 
 @media (max-width: 575.98px) {
-  .filter-card-header { align-items: flex-start; }
-  .filter-heading small { display: none; }
+  .filter-card > .filter-card-header { align-items: flex-start; }
+  .filter-card .filter-heading small { display: none; }
 }

@@ -202,4 +202,14 @@ describe('Selector de sucursal de recibos', () => {
       }
     });
   });
+
+  it('la tarjeta de filtros tiene el encabezado gris pizarra con el título visible', () => {
+    const root: HTMLElement = fixture.nativeElement;
+    const encabezado: HTMLElement = root.querySelector('.filter-card > .filter-card-header');
+    const titulo: HTMLElement = encabezado.querySelector('.card-title');
+
+    expect(getComputedStyle(encabezado).backgroundColor).toBe('rgb(95, 107, 117)');
+    expect(getComputedStyle(titulo).color).toBe('rgb(255, 255, 255)');
+    expect(titulo.textContent).toContain('Filtrar recibos');
+  });
 });
