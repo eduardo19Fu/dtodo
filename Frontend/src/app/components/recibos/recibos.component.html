@@ -224,41 +224,56 @@
   </form>
 </div>
 
-<div class="card listing-card receipt-list" *ngIf="!formularioAbierto">
-  <div class="card-body">
-    <div class="recibos-filters">
-      <div class="receipt-date-filters">
-        <div class="row listing-date-range">
-          <app-date-range-picker apariencia="campo" [(fechaInicio)]="desde" [(fechaFin)]="hasta" tema="ventas"></app-date-range-picker>
-        </div>
-      </div>
-
-      <div class="listing-field" *ngIf="esAdmin && sucursales.length > 0">
-        <label for="sucursalFiltro">Sucursal</label>
-        <select id="sucursalFiltro" class="form-control" [(ngModel)]="idSucursalFiltro" name="sucursalFiltro">
-          <option [ngValue]="null">Todas las sucursales</option>
-          <option *ngFor="let sucursal of sucursales" [ngValue]="sucursal.idSucursal">{{sucursal.nombre}}</option>
-        </select>
-      </div>
-
-      <div class="receipt-status-filter">
-        <label class="receipt-canceled-toggle" for="anuladosRecibo">
-          <span>Incluir anulados</span>
-          <input type="checkbox" role="switch" class="listing-switch" id="anuladosRecibo"
-            [(ngModel)]="incluirAnulados" name="anulados">
-        </label>
-      </div>
-
-      <div class="receipt-filter-actions">
-        <button type="button" class="btn listing-page-action listing-primary-action" (click)="aplicarFiltros()">
-          <i class="fas fa-filter" aria-hidden="true"></i> Filtrar
-        </button>
-        <button type="button" class="btn listing-page-action listing-secondary-action" (click)="limpiarFiltros()"
-          appTooltip="Quitar los filtros" aria-label="Quitar los filtros">
-          <i class="fas fa-eraser" aria-hidden="true"></i>
-        </button>
+<div class="card filter-card receipt-list" *ngIf="!formularioAbierto">
+  <div class="card-header filter-card-header">
+    <div class="filter-heading">
+      <span class="filter-icon"><i class="fas fa-filter" aria-hidden="true"></i></span>
+      <div>
+        <h3 class="card-title">Filtrar recibos</h3>
+        <small>Consulta los recibos por fecha de pago, sucursal y estado</small>
       </div>
     </div>
+    <span class="filter-status"><i class="fas" [ngClass]="desde && hasta ? 'fa-calendar-check' : 'fa-history'" aria-hidden="true"></i>
+      {{desde && hasta ? 'Rango aplicado' : 'Últimos 30 días'}}</span>
+  </div>
+  <div class="card-body filter-card-body">
+  <div class="recibos-filters">
+        <div class="receipt-date-filters">
+          <div class="row listing-date-range">
+            <app-date-range-picker apariencia="campo" [(fechaInicio)]="desde" [(fechaFin)]="hasta" tema="ventas"></app-date-range-picker>
+          </div>
+        </div>
+
+        <div class="listing-field" *ngIf="esAdmin && sucursales.length > 0">
+          <label for="sucursalFiltro">Sucursal</label>
+          <select id="sucursalFiltro" class="form-control" [(ngModel)]="idSucursalFiltro" name="sucursalFiltro">
+            <option [ngValue]="null">Todas las sucursales</option>
+            <option *ngFor="let sucursal of sucursales" [ngValue]="sucursal.idSucursal">{{sucursal.nombre}}</option>
+          </select>
+        </div>
+
+        <div class="receipt-status-filter">
+          <label class="receipt-canceled-toggle" for="anuladosRecibo">
+            <span>Incluir anulados</span>
+            <input type="checkbox" role="switch" class="listing-switch" id="anuladosRecibo"
+              [(ngModel)]="incluirAnulados" name="anulados">
+          </label>
+        </div>
+
+        <div class="receipt-filter-actions filter-actions">
+          <button type="button" class="btn filter-button search-button" (click)="aplicarFiltros()">
+            <i class="fas fa-search" aria-hidden="true"></i> Buscar
+          </button>
+          <button type="button" class="btn filter-button clear-button" (click)="limpiarFiltros()">
+            <i class="fas fa-undo" aria-hidden="true"></i> Restablecer
+          </button>
+        </div>
+      </div>
+  </div>
+</div>
+
+<div class="card listing-card receipt-list" *ngIf="!formularioAbierto">
+  <div class="card-body">
     <div class="receipt-list-caption">
       <span>Sin fechas se muestran los últimos 30 días.</span>
       <span *ngIf="!cargando"><strong>{{totalElementos}}</strong> {{totalElementos === 1 ? 'recibo' : 'recibos'}}</span>

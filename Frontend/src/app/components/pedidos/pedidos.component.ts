@@ -79,6 +79,12 @@ export class PedidosComponent implements OnInit {
   ];
 
   /** El repartidor solo ve lo que está en ruta o con entrega parcial; los pedidos entregados no le aplican. */
+  /** El nombre de la etapa elegida, para el rótulo de la tarjeta de filtros. */
+  get opcionActual(): string {
+    const opcion = this.opcionesEstado.find(o => o.codigo === this.estado);
+    return opcion ? opcion.nombre : 'Todas las etapas';
+  }
+
   get opcionesEstado(): Array<{ codigo: EstadoPedido | ''; nombre: string }> {
     return this.esRepartidor ? this.estados.filter(opcion => opcion.codigo !== 'ENTREGADA') : this.estados;
   }

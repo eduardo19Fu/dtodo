@@ -176,3 +176,28 @@ select.page-size-select:focus {
   .search-control { float: none !important; width: 100%; }
   .search-control .form-control { min-width: 0; width: 100%; }
 }
+
+/* Tabla con el estilo de gestión (encabezado gris claro, sin rejilla, filas separadas por una línea fina y resaltado al pasar el cursor): el mismo de Pedidos,
+   Recibos y Cobranza. Va al final para ganarle a los estilos anteriores. */
+.catalog-table th {
+  background: #f1f5f8;
+  border: 0;
+  border-bottom: 1px solid #d4dfe9;
+  color: #3a4d64;
+  font-weight: 600;
+}
+
+.catalog-table td {
+  border: 0;
+  border-bottom: 1px solid #e7edf2;
+  color: #344459;
+}
+
+.catalog-table tbody tr:nth-of-type(odd) { background: transparent; }
+.catalog-table tbody tr:hover { background: #f6f9fb; }
+.catalog-table tbody tr:last-child td { border-bottom: 0; }
+
+.sort-header i { color: #9aa8ba; }
+.sort-header .fa-sort-up,
+.sort-header .fa-sort-down { color: #2f7d6b; }
+.sort-header:focus { outline: 2px solid rgba(47, 125, 107, 0.45); outline-offset: 2px; }

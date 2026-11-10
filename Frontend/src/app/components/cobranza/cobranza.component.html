@@ -60,46 +60,62 @@
   </div>
 </div>
 
+<div class="card filter-card">
+  <div class="card-header filter-card-header">
+    <div class="filter-heading">
+      <span class="filter-icon"><i class="fas fa-filter" aria-hidden="true"></i></span>
+      <div>
+        <h3 class="card-title">Filtrar cuentas por cobrar</h3>
+        <small>Busca por cliente, ruta o saldo vencido</small>
+      </div>
+    </div>
+    <span class="filter-status" *ngIf="idRuta || busqueda || soloVencidos"><i class="fas fa-sliders-h" aria-hidden="true"></i> Filtros activos</span>
+  </div>
+  <div class="card-body filter-card-body">
+  <div class="cobranza-filters">
+        <div class="cobranza-fields">
+          <div class="listing-field">
+            <label for="busquedaCobranza">Cliente</label>
+            <input type="search" id="busquedaCobranza" class="form-control" [(ngModel)]="busqueda" name="busqueda"
+              placeholder="Nombre o negocio" autocomplete="off">
+          </div>
+          <div class="listing-field">
+            <label for="rutaCobranza">Ruta</label>
+            <select id="rutaCobranza" class="form-control" [(ngModel)]="idRuta" name="ruta">
+              <option [ngValue]="''">Todas las rutas</option>
+              <option *ngFor="let ruta of rutas" [ngValue]="ruta.idRuta">{{ruta.nombre}}</option>
+            </select>
+          </div>
+          <div class="listing-field">
+            <span class="listing-field-label" id="saldoCobranzaLabel">Saldo</span>
+            <label class="cobranza-balance-toggle" for="vencidosCobranza">
+              <span>Solo vencidos</span>
+              <input type="checkbox" role="switch" class="listing-switch" id="vencidosCobranza"
+                [(ngModel)]="soloVencidos" name="vencidos" aria-describedby="saldoCobranzaLabel">
+            </label>
+          </div>
+        </div>
+        <div class="cobranza-exports">
+          <span>Exportar resultados</span>
+          <div class="listing-actions">
+            <button type="button" class="btn listing-page-action listing-export-pdf" (click)="descargarReporte('PDF')"
+              [disabled]="generando || !cobranza" aria-label="Exportar cobranza a PDF">
+              <i class="fas fa-file-pdf" aria-hidden="true"></i> PDF
+            </button>
+            <button type="button" class="btn listing-page-action listing-export-excel" (click)="descargarReporte('XLSX')"
+              [disabled]="generando || !cobranza" aria-label="Exportar cobranza a Excel">
+              <i class="fas fa-file-excel" aria-hidden="true"></i> Excel
+            </button>
+          </div>
+        </div>
+      </div>
+  </div>
+</div>
+
 <div class="card listing-card">
   <div class="card-header listing-card-header"><i class="fas fa-file-invoice-dollar" aria-hidden="true"></i>Cuentas por cobrar</div>
   <div class="card-body">
-    <div class="cobranza-filters">
-      <div class="cobranza-fields">
-        <div class="listing-field">
-          <label for="busquedaCobranza">Cliente</label>
-          <input type="search" id="busquedaCobranza" class="form-control" [(ngModel)]="busqueda" name="busqueda"
-            placeholder="Nombre o negocio" autocomplete="off">
-        </div>
-        <div class="listing-field">
-          <label for="rutaCobranza">Ruta</label>
-          <select id="rutaCobranza" class="form-control" [(ngModel)]="idRuta" name="ruta">
-            <option [ngValue]="''">Todas las rutas</option>
-            <option *ngFor="let ruta of rutas" [ngValue]="ruta.idRuta">{{ruta.nombre}}</option>
-          </select>
-        </div>
-        <div class="listing-field">
-          <span class="listing-field-label" id="saldoCobranzaLabel">Saldo</span>
-          <label class="cobranza-balance-toggle" for="vencidosCobranza">
-            <span>Solo vencidos</span>
-            <input type="checkbox" role="switch" class="listing-switch" id="vencidosCobranza"
-              [(ngModel)]="soloVencidos" name="vencidos" aria-describedby="saldoCobranzaLabel">
-          </label>
-        </div>
-      </div>
-      <div class="cobranza-exports">
-        <span>Exportar resultados</span>
-        <div class="listing-actions">
-          <button type="button" class="btn listing-page-action listing-export-pdf" (click)="descargarReporte('PDF')"
-            [disabled]="generando || !cobranza" aria-label="Exportar cobranza a PDF">
-            <i class="fas fa-file-pdf" aria-hidden="true"></i> PDF
-          </button>
-          <button type="button" class="btn listing-page-action listing-export-excel" (click)="descargarReporte('XLSX')"
-            [disabled]="generando || !cobranza" aria-label="Exportar cobranza a Excel">
-            <i class="fas fa-file-excel" aria-hidden="true"></i> Excel
-          </button>
-        </div>
-      </div>
-    </div>
+    
     <div *ngIf="cargando" class="text-center p-4">
       <div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div>
     </div>

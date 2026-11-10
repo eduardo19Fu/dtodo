@@ -1939,3 +1939,121 @@ input.listing-tile-input::placeholder {
   cursor: pointer;
   font-weight: 650;
 }
+
+/* Tarjeta de filtros: encabezado gris pizarra con icono, título y estado, y los campos debajo. La usan Movimientos, Facturas, Proformas y
+   Notas de crédito, y ahora también las pantallas de mayoristas, para que todos los filtros se vean igual. */
+.filter-card {
+  border: 0;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 10px rgba(33, 37, 41, 0.09);
+  margin-bottom: 1.25rem;
+  overflow: visible;
+}
+
+.filter-card-header {
+  align-items: center;
+  background: #5f6b75;
+  border: 0;
+  border-radius: 0.5rem 0.5rem 0 0;
+  color: #fff;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+  padding: 0.85rem 1.25rem;
+}
+
+.filter-heading { align-items: center; display: flex; min-width: 0; }
+
+.filter-heading .card-title {
+  color: #fff;
+  float: none;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.filter-heading small {
+  color: rgba(255, 255, 255, 0.75);
+  display: block;
+  font-size: 0.78rem;
+  margin-top: 0.15rem;
+}
+
+.filter-icon {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 50%;
+  display: inline-flex;
+  flex: 0 0 2.25rem;
+  height: 2.25rem;
+  justify-content: center;
+  margin-right: 0.75rem;
+}
+
+.filter-status {
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  padding: 0.3rem 0.65rem;
+  white-space: nowrap;
+}
+
+.filter-card-body { background: #fff; border-radius: 0 0 0.5rem 0.5rem; padding: 1.1rem 1.25rem; }
+
+.filter-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: flex-end; }
+
+.filter-button {
+  align-items: center;
+  border-radius: 8px;
+  display: inline-flex;
+  font-weight: 600;
+  gap: 0.4rem;
+  justify-content: center;
+  min-height: 38px;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.search-button {
+  background: linear-gradient(135deg, #2783b7, #1c688f);
+  border: 1px solid #2783b7;
+  box-shadow: 0 5px 12px rgba(28, 104, 143, 0.2);
+  color: #fff;
+}
+
+.search-button:hover,
+.search-button:focus { box-shadow: 0 7px 16px rgba(28, 104, 143, 0.28); color: #fff; transform: translateY(-1px); }
+
+.clear-button { background: #fff; border: 1px solid #cbd5e1; color: #42526a; }
+
+.clear-button:hover,
+.clear-button:focus {
+  background: #f3f6fa;
+  border-color: #9dabbc;
+  box-shadow: 0 5px 12px rgba(55, 72, 96, 0.11);
+  color: #26364d;
+  transform: translateY(-1px);
+}
+
+/* Dentro de la tarjeta de filtros, las franjas de campos pierden su propio recuadro. */
+.filter-card-body .listing-filter-grid {
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  margin-bottom: 0;
+  padding: 0;
+}
+
+@media (max-width: 767.98px) {
+  .filter-actions { justify-content: stretch; }
+  .filter-button { flex: 1; }
+}
+
+@media (max-width: 575.98px) {
+  .filter-card-header { align-items: flex-start; }
+  .filter-heading small { display: none; }
+}

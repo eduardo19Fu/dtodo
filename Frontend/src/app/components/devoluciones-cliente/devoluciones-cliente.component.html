@@ -210,25 +210,41 @@
   </form>
 </div>
 
-<div class="card listing-card" *ngIf="!formularioAbierto">
-  <div class="card-header listing-card-header"><i class="fas fa-undo-alt" aria-hidden="true"></i>Devoluciones registradas</div>
-  <div class="card-body">
-    <div class="listing-filter-grid filtros-devoluciones">
+<div class="card filter-card" *ngIf="!formularioAbierto">
+  <div class="card-header filter-card-header">
+    <div class="filter-heading">
+      <span class="filter-icon"><i class="fas fa-filter" aria-hidden="true"></i></span>
+      <div>
+        <h3 class="card-title">Filtrar devoluciones</h3>
+        <small>Consulta las devoluciones por fecha</small>
+      </div>
+    </div>
+    <span class="filter-status"><i class="fas" [ngClass]="desde && hasta ? 'fa-calendar-check' : 'fa-history'" aria-hidden="true"></i>
+      {{desde && hasta ? 'Rango aplicado' : 'Últimos 90 días'}}</span>
+  </div>
+  <div class="card-body filter-card-body">
+<div class="listing-filter-grid filtros-devoluciones">
       <div class="listing-tile-cell">
         <div class="row listing-date-range">
           <app-date-range-picker apariencia="campo" [(fechaInicio)]="desde" [(fechaFin)]="hasta" tema="notas"></app-date-range-picker>
         </div>
       </div>
-      <div class="listing-tile-actions">
-        <button type="button" class="btn listing-page-action listing-primary-action" (click)="aplicarFiltros()">
-          <i class="fas fa-filter"></i> Filtrar
+      <div class="listing-tile-actions filter-actions">
+        <button type="button" class="btn filter-button search-button" (click)="aplicarFiltros()">
+          <i class="fas fa-search" aria-hidden="true"></i> Buscar
         </button>
-        <button type="button" class="btn listing-page-action listing-secondary-action" (click)="limpiarFiltros()"
-          appTooltip="Quitar los filtros" aria-label="Quitar los filtros">
-          <i class="fas fa-eraser"></i>
+        <button type="button" class="btn filter-button clear-button" (click)="limpiarFiltros()">
+          <i class="fas fa-undo" aria-hidden="true"></i> Restablecer
         </button>
       </div>
     </div>
+  </div>
+</div>
+
+<div class="card listing-card" *ngIf="!formularioAbierto">
+  <div class="card-header listing-card-header"><i class="fas fa-undo-alt" aria-hidden="true"></i>Devoluciones registradas</div>
+  <div class="card-body">
+    
     <p class="listing-note">Sin fechas se muestran los últimos 90 días.<span *ngIf="!cargando"> · {{totalElementos}} {{totalElementos === 1 ? 'devolución' : 'devoluciones'}}</span></p>
 
     <div *ngIf="errorCarga" class="listing-alert listing-alert-warning" role="alert">

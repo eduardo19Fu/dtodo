@@ -1,13 +1,7 @@
 /* Los estilos de botones, filtros, resúmenes, avisos y tablas son los compartidos de src/styles.css (listing-*). */
 .action-buttons { gap: 0.35rem; }
 
-:host .cobranza-filters {
-  background: #f7f9fb;
-  border: 1px solid #dce4ec;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  padding: 16px;
-}
+:host .cobranza-filters { margin: 0; }
 :host .cobranza-fields {
   align-items: end;
   display: grid;

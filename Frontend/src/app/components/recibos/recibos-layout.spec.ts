@@ -190,7 +190,8 @@ describe('Selector de sucursal de recibos', () => {
       expect(status.textContent).toContain('Incluir anulados');
       expect(branch.getBoundingClientRect().height).toBe(46);
       expect(status.getBoundingClientRect().height).toBe(46);
-      expect(root.querySelector('.receipt-list .card-header')).toBeNull();
+      expect(root.querySelector('.receipt-list.listing-card .card-header')).toBeNull();
+      expect(root.querySelector('.filter-card .filter-card-header')).not.toBeNull();
       if (width === 1240) {
         expect(branch.getBoundingClientRect().top).toBe(dates.querySelector('button').getBoundingClientRect().top);
         expect(actions.getBoundingClientRect().top).toBe(branch.getBoundingClientRect().top);

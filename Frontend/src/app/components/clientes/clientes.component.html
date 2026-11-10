@@ -18,6 +18,57 @@
   </div>
 </section>
 
+  <div class="card filter-card">
+  <div class="card-header filter-card-header">
+    <div class="filter-heading">
+      <span class="filter-icon"><i class="fas fa-filter" aria-hidden="true"></i></span>
+      <div>
+        <h3 class="card-title">Filtrar clientes</h3>
+        <small>Por tipo, ruta o NIT inválido</small>
+      </div>
+    </div>
+    <span class="filter-status" *ngIf="hayFiltrosActivos"><i class="fas fa-sliders-h" aria-hidden="true"></i> {{cantidadFiltrosActivos}} {{cantidadFiltrosActivos === 1 ? 'filtro activo' : 'filtros activos'}}</span>
+  </div>
+  <div class="card-body filter-card-body">
+  <div class="row mb-3 filtros-clientes">
+        <div class="col-sm-4 col-md-3 listing-field">
+          <label class="mb-1" for="filtroTipo">Tipo de cliente</label>
+          <select id="filtroTipo" class="form-control form-control-sm" [(ngModel)]="tipoFiltro"
+            (ngModelChange)="cambiarFiltros()">
+            <option value="">Todos</option>
+            <option value="MINORISTA">Minoristas</option>
+            <option value="MAYORISTA">Mayoristas</option>
+          </select>
+        </div>
+        <div class="col-sm-4 col-md-3 listing-field">
+          <label class="mb-1" for="filtroRuta">Ruta</label>
+          <select id="filtroRuta" class="form-control form-control-sm" [(ngModel)]="idRutaFiltro"
+            (ngModelChange)="cambiarFiltros()">
+            <option [ngValue]="null">Todas</option>
+            <option *ngFor="let ruta of rutas" [ngValue]="ruta.idRuta">{{ruta.nombre}}</option>
+          </select>
+        </div>
+        <div class="col-sm-4 col-md-3 d-flex align-items-end" *ngIf="auth.hasRole('ROLE_ADMIN')">
+          <label class="mb-0 filtro-nit" for="filtroNitInvalido" [class.is-on]="soloNitInvalido"
+            appTooltip="Clientes con un NIT escrito que no es válido, por ejemplo un teléfono">
+            <span class="filtro-nit-texto">Solo con NIT inválido</span>
+            <span class="listing-status-pill listing-status-warning" *ngIf="totalNitInvalidos">{{totalNitInvalidos}}</span>
+            <input type="checkbox" role="switch" class="listing-switch" id="filtroNitInvalido"
+              [(ngModel)]="soloNitInvalido" (ngModelChange)="cambiarFiltros()">
+          </label>
+        </div>
+        <div class="col-sm-4 col-md-3 d-flex align-items-end">
+          <button type="button" class="filtros-limpiar" *ngIf="hayFiltrosActivos" (click)="limpiarFiltros()"
+            appTooltip="Quitar todos los filtros y ver todos los clientes">
+            <i class="fas fa-eraser" aria-hidden="true"></i>
+            <span>Quitar filtros</span>
+            <span class="filtros-limpiar-cuenta" [attr.aria-label]="cantidadFiltrosActivos + ' filtros activos'">{{cantidadFiltrosActivos}}</span>
+          </button>
+        </div>
+      </div>
+  </div>
+</div>
+
 <div class="card listing-card">
   <div class="card-header listing-card-header">Listado de Clientes</div>
   <div class="card-body table-responsive">
@@ -50,42 +101,7 @@
       </div>
     </div>
 
-    <div class="row mb-3 filtros-clientes">
-      <div class="col-sm-4 col-md-3 listing-field">
-        <label class="mb-1" for="filtroTipo">Tipo de cliente</label>
-        <select id="filtroTipo" class="form-control form-control-sm" [(ngModel)]="tipoFiltro"
-          (ngModelChange)="cambiarFiltros()">
-          <option value="">Todos</option>
-          <option value="MINORISTA">Minoristas</option>
-          <option value="MAYORISTA">Mayoristas</option>
-        </select>
-      </div>
-      <div class="col-sm-4 col-md-3 listing-field">
-        <label class="mb-1" for="filtroRuta">Ruta</label>
-        <select id="filtroRuta" class="form-control form-control-sm" [(ngModel)]="idRutaFiltro"
-          (ngModelChange)="cambiarFiltros()">
-          <option [ngValue]="null">Todas</option>
-          <option *ngFor="let ruta of rutas" [ngValue]="ruta.idRuta">{{ruta.nombre}}</option>
-        </select>
-      </div>
-      <div class="col-sm-4 col-md-3 d-flex align-items-end" *ngIf="auth.hasRole('ROLE_ADMIN')">
-        <label class="mb-0 filtro-nit" for="filtroNitInvalido" [class.is-on]="soloNitInvalido"
-          appTooltip="Clientes con un NIT escrito que no es válido, por ejemplo un teléfono">
-          <span class="filtro-nit-texto">Solo con NIT inválido</span>
-          <span class="listing-status-pill listing-status-warning" *ngIf="totalNitInvalidos">{{totalNitInvalidos}}</span>
-          <input type="checkbox" role="switch" class="listing-switch" id="filtroNitInvalido"
-            [(ngModel)]="soloNitInvalido" (ngModelChange)="cambiarFiltros()">
-        </label>
-      </div>
-      <div class="col-sm-4 col-md-3 d-flex align-items-end">
-        <button type="button" class="filtros-limpiar" *ngIf="hayFiltrosActivos" (click)="limpiarFiltros()"
-          appTooltip="Quitar todos los filtros y ver todos los clientes">
-          <i class="fas fa-eraser" aria-hidden="true"></i>
-          <span>Quitar filtros</span>
-          <span class="filtros-limpiar-cuenta" [attr.aria-label]="cantidadFiltrosActivos + ' filtros activos'">{{cantidadFiltrosActivos}}</span>
-        </button>
-      </div>
-    </div>
+    
 
     <div *ngIf="cargando" class="text-center p-4">
       <div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div>

@@ -7,9 +7,18 @@
 
 </header>
 
-<div class="card listing-card">
-  <div class="card-header listing-card-header"><i class="fas fa-dolly" aria-hidden="true"></i>Filtros</div>
-  <div class="card-body">
+<div class="card filter-card">
+  <div class="card-header filter-card-header">
+    <div class="filter-heading">
+      <span class="filter-icon"><i class="fas fa-filter" aria-hidden="true"></i></span>
+      <div>
+        <h3 class="card-title">Filtrar pedidos</h3>
+        <small>Por etapa, ruta y fechas; la lista se actualiza al cambiar un filtro</small>
+      </div>
+    </div>
+    <span class="filter-status"><i class="fas fa-dolly" aria-hidden="true"></i> {{opcionActual}}</span>
+  </div>
+  <div class="card-body filter-card-body">
     <div class="filtros" [attr.aria-busy]="cargando">
       <label class="filtro">
         <span>Etapa</span>
@@ -28,7 +37,7 @@
         <app-date-range-picker apariencia="campo" [(fechaInicio)]="fechaInicio" [(fechaFin)]="fechaFin" tema="proformas"
           (fechaInicioChange)="cargar()" (fechaFinChange)="cargar()"></app-date-range-picker>
       </div>
-      <button type="button" class="btn listing-page-action listing-secondary-action filtro-boton" (click)="cargar()"
+      <button type="button" class="btn filter-button search-button filtro-boton" (click)="cargar()"
         [disabled]="cargando">
         <i class="fas fa-sync-alt" aria-hidden="true"></i> {{cargando ? 'Actualizando...' : 'Actualizar'}}
       </button>

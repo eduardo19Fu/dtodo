@@ -6,6 +6,9 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Cambiado — Filtros y tablas con un solo estilo
+- Los filtros de Recibos de caja, Control de cheques, Devoluciones de clientes, Cobranza, Clientes y Pedidos usan la tarjeta de filtros de Movimientos (encabezado gris pizarra con icono, título y estado, y botones Buscar y Restablecer). Las tablas de las pantallas antiguas (movimientos, facturas, proformas, notas de crédito, clientes, catálogos y usuarios) pasan al encabezado gris claro, sin rejilla y con filas separadas por una línea fina, como las pantallas de mayoristas.
+
 ### Cambiado — Reportes de inventario rediseñados
 - Movimientos y saldo, productos bajo stock mínimo, kardex de producto y valorización de inventario: el PDF sigue el diseño de la proforma (panel azul, nota, recuadros de resumen, tabla con totales) y el Excel es una tabla editable desde las mismas columnas y consulta. Lo mismo para pendientes de despacho, conversión de proformas y resumen de notas de crédito. Bajo stock resalta cuántos productos no tienen existencia; el kardex resume saldo inicial, entradas, salidas y saldo final y conserva el documento y el origen de cada movimiento.
 
