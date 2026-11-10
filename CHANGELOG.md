@@ -6,6 +6,9 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Cambiado — Reportes de Reportes → Mayoristas rediseñados
+- Proformas por vendedor, Ventas entregadas, Clientes por ruta y Clientes sin compras (PDF) siguen el diseño de la proforma: logo sin fondo, panel azul con título y período, recuadros de resumen, tabla con filas alternadas y totales alineados con las columnas. Las rutas llevan su franja y subtotal. El porcentaje facturado, los pendientes por autorizar y los días sin comprar se colorean según su gravedad. El Excel no cambia.
+
 ### Agregado — Control de cheques y listados de control en papel
 - Los recibos pagados con **cheque** guardan banco, número, girador, fecha del cheque (postfechado si es posterior al pago) y notas. El mismo cheque no se registra dos veces. Baja el saldo del cliente al recibirlo.
 - Nueva pantalla **Cuentas por cobrar → Control de cheques** con filtros por estado, fechas y sucursal, y el seguimiento Recibido → Depositado → Cobrado o Rechazado. Un postfechado no se deposita antes de su fecha; rechazar pide motivo y anula el recibo (el saldo vuelve a subir). Anular a mano el recibo de un cheque lo deja rechazado. Lo manejan administrador y cobrador (este último solo su sucursal).

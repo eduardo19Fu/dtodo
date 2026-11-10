@@ -46,6 +46,14 @@ class ReportesMayoristasTemplateTest {
         return parametros;
     }
 
+    /** Con -Dplantilla.salida=carpeta guarda el PDF para revisarlo a ojo. */
+    private static void volcar(String nombre, JasperPrint impreso) throws Exception {
+        String carpeta = System.getProperty("plantilla.salida");
+        if (carpeta != null) {
+            java.nio.file.Files.write(new java.io.File(carpeta, nombre + ".pdf").toPath(), JasperExportManager.exportReportToPdf(impreso));
+        }
+    }
+
     @SafeVarargs
     private static JasperPrint llenar(JasperReport reporte, Map<String, Object> parametros, Map<String, ?>... filas) throws Exception {
         return JasperFillManager.fillReport(reporte, parametros, new JRMapCollectionDataSource(new ArrayList<>(Arrays.asList(filas))));
@@ -71,9 +79,11 @@ class ReportesMayoristasTemplateTest {
     void clientesPorRutaAgrupaPorRutaConSuVendedorYCuentaLosClientes() throws Exception {
         JasperReport reporte = compilar("/reports/mayoristas_clientes_ruta.jrxml");
 
-        TextosImpresos textos = new TextosImpresos(llenar(reporte, parametros("Todas las rutas"),
+        JasperPrint impreso = llenar(reporte, parametros("Todas las rutas"),
                 clienteRuta("RUTA 1", "Bryan Vargas", "ANA PEREZ"), clienteRuta("RUTA 1", "Bryan Vargas", "LUIS GOMEZ"),
-                clienteRuta("Sin ruta", "", "MARIA LOPEZ")));
+                clienteRuta("Sin ruta", "", "MARIA LOPEZ"));
+        volcar("ruta", impreso);
+        TextosImpresos textos = new TextosImpresos(impreso);
 
         assertTrue(textos.contiene("Ruta: RUTA 1 · Vendedor: Bryan Vargas"));
         assertTrue(textos.contiene("Ruta: Sin ruta · sin vendedor asignado"));
@@ -104,9 +114,11 @@ class ReportesMayoristasTemplateTest {
     void clientesSinComprasMuestraLaUltimaCompraONuncaYCuentaLosQueNuncaComprararon() throws Exception {
         JasperReport reporte = compilar("/reports/mayoristas_clientes_sin_compras.jrxml");
 
-        TextosImpresos textos = new TextosImpresos(llenar(reporte, parametros("RUTA 1"),
+        JasperPrint impreso = llenar(reporte, parametros("RUTA 1"),
                 sinCompras("ANA PEREZ", Timestamp.valueOf(LocalDateTime.of(2026, 8, 15, 10, 0)), 72),
-                sinCompras("LUIS GOMEZ", null, null)));
+                sinCompras("LUIS GOMEZ", null, null));
+        volcar("sincompras", impreso);
+        TextosImpresos textos = new TextosImpresos(impreso);
 
         assertTrue(textos.contiene("15/08/2026"));
         assertTrue(textos.contiene("Nunca"));
@@ -142,9 +154,13 @@ class ReportesMayoristasTemplateTest {
     void proformasPorVendedorMuestraGeneradasFacturadasYSusTotales() throws Exception {
         JasperReport reporte = compilar("/reports/mayoristas_proformas_vendedor.jrxml");
 
-        TextosImpresos textos = new TextosImpresos(llenar(reporte, parametros("Todas las rutas"),
+        JasperPrint impreso = llenar(reporte, parametros("Todas las rutas"),
                 vendedor("Bryan Vargas", 10, "5000.00", 4, "2500.00", "0.4", 1),
-                vendedor("Ana Lopez", 5, "1250.50", 5, "1250.50", "1", 0)));
+                vendedor("Ana Lopez", 5, "1250.50", 5, "1250.50", "1", 0));
+        if (System.getProperty("plantilla.salida") != null) {
+            java.nio.file.Files.write(new java.io.File(System.getProperty("plantilla.salida"), "proformas.pdf").toPath(), JasperExportManager.exportReportToPdf(impreso));
+        }
+        TextosImpresos textos = new TextosImpresos(impreso);
 
         assertTrue(textos.contiene("Bryan Vargas"));
         assertTrue(textos.contiene("Q 5,000.00"));

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Proformas mayoristas por vendedor. Plantilla escrita a mano en formato JasperReports 6.x; no abrir ni guardar con Jaspersoft Studio 7,
-     que cambia el formato y la librería del proyecto no lo entiende. -->
+     que cambia el formato y la librería del proyecto no lo entiende. Mismo lenguaje visual que la proforma y la cobranza. Solo el PDF usa
+     esta maqueta: el Excel se genera aparte como tabla (ReporteMayoristasServiceImpl) con la misma consulta. -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
@@ -8,18 +9,34 @@
               whenNoDataType="AllSectionsNoDetail" columnWidth="802" leftMargin="20" rightMargin="20"
               topMargin="18" bottomMargin="18" isSummaryWithPageHeaderAndFooter="true"
               uuid="c5e8b3a7-62d0-4f91-8a14-0b9d7e3f5303">
-    <property name="net.sf.jasperreports.export.xlsx.detect.cell.type" value="true"/>
-    <property name="net.sf.jasperreports.export.xlsx.remove.empty.space.between.rows" value="true"/>
-    <property name="net.sf.jasperreports.export.xlsx.white.page.background" value="false"/>
 
-    <style name="Base" isDefault="true" fontName="DejaVu Sans" fontSize="8" forecolor="#23344D"/>
-    <style name="Header" style="Base" mode="Opaque" backcolor="#1769D2" forecolor="#FFFFFF"
+    <style name="Base" isDefault="true" fontName="DejaVu Sans" fontSize="8" forecolor="#1F2A44"/>
+    <style name="Header" style="Base" mode="Opaque" backcolor="#2B3990" forecolor="#FFFFFF"
            fontSize="8" isBold="true" vTextAlign="Middle"/>
     <style name="Cell" style="Base" mode="Opaque" backcolor="#FFFFFF" vTextAlign="Middle">
-        <box><pen lineWidth="0.35" lineColor="#D9E3EF"/></box>
+        <box><bottomPen lineWidth="0.5" lineColor="#E1E7F3"/></box>
+        <conditionalStyle>
+            <conditionExpression><![CDATA[$V{REPORT_COUNT}.intValue() % 2 == 0]]></conditionExpression>
+            <style backcolor="#F6F8FD"/>
+        </conditionalStyle>
     </style>
-    <style name="AlertCell" style="Cell" forecolor="#B42318" isBold="true"/>
-    <style name="GroupCell" style="Base" mode="Opaque" backcolor="#E8F0FB" forecolor="#17233B" isBold="true" vTextAlign="Middle"/>
+    <style name="Conversion" style="Cell" isBold="true" forecolor="#B42318">
+        <conditionalStyle>
+            <conditionExpression><![CDATA[$F{tasa_conversion} != null && $F{tasa_conversion}.doubleValue() >= 0.6]]></conditionExpression>
+            <style forecolor="#087453"/>
+        </conditionalStyle>
+        <conditionalStyle>
+            <conditionExpression><![CDATA[$F{tasa_conversion} != null && $F{tasa_conversion}.doubleValue() >= 0.3]]></conditionExpression>
+            <style forecolor="#8A5A00"/>
+        </conditionalStyle>
+    </style>
+    <style name="PorAutorizar" style="Cell" isBold="true" forecolor="#6B7A90">
+        <conditionalStyle>
+            <conditionExpression><![CDATA[$F{por_autorizar} != null && $F{por_autorizar}.longValue() > 0]]></conditionExpression>
+            <style forecolor="#B42318"/>
+        </conditionalStyle>
+    </style>
+    <style name="Etiqueta" style="Base" fontSize="7.5" isBold="true" forecolor="#6B7A90"/>
 
     <parameter name="ID_RUTA" class="java.lang.Integer"/>
     <parameter name="RUTA" class="java.lang.String"/>
@@ -68,88 +85,133 @@
         <variableExpression><![CDATA[$F{valor_proformado}]]></variableExpression>
         <initialValueExpression><![CDATA[java.math.BigDecimal.ZERO]]></initialValueExpression>
     </variable>
+    <variable name="TOTAL_POR_AUTORIZAR" class="java.lang.Long" calculation="Sum">
+        <variableExpression><![CDATA[$F{por_autorizar}]]></variableExpression>
+        <initialValueExpression><![CDATA[Long.valueOf(0)]]></initialValueExpression>
+    </variable>
     <variable name="TOTAL_FACTURADO" class="java.math.BigDecimal" calculation="Sum">
         <variableExpression><![CDATA[$F{valor_facturado}]]></variableExpression>
         <initialValueExpression><![CDATA[java.math.BigDecimal.ZERO]]></initialValueExpression>
     </variable>
 
-
     <title>
-        <band height="72">
-            <rectangle radius="8">
-                <reportElement x="90" y="0" width="712" height="48" forecolor="#1769D2" backcolor="#1769D2"/>
-            </rectangle>
-            <image scaleImage="RetainShape" hAlign="Center">
-                <reportElement x="0" y="0" width="72" height="48"/>
-                <imageExpression><![CDATA[this.getClass().getResourceAsStream("/static/images/reports-image/logo-dtodo.jpg")]]></imageExpression>
+        <band height="182">
+            <!-- Logo sin fondo y panel azul del reporte -->
+            <image scaleImage="RetainShape" hAlign="Left">
+                <reportElement x="0" y="2" width="130" height="68"/>
+                <imageExpression><![CDATA[this.getClass().getResourceAsStream("/static/images/reports-image/logo-dtodo-proforma.png")]]></imageExpression>
             </image>
+            <rectangle radius="9">
+                <reportElement mode="Opaque" x="236" y="2" width="566" height="66" forecolor="#2B3990" backcolor="#2B3990"/>
+                <graphicElement><pen lineWidth="0.5" lineColor="#2B3990"/></graphicElement>
+            </rectangle>
             <staticText>
-                <reportElement x="90" y="0" width="478" height="24" forecolor="#FFFFFF"
-                               backcolor="#1769D2" mode="Opaque"/>
-                <textElement verticalAlignment="Middle"><font size="16" isBold="true"/><paragraph leftIndent="18"/></textElement>
-                <text><![CDATA[Proformas mayoristas por vendedor]]></text>
+                <reportElement x="252" y="8" width="260" height="11" forecolor="#C3CFFF"/>
+                <textElement verticalAlignment="Middle"><font size="7.5" isBold="true"/></textElement>
+                <text><![CDATA[VENTAS MAYORISTAS · VENDEDORES]]></text>
             </staticText>
-            <textField isBlankWhenNull="true">
-                <reportElement x="90" y="24" width="478" height="24" forecolor="#DCEBFF"
-                               backcolor="#1769D2" mode="Opaque"/>
-                <textElement verticalAlignment="Middle"><font size="8"/><paragraph leftIndent="18"/></textElement>
-                <textFieldExpression><![CDATA[$P{RANGO} + " · " + ($P{RUTA} == null ? "todas las rutas" : $P{RUTA})]]></textFieldExpression>
-            </textField>
-            <textField isBlankWhenNull="true">
-                <reportElement x="568" y="0" width="234" height="24" forecolor="#FFFFFF"
-                               backcolor="#1769D2" mode="Opaque"/>
-                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/><paragraph rightIndent="18"/></textElement>
-                <textFieldExpression><![CDATA[$P{RUTA}]]></textFieldExpression>
-            </textField>
-            <textField pattern="dd/MM/yyyy HH:mm">
-                <reportElement x="568" y="24" width="234" height="24" forecolor="#DCEBFF"
-                               backcolor="#1769D2" mode="Opaque"/>
-                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="7"/><paragraph rightIndent="18"/></textElement>
-                <textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+            <staticText>
+                <reportElement x="252" y="19" width="380" height="26" forecolor="#FFFFFF"/>
+                <textElement verticalAlignment="Middle"><font size="17" isBold="true"/></textElement>
+                <text><![CDATA[Proformas por vendedor]]></text>
+            </staticText>
+            <textField isBlankWhenNull="true" textAdjust="ScaleFont">
+                <reportElement x="252" y="46" width="380" height="16" forecolor="#FFFFFF"/>
+                <textElement verticalAlignment="Middle"><font size="10" isBold="true"/></textElement>
+                <textFieldExpression><![CDATA[$P{RUTA} == null ? "Todas las rutas" : $P{RUTA}]]></textFieldExpression>
             </textField>
             <staticText>
-                <reportElement x="0" y="54" width="802" height="14" forecolor="#66758A"/>
-                <textElement><font size="8" isItalic="true"/></textElement>
-                <text><![CDATA[Proformas mayoristas emitidas en el período y las que ya tienen una factura vigente (no anulada), aunque se haya emitido después.]]></text>
+                <reportElement x="640" y="10" width="150" height="10" forecolor="#C3CFFF"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="7" isBold="true"/></textElement>
+                <text><![CDATA[PERÍODO]]></text>
             </staticText>
+            <textField isBlankWhenNull="true" textAdjust="ScaleFont">
+                <reportElement x="590" y="21" width="200" height="16" forecolor="#FFFFFF"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="10.5" isBold="true"/></textElement>
+                <textFieldExpression><![CDATA[$P{RANGO}]]></textFieldExpression>
+            </textField>
+
+            <!-- Cómo se lee -->
+            <rectangle radius="8">
+                <reportElement mode="Opaque" x="0" y="80" width="802" height="34" forecolor="#D3DBEE" backcolor="#F2F5FC"/>
+                <graphicElement><pen lineWidth="0.75" lineColor="#D3DBEE"/></graphicElement>
+            </rectangle>
+            <rectangle>
+                <reportElement mode="Opaque" x="0" y="80" width="5" height="34" forecolor="#2B3990" backcolor="#2B3990"/>
+                <graphicElement><pen lineWidth="0.5" lineColor="#2B3990"/></graphicElement>
+            </rectangle>
+            <staticText>
+                <reportElement x="16" y="84" width="776" height="26" forecolor="#6B7A90"/>
+                <textElement verticalAlignment="Middle"><font size="8" isItalic="true"/></textElement>
+                <text><![CDATA[Proformas mayoristas emitidas en el período y las que ya tienen una factura vigente (no anulada), aunque se haya emitido después. El % facturado es la parte de lo generado que ya se facturó.]]></text>
+            </staticText>
+
+            <!-- Resumen -->
+            <rectangle radius="8">
+                <reportElement mode="Opaque" x="0" y="126" width="193" height="46" forecolor="#2B3990" backcolor="#2B3990"/>
+                <graphicElement><pen lineWidth="0.5" lineColor="#2B3990"/></graphicElement>
+            </rectangle>
+            <staticText><reportElement x="14" y="132" width="170" height="11" forecolor="#C3CFFF"/><textElement><font size="7.5" isBold="true"/></textElement><text><![CDATA[Proformas generadas]]></text></staticText>
+            <textField evaluationTime="Report" pattern="#,##0"><reportElement x="14" y="144" width="172" height="22" forecolor="#FFFFFF"/><textElement verticalAlignment="Middle"><font size="14" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_GENERADAS}]]></textFieldExpression></textField>
+            <rectangle radius="8">
+                <reportElement mode="Opaque" x="203" y="126" width="193" height="46" forecolor="#D3DBEE" backcolor="#FFFFFF"/>
+                <graphicElement><pen lineWidth="0.75" lineColor="#D3DBEE"/></graphicElement>
+            </rectangle>
+            <staticText><reportElement style="Etiqueta" x="217" y="132" width="170" height="11"/><text><![CDATA[Valor proformado]]></text></staticText>
+            <textField evaluationTime="Report" pattern="Q #,##0.00"><reportElement x="217" y="144" width="172" height="22" forecolor="#2B3990"/><textElement verticalAlignment="Middle"><font size="14" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_PROFORMADO}]]></textFieldExpression></textField>
+            <rectangle radius="8">
+                <reportElement mode="Opaque" x="406" y="126" width="193" height="46" forecolor="#D3DBEE" backcolor="#FFFFFF"/>
+                <graphicElement><pen lineWidth="0.75" lineColor="#D3DBEE"/></graphicElement>
+            </rectangle>
+            <staticText><reportElement style="Etiqueta" x="420" y="132" width="170" height="11"/><text><![CDATA[Facturadas]]></text></staticText>
+            <textField evaluationTime="Report" pattern="#,##0"><reportElement x="420" y="144" width="80" height="22" forecolor="#087453"/><textElement verticalAlignment="Middle"><font size="14" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_FACTURADAS}]]></textFieldExpression></textField>
+            <textField evaluationTime="Report" pattern="0.0%" isBlankWhenNull="true"><reportElement x="500" y="147" width="90" height="16" forecolor="#6B7A90"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_GENERADAS}.longValue() == 0 ? null : java.math.BigDecimal.valueOf($V{TOTAL_FACTURADAS}.longValue()).divide(java.math.BigDecimal.valueOf($V{TOTAL_GENERADAS}.longValue()), 4, java.math.RoundingMode.HALF_UP)]]></textFieldExpression></textField>
+            <rectangle radius="8">
+                <reportElement mode="Opaque" x="609" y="126" width="193" height="46" forecolor="#D3DBEE" backcolor="#FFFFFF"/>
+                <graphicElement><pen lineWidth="0.75" lineColor="#D3DBEE"/></graphicElement>
+            </rectangle>
+            <staticText><reportElement style="Etiqueta" x="623" y="132" width="170" height="11"/><text><![CDATA[Valor facturado]]></text></staticText>
+            <textField evaluationTime="Report" pattern="Q #,##0.00"><reportElement x="623" y="144" width="172" height="22" forecolor="#087453"/><textElement verticalAlignment="Middle"><font size="14" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_FACTURADO}]]></textFieldExpression></textField>
         </band>
     </title>
     <columnHeader>
-        <band height="28">
-            <staticText><reportElement style="Header" x="0" y="0" width="190" height="28"/><textElement textAlignment="Left"/><text><![CDATA[Vendedor]]></text></staticText>
-            <staticText><reportElement style="Header" x="190" y="0" width="95" height="28"/><textElement textAlignment="Right"/><text><![CDATA[Proformas generadas]]></text></staticText>
-            <staticText><reportElement style="Header" x="285" y="0" width="125" height="28"/><textElement textAlignment="Right"/><text><![CDATA[Valor proformado]]></text></staticText>
-            <staticText><reportElement style="Header" x="410" y="0" width="95" height="28"/><textElement textAlignment="Right"/><text><![CDATA[Proformas facturadas]]></text></staticText>
-            <staticText><reportElement style="Header" x="505" y="0" width="125" height="28"/><textElement textAlignment="Right"/><text><![CDATA[Valor facturado]]></text></staticText>
-            <staticText><reportElement style="Header" x="630" y="0" width="72" height="28"/><textElement textAlignment="Right"/><text><![CDATA[% facturado]]></text></staticText>
-            <staticText><reportElement style="Header" x="702" y="0" width="100" height="28"/><textElement textAlignment="Right"/><text><![CDATA[Por autorizar]]></text></staticText>
+        <band height="30">
+            <staticText><reportElement style="Header" x="0" y="2" width="212" height="26"/><textElement textAlignment="Left"><paragraph leftIndent="8"/></textElement><text><![CDATA[Vendedor]]></text></staticText>
+            <staticText><reportElement style="Header" x="212" y="2" width="80" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><text><![CDATA[Proformas generadas]]></text></staticText>
+            <staticText><reportElement style="Header" x="292" y="2" width="130" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><text><![CDATA[Valor proformado]]></text></staticText>
+            <staticText><reportElement style="Header" x="422" y="2" width="80" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><text><![CDATA[Proformas facturadas]]></text></staticText>
+            <staticText><reportElement style="Header" x="502" y="2" width="130" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><text><![CDATA[Valor facturado]]></text></staticText>
+            <staticText><reportElement style="Header" x="632" y="2" width="85" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><text><![CDATA[% facturado]]></text></staticText>
+            <staticText><reportElement style="Header" x="717" y="2" width="85" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><text><![CDATA[Por autorizar]]></text></staticText>
         </band>
     </columnHeader>
     <detail>
-        <band height="24">
-            <textField isBlankWhenNull="true"><reportElement style="Cell" x="0" y="0" width="190" height="24"/><textElement textAlignment="Left"/><textFieldExpression><![CDATA[$F{vendedor}]]></textFieldExpression></textField>
-            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="190" y="0" width="95" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{generadas}]]></textFieldExpression></textField>
-            <textField pattern="Q #,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="285" y="0" width="125" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{valor_proformado}]]></textFieldExpression></textField>
-            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="410" y="0" width="95" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{facturadas}]]></textFieldExpression></textField>
-            <textField pattern="Q #,##0.00" isBlankWhenNull="true"><reportElement style="Cell" x="505" y="0" width="125" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{valor_facturado}]]></textFieldExpression></textField>
-            <textField pattern="0.0%" isBlankWhenNull="true"><reportElement style="Cell" x="630" y="0" width="72" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{tasa_conversion}]]></textFieldExpression></textField>
-            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" x="702" y="0" width="100" height="24"/><textElement textAlignment="Right"/><textFieldExpression><![CDATA[$F{por_autorizar}]]></textFieldExpression></textField>
+        <band height="26">
+            <textField isBlankWhenNull="true" textAdjust="ScaleFont"><reportElement style="Cell" x="0" y="0" width="212" height="26"/><textElement textAlignment="Left"><font size="8.5" isBold="true"/><paragraph leftIndent="8"/></textElement><textFieldExpression><![CDATA[$F{vendedor}]]></textFieldExpression></textField>
+            <textField pattern="#,##0"><reportElement style="Cell" x="212" y="0" width="80" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><textFieldExpression><![CDATA[$F{generadas}]]></textFieldExpression></textField>
+            <textField pattern="Q #,##0.00"><reportElement style="Cell" x="292" y="0" width="130" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><textFieldExpression><![CDATA[$F{valor_proformado}]]></textFieldExpression></textField>
+            <textField pattern="#,##0"><reportElement style="Cell" x="422" y="0" width="80" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><textFieldExpression><![CDATA[$F{facturadas}]]></textFieldExpression></textField>
+            <textField pattern="Q #,##0.00"><reportElement style="Cell" x="502" y="0" width="130" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><textFieldExpression><![CDATA[$F{valor_facturado}]]></textFieldExpression></textField>
+            <textField pattern="0.0%"><reportElement style="Conversion" x="632" y="0" width="85" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><textFieldExpression><![CDATA[$F{tasa_conversion}]]></textFieldExpression></textField>
+            <textField pattern="#,##0"><reportElement style="PorAutorizar" x="717" y="0" width="85" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><textFieldExpression><![CDATA[$F{por_autorizar}]]></textFieldExpression></textField>
         </band>
     </detail>
 
     <pageFooter>
-        <band height="18">
+        <band height="20">
+            <line><reportElement x="0" y="2" width="802" height="1" forecolor="#E1E7F3"/></line>
+            <staticText>
+                <reportElement x="0" y="5" width="300" height="14" forecolor="#7B8798"/>
+                <textElement><font size="8"/></textElement>
+                <text><![CDATA[Proformas por vendedor · D'Todo]]></text>
+            </staticText>
             <textField>
-                <reportElement x="642" y="2" width="115" height="14" forecolor="#7B8798">
-                    <printWhenExpression><![CDATA["PDF".equals($P{FORMATO})]]></printWhenExpression>
-                </reportElement>
+                <reportElement x="642" y="5" width="115" height="14" forecolor="#7B8798"/>
                 <textElement textAlignment="Right"><font size="8"/></textElement>
                 <textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER}]]></textFieldExpression>
             </textField>
             <textField evaluationTime="Report">
-                <reportElement x="757" y="2" width="35" height="14" forecolor="#7B8798">
-                    <printWhenExpression><![CDATA["PDF".equals($P{FORMATO})]]></printWhenExpression>
-                </reportElement>
+                <reportElement x="757" y="5" width="35" height="14" forecolor="#7B8798"/>
                 <textElement textAlignment="Left"><font size="8"/></textElement>
                 <textFieldExpression><![CDATA[" de " + $V{PAGE_NUMBER}]]></textFieldExpression>
             </textField>
@@ -157,24 +219,23 @@
     </pageFooter>
 
     <summary>
-        <band height="52">
-            <line><reportElement x="0" y="8" width="802" height="1" forecolor="#B9C9DC"/></line>
+        <band height="76">
+            <!-- Fila de totales alineada con las columnas -->
+            <staticText><reportElement style="Header" x="0" y="8" width="212" height="26"/><textElement textAlignment="Left"><font size="9"/><paragraph leftIndent="8"/></textElement><text><![CDATA[Totales]]></text></staticText>
+            <textField pattern="#,##0"><reportElement style="Header" x="212" y="8" width="80" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_GENERADAS}]]></textFieldExpression></textField>
+            <textField pattern="Q #,##0.00"><reportElement style="Header" x="292" y="8" width="130" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_PROFORMADO}]]></textFieldExpression></textField>
+            <textField pattern="#,##0"><reportElement style="Header" x="422" y="8" width="80" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_FACTURADAS}]]></textFieldExpression></textField>
+            <textField pattern="Q #,##0.00"><reportElement style="Header" x="502" y="8" width="130" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_FACTURADO}]]></textFieldExpression></textField>
+            <textField pattern="0.0%" isBlankWhenNull="true"><reportElement style="Header" x="632" y="8" width="85" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_GENERADAS}.longValue() == 0 ? null : java.math.BigDecimal.valueOf($V{TOTAL_FACTURADAS}.longValue()).divide(java.math.BigDecimal.valueOf($V{TOTAL_GENERADAS}.longValue()), 4, java.math.RoundingMode.HALF_UP)]]></textFieldExpression></textField>
+            <textField pattern="#,##0"><reportElement style="Header" x="717" y="8" width="85" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="6"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_POR_AUTORIZAR}]]></textFieldExpression></textField>
             <staticText>
-                <reportElement x="0" y="16" width="400" height="24" forecolor="#52647C" backcolor="#F4F8FC" mode="Opaque">
-                    <printWhenExpression><![CDATA[$V{REPORT_COUNT}.intValue() == 0]]></printWhenExpression>
+                <reportElement x="0" y="46" width="420" height="26" forecolor="#52647C" backcolor="#F2F5FC" mode="Opaque">
+                    <printWhenExpression><![CDATA[$V{REPORT_COUNT} == null || $V{REPORT_COUNT}.intValue() == 0]]></printWhenExpression>
                 </reportElement>
-                <box><pen lineWidth="0.5" lineColor="#D6E2F0"/></box>
-                <textElement verticalAlignment="Middle"><font size="9" isItalic="true"/></textElement>
+                <box><pen lineWidth="0.5" lineColor="#D3DBEE"/></box>
+                <textElement verticalAlignment="Middle"><font size="9" isItalic="true"/><paragraph leftIndent="8"/></textElement>
                 <text><![CDATA[No hay proformas mayoristas en el período seleccionado.]]></text>
             </staticText>
-            <staticText><reportElement x="0" y="16" width="80" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Generadas:]]></text></staticText>
-            <textField pattern="#,##0"><reportElement x="80" y="16" width="90" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_GENERADAS} == null ? 0 : $V{TOTAL_GENERADAS}]]></textFieldExpression></textField>
-            <staticText><reportElement x="190" y="16" width="80" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Facturadas:]]></text></staticText>
-            <textField pattern="#,##0"><reportElement x="270" y="16" width="90" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_FACTURADAS} == null ? 0 : $V{TOTAL_FACTURADAS}]]></textFieldExpression></textField>
-            <staticText><reportElement x="380" y="16" width="90" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Proformado:]]></text></staticText>
-            <textField pattern="Q #,##0.00"><reportElement x="470" y="16" width="90" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_PROFORMADO}]]></textFieldExpression></textField>
-            <staticText><reportElement x="580" y="16" width="80" height="20" forecolor="#53647A"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Facturado:]]></text></staticText>
-            <textField pattern="Q #,##0.00"><reportElement x="660" y="16" width="90" height="20" forecolor="#17233B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{TOTAL_FACTURADO}]]></textFieldExpression></textField>
         </band>
     </summary>
 </jasperReport>

@@ -133,8 +133,18 @@ class EntregadoPorRutaVendedorReporteTest {
         fila.put("unidades", 40L);
         fila.put("valor_entregado", new BigDecimal("1250.50"));
 
-        TextosImpresos textos = new TextosImpresos(JasperFillManager.fillReport(compilar(), parametros(null, null),
-                new JRMapCollectionDataSource(new ArrayList<Map<String, ?>>(Arrays.asList(fila)))));
+        Map<String, Object> fila2 = new HashMap<>(fila);
+        fila2.put("vendedor", "Luis Perez");
+        fila2.put("valor_entregado", new BigDecimal("300.00"));
+        Map<String, Object> fila3 = new HashMap<>(fila);
+        fila3.put("ruta", "RUTA 2");
+        JasperPrint impreso = JasperFillManager.fillReport(compilar(), parametros(null, null),
+                new JRMapCollectionDataSource(new ArrayList<Map<String, ?>>(Arrays.asList(fila, fila2, fila3))));
+        if (System.getProperty("plantilla.salida") != null) {
+            java.nio.file.Files.write(new java.io.File(System.getProperty("plantilla.salida"), "entregado.pdf").toPath(),
+                    net.sf.jasperreports.engine.JasperExportManager.exportReportToPdf(impreso));
+        }
+        TextosImpresos textos = new TextosImpresos(impreso);
 
         assertTrue(textos.contiene("Ventas entregadas por ruta y vendedor"));
         assertTrue(textos.contiene("Subtotal de la ruta:"));
