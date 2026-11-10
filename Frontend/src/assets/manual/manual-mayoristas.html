@@ -1166,7 +1166,8 @@
     <section class="chapter" id="reportes">
       <h2><span class="num">14</span> Reportes</h2>
       <p>En <strong>Reportes</strong> existe la categoría <strong>Mayoristas</strong> (solo administrador). Cada reporte pide sus filtros y se descarga en <strong>PDF</strong> o <strong>Excel</strong>.</p>
-      <p>El <strong>Excel</strong> es una tabla normal para trabajar: una fila por registro, encabezados fijos arriba, filtros en cada columna y cifras que se pueden ordenar y sumar. Los reportes con totales traen una fila final con las sumas. El <strong>PDF</strong> conserva el diseño para imprimir.</p>
+      <p>El <strong>Excel</strong> es una tabla normal para trabajar: una fila por registro, encabezados fijos arriba, filtros en cada columna y cifras que se pueden ordenar y sumar. Los reportes con totales traen una fila final con las sumas. El <strong>PDF</strong> conserva el diseño para imprimir. Ambos salen de las mismas columnas y de la misma consulta, así que sus cifras coinciden siempre.</p>
+      <p>Todos los PDF de reportes siguen el mismo diseño de la proforma: logo sin fondo, un <strong>panel azul</strong> con el título, los filtros usados y el período, una <strong>nota</strong> que explica cómo se lee, <strong>cuatro recuadros de resumen</strong> con las cifras principales, la tabla con filas alternadas y una fila de totales. Las cifras que piden atención se colorean: el porcentaje facturado (verde, ámbar o rojo), lo pendiente de autorizar, los días sin comprar, la ganancia negativa y los productos bajo el stock mínimo.</p>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Reporte</th><th>Qué contiene</th><th>Filtros</th></tr></thead>
@@ -1182,6 +1183,22 @@
         </table>
       </div>
       <p>Los tres últimos reproducen los controles que Dtodo llevaba a mano: salen en <strong>PDF</strong> para imprimir y llenar, y en <strong>Excel</strong> como tabla editable (las columnas para llenar a mano van vacías).</p>
+      <h3>Reportes de bodega, compras y ventas</h3>
+      <p>Las otras categorías de <strong>Reportes</strong> estrenaron el mismo diseño y también exportan a Excel como tabla editable:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Categoría</th><th>Reporte</th><th>Detalles a tener en cuenta</th></tr></thead>
+          <tbody>
+            <tr><td>Bodegas</td><td><strong>Despachos de bodega</strong></td><td>Los despachos cancelados no suman al total valorizado al costo, que solo ve el administrador.</td></tr>
+            <tr><td>Bodegas</td><td><strong>Existencias de bodega</strong></td><td>La columna <em>Alerta</em> marca <em>Bajo el mínimo</em> a los productos en o por debajo de su stock mínimo, y un recuadro cuenta cuántos hay. El costo y el valor total son solo del administrador.</td></tr>
+            <tr><td>Bodegas</td><td><strong>Movimientos de bodega</strong></td><td>Bitácora de entradas, salidas y saldo por producto.</td></tr>
+            <tr><td>Compras</td><td><strong>Compras por período</strong></td><td>El importe suma todas las compras que muestra la lista; si no quieres las anuladas, filtra por estado <em>Activas</em>.</td></tr>
+            <tr><td>Ventas</td><td><strong>Ventas por cliente</strong> y <strong>Ventas por producto</strong></td><td>Venta bruta, descuento y venta neta, de mayor a menor.</td></tr>
+            <tr><td>Ventas</td><td><strong>Rentabilidad por producto</strong></td><td>El costo se estima con el precio de compra actual. El recuadro de margen incluye el porcentaje total; el Excel trae el margen % de cada producto con formato de porcentaje.</td></tr>
+            <tr><td>Ventas</td><td><strong>Póliza individual</strong> y <strong>Póliza general</strong></td><td>Solo PDF. La general agrupa por vendedor con una franja y un subtotal por cada uno. La ganancia negativa sale en rojo. Si el período no tiene ventas, el PDF lo avisa.</td></tr>
+          </tbody>
+        </table>
+      </div>
       <p>Otros documentos del módulo se obtienen en sus propias pantallas:</p>
       <ul>
         <li><strong>Hoja de picking, lista de empaque y nota de envío</strong> (de una ruta o de todas): en <a href="#pedidos">Pedidos</a>. Las tres comparten el diseño de la proforma, con logo y totales.</li>
@@ -1488,7 +1505,10 @@
         <table>
           <thead><tr><th class="c">&check;</th><th>Qué hacer</th><th>Resultado esperado</th></tr></thead>
           <tbody>
-            <tr><td class="c"><span class="box"></span></td><td>En <strong>Reportes &rarr; Mayoristas</strong>, genera los cuatro reportes en PDF y en Excel.</td><td>Se descargan: Clientes por ruta, Clientes sin compras, Proformas por vendedor y Ventas entregadas. Las cifras de <em>Ventas entregadas</em> coinciden con lo entregado.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>En <strong>Reportes &rarr; Mayoristas</strong>, genera los cuatro reportes clásicos en PDF y en Excel.</td><td>Se descargan: Clientes por ruta, Clientes sin compras, Proformas por vendedor y Ventas entregadas. El PDF trae el panel azul, los recuadros de resumen y los totales alineados; el Excel abre como tabla con filtros. Las cifras de <em>Ventas entregadas</em> coinciden con lo entregado.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Compara el PDF y el Excel de <em>Proformas por vendedor</em> del mismo período.</td><td>Mismas cifras. En el PDF el <em>% facturado</em> sale en verde, ámbar o rojo según su nivel; en el Excel es una columna con formato de porcentaje.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>En <strong>Reportes</strong>, genera <em>Existencias de bodega</em>, <em>Compras por período</em>, <em>Ventas por producto</em> y <em>Rentabilidad por producto</em> en PDF y Excel.</td><td>Los PDF siguen el diseño nuevo y los Excel son tablas editables con totales. En existencias aparece <em>Bajo el mínimo</em> en los productos que corresponda.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Genera la <em>Póliza general</em> de un período con varios vendedores.</td><td>Cada vendedor tiene su franja y su subtotal; al final, la fila de totales. Con un período sin ventas, el PDF muestra el aviso.</td></tr>
             <tr><td class="c"><span class="box"></span></td><td>En Pedidos, imprime una <strong>hoja de picking</strong>, una <strong>lista de empaque</strong> y la <strong>nota de envío</strong> de la ruta.</td><td>Los tres documentos se generan con el logo, los productos y las cantidades del pedido. La nota de envío solo muestra la ruta si tiene pedidos empacados o en ruta.</td></tr>
             <tr><td class="c"><span class="box"></span></td><td>En Cobranza, exporta a PDF y a Excel con y sin <em>Solo vencidos</em>.</td><td>Las cifras coinciden con las tarjetas del resumen.</td></tr>
             <tr><td class="c"><span class="box"></span></td><td>Reimprime un recibo de caja.</td><td>Muestra su número, el cliente, el concepto (pedido o abono a la cuenta) y la forma de pago.</td></tr>

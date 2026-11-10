@@ -505,6 +505,37 @@ form label,
   transform: translateY(-1px);
 }
 
+/* Botones de exportación: el PDF en rojo y el Excel en verde, los colores con que se reconoce cada formato. */
+.btn.listing-export-pdf {
+  background: #fff;
+  border: 1px solid #e3a6a1;
+  color: #b42318;
+}
+
+.btn.listing-export-pdf:hover,
+.btn.listing-export-pdf:focus {
+  background: #b42318;
+  border-color: #b42318;
+  box-shadow: 0 6px 14px rgba(180, 35, 24, 0.25);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.btn.listing-export-excel {
+  background: #fff;
+  border: 1px solid #9ccfae;
+  color: #17763f;
+}
+
+.btn.listing-export-excel:hover,
+.btn.listing-export-excel:focus {
+  background: #17763f;
+  border-color: #17763f;
+  box-shadow: 0 6px 14px rgba(23, 118, 63, 0.25);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
 .btn.listing-page-action:disabled {
   box-shadow: none;
   cursor: not-allowed;

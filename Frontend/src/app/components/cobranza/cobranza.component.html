@@ -89,11 +89,11 @@
       <div class="cobranza-exports">
         <span>Exportar resultados</span>
         <div class="listing-actions">
-          <button type="button" class="btn listing-page-action listing-secondary-action" (click)="descargarReporte('PDF')"
+          <button type="button" class="btn listing-page-action listing-export-pdf" (click)="descargarReporte('PDF')"
             [disabled]="generando || !cobranza" aria-label="Exportar cobranza a PDF">
             <i class="fas fa-file-pdf" aria-hidden="true"></i> PDF
           </button>
-          <button type="button" class="btn listing-page-action listing-secondary-action" (click)="descargarReporte('XLSX')"
+          <button type="button" class="btn listing-page-action listing-export-excel" (click)="descargarReporte('XLSX')"
             [disabled]="generando || !cobranza" aria-label="Exportar cobranza a Excel">
             <i class="fas fa-file-excel" aria-hidden="true"></i> Excel
           </button>

@@ -4,12 +4,12 @@
     <p>Da seguimiento a los cheques que entregan los clientes: recibidos, depositados, cobrados o rechazados.</p>
   </div>
   <div class="listing-actions">
-    <button type="button" class="btn listing-page-action listing-secondary-action" (click)="descargar('XLSX')" [disabled]="!!generando"
+    <button type="button" class="btn listing-page-action listing-export-excel" (click)="descargar('XLSX')" [disabled]="!!generando"
       appTooltip="Descargar el control como tabla de Excel" aria-label="Descargar el control de cheques en Excel">
       <span *ngIf="generando === 'XLSX'" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
       <i *ngIf="generando !== 'XLSX'" class="fas fa-file-excel" aria-hidden="true"></i> Excel
     </button>
-    <button type="button" class="btn listing-page-action listing-primary-action" (click)="descargar('PDF')" [disabled]="!!generando"
+    <button type="button" class="btn listing-page-action listing-export-pdf" (click)="descargar('PDF')" [disabled]="!!generando"
       appTooltip="Imprimir el control de cheques" aria-label="Imprimir el control de cheques en PDF">
       <span *ngIf="generando === 'PDF'" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
       <i *ngIf="generando !== 'PDF'" class="fas fa-print" aria-hidden="true"></i> PDF

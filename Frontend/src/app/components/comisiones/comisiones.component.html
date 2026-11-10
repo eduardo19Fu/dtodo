@@ -214,12 +214,12 @@
       <button type="button" class="btn listing-page-action listing-primary-action" (click)="liquidar()" *ngIf="!liquidado" [disabled]="!puedeLiquidar">
         <i class="fas fa-check-double"></i> Liquidar el año
       </button>
-      <button type="button" class="btn listing-page-action listing-secondary-action" (click)="descargar('PDF')" [disabled]="trabajando"
+      <button type="button" class="btn listing-page-action listing-export-pdf" (click)="descargar('PDF')" [disabled]="trabajando"
         [attr.aria-busy]="generandoReporte === 'PDF'">
         <i class="fas" [ngClass]="generandoReporte === 'PDF' ? 'fa-spinner fa-spin' : 'fa-file-pdf'" aria-hidden="true"></i>
         {{generandoReporte === 'PDF' ? 'Generando PDF...' : 'Reporte PDF'}}
       </button>
-      <button type="button" class="btn listing-page-action listing-secondary-action" (click)="descargar('XLSX')" [disabled]="trabajando"
+      <button type="button" class="btn listing-page-action listing-export-excel" (click)="descargar('XLSX')" [disabled]="trabajando"
         [attr.aria-busy]="generandoReporte === 'XLSX'">
         <i class="fas" [ngClass]="generandoReporte === 'XLSX' ? 'fa-spinner fa-spin' : 'fa-file-excel'" aria-hidden="true"></i>
         {{generandoReporte === 'XLSX' ? 'Generando Excel...' : 'Reporte Excel'}}
