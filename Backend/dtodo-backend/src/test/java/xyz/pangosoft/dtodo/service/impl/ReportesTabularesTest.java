@@ -154,6 +154,71 @@ class ReportesTabularesTest {
     }
 
     @Test
+    void losReportesDeInventarioSalenConSusColumnas() throws Exception {
+        List<Map<String, Object>> movimientos = Collections.singletonList(
+                fila("codigo", "A-1", "producto", "CUADERNO", "categoria", "Papelería", "stock_inicial", 50L, "entradas", 22L, "salidas", 12L,
+                        "salidas_factura", 4L, "salidas_entrega", 4L, "salidas_otras", 4L, "saldo_final", 60L));
+        verificar("inv_movimientos", (formato, v) -> ReportesTabulares.movimientosInventario(movimientos, parametros("SUCURSAL", "Central"), formato),
+                "Código|Producto|Categoría|Inicial|Entradas|Salidas|Por factura|Por entrega de pedido|Otras salidas|Saldo final", "CUADERNO");
+
+        List<Map<String, Object>> bajo = Arrays.asList(
+                fila("codigo", "A-1", "producto", "CUADERNO", "categoria", "Papelería", "stock_actual", 0, "stock_minimo", 10, "faltante", 10,
+                        "precio_compra", new BigDecimal("2.50"), "inversion_estimada", new BigDecimal("25.00")),
+                fila("codigo", "A-2", "producto", "LAPIZ", "categoria", "Papelería", "stock_actual", 4, "stock_minimo", 5, "faltante", 1,
+                        "precio_compra", new BigDecimal("1.00"), "inversion_estimada", new BigDecimal("1.00")));
+        verificar("inv_bajo", (formato, v) -> ReportesTabulares.bajoStock(bajo,
+                parametros("CATEGORIA", "Todas las categorías", "VER_COSTOS", Boolean.TRUE), formato),
+                "Código|Producto|Categoría|Stock actual|Stock mínimo|Faltante|Precio de compra|Inversión estimada", "Q25.00");
+        assertFalse(texto(ReportesTabulares.bajoStock(bajo, parametros("CATEGORIA", "Todas", "VER_COSTOS", Boolean.FALSE), "XLSX")).contains("Inversión"));
+
+        List<Map<String, Object>> kardex = Arrays.asList(
+                fila("numero", 101L, "fecha", Timestamp.valueOf(LocalDateTime.of(2026, 11, 3, 9, 30)), "movimiento", "Compra", "documento", "Compra FAC-1",
+                        "origen", "Compra", "usuario", "admin", "stock_inicial", 10L, "entrada", 20L, "salida", 0L, "saldo", 30L),
+                fila("numero", 102L, "fecha", Timestamp.valueOf(LocalDateTime.of(2026, 11, 4, 10, 0)), "movimiento", "Venta", "documento", "Factura A-5",
+                        "origen", "Factura", "usuario", "admin", "stock_inicial", 30L, "entrada", 0L, "salida", 5L, "saldo", 25L));
+        verificar("inv_kardex", (formato, v) -> ReportesTabulares.kardex(kardex, parametros("PRODUCTO", "CUADERNO"), formato),
+                "Fecha y hora|No. mov.|Movimiento|Documento|Origen|Usuario|Inicial|Entrada|Salida|Saldo", "Compra FAC-1", "Factura A-5");
+
+        List<Map<String, Object>> valorizacion = Collections.singletonList(
+                fila("codigo", "A-1", "producto", "CUADERNO", "categoria", "Papelería", "stock_corte", 40L, "precio_compra", new BigDecimal("2.50"),
+                        "valor_costo", new BigDecimal("100.00"), "precio_venta", new BigDecimal("4.00"), "valor_venta", new BigDecimal("160.00")));
+        verificar("inv_valorizacion", (formato, v) -> ReportesTabulares.valorizacion(valorizacion,
+                parametros("FECHA_CORTE", "30/11/2026"), formato),
+                "Código|Producto|Categoría|Stock|Costo unitario|Valor al costo|Venta unitaria|Valor a precio de venta", "Q160.00", "Al corte 30/11/2026");
+    }
+
+    @Test
+    void losReportesDeNotasDeCreditoYProformasSalenConSusColumnas() throws Exception {
+        java.sql.Date entrega = java.sql.Date.valueOf("2026-11-15");
+        List<Map<String, Object>> pendientes = Arrays.asList(
+                fila("id_nota_credito", 7L, "numero", "0000007", "fecha_creacion", Timestamp.valueOf(LocalDateTime.of(2026, 11, 3, 9, 0)),
+                        "fecha_entrega_estimada", entrega, "cliente", "LIBRERIA UNO", "codigo", "A-1", "producto", "CUADERNO",
+                        "solicitado", 10L, "despachado", 4L, "pendiente", 6L),
+                fila("id_nota_credito", 7L, "numero", "0000007", "fecha_creacion", Timestamp.valueOf(LocalDateTime.of(2026, 11, 3, 9, 0)),
+                        "fecha_entrega_estimada", null, "cliente", "LIBRERIA UNO", "codigo", "A-2", "producto", "LAPIZ",
+                        "solicitado", 5L, "despachado", 0L, "pendiente", 5L));
+        verificar("nc_pendientes", (formato, v) -> ReportesTabulares.pendientesDespacho(pendientes,
+                parametros("FILTRO_CLIENTE", "Todos los clientes"), formato),
+                "Nota|Emisión|Entrega estimada|Cliente|Código|Producto|Solicitado|Despachado|Pendiente", "LIBRERIA UNO", "CUADERNO");
+
+        List<Map<String, Object>> conversion = Collections.singletonList(
+                fila("usuario", "Ana Lopez", "proformas_emitidas", 10L, "proformas_convertidas", 4L, "tasa_conversion", new BigDecimal("0.4"),
+                        "valor_proformado", new BigDecimal("5000.00"), "valor_convertido", new BigDecimal("2000.00")));
+        verificar("conversion", (formato, v) -> ReportesTabulares.conversionProformas(conversion, parametros("USUARIO", "Ana Lopez"), formato),
+                "Usuario|Proformas emitidas|Convertidas en venta|Conversión|Valor proformado|Valor convertido", "40.00%", "Q5,000.00");
+
+        List<Map<String, Object>> notas = Arrays.asList(
+                fila("numero", "0000007", "fecha_creacion", Timestamp.valueOf(LocalDateTime.of(2026, 11, 3, 9, 0)), "cliente", "LIBRERIA UNO",
+                        "nit", "123456-7", "documento_origen", "Proforma 55", "vendedor", "Ana Lopez", "estado", "ENTREGA_PENDIENTE",
+                        "total", new BigDecimal("300.00")),
+                fila("numero", "0000008", "fecha_creacion", Timestamp.valueOf(LocalDateTime.of(2026, 11, 4, 9, 0)), "cliente", "LIBRERIA DOS",
+                        "nit", "765432-1", "documento_origen", "A 99", "vendedor", "Ana Lopez", "estado", "ANULADO",
+                        "total", new BigDecimal("50.00")));
+        verificar("nc_resumen", (formato, v) -> ReportesTabulares.resumenNotasCredito(notas, parametros("FILTRO_ESTADO", "Todos los estados"), formato),
+                "No.|Fecha|Cliente|NIT|Documento origen|Vendedor|Estado|Total", "Entrega pendiente", "Anulado", "Q300.00");
+    }
+
+    @Test
     void sinFilasGeneraAvisoYNoFalla() throws Exception {
         List<Map<String, Object>> vacio = new ArrayList<>();
         Map<String, Object> p = parametros("BODEGA", "Principal", "ESTADO_ETIQUETA", "Todos", "VER_COSTOS", Boolean.FALSE);

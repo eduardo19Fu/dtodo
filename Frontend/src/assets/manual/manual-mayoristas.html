@@ -1183,8 +1183,8 @@
         </table>
       </div>
       <p>Los tres últimos reproducen los controles que Dtodo llevaba a mano: salen en <strong>PDF</strong> para imprimir y llenar, y en <strong>Excel</strong> como tabla editable (las columnas para llenar a mano van vacías).</p>
-      <h3>Reportes de bodega, compras y ventas</h3>
-      <p>Las otras categorías de <strong>Reportes</strong> estrenaron el mismo diseño y también exportan a Excel como tabla editable:</p>
+      <h3>Reportes de bodega, inventario, compras y ventas</h3>
+      <p>Las otras categorías de <strong>Reportes</strong> (Bodegas, Inventario, Notas de crédito, Proformas, Compras y Ventas) estrenaron el mismo diseño y también exportan a Excel como tabla editable:</p>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Categoría</th><th>Reporte</th><th>Detalles a tener en cuenta</th></tr></thead>
@@ -1192,6 +1192,8 @@
             <tr><td>Bodegas</td><td><strong>Despachos de bodega</strong></td><td>Los despachos cancelados no suman al total valorizado al costo, que solo ve el administrador.</td></tr>
             <tr><td>Bodegas</td><td><strong>Existencias de bodega</strong></td><td>La columna <em>Alerta</em> marca <em>Bajo el mínimo</em> a los productos en o por debajo de su stock mínimo, y un recuadro cuenta cuántos hay. El costo y el valor total son solo del administrador.</td></tr>
             <tr><td>Bodegas</td><td><strong>Movimientos de bodega</strong></td><td>Bitácora de entradas, salidas y saldo por producto.</td></tr>
+            <tr><td>Inventario</td><td><strong>Movimientos y saldo</strong>, <strong>Productos bajo stock mínimo</strong>, <strong>Kardex de producto</strong> y <strong>Valorización de inventario</strong></td><td>Bajo stock cuenta cuántos productos están sin existencia y, para el administrador, la inversión para reponer. El kardex resume saldo inicial, entradas, salidas y saldo final, y muestra el documento y el origen de cada movimiento. La valorización usa el stock reconstruido a la fecha de corte con los precios actuales.</td></tr>
+            <tr><td>Notas de crédito y Proformas</td><td><strong>Resumen de notas de crédito</strong>, <strong>Pendientes de despacho</strong> y <strong>Conversión de proformas</strong></td><td>Pendientes de despacho muestra por nota lo solicitado, lo despachado y lo que falta, con las unidades pendientes en rojo. La conversión cuenta como convertidas las proformas ligadas a una factura vigente y muestra el porcentaje en el recuadro y en la tabla.</td></tr>
             <tr><td>Compras</td><td><strong>Compras por período</strong></td><td>El importe suma todas las compras que muestra la lista; si no quieres las anuladas, filtra por estado <em>Activas</em>.</td></tr>
             <tr><td>Ventas</td><td><strong>Ventas por cliente</strong> y <strong>Ventas por producto</strong></td><td>Venta bruta, descuento y venta neta, de mayor a menor.</td></tr>
             <tr><td>Ventas</td><td><strong>Rentabilidad por producto</strong></td><td>El costo se estima con el precio de compra actual. El recuadro de margen incluye el porcentaje total; el Excel trae el margen % de cada producto con formato de porcentaje.</td></tr>

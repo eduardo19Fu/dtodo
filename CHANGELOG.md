@@ -6,6 +6,9 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Cambiado — Reportes de inventario rediseñados
+- Movimientos y saldo, productos bajo stock mínimo, kardex de producto y valorización de inventario: el PDF sigue el diseño de la proforma (panel azul, nota, recuadros de resumen, tabla con totales) y el Excel es una tabla editable desde las mismas columnas y consulta. Lo mismo para pendientes de despacho, conversión de proformas y resumen de notas de crédito. Bajo stock resalta cuántos productos no tienen existencia; el kardex resume saldo inicial, entradas, salidas y saldo final y conserva el documento y el origen de cada movimiento.
+
 ### Cambiado — Reportes de bodega, ventas y compras rediseñados
 - Despachos, existencias y movimientos de bodega, compras por período, ventas por cliente, ventas por producto y rentabilidad por producto: el PDF sigue el diseño de la proforma (logo sin fondo, panel azul con título, filtros y período, nota aclaratoria, recuadros de resumen, filas alternadas y totales). El Excel de cada uno es ahora una tabla editable (encabezados fijos, filtros, cifras reales y totales con fórmulas) en lugar del PDF convertido. Ambos salen de las mismas columnas y de la misma consulta. Las existencias marcan los productos bajo el mínimo; los despachos cancelados no suman al total valorizado. Los porcentajes de los Excel usan el formato nativo de Excel. La póliza individual y la general también siguen el nuevo diseño (recuadros de total facturado, costo, ganancia y vendedores; la general con una franja y subtotal por vendedor; ganancia negativa en rojo) y ahora avisan cuando no hay ventas en el período.
 

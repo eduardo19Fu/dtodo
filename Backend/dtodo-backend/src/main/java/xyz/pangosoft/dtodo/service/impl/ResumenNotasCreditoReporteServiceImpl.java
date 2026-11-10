@@ -1,6 +1,5 @@
 package xyz.pangosoft.dtodo.service.impl;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -18,17 +17,13 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
-import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
-import net.sf.jasperreports.export.SimpleExporterInput;
-import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
-import net.sf.jasperreports.export.SimpleXlsxReportConfiguration;
 import xyz.pangosoft.dtodo.error.exceptions.ReportGenerationException;
+import xyz.pangosoft.dtodo.util.ConsultaJrxml;
 import xyz.pangosoft.dtodo.model.enums.EstadoNotaCreditoEnum;
 import xyz.pangosoft.dtodo.repository.ISucursalRepository;
 import xyz.pangosoft.dtodo.service.IResumenNotasCreditoReporteService;
@@ -61,8 +56,7 @@ public class ResumenNotasCreditoReporteServiceImpl implements IResumenNotasCredi
             Map<String, Object> parameters = crearParametros(
                     idSucursal, fechaInicio, fechaFin, estado, formato);
             JasperReport report = JasperCompileManager.compileReport(template);
-            JasperPrint print = JasperFillManager.fillReport(report, parameters, connection);
-            return "XLSX".equals(formato) ? exportarXlsx(print) : JasperExportManager.exportReportToPdf(print);
+            return ReportesTabulares.resumenNotasCredito(ConsultaJrxml.filas(report, parameters, connection), parameters, formato);
         } catch (JRException | SQLException | IOException exception) {
             log.error("No fue posible generar el resumen de notas de crédito. sucursal={}, formato={}",
                     idSucursal, formato, exception);
@@ -78,7 +72,6 @@ public class ResumenNotasCreditoReporteServiceImpl implements IResumenNotasCredi
             EstadoNotaCreditoEnum estado,
             String formato) {
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put(JRParameter.IS_IGNORE_PAGINATION, "XLSX".equals(formato));
         parameters.put("ID_SUCURSAL", idSucursal);
         parameters.put("FECHA_INICIO", Timestamp.valueOf(fechaInicio.atStartOfDay()));
         parameters.put("FECHA_FIN_EXCLUSIVA", Timestamp.valueOf(fechaFin.plusDays(1).atStartOfDay()));
@@ -92,23 +85,6 @@ public class ResumenNotasCreditoReporteServiceImpl implements IResumenNotasCredi
         return parameters;
     }
 
-    private byte[] exportarXlsx(JasperPrint print) throws JRException, IOException {
-        try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-            JRXlsxExporter exporter = new JRXlsxExporter();
-            exporter.setExporterInput(new SimpleExporterInput(print));
-            exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(output));
-
-            SimpleXlsxReportConfiguration configuration = new SimpleXlsxReportConfiguration();
-            configuration.setDetectCellType(true);
-            configuration.setRemoveEmptySpaceBetweenRows(true);
-            configuration.setWhitePageBackground(false);
-            configuration.setOnePagePerSheet(false);
-            configuration.setSheetNames(new String[] { "Notas de crédito" });
-            exporter.setConfiguration(configuration);
-            exporter.exportReport();
-            return output.toByteArray();
-        }
-    }
 
     private String nombreEstado(EstadoNotaCreditoEnum estado) {
         switch (estado) {

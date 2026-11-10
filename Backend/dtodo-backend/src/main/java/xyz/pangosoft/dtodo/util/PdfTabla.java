@@ -452,7 +452,7 @@ public final class PdfTabla {
             case DINERO:
                 return 14;
             case ENTERO:
-                return 9;
+                return 11;
             case PORCENTAJE:
                 return 9;
             case FECHA:
