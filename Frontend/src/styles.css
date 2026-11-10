@@ -2038,6 +2038,16 @@ input.listing-tile-input::placeholder {
   transform: translateY(-1px);
 }
 
+/* Botones de la tarjeta de filtros: compactos, para no competir con los campos. */
+.filter-card .btn.filter-button {
+  font-size: 0.9rem;
+  gap: 0.4rem;
+  min-height: 38px;
+  padding: 0.4rem 1rem;
+}
+
+.filter-card .btn.search-button { box-shadow: 0 3px 8px rgba(28, 104, 143, 0.2); }
+
 /* Dentro de la tarjeta de filtros, las franjas de campos pierden su propio recuadro. */
 .filter-card-body .listing-filter-grid {
   background: none;
