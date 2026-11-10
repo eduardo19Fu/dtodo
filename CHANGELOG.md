@@ -6,6 +6,13 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Control de cheques y listados de control en papel
+- Los recibos pagados con **cheque** guardan banco, número, girador, fecha del cheque (postfechado si es posterior al pago) y notas. El mismo cheque no se registra dos veces. Baja el saldo del cliente al recibirlo.
+- Nueva pantalla **Cuentas por cobrar → Control de cheques** con filtros por estado, fechas y sucursal, y el seguimiento Recibido → Depositado → Cobrado o Rechazado. Un postfechado no se deposita antes de su fecha; rechazar pide motivo y anula el recibo (el saldo vuelve a subir). Anular a mano el recibo de un cheque lo deja rechazado. Lo manejan administrador y cobrador (este último solo su sucursal).
+- Tres reportes que reproducen los controles manuales de Dtodo (PDF para imprimir y llenar, Excel como tabla): **Control de cheques**, **Despachados al crédito** (cliente, pedido, monto, tres abonos, saldo, tipo de pago y firma de recibido) y **Listado de proformas** (con columnas en blanco para cajas, paquetes o rollos y hora de empaque).
+- Nuevas utilidades `PdfTabla` (listados en PDF con el estilo de Dtodo, armados con las mismas columnas que el Excel) y `ExcelTabla.Columna.manual`.
+- Script SQL `22_create_cheques_recibo.sql` (aplicado en dev). Producción no se toca hasta que el cliente verifique.
+
 ### Cambiado — Excel como tabla editable en los reportes de mayoristas
 - Cuentas por cobrar, comisiones del año y los cuatro reportes de Reportes → Mayoristas se exportan a Excel como una tabla normal (ya no es el PDF convertido): título y filtros arriba, una fila de encabezados fija, una fila por registro, cifras y fechas reales para ordenar, filtrar y sumar, autofiltro y fila de totales con fórmulas. El PDF no cambia. Nueva utilidad `ExcelTabla` (Apache POI) reutilizable para el resto de reportes.
 

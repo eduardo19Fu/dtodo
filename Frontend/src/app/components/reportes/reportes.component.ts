@@ -101,7 +101,16 @@ export class ReportesComponent implements OnInit, OnDestroy {
       ['FECHAS', 'RUTA'], ['ROLE_ADMIN'], true),
     this.reporte('MAYORISTAS_ENTREGADO', 'MAYORISTAS', 'Ventas entregadas',
       'Lo entregado a los clientes por ruta y vendedor, a precio de línea; una entrega parcial suma solo lo entregado.', 'fa-truck', ['PDF', 'XLSX'],
-      ['FECHAS', 'RUTA', 'VENDEDOR_OPCIONAL'], ['ROLE_ADMIN'], true)
+      ['FECHAS', 'RUTA', 'VENDEDOR_OPCIONAL'], ['ROLE_ADMIN'], true),
+    this.reporte('MAYORISTAS_CHEQUES', 'MAYORISTAS', 'Control de cheques',
+      'Cheques recibidos de los clientes por fecha de pago, con banco, número, fecha del cheque y su estado.', 'fa-money-check-alt', ['PDF', 'XLSX'],
+      ['FECHAS', 'ESTADO'], ['ROLE_ADMIN'], true),
+    this.reporte('MAYORISTAS_DESPACHADOS_CREDITO', 'MAYORISTAS', 'Despachados al crédito',
+      'Clientes con pedidos a crédito entregados: monto, tres abonos, saldo pendiente, tipo de pago y espacio para la firma de recibido.', 'fa-file-signature', ['PDF', 'XLSX'],
+      ['FECHAS', 'RUTA'], ['ROLE_ADMIN'], true),
+    this.reporte('MAYORISTAS_LISTADO_PROFORMAS', 'MAYORISTAS', 'Listado de proformas',
+      'Pedidos mayoristas del período con columnas en blanco para anotar cajas, paquetes o rollos y la hora de empaque.', 'fa-clipboard-list', ['PDF', 'XLSX'],
+      ['FECHAS', 'RUTA'], ['ROLE_ADMIN'], true)
   ];
 
   busquedaReportes = '';
@@ -139,6 +148,13 @@ export class ReportesComponent implements OnInit, OnDestroy {
     { codigo: '', nombre: 'Todos los estados' },
     { codigo: 'ACTIVA', nombre: 'Activas' },
     { codigo: 'ANULADA', nombre: 'Anuladas' }
+  ];
+  readonly estadosCheque = [
+    { codigo: '', nombre: 'Todos los estados' },
+    { codigo: 'RECIBIDO', nombre: 'Recibidos' },
+    { codigo: 'DEPOSITADO', nombre: 'Depositados' },
+    { codigo: 'COBRADO', nombre: 'Cobrados' },
+    { codigo: 'RECHAZADO', nombre: 'Rechazados' }
   ];
   readonly estadosDespachoBodega = [
     { codigo: '', nombre: 'Todos los estados' },
@@ -329,6 +345,9 @@ export class ReportesComponent implements OnInit, OnDestroy {
   get estadosDisponibles(): Array<{ codigo: string; nombre: string }> {
     if (this.reporteSeleccionado && this.reporteSeleccionado.codigo === 'BODEGA_DESPACHOS') {
       return this.estadosDespachoBodega;
+    }
+    if (this.reporteSeleccionado && this.reporteSeleccionado.codigo === 'MAYORISTAS_CHEQUES') {
+      return this.estadosCheque;
     }
     return this.reporteSeleccionado && this.reporteSeleccionado.codigo === 'COMPRAS_PERIODO'
       ? this.estadosCompra : this.estadosNotaCredito;

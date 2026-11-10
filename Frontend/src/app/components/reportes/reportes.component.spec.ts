@@ -4,10 +4,10 @@ import Swal from 'sweetalert2';
 import { ReportesComponent } from './reportes.component';
 
 describe('ReportesComponent', () => {
-  it('incluye los 23 reportes aprobados en el catálogo', () => {
+  it('incluye los 26 reportes aprobados en el catálogo', () => {
     const auth: any = { usuario: {}, hasRole: () => true };
     const component = new ReportesComponent(auth, {} as any);
-    expect(component.reportes.length).toBe(23);
+    expect(component.reportes.length).toBe(26);
   });
 
   it('no permite generar con un rango invertido', () => {
@@ -165,9 +165,10 @@ describe('ReportesComponent', () => {
       const mayoristas = component.reportes.filter(reporte => reporte.categoria === 'MAYORISTAS');
 
       expect(mayoristas.map(reporte => reporte.codigo)).toEqual(
-        ['MAYORISTAS_CLIENTES_RUTA', 'MAYORISTAS_SIN_COMPRAS', 'MAYORISTAS_PROFORMAS_VENDEDOR', 'MAYORISTAS_ENTREGADO']);
+        ['MAYORISTAS_CLIENTES_RUTA', 'MAYORISTAS_SIN_COMPRAS', 'MAYORISTAS_PROFORMAS_VENDEDOR', 'MAYORISTAS_ENTREGADO',
+         'MAYORISTAS_CHEQUES', 'MAYORISTAS_DESPACHADOS_CREDITO', 'MAYORISTAS_LISTADO_PROFORMAS']);
       expect(mayoristas.every(reporte => reporte.roles.length === 1 && reporte.roles[0] === 'ROLE_ADMIN')).toBeTrue();
-      expect(component.reportesPorCategoria('MAYORISTAS').length).toBe(4);
+      expect(component.reportesPorCategoria('MAYORISTAS').length).toBe(7);
 
       const cobrador: any = { usuario: {}, hasRole: (rol: string) => rol === 'ROLE_COBRADOR' };
       expect(new ReportesComponent(cobrador, {} as any).reportesPorCategoria('MAYORISTAS').length).toBe(0);

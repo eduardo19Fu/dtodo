@@ -129,8 +129,8 @@ describe('RecibosComponent', () => {
     expect(component.etiquetaForma('CHEQUE')).toBe('Cheque');
 
     component.formaPago = 'CHEQUE';
-    expect(component.pideReferencia).toBeTrue();
-    expect(component.textoReferencia).toBe('No. de cheque');
+    expect(component.esCheque).toBeTrue();
+    expect(component.pideReferencia).toBeFalse();
 
     component.formaPago = 'DEPOSITO';
     expect(component.textoReferencia).toBe('No. de boleta');
@@ -139,6 +139,41 @@ describe('RecibosComponent', () => {
     component.formaPago = 'EFECTIVO';
     expect(component.pideReferencia).toBeFalse();
     expect(component.textoReferencia).toBe('Opcional');
+  });
+
+  it('un pago con cheque pide banco, número y fecha del cheque en lugar de la referencia', () => {
+    component.elegirCliente(cliente());
+    component.monto = 150;
+    component.formaPago = 'CHEQUE';
+    expect(component.faltante).toBe('Indica el banco y el número del cheque.');
+
+    component.banco = ' Banrural ';
+    component.numeroCheque = ' 0045123 ';
+    component.fechaCheque = '2026-11-09';
+    expect(component.faltante).toBe('');
+
+    component.fechaCheque = '';
+    expect(component.faltante).toBe('Indica la fecha escrita en el cheque.');
+  });
+
+  it('emitir con cheque manda sus datos, no manda referencia y avisa si es postfechado', () => {
+    component.elegirCliente(cliente());
+    component.monto = 150;
+    component.formaPago = 'CHEQUE';
+    component.referencia = 'ignorada';
+    component.banco = ' Banrural ';
+    component.numeroCheque = ' 0045123 ';
+    component.girador = ' Nestor Lemus ';
+    component.fechaPago = '2026-11-09';
+    component.fechaCheque = '2026-11-20';
+    component.notasCheque = '';
+
+    expect(component.chequePostfechado).toBeTrue();
+    component.emitir();
+
+    const enviado = recibos.emitir.calls.mostRecent().args[0];
+    expect(enviado.referencia).toBeNull();
+    expect(enviado.cheque).toEqual({ banco: 'Banrural', numeroCheque: '0045123', girador: 'Nestor Lemus', fechaCheque: '2026-11-20', notas: null });
   });
 
   it('dice qué falta antes de poder emitir', () => {
@@ -176,7 +211,7 @@ describe('RecibosComponent', () => {
 
     const enviado = recibos.emitir.calls.mostRecent().args[0];
     expect(enviado).toEqual({ idCliente: 5, idProforma: null, monto: 150, formaPago: 'TRANSFERENCIA', referencia: '998877', observaciones: null,
-      fechaPago: '2026-10-20', idSucursal: 3 });
+      fechaPago: '2026-10-20', idSucursal: 3, cheque: null });
     expect(recibos.imprimir).toHaveBeenCalledWith(9);
     expect(component.formularioAbierto).toBeFalse();
 

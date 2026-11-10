@@ -1,0 +1,2 @@
+/* Comparte con Recibos de caja los estilos de la lista, los filtros y la tabla; aquí solo lo propio del control de cheques. */
+.listing-actions { display: flex; gap: 8px; }

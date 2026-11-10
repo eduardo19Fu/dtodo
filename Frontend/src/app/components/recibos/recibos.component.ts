@@ -57,6 +57,12 @@ export class RecibosComponent implements OnInit, OnDestroy {
   fechaPago = '';
   idSucursalEmision: number = null;
   emitiendo = false;
+  /** Datos del cheque, solo cuando la forma de pago es cheque. */
+  banco = '';
+  numeroCheque = '';
+  girador = '';
+  fechaCheque = '';
+  notasCheque = '';
 
   // ---- lista
   recibos: ReciboCajaDto[] = [];
@@ -88,6 +94,7 @@ export class RecibosComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.fechaPago = this.hoy();
+    this.fechaCheque = this.hoy();
     this.clienteSubscription = this.clienteSubject.pipe(debounceTime(300), distinctUntilChanged())
       .subscribe(texto => this.buscarClientes(texto));
     if (this.esAdmin) {
@@ -189,6 +196,11 @@ export class RecibosComponent implements OnInit, OnDestroy {
     this.observaciones = '';
     this.fechaPago = this.hoy();
     this.idSucursalEmision = null;
+    this.banco = '';
+    this.numeroCheque = '';
+    this.girador = '';
+    this.fechaCheque = this.hoy();
+    this.notasCheque = '';
   }
 
   onBuscarCliente(texto: string): void {
@@ -255,8 +267,18 @@ export class RecibosComponent implements OnInit, OnDestroy {
     this.monto = Math.max(0, Math.round(porCobrar * 100) / 100) || this.monto;
   }
 
+  get esCheque(): boolean {
+    return this.formaPago === 'CHEQUE';
+  }
+
+  /** El cheque pide sus propios datos (banco, número, fecha); los demás pagos piden la referencia. */
   get pideReferencia(): boolean {
-    return this.formaPago !== 'EFECTIVO';
+    return this.formaPago === 'DEPOSITO' || this.formaPago === 'TRANSFERENCIA';
+  }
+
+  /** El cheque lleva una fecha posterior a la del pago: se puede depositar hasta ese día. */
+  get chequePostfechado(): boolean {
+    return this.esCheque && !!this.fechaCheque && !!this.fechaPago && this.fechaCheque > this.fechaPago;
   }
 
   /** Qué número va en la referencia según cómo pagó el cliente. */
@@ -277,7 +299,14 @@ export class RecibosComponent implements OnInit, OnDestroy {
     if (!(Number(this.monto) > 0)) {
       return 'Indica el monto.';
     }
-    if (this.pideReferencia && !this.referencia.trim()) {
+    if (this.esCheque) {
+      if (!this.banco.trim() || !this.numeroCheque.trim()) {
+        return 'Indica el banco y el número del cheque.';
+      }
+      if (!this.fechaCheque) {
+        return 'Indica la fecha escrita en el cheque.';
+      }
+    } else if (this.pideReferencia && !this.referencia.trim()) {
       return 'Indica el número de referencia.';
     }
     return '';
@@ -292,10 +321,14 @@ export class RecibosComponent implements OnInit, OnDestroy {
       idProforma: this.idProformaElegida || null,
       monto: Number(this.monto),
       formaPago: this.formaPago,
-      referencia: this.referencia.trim() || null,
+      referencia: this.esCheque ? null : this.referencia.trim() || null,
       observaciones: this.observaciones.trim() || null,
       fechaPago: this.fechaPago || null,
-      idSucursal: this.esAdmin ? this.idSucursalEmision : null
+      idSucursal: this.esAdmin ? this.idSucursalEmision : null,
+      cheque: this.esCheque ? {
+        banco: this.banco.trim(), numeroCheque: this.numeroCheque.trim(), girador: this.girador.trim() || null,
+        fechaCheque: this.fechaCheque, notas: this.notasCheque.trim() || null
+      } : null
     };
     this.emitiendo = true;
     this.reciboService.emitir(solicitud).subscribe(recibo => {
@@ -342,6 +375,10 @@ export class RecibosComponent implements OnInit, OnDestroy {
         this.cargar(this.paginaActual);
       }, error => Swal.fire('No se pudo anular', this.mensaje(error), 'error'));
     });
+  }
+
+  etiquetaEstadoCheque(estado: string): string {
+    return estado ? estado.charAt(0) + estado.slice(1).toLowerCase() : '';
   }
 
   etiquetaForma(forma: FormaPagoRecibo): string {

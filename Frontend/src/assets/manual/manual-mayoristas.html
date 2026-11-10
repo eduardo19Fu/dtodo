@@ -975,7 +975,7 @@
           </ul>
         </li>
         <li>En <strong>Datos del pago</strong> indica el <strong>Monto (Q)</strong>, la <strong>Fecha de pago</strong> y la <strong>Forma de pago</strong>: <em>Efectivo, Depósito, Transferencia</em> o <em>Cheque</em>.</li>
-        <li>Si no es efectivo, escribe la <strong>Referencia</strong> (obligatoria): el número de boleta, de transferencia o de cheque. El campo te dice cuál según la forma elegida.</li>
+        <li>Si es depósito o transferencia, escribe la <strong>Referencia</strong> (obligatoria): el número de boleta o de transferencia. Si es <strong>Cheque</strong>, el formulario pide en su lugar los datos del cheque (ver <a href="#cheques">Control de cheques</a>).</li>
         <li>El administrador puede elegir la <strong>Sucursal</strong> que emite (por defecto, la suya). <strong>Observaciones</strong> es opcional.</li>
         <li>Pulsa <span class="btn">Emitir e imprimir</span>. El recibo se genera en PDF (media carta) en una pestaña nueva y aparece el aviso &laquo;Recibo S1-000001 emitido&raquo;.</li>
       </ol>
@@ -992,6 +992,29 @@
 
       <h4>Anular un recibo <small style="font-weight:400;color:var(--muted)">(solo administrador)</small></h4>
       <p>Con el botón <span class="btn red">Anular</span> y un <strong>motivo obligatorio</strong>. El recibo queda marcado como anulado y <strong>deja de contar</strong> para el saldo del cliente, y el pedido que había liberado vuelve a mostrar lo que falta cobrar.</p>
+
+      <h3 id="cheques">Control de cheques <small style="font-weight:400;color:var(--muted)">(cobrador y administrador)</small></h3>
+      <p>Muchos clientes pagan con cheque. Al emitir un recibo con forma de pago <strong>Cheque</strong> el formulario pide:</p>
+      <ul>
+        <li><strong>Banco</strong> y <strong>No. de cheque</strong> (obligatorios).</li>
+        <li><strong>Fecha del cheque</strong> (obligatoria): la que está escrita en el cheque. Si es posterior a la fecha de pago, es <strong>postfechado</strong> y el formulario lo avisa.</li>
+        <li><strong>Girador</strong> (opcional): quien firma el cheque, si no es el cliente.</li>
+        <li><strong>Notas del cheque</strong> (opcional): cuenta, a nombre de quién o cualquier otro dato.</li>
+      </ul>
+      <p>El mismo cheque (banco y número) no se puede registrar dos veces mientras no haya sido rechazado. El cheque <strong>baja el saldo del cliente desde que se recibe</strong>, como cualquier abono.</p>
+      <p>En <strong>Cuentas por cobrar &rarr; Control de cheques</strong> se le da seguimiento. Cada cheque pasa por estos estados:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Estado</th><th>Qué significa</th><th>Puede pasar a</th></tr></thead>
+          <tbody>
+            <tr><td><span class="pill warn">Recibido</span></td><td>Está en custodia. Es el estado al emitir el recibo.</td><td>Depositado, Rechazado</td></tr>
+            <tr><td><span class="pill">Depositado</span></td><td>Se llevó al banco. Un cheque postfechado <strong>no</strong> se puede depositar antes de su fecha.</td><td>Cobrado, Rechazado</td></tr>
+            <tr><td><span class="pill ok">Cobrado</span></td><td>El banco lo pagó. Estado final.</td><td>&mdash;</td></tr>
+            <tr><td><span class="pill bad">Rechazado</span></td><td>El banco no lo pagó. Pide un <strong>motivo obligatorio</strong> (por ejemplo, fondos insuficientes), <strong>anula el recibo</strong> y el saldo del cliente vuelve a subir. Estado final.</td><td>&mdash;</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La lista filtra por <strong>estado</strong>, <strong>fechas</strong> (de pago; sin fechas, los últimos 30 días) y <strong>sucursal</strong> (administrador). Cada fila muestra banco, número, girador, las fechas, el monto y quién cambió el estado y cuándo. Los botones <span class="btn light">PDF</span> y <span class="btn light">Excel</span> de arriba descargan el control con los filtros aplicados. Si anulas manualmente el recibo de un cheque, el cheque queda como rechazado.</p>
 
       <!-- ===================== 11.2 ===================== -->
       <h3 id="cobranza">11.2 Cobranza</h3>
@@ -1152,14 +1175,19 @@
             <tr><td><strong>Clientes sin compras</strong></td><td>Clientes mayoristas sin proformas ni facturas en el período, con su última compra.</td><td>Fechas, ruta</td></tr>
             <tr><td><strong>Proformas por vendedor</strong></td><td>Las proformas mayoristas generadas frente a las facturadas por cada vendedor.</td><td>Fechas, ruta</td></tr>
             <tr><td><strong>Ventas entregadas</strong></td><td>Lo entregado a los clientes por ruta y vendedor, a precio de línea. Una entrega parcial suma solo lo entregado.</td><td>Fechas, ruta, vendedor (opcional)</td></tr>
+            <tr><td><strong>Control de cheques</strong></td><td>Los cheques recibidos por fecha de pago: recibo, cliente, banco, número, girador, fecha del cheque, monto y estado.</td><td>Fechas, estado</td></tr>
+            <tr><td><strong>Despachados al crédito</strong></td><td>Reemplaza el listado en papel: cliente, fecha y número del pedido, monto total, hasta tres abonos, saldo pendiente, tipo de pago y una columna en blanco para la <strong>firma de recibido</strong>. Por defecto solo los pedidos con saldo pendiente. Si hubo más de tres abonos, el tercer casillero los suma.</td><td>Fechas (del pedido), ruta</td></tr>
+            <tr><td><strong>Listado de proformas</strong></td><td>Los pedidos mayoristas del período, del más reciente al más antiguo, con columnas en blanco para anotar <strong>cajas, paquetes o rollos y hora de empaque</strong> a mano.</td><td>Fechas, ruta</td></tr>
           </tbody>
         </table>
       </div>
+      <p>Los tres últimos reproducen los controles que Dtodo llevaba a mano: salen en <strong>PDF</strong> para imprimir y llenar, y en <strong>Excel</strong> como tabla editable (las columnas para llenar a mano van vacías).</p>
       <p>Otros documentos del módulo se obtienen en sus propias pantallas:</p>
       <ul>
         <li><strong>Hoja de picking, lista de empaque y nota de envío</strong> (de una ruta o de todas): en <a href="#pedidos">Pedidos</a>. Las tres comparten el diseño de la proforma, con logo y totales.</li>
         <li><strong>Proforma mayorista</strong> (copia cliente y copia tienda): en Proformas.</li>
         <li><strong>Recibo de caja:</strong> al emitirlo y desde la lista de recibos.</li>
+        <li><strong>Control de cheques (PDF y Excel):</strong> en <a href="#cheques">Control de cheques</a>, también al alcance del cobrador.</li>
         <li><strong>Cobranza (PDF y Excel) y estado de cuenta del cliente:</strong> en <a href="#cobranza">Cobranza</a>.</li>
         <li><strong>Comisiones del año (PDF y Excel):</strong> en <a href="#comisiones">Comisiones</a>.</li>
       </ul>
@@ -1355,15 +1383,20 @@
       <p>Para no dejar pedidos de más, puedes dejar esta proforma sin entregar.</p>
 
       <!-- ====== E9 ====== -->
-      <h3>15.11 Escenario 9 &mdash; Recibos: abonos, cheque y anulación <small style="font-weight:400;color:var(--muted)">(cobrador y administrador)</small></h3>
+      <h3>15.11 Escenario 9 &mdash; Recibos: abonos, cheques y anulación <small style="font-weight:400;color:var(--muted)">(cobrador y administrador)</small></h3>
       <div class="table-wrap">
         <table>
           <thead><tr><th class="c">&check;</th><th>Qué hacer</th><th>Resultado esperado</th></tr></thead>
           <tbody>
             <tr><td class="c"><span class="box"></span></td><td>Como <strong>cobrador</strong>, emite un recibo para <strong>CLIENTE CREDITO</strong>: <em>Abono a la cuenta</em>, <strong>Q500</strong>, forma <strong>Efectivo</strong>.</td><td>Se emite. El resumen previo mostraba saldo pendiente <strong>Q1,170.00</strong>.</td></tr>
             <tr><td class="c"><span class="box"></span></td><td>Abre <strong>Cobranza</strong>.</td><td>El saldo de CLIENTE CREDITO bajó a <strong>Q670.00</strong>.</td></tr>
-            <tr><td class="c"><span class="box"></span></td><td>Emite otro recibo, forma <strong>Cheque</strong>, monto <strong>Q100</strong>, y deja la referencia <strong>vacía</strong>.</td><td>No te deja emitir: el pie dice <em>Indica el número de referencia</em>. El campo de referencia pide el <strong>No. de cheque</strong>.</td></tr>
-            <tr><td class="c"><span class="box"></span></td><td>Escribe como referencia <code>CHQ-001</code> y emítelo.</td><td>Se emite. En la lista, la forma de pago aparece como <strong>Cheque</strong> con &laquo;Ref. CHQ-001&raquo; y el PDF dice <em>Cheque</em>. El saldo en Cobranza baja a <strong>Q570.00</strong>.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Emite otro recibo, forma <strong>Cheque</strong>, monto <strong>Q100</strong>, sin llenar banco ni número.</td><td>No te deja emitir: el pie dice <em>Indica el banco y el número del cheque</em>. El campo de referencia ya no aparece: se piden banco, número, girador y fecha del cheque.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Escribe banco <code>Banrural</code>, número <code>CHQ-001</code>, deja la fecha de hoy y emítelo.</td><td>Se emite. En la lista, la forma de pago aparece como <strong>Cheque</strong> con &laquo;Banrural &middot; cheque CHQ-001&raquo; y el estado <span class="pill warn">Recibido</span>. El saldo en Cobranza baja a <strong>Q570.00</strong>.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Intenta registrar de nuevo <code>Banrural</code> / <code>CHQ-001</code>.</td><td>No te deja: <em>El cheque CHQ-001 de Banrural ya está registrado</em>.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Abre <strong>Cuentas por cobrar &rarr; Control de cheques</strong> y marca el cheque como <strong>Depositado</strong> y luego <strong>Cobrado</strong>.</td><td>Cada cambio pide confirmación y deja quién y cuándo. Al quedar <span class="pill ok">Cobrado</span> ya no ofrece más acciones. El saldo no cambia.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Emite otro cheque con fecha <strong>posterior a hoy</strong> y mira su botón de depositar.</td><td>Aparece como <em>Postfechado</em> y el botón de depositar está deshabilitado hasta esa fecha. Rechazarlo, en cambio, sí se puede.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Rechaza ese cheque sin escribir motivo, y luego con el motivo <em>Fondos insuficientes</em>.</td><td>Sin motivo no avanza. Con motivo queda <span class="pill bad">Rechazado</span>, su recibo se anula y el saldo del cliente <strong>vuelve a subir</strong>.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td>Descarga el <strong>PDF</strong> y el <strong>Excel</strong> del control de cheques y, en Reportes &rarr; Mayoristas, <em>Despachados al crédito</em> y <em>Listado de proformas</em>.</td><td>Salen con el diseño de Dtodo; las columnas de firma, cajas, paquetes y hora de empaque quedan en blanco para llenar a mano. El Excel abre como tabla con filtros.</td></tr>
             <tr><td class="c"><span class="box"></span></td><td>Como <strong>cobrador</strong>, mira la lista de recibos.</td><td><strong>No ve</strong> el botón de anular.</td></tr>
             <tr><td class="c"><span class="box"></span></td><td>Como <strong>administrador</strong>, anula el recibo del cheque con un motivo.</td><td>Queda <span class="pill bad">Anulado</span> (visible con <em>Incluir anulados</em>). El cheque <strong>deja de descontar</strong>: el saldo vuelve a <strong>Q670.00</strong>.</td></tr>
           </tbody>

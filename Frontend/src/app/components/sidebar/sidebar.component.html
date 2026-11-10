@@ -172,7 +172,7 @@
 
       <section class="menu-group" *ngIf="mostrarGrupo('cobros') && (authService.hasRole('ROLE_ADMIN') || authService.hasRole('ROLE_COBRADOR'))"
         [class.is-open]="menuAbierto('cobros')"
-        [class.is-active]="router.url.startsWith('/cobranza') || router.url.startsWith('/recibos') || router.url.startsWith('/devoluciones-cliente')">
+        [class.is-active]="router.url.startsWith('/cobranza') || router.url.startsWith('/recibos') || router.url.startsWith('/cheques') || router.url.startsWith('/devoluciones-cliente')">
         <button type="button" class="menu-link group-trigger" (click)="alternarMenu('cobros')"
           [attr.aria-expanded]="menuAbierto('cobros')" title="Cuentas por cobrar">
           <span class="menu-icon"><i class="fas fa-file-invoice-dollar" aria-hidden="true"></i><span class="new-dot" aria-hidden="true"></span></span>
@@ -185,6 +185,8 @@
             [class.active]="router.url.startsWith('/cobranza')" (click)="notificarNavegacion()"><span></span>Cobranza</a>
           <a *ngIf="coincide('recibos', 'recibos de caja', 'caja', 'abonos', 'depositos', 'cobros', 'cuentas por cobrar')" [routerLink]="['/recibos/index']" class="submenu-link"
             [class.active]="router.url.startsWith('/recibos')" (click)="notificarNavegacion()"><span></span>Recibos de caja</a>
+          <a *ngIf="coincide('cheques', 'control de cheques', 'bancos', 'postfechados', 'cobros', 'cuentas por cobrar')" [routerLink]="['/cheques/index']" class="submenu-link"
+            [class.active]="router.url.startsWith('/cheques')" (click)="notificarNavegacion()"><span></span>Control de cheques</a>
           <a *ngIf="coincide('devoluciones', 'devoluciones de clientes', 'devolver', 'merma', 'cuentas por cobrar') && authService.hasRole('ROLE_ADMIN')" [routerLink]="['/devoluciones-cliente/index']" class="submenu-link"
             [class.active]="router.url.startsWith('/devoluciones-cliente')" (click)="notificarNavegacion()"><span></span>Devoluciones de clientes</a>
         </div>

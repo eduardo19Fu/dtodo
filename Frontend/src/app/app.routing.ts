@@ -34,6 +34,7 @@ import { PedidosComponent } from './components/pedidos/pedidos.component';
 import { AutorizacionesComponent } from './components/autorizaciones/autorizaciones.component';
 import { ComisionesComponent } from './components/comisiones/comisiones.component';
 import { RecibosComponent } from './components/recibos/recibos.component';
+import { ChequesComponent } from './components/cheques/cheques.component';
 import { CobranzaComponent } from './components/cobranza/cobranza.component';
 import { DevolucionesClienteComponent } from './components/devoluciones-cliente/devoluciones-cliente.component';
 import { IndicadoresComponent } from './components/indicadores/indicadores.component';
@@ -135,6 +136,7 @@ const appRoutes: Routes = [
     { path: 'devoluciones-cliente/index', component: DevolucionesClienteComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN'] } },
     { path: 'cobranza/index', component: CobranzaComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_COBRADOR'] } },
     { path: 'recibos/index', component: RecibosComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_COBRADOR'] } },
+    { path: 'cheques/index', component: ChequesComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_COBRADOR'] } },
     { path: 'comisiones/index', component: ComisionesComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN'] } },
     { path: 'autorizaciones/index', component: AutorizacionesComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN'] } },
     { path: 'pedidos/index', component: PedidosComponent, canActivate: [AuthGuard, RoleGuard], data: { role: ['ROLE_ADMIN', 'ROLE_BODEGA', 'ROLE_VENDEDOR', 'ROLE_REPARTIDOR'] } },

@@ -52,6 +52,32 @@ public final class ExcelTabla {
             this.ancho = ancho;
         }
 
+        /** Una columna vacía para llenar a mano (cajas, firma, hora…): en el PDF queda una celda con su recuadro. */
+        public static <T> Columna<T> manual(String titulo, int ancho) {
+            return new Columna<>(titulo, fila -> null, Tipo.TEXTO, false, ancho);
+        }
+
+        public String getTitulo() {
+            return titulo;
+        }
+
+        public Object valorDe(T registro) {
+            return valor.apply(registro);
+        }
+
+        public Tipo getTipo() {
+            return tipo;
+        }
+
+        public boolean isSumar() {
+            return sumar;
+        }
+
+        /** Ancho sugerido en caracteres; 0 si se calcula solo. */
+        public int getAncho() {
+            return ancho;
+        }
+
         public static <T> Columna<T> texto(String titulo, Function<T, Object> valor) {
             return new Columna<>(titulo, valor, Tipo.TEXTO, false, 0);
         }

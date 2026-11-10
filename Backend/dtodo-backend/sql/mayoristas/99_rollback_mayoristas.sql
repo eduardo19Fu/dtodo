@@ -19,6 +19,7 @@ ALTER TABLE proformas DROP COLUMN credito_autorizacion, DROP COLUMN exceso_credi
 ALTER TABLE proformas DROP COLUMN condicion_pago, DROP COLUMN dias_credito;
 
 -- Paso 15
+DROP TABLE IF EXISTS cheques_recibo;
 DROP TABLE IF EXISTS recibos_correlativos;
 DROP TABLE IF EXISTS recibos_caja;
 

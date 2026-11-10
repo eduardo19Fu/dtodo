@@ -34,4 +34,6 @@ public class ReciboCajaDto {
     private LocalDateTime fechaAnulacion;
     private String usuarioAnulacion;
     private String motivoAnulacion;
+    /** Solo en recibos pagados con cheque: sus datos y su seguimiento. */
+    private ChequeDto cheque;
 }

@@ -70,7 +70,11 @@ describe('Selector de sucursal de recibos', () => {
 
     fixture.componentInstance.formaPago = 'CHEQUE';
     fixture.detectChanges();
-    expect((root.querySelector('#referenciaRecibo') as HTMLInputElement).placeholder).toBe('No. de cheque');
+    // El cheque no usa la referencia: pide banco, número y fecha del cheque.
+    expect(root.querySelector('#referenciaRecibo')).toBeNull();
+    expect(root.querySelector('#bancoCheque')).not.toBeNull();
+    expect(root.querySelector('#numeroCheque')).not.toBeNull();
+    expect(root.querySelector('#giradorCheque')).not.toBeNull();
   });
 
   it('presenta el usuario y la búsqueda como Proformas y Enter abre el directorio sin emitir', () => {

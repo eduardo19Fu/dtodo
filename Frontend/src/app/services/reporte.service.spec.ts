@@ -67,4 +67,21 @@ describe('ReporteService - mayoristas', () => {
     expect(req.request.params.get('formato')).toBe('XLSX');
     req.flush(new Blob());
   });
+
+  it('los listados de control usan sus propias rutas y mandan el estado y el formato', () => {
+    service.generar('MAYORISTAS_CHEQUES',
+      { fechaInicio: '2026-11-01', fechaFin: '2026-11-30', estado: 'RECIBIDO', formato: 'XLSX' }).subscribe();
+    const cheques = http.expectOne(r => r.url === `${global.url}/reportes/controles/cheques`);
+    expect(cheques.request.params.get('estado')).toBe('RECIBIDO');
+    expect(cheques.request.params.get('formato')).toBe('XLSX');
+    cheques.flush(new Blob());
+
+    service.generar('MAYORISTAS_DESPACHADOS_CREDITO', { fechaInicio: '2026-11-01', fechaFin: '2026-11-30', idRuta: 3 }).subscribe();
+    const credito = http.expectOne(r => r.url === `${global.url}/reportes/controles/despachados-credito`);
+    expect(credito.request.params.get('idRuta')).toBe('3');
+    credito.flush(new Blob());
+
+    service.generar('MAYORISTAS_LISTADO_PROFORMAS', { fechaInicio: '2026-09-04', fechaFin: '2026-09-10' }).subscribe();
+    http.expectOne(r => r.url === `${global.url}/reportes/controles/listado-proformas`).flush(new Blob());
+  });
 });

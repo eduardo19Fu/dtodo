@@ -140,7 +140,7 @@
               </select>
             </div>
           </div>
-          <div class="field-group">
+          <div class="field-group" *ngIf="!esCheque">
             <label for="referenciaRecibo">Referencia <span class="required-mark" *ngIf="pideReferencia">*</span></label>
             <div class="control-with-icon">
               <i class="fas fa-hashtag" aria-hidden="true"></i>
@@ -148,6 +148,48 @@
                 [(ngModel)]="referencia" name="referencia" [placeholder]="textoReferencia">
             </div>
           </div>
+          <ng-container *ngIf="esCheque">
+            <div class="field-group">
+              <label for="bancoCheque">Banco <span class="required-mark">*</span></label>
+              <div class="control-with-icon">
+                <i class="fas fa-university" aria-hidden="true"></i>
+                <input type="text" id="bancoCheque" class="form-control" maxlength="80"
+                  [(ngModel)]="banco" name="bancoCheque" placeholder="Banco que emite el cheque">
+              </div>
+            </div>
+            <div class="field-group">
+              <label for="numeroCheque">No. de cheque <span class="required-mark">*</span></label>
+              <div class="control-with-icon">
+                <i class="fas fa-hashtag" aria-hidden="true"></i>
+                <input type="text" id="numeroCheque" class="form-control" maxlength="40"
+                  [(ngModel)]="numeroCheque" name="numeroCheque" placeholder="Número impreso en el cheque">
+              </div>
+            </div>
+            <div class="field-group">
+              <label for="giradorCheque">Girador</label>
+              <div class="control-with-icon">
+                <i class="fas fa-user-edit" aria-hidden="true"></i>
+                <input type="text" id="giradorCheque" class="form-control" maxlength="120"
+                  [(ngModel)]="girador" name="giradorCheque" placeholder="Quien firma el cheque, si no es el cliente">
+              </div>
+            </div>
+            <div class="row listing-date-range listing-date-single receipt-date-field">
+              <app-date-range-picker apariencia="campo" modo="fecha" [(fecha)]="fechaCheque"
+                etiquetaFecha="Fecha del cheque" tema="ventas"></app-date-range-picker>
+            </div>
+            <div class="field-group receipt-span-all">
+              <label for="notasCheque">Notas del cheque</label>
+              <div class="control-with-icon">
+                <i class="far fa-sticky-note" aria-hidden="true"></i>
+                <input type="text" id="notasCheque" class="form-control" maxlength="255"
+                  [(ngModel)]="notasCheque" name="notasCheque" placeholder="Cuenta, a nombre de quién o cualquier otro dato (opcional)">
+              </div>
+              <small class="text-muted" *ngIf="chequePostfechado">
+                <i class="fas fa-calendar-alt" aria-hidden="true"></i> Cheque postfechado: se podrá depositar a partir de esa fecha.
+                Cuenta como abono desde hoy; si el banco lo rechaza, el saldo del cliente vuelve a subir.
+              </small>
+            </div>
+          </ng-container>
           <div class="field-group" *ngIf="esAdmin && sucursales.length > 0">
             <label for="sucursalRecibo">Sucursal</label>
             <div class="control-with-icon">
@@ -273,7 +315,14 @@
                 [ngClass]="recibo.formaPago === 'EFECTIVO' ? 'listing-status-success' : recibo.formaPago === 'DEPOSITO' ? 'listing-status-primary' : recibo.formaPago === 'CHEQUE' ? 'listing-status-warning' : 'listing-status-info'">
                 {{etiquetaForma(recibo.formaPago)}}
               </span>
-              <small class="d-block text-muted" *ngIf="recibo.referencia">Ref. {{recibo.referencia}}</small>
+              <small class="d-block text-muted" *ngIf="recibo.referencia && !recibo.cheque">Ref. {{recibo.referencia}}</small>
+              <ng-container *ngIf="recibo.cheque as cheque">
+                <small class="d-block text-muted">{{cheque.banco}} · cheque {{cheque.numeroCheque}}</small>
+                <small class="d-block text-muted">Del {{cheque.fechaCheque | date: 'dd/MM/yyyy'}}</small>
+                <span class="listing-status-pill mt-1"
+                  [ngClass]="cheque.estado === 'COBRADO' ? 'listing-status-success' : cheque.estado === 'RECHAZADO' ? 'listing-status-danger' : cheque.estado === 'DEPOSITADO' ? 'listing-status-primary' : 'listing-status-warning'"
+                  [title]="cheque.motivoRechazo || ''">{{etiquetaEstadoCheque(cheque.estado)}}<ng-container *ngIf="cheque.postfechado"> · postfechado</ng-container></span>
+              </ng-container>
             </td>
             <td data-label="Monto" class="text-money"><strong>{{recibo.monto | currency: 'Q' : 'symbol'}}</strong></td>
             <td data-label="Emitió">{{recibo.usuario}}</td>

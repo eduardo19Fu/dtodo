@@ -54,6 +54,7 @@ import xyz.pangosoft.dtodo.service.IUsuarioService;
 class ReciboCajaServiceImplTest {
 
     private final IReciboCajaRepository reciboRepository = mock(IReciboCajaRepository.class);
+    private final xyz.pangosoft.dtodo.repository.IChequeReciboRepository chequeRepository = mock(xyz.pangosoft.dtodo.repository.IChequeReciboRepository.class);
     private final IReciboCorrelativoRepository correlativoRepository = mock(IReciboCorrelativoRepository.class);
     private final IClienteRepository clienteRepository = mock(IClienteRepository.class);
     private final IProformaRepository proformaRepository = mock(IProformaRepository.class);
@@ -62,7 +63,7 @@ class ReciboCajaServiceImplTest {
     private final IUsuarioService usuarioService = mock(IUsuarioService.class);
     private final IAmbitoVendedorService ambito = mock(IAmbitoVendedorService.class);
     private final IProformaAuditoriaService auditoria = mock(IProformaAuditoriaService.class);
-    private final ReciboCajaServiceImpl service = new ReciboCajaServiceImpl(reciboRepository, correlativoRepository, clienteRepository,
+    private final ReciboCajaServiceImpl service = new ReciboCajaServiceImpl(reciboRepository, chequeRepository, correlativoRepository, clienteRepository,
             proformaRepository, facturaRepository, sucursalRepository, usuarioService, ambito, auditoria);
 
     private final Sucursal centro = Sucursal.builder().idSucursal(2).nombre("Centro").build();
@@ -210,8 +211,8 @@ class ReciboCajaServiceImplTest {
     }
 
     @Test
-    void elDepositoLaTransferenciaYElChequePidenReferencia() {
-        for (String forma : new String[] { "DEPOSITO", "transferencia", "cheque" }) {
+    void elDepositoYLaTransferenciaPidenReferencia() {
+        for (String forma : new String[] { "DEPOSITO", "transferencia" }) {
             CrearReciboCajaDto dto = solicitud();
             dto.setFormaPago(forma);
             dto.setReferencia("  ");
@@ -363,5 +364,48 @@ class ReciboCajaServiceImplTest {
         assertThrows(ReglaNegocioException.class,
                 () -> service.listar(null, null, LocalDate.now(), LocalDate.now().minusDays(1), false, PageRequest.of(0, 10)));
         assertNull(null);
+    }
+
+    private CrearReciboCajaDto conCheque(String banco, String numero, LocalDate fecha) {
+        CrearReciboCajaDto dto = solicitud();
+        dto.setFormaPago("CHEQUE");
+        xyz.pangosoft.dtodo.dto.DatosChequeDto cheque = new xyz.pangosoft.dtodo.dto.DatosChequeDto();
+        cheque.setBanco(banco);
+        cheque.setNumeroCheque(numero);
+        cheque.setFechaCheque(fecha);
+        dto.setCheque(cheque);
+        return dto;
+    }
+
+    @Test
+    void unPagoConChequeGuardaSusDatosEnRecibidoYArmaLaReferencia() {
+        when(chequeRepository.save(any(xyz.pangosoft.dtodo.model.ChequeRecibo.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        service.emitir(conCheque(" Banrural ", "123456", LocalDate.now().plusDays(10)));
+
+        ArgumentCaptor<xyz.pangosoft.dtodo.model.ChequeRecibo> guardado = ArgumentCaptor.forClass(xyz.pangosoft.dtodo.model.ChequeRecibo.class);
+        verify(chequeRepository).save(guardado.capture());
+        assertEquals("Banrural", guardado.getValue().getBanco());
+        assertEquals("123456", guardado.getValue().getNumeroCheque());
+        assertEquals(xyz.pangosoft.dtodo.model.enums.EstadoChequeEnum.RECIBIDO, guardado.getValue().getEstado());
+        ArgumentCaptor<ReciboCaja> recibo = ArgumentCaptor.forClass(ReciboCaja.class);
+        verify(reciboRepository).save(recibo.capture());
+        assertEquals("Banrural #123456", recibo.getValue().getReferencia());
+    }
+
+    @Test
+    void unChequeSinDatosOIncompletoORepetidoSeRechaza() {
+        CrearReciboCajaDto sinDatos = solicitud();
+        sinDatos.setFormaPago("CHEQUE");
+        assertThrows(ReglaNegocioException.class, () -> service.emitir(sinDatos));
+        assertThrows(ReglaNegocioException.class, () -> service.emitir(conCheque("", "1", LocalDate.now())));
+        assertThrows(ReglaNegocioException.class, () -> service.emitir(conCheque("Banrural", " ", LocalDate.now())));
+        assertThrows(ReglaNegocioException.class, () -> service.emitir(conCheque("Banrural", "1", null)));
+
+        when(chequeRepository.existeVigente("Banrural", "1")).thenReturn(true);
+        ReglaNegocioException repetido = assertThrows(ReglaNegocioException.class,
+                () -> service.emitir(conCheque("Banrural", "1", LocalDate.now())));
+        assertTrue(repetido.getMessage().contains("ya está registrado"), repetido.getMessage());
+        verify(chequeRepository, never()).save(any(xyz.pangosoft.dtodo.model.ChequeRecibo.class));
     }
 }

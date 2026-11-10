@@ -1,0 +1,141 @@
+<header class="management-header">
+  <div class="management-heading">
+    <h1>{{title}}</h1>
+    <p>Da seguimiento a los cheques que entregan los clientes: recibidos, depositados, cobrados o rechazados.</p>
+  </div>
+  <div class="listing-actions">
+    <button type="button" class="btn listing-page-action listing-secondary-action" (click)="descargar('XLSX')" [disabled]="!!generando"
+      appTooltip="Descargar el control como tabla de Excel" aria-label="Descargar el control de cheques en Excel">
+      <span *ngIf="generando === 'XLSX'" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+      <i *ngIf="generando !== 'XLSX'" class="fas fa-file-excel" aria-hidden="true"></i> Excel
+    </button>
+    <button type="button" class="btn listing-page-action listing-primary-action" (click)="descargar('PDF')" [disabled]="!!generando"
+      appTooltip="Imprimir el control de cheques" aria-label="Imprimir el control de cheques en PDF">
+      <span *ngIf="generando === 'PDF'" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+      <i *ngIf="generando !== 'PDF'" class="fas fa-print" aria-hidden="true"></i> PDF
+    </button>
+  </div>
+</header>
+
+<div class="card listing-card receipt-list">
+  <div class="card-body">
+    <div class="recibos-filters">
+      <div class="receipt-date-filters">
+        <div class="row listing-date-range">
+          <app-date-range-picker apariencia="campo" [(fechaInicio)]="desde" [(fechaFin)]="hasta" tema="ventas"></app-date-range-picker>
+        </div>
+      </div>
+
+      <div class="listing-field">
+        <label for="estadoCheque">Estado</label>
+        <select id="estadoCheque" class="form-control" [(ngModel)]="estado" name="estadoCheque">
+          <option *ngFor="let opcion of estados" [value]="opcion.valor">{{opcion.etiqueta}}</option>
+        </select>
+      </div>
+
+      <div class="listing-field" *ngIf="esAdmin && sucursales.length > 0">
+        <label for="sucursalCheque">Sucursal</label>
+        <select id="sucursalCheque" class="form-control" [(ngModel)]="idSucursalFiltro" name="sucursalCheque">
+          <option [ngValue]="null">Todas las sucursales</option>
+          <option *ngFor="let sucursal of sucursales" [ngValue]="sucursal.idSucursal">{{sucursal.nombre}}</option>
+        </select>
+      </div>
+
+      <div class="receipt-filter-actions">
+        <button type="button" class="btn listing-page-action listing-primary-action" (click)="aplicarFiltros()">
+          <i class="fas fa-filter" aria-hidden="true"></i> Filtrar
+        </button>
+        <button type="button" class="btn listing-page-action listing-secondary-action" (click)="limpiarFiltros()"
+          appTooltip="Quitar los filtros" aria-label="Quitar los filtros">
+          <i class="fas fa-eraser" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+    <div class="receipt-list-caption">
+      <span>Por fecha de pago. Sin fechas se muestran los últimos 30 días.</span>
+      <span *ngIf="!cargando"><strong>{{totalElementos}}</strong> {{totalElementos === 1 ? 'cheque' : 'cheques'}}</span>
+    </div>
+
+    <div *ngIf="errorCarga" class="listing-alert listing-alert-warning" role="alert">
+      <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+      <span class="listing-alert-text">No fue posible cargar los cheques.</span>
+      <button type="button" class="btn listing-page-action listing-secondary-action listing-compact" (click)="cargar(paginaActual)">
+        <i class="fas fa-redo"></i> Reintentar
+      </button>
+    </div>
+
+    <div *ngIf="cargando" class="text-center p-4">
+      <div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div>
+    </div>
+
+    <div *ngIf="!cargando && !errorCarga && cheques.length === 0" class="listing-empty-state">
+      <span class="listing-empty-icon" aria-hidden="true"><i class="fas fa-money-check-alt"></i></span>
+      <div class="listing-empty-state-body">
+        <h5>No hay cheques</h5>
+        <p>No se encontraron cheques con los filtros indicados. Se registran al emitir un recibo con forma de pago <strong>Cheque</strong>.</p>
+      </div>
+    </div>
+
+    <div class="table-responsive" *ngIf="cheques.length > 0">
+      <table class="table table-hover table-sm listing-data-table">
+        <thead>
+          <tr>
+            <th scope="col">Cheque</th>
+            <th scope="col">Cliente</th>
+            <th scope="col">Fechas</th>
+            <th scope="col" class="text-right">Monto</th>
+            <th scope="col">Estado</th>
+            <th scope="col" class="text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let cheque of cheques; trackBy: trackCheque" [class.is-muted]="cheque.estado === 'RECHAZADO'">
+            <td data-label="Cheque">
+              <strong>{{cheque.banco}}</strong>
+              <small class="d-block text-muted">No. {{cheque.numeroCheque}}</small>
+              <small class="d-block text-muted" *ngIf="cheque.girador">Girador: {{cheque.girador}}</small>
+              <small class="d-block text-muted" *ngIf="cheque.notas">{{cheque.notas}}</small>
+            </td>
+            <td data-label="Cliente">
+              <strong>{{cheque.cliente}}</strong>
+              <small class="d-block text-muted"><span class="listing-id-pill">{{cheque.numeroRecibo}}</span> · {{cheque.sucursal}}</small>
+            </td>
+            <td data-label="Fechas">
+              <small class="d-block">Pago: {{cheque.fechaPago | date: 'dd/MM/yyyy'}}</small>
+              <small class="d-block">Cheque: {{cheque.fechaCheque | date: 'dd/MM/yyyy'}}</small>
+              <span *ngIf="cheque.postfechado" class="listing-status-pill listing-status-info mt-1">Postfechado</span>
+            </td>
+            <td data-label="Monto" class="text-money"><strong>{{cheque.monto | currency: 'Q' : 'symbol'}}</strong></td>
+            <td data-label="Estado">
+              <span class="listing-status-pill" [ngClass]="claseEstado(cheque.estado)">{{etiquetaEstado(cheque.estado)}}</span>
+              <small class="d-block text-muted mt-1" *ngIf="cheque.usuarioEstado">
+                {{cheque.fechaEstado | date: 'dd/MM/yyyy HH:mm'}} · {{cheque.usuarioEstado}}
+              </small>
+              <small class="d-block text-danger mt-1" *ngIf="cheque.motivoRechazo">{{cheque.motivoRechazo}}</small>
+            </td>
+            <td data-label="Acciones" class="text-center">
+              <div class="action-buttons d-flex justify-content-center">
+                <button type="button" *ngFor="let siguiente of siguientes(cheque)"
+                  class="btn btn-sm listing-table-action" [ngClass]="accion(siguiente).clase"
+                  (click)="cambiarEstado(cheque, siguiente)" [disabled]="!puedeCambiar(cheque, siguiente)"
+                  [appTooltip]="siguiente === 'DEPOSITADO' && cheque.postfechado ? 'Postfechado: se deposita a partir de su fecha' : accion(siguiente).texto"
+                  [attr.aria-label]="accion(siguiente).texto + ' ' + cheque.numeroCheque">
+                  <i class="fas" [ngClass]="accion(siguiente).icono"></i>
+                </button>
+                <span *ngIf="siguientes(cheque).length === 0" class="text-muted">—</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <nav class="listing-pagination" *ngIf="!cargando && totalPaginas > 1" aria-label="Paginación de cheques">
+      <ul class="pagination justify-content-center mt-3 mb-0">
+        <li class="page-item" [ngClass]="{'disabled': isFirst}"><button type="button" class="page-link" (click)="irPaginaAnterior()" [disabled]="isFirst" aria-label="Página anterior"><i class="fas fa-angle-left"></i></button></li>
+        <li class="page-item disabled"><span class="page-link">{{paginaActual + 1}} de {{totalPaginas}}</span></li>
+        <li class="page-item" [ngClass]="{'disabled': isLast}"><button type="button" class="page-link" (click)="irPaginaSiguiente()" [disabled]="isLast" aria-label="Página siguiente"><i class="fas fa-angle-right"></i></button></li>
+      </ul>
+    </nav>
+  </div>
+</div>

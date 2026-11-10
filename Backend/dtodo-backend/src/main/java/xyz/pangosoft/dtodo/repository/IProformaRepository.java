@@ -37,6 +37,14 @@ public interface IProformaRepository extends JpaRepository<Proforma, Long> {
             + "AND e.fecha >= :inicio AND e.fecha < :fin))) ORDER BY pr.id_ruta", nativeQuery = true)
     List<Integer> idRutasConNotaDeEnvio(@Param("inicio") java.sql.Timestamp inicio, @Param("fin") java.sql.Timestamp fin);
 
+    /** Pedidos mayoristas vigentes emitidos entre dos instantes (el final es exclusivo), de una ruta si se indica. */
+    @Query("select p from Proforma p left join p.ruta r where p.tipoProforma = xyz.pangosoft.dtodo.model.enums.TipoProformaEnum.MAYORISTA "
+            + "and p.estadoPedido is not null and p.estado.estado <> 'ANULADO' "
+            + "and p.fechaEmision >= :inicio and p.fechaEmision < :fin "
+            + "and (:idRuta is null or r.idRuta = :idRuta) order by p.fechaEmision desc, p.idProforma desc")
+    List<Proforma> pedidosMayoristasEntre(@Param("inicio") java.sql.Timestamp inicio, @Param("fin") java.sql.Timestamp fin,
+            @Param("idRuta") Integer idRuta);
+
     /** Pedidos mayoristas vigentes (no anulados) de un cliente, del más antiguo al más reciente. */
     @Query("select p from Proforma p where p.cliente.idCliente = :idCliente "
             + "and p.tipoProforma = xyz.pangosoft.dtodo.model.enums.TipoProformaEnum.MAYORISTA "

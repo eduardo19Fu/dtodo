@@ -118,6 +118,12 @@ export class ReporteService {
         return { ruta: 'mayoristas/entregado', incluirUsuario: true, incluirOpciones: true };
       case 'MAYORISTAS_PROFORMAS_VENDEDOR':
         return { ruta: 'mayoristas/proformas-vendedor', incluirUsuario: false, incluirOpciones: true };
+      case 'MAYORISTAS_CHEQUES':
+        return { ruta: 'controles/cheques', incluirUsuario: false, incluirOpciones: true };
+      case 'MAYORISTAS_DESPACHADOS_CREDITO':
+        return { ruta: 'controles/despachados-credito', incluirUsuario: false, incluirOpciones: true };
+      case 'MAYORISTAS_LISTADO_PROFORMAS':
+        return { ruta: 'controles/listado-proformas', incluirUsuario: false, incluirOpciones: true };
       default:
         throw new Error(`El reporte ${codigo} todavía no tiene un endpoint habilitado.`);
     }

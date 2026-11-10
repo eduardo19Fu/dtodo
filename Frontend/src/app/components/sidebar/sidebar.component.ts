@@ -112,7 +112,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     }
     if (menu === 'cobros') {
       return this.coincide('cuentas por cobrar', 'cobranza', 'saldos', 'vencidos', 'estado de cuenta', 'recibos',
-        'recibos de caja', 'caja', 'abonos', 'depositos', 'cobros', 'devoluciones', 'devoluciones de clientes',
+        'recibos de caja', 'caja', 'abonos', 'depositos', 'cobros', 'cheques', 'control de cheques', 'devoluciones', 'devoluciones de clientes',
         'devolver', 'merma');
     }
     return this.coincide('compras', 'registrar compra', 'proveedores');
@@ -149,7 +149,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       this.bodegasAbierto = url.startsWith('/bodegas') || url.startsWith('/despachos-bodega') || url.startsWith('/devoluciones-bodega');
       this.mayoristasAbierto = ['/rutas', '/descuentos', '/autorizaciones', '/comisiones', '/indicadores']
         .some(ruta => url.startsWith(ruta));
-      this.cobrosAbierto = ['/cobranza', '/recibos', '/devoluciones-cliente'].some(ruta => url.startsWith(ruta));
+      this.cobrosAbierto = ['/cobranza', '/recibos', '/cheques', '/devoluciones-cliente'].some(ruta => url.startsWith(ruta));
     }
   }
 }

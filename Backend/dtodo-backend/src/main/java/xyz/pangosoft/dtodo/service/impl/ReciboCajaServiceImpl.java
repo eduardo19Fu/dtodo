@@ -13,9 +13,11 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import xyz.pangosoft.dtodo.dto.CrearReciboCajaDto;
+import xyz.pangosoft.dtodo.dto.DatosChequeDto;
 import xyz.pangosoft.dtodo.dto.ReciboCajaDto;
 import xyz.pangosoft.dtodo.error.exceptions.NotFoundException;
 import xyz.pangosoft.dtodo.error.exceptions.ReglaNegocioException;
+import xyz.pangosoft.dtodo.model.ChequeRecibo;
 import xyz.pangosoft.dtodo.model.Cliente;
 import xyz.pangosoft.dtodo.model.Factura;
 import xyz.pangosoft.dtodo.model.Proforma;
@@ -23,8 +25,10 @@ import xyz.pangosoft.dtodo.model.ReciboCaja;
 import xyz.pangosoft.dtodo.model.ReciboCorrelativo;
 import xyz.pangosoft.dtodo.model.Sucursal;
 import xyz.pangosoft.dtodo.model.Usuario;
+import xyz.pangosoft.dtodo.model.enums.EstadoChequeEnum;
 import xyz.pangosoft.dtodo.model.enums.FormaPagoReciboEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoProformaEnum;
+import xyz.pangosoft.dtodo.repository.IChequeReciboRepository;
 import xyz.pangosoft.dtodo.repository.IClienteRepository;
 import xyz.pangosoft.dtodo.repository.IFacturaRepository;
 import xyz.pangosoft.dtodo.repository.IProformaRepository;
@@ -46,6 +50,7 @@ public class ReciboCajaServiceImpl implements IReciboCajaService {
     static final int DIAS_POR_DEFECTO = 30;
 
     private final IReciboCajaRepository reciboRepository;
+    private final IChequeReciboRepository chequeRepository;
     private final IReciboCorrelativoRepository correlativoRepository;
     private final IClienteRepository clienteRepository;
     private final IProformaRepository proformaRepository;
@@ -66,7 +71,8 @@ public class ReciboCajaServiceImpl implements IReciboCajaService {
         Cliente cliente = cliente(solicitud.getIdCliente());
         BigDecimal monto = validarMonto(solicitud.getMonto());
         FormaPagoReciboEnum forma = validarForma(solicitud.getFormaPago());
-        String referencia = textoONulo(solicitud.getReferencia());
+        DatosChequeDto cheque = forma == FormaPagoReciboEnum.CHEQUE ? validarCheque(solicitud.getCheque()) : null;
+        String referencia = cheque != null ? cheque.getBanco() + " #" + cheque.getNumeroCheque() : textoONulo(solicitud.getReferencia());
         if (forma.pideReferencia() && referencia == null) {
             throw new ReglaNegocioException("Un pago por " + forma.name().toLowerCase() + " necesita el número de referencia.");
         }
@@ -98,6 +104,11 @@ public class ReciboCajaServiceImpl implements IReciboCajaService {
                 .usuario(usuario)
                 .build();
         recibo = reciboRepository.save(recibo);
+        if (cheque != null) {
+            chequeRepository.save(ChequeRecibo.builder().recibo(recibo).banco(cheque.getBanco()).numeroCheque(cheque.getNumeroCheque())
+                    .girador(cheque.getGirador()).fechaCheque(cheque.getFechaCheque()).notas(cheque.getNotas())
+                    .estado(EstadoChequeEnum.RECIBIDO).fechaEstado(LocalDateTime.now()).usuarioEstado(usuario).build());
+        }
         log.info("Recibo {} emitido: cliente={}, monto={}", numeroVisible(recibo), cliente.getIdCliente(), monto);
         return aDto(recibo);
     }
@@ -115,6 +126,15 @@ public class ReciboCajaServiceImpl implements IReciboCajaService {
         recibo.setFechaAnulacion(LocalDateTime.now());
         recibo.setUsuarioAnulacion(usuarioDeLaSesion());
         recibo.setMotivoAnulacion(motivoLimpio.length() > 500 ? motivoLimpio.substring(0, 500) : motivoLimpio);
+        chequeRepository.findByRecibo_IdRecibo(recibo.getIdRecibo()).ifPresent(cheque -> {
+            if (cheque.getEstado() != EstadoChequeEnum.RECHAZADO) {
+                cheque.setEstado(EstadoChequeEnum.RECHAZADO);
+                cheque.setFechaEstado(LocalDateTime.now());
+                cheque.setUsuarioEstado(recibo.getUsuarioAnulacion());
+                cheque.setMotivoRechazo("Recibo anulado: " + recibo.getMotivoAnulacion());
+                chequeRepository.save(cheque);
+            }
+        });
         log.info("Recibo {} anulado", numeroVisible(recibo));
         return aDto(reciboRepository.save(recibo));
     }
@@ -193,11 +213,42 @@ public class ReciboCajaServiceImpl implements IReciboCajaService {
         return redondeado;
     }
 
+    /** Un pago con cheque pide banco, número y la fecha escrita en el cheque; el mismo cheque no se registra dos veces. */
+    DatosChequeDto validarCheque(DatosChequeDto datos) {
+        if (datos == null) {
+            throw new ReglaNegocioException("Un pago con cheque necesita los datos del cheque: banco, número y fecha.");
+        }
+        String banco = textoONulo(datos.getBanco());
+        String numero = textoONulo(datos.getNumeroCheque());
+        if (banco == null || numero == null) {
+            throw new ReglaNegocioException("Indique el banco y el número del cheque.");
+        }
+        if (datos.getFechaCheque() == null) {
+            throw new ReglaNegocioException("Indique la fecha escrita en el cheque.");
+        }
+        validarLongitud(banco, 80, "El banco");
+        validarLongitud(numero, 40, "El número de cheque");
+        String girador = textoONulo(datos.getGirador());
+        validarLongitud(girador, 120, "El nombre de quien gira el cheque");
+        String notas = textoONulo(datos.getNotas());
+        validarLongitud(notas, 255, "Las notas del cheque");
+        if (chequeRepository.existeVigente(banco, numero)) {
+            throw new ReglaNegocioException("El cheque " + numero + " de " + banco + " ya está registrado.");
+        }
+        DatosChequeDto limpio = new DatosChequeDto();
+        limpio.setBanco(banco);
+        limpio.setNumeroCheque(numero);
+        limpio.setGirador(girador);
+        limpio.setFechaCheque(datos.getFechaCheque());
+        limpio.setNotas(notas);
+        return limpio;
+    }
+
     static FormaPagoReciboEnum validarForma(String forma) {
         try {
             return FormaPagoReciboEnum.valueOf(forma == null ? "" : forma.trim().toUpperCase());
         } catch (IllegalArgumentException exception) {
-            throw new ReglaNegocioException("La forma de pago debe ser efectivo, depósito o transferencia.");
+            throw new ReglaNegocioException("La forma de pago debe ser efectivo, depósito, transferencia o cheque.");
         }
     }
 
@@ -273,6 +324,9 @@ public class ReciboCajaServiceImpl implements IReciboCajaService {
         dto.setFechaAnulacion(recibo.getFechaAnulacion());
         dto.setUsuarioAnulacion(nombre(recibo.getUsuarioAnulacion()));
         dto.setMotivoAnulacion(recibo.getMotivoAnulacion());
+        if (recibo.getFormaPago() == FormaPagoReciboEnum.CHEQUE) {
+            chequeRepository.findByRecibo_IdRecibo(recibo.getIdRecibo()).ifPresent(cheque -> dto.setCheque(ChequeServiceImpl.aDto(cheque)));
+        }
         return dto;
     }
 

@@ -19,11 +19,13 @@ public class CrearReciboCajaDto {
     /** Opcional: la factura a la que paga. */
     private Long idFactura;
     private BigDecimal monto;
-    /** EFECTIVO, DEPOSITO o TRANSFERENCIA. */
+    /** EFECTIVO, DEPOSITO, TRANSFERENCIA o CHEQUE. */
     private String formaPago;
     private String referencia;
     private String observaciones;
     /** Fecha en que el cliente pagó; hoy si no se manda. */
     private LocalDate fechaPago;
     private Integer idSucursal;
+    /** Solo si la forma de pago es CHEQUE: banco, número, fecha y demás datos del cheque. */
+    private DatosChequeDto cheque;
 }
