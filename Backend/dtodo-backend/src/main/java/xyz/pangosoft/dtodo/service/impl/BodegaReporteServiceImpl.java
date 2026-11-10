@@ -1,6 +1,5 @@
 package xyz.pangosoft.dtodo.service.impl;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -18,18 +17,14 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
-import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
-import net.sf.jasperreports.export.SimpleExporterInput;
-import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
-import net.sf.jasperreports.export.SimpleXlsxReportConfiguration;
 import xyz.pangosoft.dtodo.error.exceptions.NotFoundException;
 import xyz.pangosoft.dtodo.error.exceptions.ReportGenerationException;
+import xyz.pangosoft.dtodo.util.ConsultaJrxml;
 import xyz.pangosoft.dtodo.model.Bodega;
 import xyz.pangosoft.dtodo.model.enums.EstadoDespachoBodegaEnum;
 import xyz.pangosoft.dtodo.repository.IBodegaRepository;
@@ -121,8 +116,6 @@ public class BodegaReporteServiceImpl implements IBodegaReporteService {
             String formato,
             String nombreHoja,
             String descripcionError) {
-        boolean xlsx = "XLSX".equals(formato);
-        parametros.put(JRParameter.IS_IGNORE_PAGINATION, xlsx);
         parametros.put("FORMATO", formato);
         // El costo y los totales valorizados solo los ve un administrador
         parametros.put("VER_COSTOS", Utils.esAdministrador());
@@ -134,8 +127,17 @@ public class BodegaReporteServiceImpl implements IBodegaReporteService {
             }
 
             JasperReport report = JasperCompileManager.compileReport(template);
+            if (PLANTILLA_DESPACHOS.equals(plantilla)) {
+                return ReportesTabulares.despachos(ConsultaJrxml.filas(report, parametros, connection), parametros, formato);
+            }
+            if (PLANTILLA_EXISTENCIAS.equals(plantilla)) {
+                return ReportesTabulares.existencias(ConsultaJrxml.filas(report, parametros, connection), parametros, formato);
+            }
+            if (PLANTILLA_MOVIMIENTOS.equals(plantilla)) {
+                return ReportesTabulares.movimientos(ConsultaJrxml.filas(report, parametros, connection), parametros, formato);
+            }
             JasperPrint print = JasperFillManager.fillReport(report, parametros, connection);
-            return xlsx ? exportarXlsx(print, nombreHoja) : JasperExportManager.exportReportToPdf(print);
+            return JasperExportManager.exportReportToPdf(print);
         } catch (JRException | SQLException | IOException exception) {
             log.error("No fue posible generar {}. formato={}", descripcionError, formato, exception);
             throw new ReportGenerationException("No fue posible generar " + descripcionError + ".", exception);
@@ -172,23 +174,5 @@ public class BodegaReporteServiceImpl implements IBodegaReporteService {
         parametros.put("FECHA_FIN_EXCLUSIVA", Timestamp.valueOf(fechaFin.plusDays(1).atStartOfDay()));
         parametros.put("RANGO", String.format("Del %s al %s",
                 FECHA_VISIBLE.format(fechaInicio), FECHA_VISIBLE.format(fechaFin)));
-    }
-
-    private byte[] exportarXlsx(JasperPrint print, String nombreHoja) throws JRException, IOException {
-        try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-            JRXlsxExporter exporter = new JRXlsxExporter();
-            exporter.setExporterInput(new SimpleExporterInput(print));
-            exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(output));
-
-            SimpleXlsxReportConfiguration configuration = new SimpleXlsxReportConfiguration();
-            configuration.setDetectCellType(true);
-            configuration.setRemoveEmptySpaceBetweenRows(true);
-            configuration.setWhitePageBackground(false);
-            configuration.setOnePagePerSheet(false);
-            configuration.setSheetNames(new String[] { nombreHoja });
-            exporter.setConfiguration(configuration);
-            exporter.exportReport();
-            return output.toByteArray();
-        }
     }
 }

@@ -73,7 +73,7 @@ public class ReporteComisionesServiceImpl implements IReporteComisionesService {
                 Columna.dinero("Devuelto", FilaComisionDto::getMontoDevuelto, true),
                 Columna.dinero("Base (neto)", FilaComisionDto::getMontoNeto, true),
                 Columna.dinero("Meta alcanzada", FilaComisionDto::getMetaAlcanzada, false),
-                Columna.porcentaje("Porcentaje", FilaComisionDto::getPorcentaje),
+                Columna.porcentaje("Porcentaje", f -> f.getPorcentaje() == null ? null : f.getPorcentaje().movePointLeft(2)),
                 Columna.dinero("Comisión", FilaComisionDto::getComision, true),
                 Columna.dinero("Siguiente meta", FilaComisionDto::getSiguienteMeta, false),
                 Columna.dinero("Falta para la siguiente", FilaComisionDto::getFaltaParaSiguiente, false)));

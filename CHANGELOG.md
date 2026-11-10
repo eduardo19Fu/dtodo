@@ -6,6 +6,9 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Cambiado — Reportes de bodega, ventas y compras rediseñados
+- Despachos, existencias y movimientos de bodega, compras por período, ventas por cliente, ventas por producto y rentabilidad por producto: el PDF sigue el diseño de la proforma (logo sin fondo, panel azul con título, filtros y período, nota aclaratoria, recuadros de resumen, filas alternadas y totales). El Excel de cada uno es ahora una tabla editable (encabezados fijos, filtros, cifras reales y totales con fórmulas) en lugar del PDF convertido. Ambos salen de las mismas columnas y de la misma consulta. Las existencias marcan los productos bajo el mínimo; los despachos cancelados no suman al total valorizado. Los porcentajes de los Excel usan el formato nativo de Excel. La póliza individual y la general también siguen el nuevo diseño (recuadros de total facturado, costo, ganancia y vendedores; la general con una franja y subtotal por vendedor; ganancia negativa en rojo) y ahora avisan cuando no hay ventas en el período.
+
 ### Cambiado — Reportes de Reportes → Mayoristas rediseñados
 - Proformas por vendedor, Ventas entregadas, Clientes por ruta y Clientes sin compras (PDF) siguen el diseño de la proforma: logo sin fondo, panel azul con título y período, recuadros de resumen, tabla con filas alternadas y totales alineados con las columnas. Las rutas llevan su franja y subtotal. El porcentaje facturado, los pendientes por autorizar y los días sin comprar se colorean según su gravedad. El Excel no cambia.
 

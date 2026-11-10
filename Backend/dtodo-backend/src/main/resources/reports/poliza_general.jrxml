@@ -1,10 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Póliza general de ventas, agrupada por vendedor. Plantilla escrita a mano en formato JasperReports 6.x; no abrir ni guardar con Jaspersoft Studio 7,
+     que cambia el formato y la librería del proyecto no lo entiende. Mismo lenguaje visual que la proforma y los demás reportes. -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
-              name="poliza_general" pageWidth="612" pageHeight="792" columnWidth="582"
-              isSummaryWithPageHeaderAndFooter="true"
-              leftMargin="20" rightMargin="10" topMargin="20" bottomMargin="30">
+              name="poliza_general" pageWidth="612" pageHeight="792" columnWidth="572"
+              whenNoDataType="AllSectionsNoDetail" isSummaryWithPageHeaderAndFooter="true"
+              leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="28">
+    <style name="Base" isDefault="true" fontName="DejaVu Sans" fontSize="8" forecolor="#1F2A44"/>
+    <style name="Header" style="Base" mode="Opaque" backcolor="#2B3990" forecolor="#FFFFFF"
+           fontSize="8" isBold="true" vTextAlign="Middle"/>
+    <style name="Cell" style="Base" mode="Opaque" backcolor="#FFFFFF" vTextAlign="Middle">
+        <box><bottomPen lineWidth="0.5" lineColor="#E1E7F3"/></box>
+        <conditionalStyle>
+            <conditionExpression><![CDATA[$V{VendedorGroup_COUNT}.intValue() % 2 == 0]]></conditionExpression>
+            <style backcolor="#F6F8FD"/>
+        </conditionalStyle>
+    </style>
+    <style name="Ganancia" style="Cell" isBold="true" forecolor="#087453">
+        <conditionalStyle>
+            <conditionExpression><![CDATA[$F{ganancia} != null && $F{ganancia}.signum() < 0]]></conditionExpression>
+            <style forecolor="#B42318"/>
+        </conditionalStyle>
+    </style>
+    <style name="Subtotal" style="Base" mode="Opaque" backcolor="#E4E9F6" forecolor="#2B3990" fontSize="8.5" isBold="true" vTextAlign="Middle"/>
+    <style name="Etiqueta" style="Base" fontSize="7.5" isBold="true" forecolor="#6B7A90"/>
+
     <parameter name="fechaInicio" class="java.util.Date"/>
     <parameter name="fechaFin" class="java.util.Date"/>
     <parameter name="sucursal" class="java.lang.Integer"/>
@@ -31,6 +52,7 @@ group by u.id_usuario, u.primer_nombre, u.apellido, s.nombre,
     p.id_producto, p.nombre, p.precio_compra
 order by vendedor asc, p.nombre asc]]>
     </queryString>
+
     <field name="id_usuario" class="java.lang.Integer"/>
     <field name="vendedor" class="java.lang.String"/>
     <field name="sucursal" class="java.lang.String"/>
@@ -41,166 +63,199 @@ order by vendedor asc, p.nombre asc]]>
     <field name="pv_total" class="java.math.BigDecimal"/>
     <field name="ganancia" class="java.math.BigDecimal"/>
 
-    <variable name="vendedorPcTotal" class="java.math.BigDecimal" resetType="Group"
-              resetGroup="VendedorGroup" calculation="Sum">
+    <variable name="totalPc" class="java.math.BigDecimal" calculation="Sum">
         <variableExpression><![CDATA[$F{pc_total}]]></variableExpression>
+        <initialValueExpression><![CDATA[java.math.BigDecimal.ZERO]]></initialValueExpression>
     </variable>
-    <variable name="vendedorPvTotal" class="java.math.BigDecimal" resetType="Group"
-              resetGroup="VendedorGroup" calculation="Sum">
+    <variable name="totalPv" class="java.math.BigDecimal" calculation="Sum">
         <variableExpression><![CDATA[$F{pv_total}]]></variableExpression>
+        <initialValueExpression><![CDATA[java.math.BigDecimal.ZERO]]></initialValueExpression>
     </variable>
-    <variable name="vendedorGananciaTotal" class="java.math.BigDecimal" resetType="Group"
-              resetGroup="VendedorGroup" calculation="Sum">
+    <variable name="totalGanancia" class="java.math.BigDecimal" calculation="Sum">
         <variableExpression><![CDATA[$F{ganancia}]]></variableExpression>
+        <initialValueExpression><![CDATA[java.math.BigDecimal.ZERO]]></initialValueExpression>
     </variable>
-    <variable name="pcTotal" class="java.math.BigDecimal" calculation="Sum">
+    <variable name="productos" class="java.lang.Integer" calculation="Count">
+        <variableExpression><![CDATA[$F{nombre_producto}]]></variableExpression>
+    </variable>
+    <variable name="vendedorPc" class="java.math.BigDecimal" resetType="Group" resetGroup="VendedorGroup" calculation="Sum">
         <variableExpression><![CDATA[$F{pc_total}]]></variableExpression>
+        <initialValueExpression><![CDATA[java.math.BigDecimal.ZERO]]></initialValueExpression>
     </variable>
-    <variable name="pvTotal" class="java.math.BigDecimal" calculation="Sum">
+    <variable name="vendedorPv" class="java.math.BigDecimal" resetType="Group" resetGroup="VendedorGroup" calculation="Sum">
         <variableExpression><![CDATA[$F{pv_total}]]></variableExpression>
+        <initialValueExpression><![CDATA[java.math.BigDecimal.ZERO]]></initialValueExpression>
     </variable>
-    <variable name="gananciaTotal" class="java.math.BigDecimal" calculation="Sum">
+    <variable name="vendedorGanancia" class="java.math.BigDecimal" resetType="Group" resetGroup="VendedorGroup" calculation="Sum">
         <variableExpression><![CDATA[$F{ganancia}]]></variableExpression>
+        <initialValueExpression><![CDATA[java.math.BigDecimal.ZERO]]></initialValueExpression>
+    </variable>
+    <variable name="vendedores" class="java.lang.Integer" calculation="DistinctCount">
+        <variableExpression><![CDATA[$F{id_usuario}]]></variableExpression>
     </variable>
 
     <group name="VendedorGroup" keepTogether="true">
         <groupExpression><![CDATA[$F{id_usuario}]]></groupExpression>
         <groupHeader>
             <band height="30">
-                <rectangle radius="5">
-                    <reportElement mode="Opaque" x="0" y="3" width="572" height="24" backcolor="#DDEEEE" forecolor="#A8CCCC"/>
+                <rectangle radius="6">
+                    <reportElement mode="Opaque" x="0" y="6" width="572" height="22" forecolor="#D3DBEE" backcolor="#F2F5FC"/>
+                    <graphicElement><pen lineWidth="0.75" lineColor="#D3DBEE"/></graphicElement>
                 </rectangle>
-                <staticText>
-                    <reportElement x="12" y="8" width="70" height="16" forecolor="#315F61"/>
-                    <textElement><font size="11" isBold="true"/></textElement>
-                    <text><![CDATA[Vendedor:]]></text>
-                </staticText>
-                <textField>
-                    <reportElement x="82" y="8" width="470" height="16" forecolor="#315F61"/>
-                    <textElement><font size="11" isBold="true"/></textElement>
-                    <textFieldExpression><![CDATA[$F{vendedor}]]></textFieldExpression>
+                <rectangle>
+                    <reportElement mode="Opaque" x="0" y="6" width="5" height="22" forecolor="#2B3990" backcolor="#2B3990"/>
+                    <graphicElement><pen lineWidth="0.5" lineColor="#2B3990"/></graphicElement>
+                </rectangle>
+                <textField isBlankWhenNull="true">
+                    <reportElement x="14" y="6" width="550" height="22" forecolor="#2B3990"/>
+                    <textElement verticalAlignment="Middle"><font size="9.5" isBold="true"/></textElement>
+                    <textFieldExpression><![CDATA["Vendedor: " + $F{vendedor}]]></textFieldExpression>
                 </textField>
             </band>
         </groupHeader>
         <groupFooter>
-            <band height="54">
-                <line><reportElement x="240" y="3" width="327" height="1" forecolor="#A8CCCC"/></line>
-                <staticText>
-                    <reportElement x="240" y="9" width="105" height="16"/>
-                    <textElement textAlignment="Right"><font size="10" isBold="true"/></textElement>
-                    <text><![CDATA[Subtotal vendedor:]]></text>
-                </staticText>
-                <textField pattern="Q#,##0.00;Q-#,##0.00">
-                    <reportElement x="345" y="9" width="72" height="16"/>
-                    <textElement textAlignment="Right"><font size="10" isBold="true"/></textElement>
-                    <textFieldExpression><![CDATA[$V{vendedorPcTotal}]]></textFieldExpression>
-                </textField>
-                <textField pattern="Q#,##0.00;Q-#,##0.00">
-                    <reportElement x="421" y="9" width="72" height="16"/>
-                    <textElement textAlignment="Right"><font size="10" isBold="true"/></textElement>
-                    <textFieldExpression><![CDATA[$V{vendedorPvTotal}]]></textFieldExpression>
-                </textField>
-                <textField pattern="Q#,##0.00;Q-#,##0.00">
-                    <reportElement x="497" y="9" width="70" height="16" forecolor="#1878A8"/>
-                    <textElement textAlignment="Right"><font size="10" isBold="true"/></textElement>
-                    <textFieldExpression><![CDATA[$V{vendedorGananciaTotal}]]></textFieldExpression>
-                </textField>
+            <band height="34">
+            <staticText><reportElement style="Subtotal" x="0" y="2" width="292" height="22"/><textElement textAlignment="Right"><font size="9"/><paragraph rightIndent="8"/></textElement><text><![CDATA[Subtotal del vendedor:]]></text></staticText>
+            <textField pattern="Q #,##0.00"><reportElement style="Subtotal" x="292" y="2" width="94" height="22"/><textElement textAlignment="Right"><paragraph rightIndent="8"/></textElement><textFieldExpression><![CDATA[$V{vendedorPc}]]></textFieldExpression></textField>
+            <textField pattern="Q #,##0.00"><reportElement style="Subtotal" x="386" y="2" width="94" height="22"/><textElement textAlignment="Right"><paragraph rightIndent="8"/></textElement><textFieldExpression><![CDATA[$V{vendedorPv}]]></textFieldExpression></textField>
+            <textField pattern="Q #,##0.00"><reportElement style="Subtotal" x="480" y="2" width="92" height="22"/><textElement textAlignment="Right"><paragraph rightIndent="8"/></textElement><textFieldExpression><![CDATA[$V{vendedorGanancia}]]></textFieldExpression></textField>
             </band>
         </groupFooter>
     </group>
 
-    <background><band/></background>
     <title>
-        <band height="80">
-            <image>
-                <reportElement x="11" y="1" width="120" height="70"/>
-                <imageExpression><![CDATA[this.getClass().getResourceAsStream("/static/images/reports-image/logo-dtodo.jpg")]]></imageExpression>
+        <band height="170">
+            <image scaleImage="RetainShape" hAlign="Left">
+                <reportElement x="0" y="2" width="110" height="58"/>
+                <imageExpression><![CDATA[this.getClass().getResourceAsStream("/static/images/reports-image/logo-dtodo-proforma.png")]]></imageExpression>
             </image>
+            <rectangle radius="9">
+                <reportElement mode="Opaque" x="122" y="2" width="450" height="60" forecolor="#2B3990" backcolor="#2B3990"/>
+                <graphicElement><pen lineWidth="0.5" lineColor="#2B3990"/></graphicElement>
+            </rectangle>
             <staticText>
-                <reportElement x="131" y="13" width="385" height="32"/>
-                <textElement textAlignment="Center"><font size="23" isBold="true"/></textElement>
-                <text><![CDATA[PÓLIZA GENERAL DE VENTAS]]></text>
+                <reportElement x="136" y="8" width="250" height="11" forecolor="#C3CFFF"/>
+                <textElement verticalAlignment="Middle"><font size="7.5" isBold="true"/></textElement>
+                <text><![CDATA[VENTAS · PÓLIZA GENERAL]]></text>
             </staticText>
             <staticText>
-                <reportElement x="131" y="47" width="385" height="18" forecolor="#4B8587"/>
-                <textElement textAlignment="Center"><font size="11"/></textElement>
-                <text><![CDATA[Resumen agrupado por vendedor]]></text>
+                <reportElement x="136" y="19" width="280" height="24" forecolor="#FFFFFF"/>
+                <textElement verticalAlignment="Middle"><font size="15" isBold="true"/></textElement>
+                <text><![CDATA[Póliza general de ventas]]></text>
             </staticText>
-            <line>
-                <reportElement x="0" y="74" width="572" height="1" forecolor="#29ABE2"/>
-                <graphicElement><pen lineWidth="2.0" lineStyle="Double"/></graphicElement>
-            </line>
-        </band>
-    </title>
-    <pageHeader>
-        <band height="46">
-            <staticText>
-                <reportElement x="0" y="0" width="60" height="16"/>
-                <textElement><font size="11" isBold="true"/></textElement>
-                <text><![CDATA[Sucursal:]]></text>
-            </staticText>
-            <textField>
-                <reportElement x="60" y="0" width="300" height="16"/>
-                <textElement><font size="11"/></textElement>
-                <textFieldExpression><![CDATA[$F{sucursal}]]></textFieldExpression>
+            <textField isBlankWhenNull="true" textAdjust="ScaleFont">
+                <reportElement x="136" y="43" width="280" height="15" forecolor="#FFFFFF"/>
+                <textElement verticalAlignment="Middle"><font size="9.5" isBold="true"/></textElement>
+                <textFieldExpression><![CDATA[($F{sucursal} == null ? "" : $F{sucursal}) + " · Resumen por vendedor"]]></textFieldExpression>
             </textField>
             <staticText>
-                <reportElement x="0" y="20" width="60" height="16"/>
-                <textElement><font size="11" isBold="true"/></textElement>
-                <text><![CDATA[Período:]]></text>
+                <reportElement x="424" y="10" width="136" height="10" forecolor="#C3CFFF"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="7" isBold="true"/></textElement>
+                <text><![CDATA[PERÍODO]]></text>
             </staticText>
-            <textField>
-                <reportElement x="60" y="20" width="230" height="16"/>
-                <textElement><font size="11"/></textElement>
-                <textFieldExpression><![CDATA[new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fechaInicio})
-                    + " al " + new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fechaFin})]]></textFieldExpression>
+            <textField isBlankWhenNull="true" textAdjust="ScaleFont">
+                <reportElement x="410" y="21" width="150" height="30" forecolor="#FFFFFF"/>
+                <textElement textAlignment="Right" verticalAlignment="Top"><font size="10" isBold="true"/></textElement>
+                <textFieldExpression><![CDATA[new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fechaInicio}) + " al " + new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fechaFin})]]></textFieldExpression>
             </textField>
-            <textField pattern="dd/MM/yyyy h:mm a">
-                <reportElement x="452" y="0" width="120" height="16"/>
-                <textElement textAlignment="Right"/>
+            <textField pattern="dd/MM/yyyy HH:mm">
+                <reportElement x="424" y="49" width="136" height="10" forecolor="#C3CFFF"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="6.5"/></textElement>
                 <textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
             </textField>
-            <line><reportElement x="0" y="42" width="572" height="1"/></line>
-        </band>
-    </pageHeader>
-    <columnHeader>
-        <band height="28">
-            <rectangle radius="5">
-                <reportElement mode="Opaque" x="0" y="2" width="572" height="23" backcolor="#EAF6FC" forecolor="#CFEBF7"/>
+            <rectangle radius="8">
+                <reportElement mode="Opaque" x="0" y="70" width="572" height="30" forecolor="#D3DBEE" backcolor="#F2F5FC"/>
+                <graphicElement><pen lineWidth="0.75" lineColor="#D3DBEE"/></graphicElement>
             </rectangle>
-            <staticText><reportElement x="0" y="7" width="64" height="16"/><textElement textAlignment="Center"><font size="10" isBold="true"/></textElement><text><![CDATA[Cantidad]]></text></staticText>
-            <staticText><reportElement x="68" y="7" width="185" height="16"/><textElement><font size="10" isBold="true"/></textElement><text><![CDATA[Producto]]></text></staticText>
-            <staticText><reportElement x="263" y="7" width="96" height="16"/><textElement textAlignment="Right"><font size="10" isBold="true"/></textElement><text><![CDATA[P.C. Total]]></text></staticText>
-            <staticText><reportElement x="363" y="7" width="96" height="16"/><textElement textAlignment="Right"><font size="10" isBold="true"/></textElement><text><![CDATA[P.V. Total]]></text></staticText>
-            <staticText><reportElement x="463" y="7" width="104" height="16"/><textElement textAlignment="Right"><font size="10" isBold="true"/></textElement><text><![CDATA[Ganancia]]></text></staticText>
+            <rectangle>
+                <reportElement mode="Opaque" x="0" y="70" width="5" height="30" forecolor="#2B3990" backcolor="#2B3990"/>
+                <graphicElement><pen lineWidth="0.5" lineColor="#2B3990"/></graphicElement>
+            </rectangle>
+            <staticText>
+                <reportElement x="14" y="73" width="550" height="24" forecolor="#6B7A90"/>
+                <textElement verticalAlignment="Middle"><font size="7.5" isItalic="true"/></textElement>
+                <text><![CDATA[P.V. es lo facturado con descuento en el período; P.C. es el precio de compra actual por la cantidad vendida; la ganancia es la diferencia. No incluye facturas anuladas.]]></text>
+            </staticText>
+            <rectangle radius="8">
+                <reportElement mode="Opaque" x="0" y="108" width="134" height="46" forecolor="#2B3990" backcolor="#2B3990"/>
+                <graphicElement><pen lineWidth="0.75" lineColor="#2B3990"/></graphicElement>
+            </rectangle>
+            <staticText><reportElement x="12" y="114" width="114" height="11" forecolor="#C3CFFF"/><textElement><font size="7.5" isBold="true"/></textElement><text><![CDATA[Total facturado (P.V.)]]></text></staticText>
+            <textField evaluationTime="Report" pattern="Q #,##0.00" textAdjust="ScaleFont"><reportElement x="12" y="126" width="114" height="22" forecolor="#FFFFFF"/><textElement verticalAlignment="Middle"><font size="13" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{totalPv}]]></textFieldExpression></textField>
+            <rectangle radius="8">
+                <reportElement mode="Opaque" x="146" y="108" width="134" height="46" forecolor="#D3DBEE" backcolor="#FFFFFF"/>
+                <graphicElement><pen lineWidth="0.75" lineColor="#D3DBEE"/></graphicElement>
+            </rectangle>
+            <staticText><reportElement style="Etiqueta" x="158" y="114" width="114" height="11"/><text><![CDATA[Costo (P.C.)]]></text></staticText>
+            <textField evaluationTime="Report" pattern="Q #,##0.00" textAdjust="ScaleFont"><reportElement x="158" y="126" width="114" height="22" forecolor="#2B3990"/><textElement verticalAlignment="Middle"><font size="13" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{totalPc}]]></textFieldExpression></textField>
+            <rectangle radius="8">
+                <reportElement mode="Opaque" x="292" y="108" width="134" height="46" forecolor="#D3DBEE" backcolor="#FFFFFF"/>
+                <graphicElement><pen lineWidth="0.75" lineColor="#D3DBEE"/></graphicElement>
+            </rectangle>
+            <staticText><reportElement style="Etiqueta" x="304" y="114" width="114" height="11"/><text><![CDATA[Ganancia]]></text></staticText>
+            <textField evaluationTime="Report" pattern="Q #,##0.00" textAdjust="ScaleFont"><reportElement x="304" y="126" width="114" height="22" forecolor="#087453"/><textElement verticalAlignment="Middle"><font size="13" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{totalGanancia}]]></textFieldExpression></textField>
+            <rectangle radius="8">
+                <reportElement mode="Opaque" x="438" y="108" width="134" height="46" forecolor="#D3DBEE" backcolor="#FFFFFF"/>
+                <graphicElement><pen lineWidth="0.75" lineColor="#D3DBEE"/></graphicElement>
+            </rectangle>
+            <staticText><reportElement style="Etiqueta" x="450" y="114" width="114" height="11"/><text><![CDATA[Vendedores]]></text></staticText>
+            <textField evaluationTime="Report" pattern="#,##0" textAdjust="ScaleFont"><reportElement x="450" y="126" width="114" height="22" forecolor="#2B3990"/><textElement verticalAlignment="Middle"><font size="13" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{vendedores} == null ? Integer.valueOf(0) : $V{vendedores}]]></textFieldExpression></textField>
+        </band>
+    </title>
+    <columnHeader>
+        <band height="30">
+            <staticText><reportElement style="Header" x="0" y="2" width="62" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="8"/></textElement><text><![CDATA[Cantidad]]></text></staticText>
+            <staticText><reportElement style="Header" x="62" y="2" width="230" height="26"/><textElement textAlignment="Left"><paragraph leftIndent="8"/></textElement><text><![CDATA[Producto]]></text></staticText>
+            <staticText><reportElement style="Header" x="292" y="2" width="94" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="8"/></textElement><text><![CDATA[P.C. Total]]></text></staticText>
+            <staticText><reportElement style="Header" x="386" y="2" width="94" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="8"/></textElement><text><![CDATA[P.V. Total]]></text></staticText>
+            <staticText><reportElement style="Header" x="480" y="2" width="92" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="8"/></textElement><text><![CDATA[Ganancia]]></text></staticText>
         </band>
     </columnHeader>
     <detail>
-        <band height="28">
-            <textField><reportElement x="0" y="2" width="64" height="16"/><textElement textAlignment="Center"><font size="9"/></textElement><textFieldExpression><![CDATA[$F{cantidad}]]></textFieldExpression></textField>
-            <textField textAdjust="StretchHeight"><reportElement x="68" y="2" width="185" height="22"/><textElement><font size="8"/></textElement><textFieldExpression><![CDATA[$F{nombre_producto}]]></textFieldExpression></textField>
-            <textField pattern="Q#,##0.00;Q-#,##0.00"><reportElement x="263" y="2" width="96" height="16"/><textElement textAlignment="Right"><font size="9"/></textElement><textFieldExpression><![CDATA[$F{pc_total}]]></textFieldExpression></textField>
-            <textField pattern="Q#,##0.00;Q-#,##0.00"><reportElement x="363" y="2" width="96" height="16"/><textElement textAlignment="Right"><font size="9"/></textElement><textFieldExpression><![CDATA[$F{pv_total}]]></textFieldExpression></textField>
-            <textField pattern="Q#,##0.00;Q-#,##0.00"><reportElement x="463" y="2" width="104" height="16"/><textElement textAlignment="Right"><font size="9"/></textElement><textFieldExpression><![CDATA[$F{ganancia}]]></textFieldExpression></textField>
-            <line><reportElement positionType="FixRelativeToBottom" x="0" y="26" width="572" height="1" forecolor="#E2E2E2"/></line>
+        <band height="24">
+            <textField pattern="#,##0" isBlankWhenNull="true" textAdjust="ScaleFont"><reportElement style="Cell" x="0" y="0" width="62" height="24"/><textElement textAlignment="Right"><paragraph rightIndent="8"/></textElement><textFieldExpression><![CDATA[$F{cantidad}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true" textAdjust="ScaleFont"><reportElement style="Cell" x="62" y="0" width="230" height="24"/><textElement textAlignment="Left"><paragraph leftIndent="8"/></textElement><textFieldExpression><![CDATA[$F{nombre_producto}]]></textFieldExpression></textField>
+            <textField pattern="Q #,##0.00" isBlankWhenNull="true" textAdjust="ScaleFont"><reportElement style="Cell" x="292" y="0" width="94" height="24"/><textElement textAlignment="Right"><paragraph rightIndent="8"/></textElement><textFieldExpression><![CDATA[$F{pc_total}]]></textFieldExpression></textField>
+            <textField pattern="Q #,##0.00" isBlankWhenNull="true" textAdjust="ScaleFont"><reportElement style="Cell" x="386" y="0" width="94" height="24"/><textElement textAlignment="Right"><paragraph rightIndent="8"/></textElement><textFieldExpression><![CDATA[$F{pv_total}]]></textFieldExpression></textField>
+            <textField pattern="Q #,##0.00" isBlankWhenNull="true" textAdjust="ScaleFont"><reportElement style="Ganancia" x="480" y="0" width="92" height="24"/><textElement textAlignment="Right"><paragraph rightIndent="8"/></textElement><textFieldExpression><![CDATA[$F{ganancia}]]></textFieldExpression></textField>
         </band>
     </detail>
+
     <pageFooter>
-        <band height="20">
-            <textField><reportElement x="0" y="0" width="90" height="16"/><textElement textAlignment="Right"><font size="9"/></textElement><textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER} + " de"]]></textFieldExpression></textField>
-            <textField evaluationTime="Report"><reportElement x="90" y="0" width="35" height="16"/><textElement><font size="9"/></textElement><textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression></textField>
+        <band height="22">
+            <line><reportElement x="0" y="2" width="572" height="1" forecolor="#E1E7F3"/></line>
+            <staticText>
+                <reportElement x="0" y="6" width="260" height="14" forecolor="#7B8798"/>
+                <textElement><font size="8"/></textElement>
+                <text><![CDATA[Póliza general · D'Todo]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="412" y="6" width="115" height="14" forecolor="#7B8798"/>
+                <textElement textAlignment="Right"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+            <textField evaluationTime="Report">
+                <reportElement x="527" y="6" width="35" height="14" forecolor="#7B8798"/>
+                <textElement textAlignment="Left"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA[" de " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
         </band>
     </pageFooter>
+
     <summary>
-        <band height="92">
-            <rectangle radius="8"><reportElement mode="Opaque" x="230" y="8" width="342" height="70" backcolor="#F2F8F8" forecolor="#A8CCCC"/></rectangle>
-            <staticText><reportElement x="245" y="17" width="135" height="18" forecolor="#315F61"/><textElement><font size="13" isBold="true"/></textElement><text><![CDATA[TOTALES GENERALES]]></text></staticText>
-            <staticText><reportElement x="245" y="43" width="70" height="16"/><textElement><font size="9" isBold="true"/></textElement><text><![CDATA[P.C. Total]]></text></staticText>
-            <staticText><reportElement x="355" y="43" width="70" height="16"/><textElement><font size="9" isBold="true"/></textElement><text><![CDATA[P.V. Total]]></text></staticText>
-            <staticText><reportElement x="465" y="43" width="70" height="16"/><textElement><font size="9" isBold="true"/></textElement><text><![CDATA[Ganancia]]></text></staticText>
-            <textField pattern="Q#,##0.00;Q-#,##0.00"><reportElement x="245" y="58" width="95" height="16"/><textElement><font size="11" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{pcTotal}]]></textFieldExpression></textField>
-            <textField pattern="Q#,##0.00;Q-#,##0.00"><reportElement x="355" y="58" width="95" height="16"/><textElement><font size="11" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{pvTotal}]]></textFieldExpression></textField>
-            <textField pattern="Q#,##0.00;Q-#,##0.00"><reportElement x="465" y="58" width="95" height="16" forecolor="#1878A8"/><textElement><font size="11" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{gananciaTotal}]]></textFieldExpression></textField>
+        <band height="80">
+            <staticText><reportElement style="Header" x="0" y="8" width="292" height="26"/><textElement textAlignment="Right"><font size="9"/><paragraph rightIndent="8"/></textElement><text><![CDATA[Totales]]></text></staticText>
+            <textField pattern="Q #,##0.00"><reportElement style="Header" x="292" y="8" width="94" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="8"/></textElement><textFieldExpression><![CDATA[$V{totalPc}]]></textFieldExpression></textField>
+            <textField pattern="Q #,##0.00"><reportElement style="Header" x="386" y="8" width="94" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="8"/></textElement><textFieldExpression><![CDATA[$V{totalPv}]]></textFieldExpression></textField>
+            <textField pattern="Q #,##0.00"><reportElement style="Header" x="480" y="8" width="92" height="26"/><textElement textAlignment="Right"><paragraph rightIndent="8"/></textElement><textFieldExpression><![CDATA[$V{totalGanancia}]]></textFieldExpression></textField>
+            <staticText>
+                <reportElement x="0" y="46" width="420" height="26" forecolor="#52647C" backcolor="#F2F5FC" mode="Opaque">
+                    <printWhenExpression><![CDATA[$V{REPORT_COUNT} == null || $V{REPORT_COUNT}.intValue() == 0]]></printWhenExpression>
+                </reportElement>
+                <box><pen lineWidth="0.5" lineColor="#D3DBEE"/></box>
+                <textElement verticalAlignment="Middle"><font size="9" isItalic="true"/><paragraph leftIndent="8"/></textElement>
+                <text><![CDATA[No hay ventas en el período seleccionado.]]></text>
+            </staticText>
         </band>
     </summary>
 </jasperReport>

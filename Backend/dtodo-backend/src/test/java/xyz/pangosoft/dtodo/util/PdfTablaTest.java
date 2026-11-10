@@ -68,7 +68,7 @@ class PdfTablaTest {
     void formateaMontosFechasYPorcentajes() {
         assertEquals("Q1,234.50", PdfTabla.texto(ExcelTabla.Tipo.DINERO, new BigDecimal("1234.5")));
         assertEquals("09/11/2026", PdfTabla.texto(ExcelTabla.Tipo.FECHA, LocalDate.of(2026, 11, 9)));
-        assertEquals("40.00 %", PdfTabla.texto(ExcelTabla.Tipo.PORCENTAJE, new BigDecimal("40")));
+        assertEquals("40.00 %", PdfTabla.texto(ExcelTabla.Tipo.PORCENTAJE, new BigDecimal("0.4")));
         assertEquals("", PdfTabla.texto(ExcelTabla.Tipo.TEXTO, null));
     }
 }

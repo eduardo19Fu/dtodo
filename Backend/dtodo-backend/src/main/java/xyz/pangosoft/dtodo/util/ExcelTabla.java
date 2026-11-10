@@ -94,7 +94,7 @@ public final class ExcelTabla {
             return new Columna<>(titulo, valor, Tipo.DINERO, sumar, 0);
         }
 
-        /** Valor decimal ya expresado como porcentaje (50 = 50 %), con el formato de Excel. */
+        /** Una fracción (0.4 = 40 %) que Excel muestra como porcentaje. */
         public static <T> Columna<T> porcentaje(String titulo, Function<T, Object> valor) {
             return new Columna<>(titulo, valor, Tipo.PORCENTAJE, false, 0);
         }
@@ -351,7 +351,7 @@ public final class ExcelTabla {
                 case DINERO:
                     return "\"Q\"#,##0.00";
                 case PORCENTAJE:
-                    return "0.00\" %\"";
+                    return "0.00%";
                 case FECHA:
                     return "dd/mm/yyyy";
                 case FECHA_HORA:

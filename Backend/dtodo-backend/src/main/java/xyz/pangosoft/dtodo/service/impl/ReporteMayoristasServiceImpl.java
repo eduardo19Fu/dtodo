@@ -201,8 +201,7 @@ public class ReporteMayoristasServiceImpl implements IReporteMayoristasService {
                         Columna.entero("Facturadas", fila -> fila.get("facturadas"), true),
                         Columna.dinero("Valor facturado", fila -> fila.get("valor_facturado"), true),
                         Columna.entero("Por autorizar", fila -> fila.get("por_autorizar"), true),
-                        Columna.porcentaje("Conversión", fila -> fila.get("tasa_conversion") == null ? null
-                                : new java.math.BigDecimal(String.valueOf(fila.get("tasa_conversion"))).multiply(new java.math.BigDecimal(100))));
+                        Columna.porcentaje("Conversión", fila -> fila.get("tasa_conversion")));
             default:
                 return List.of(texto("Ruta", "ruta"), texto("Vendedor", "vendedor"),
                         Columna.entero("Pedidos", fila -> fila.get("pedidos"), true),

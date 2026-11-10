@@ -85,7 +85,7 @@ class ReporteMayoristasServiceImplTest {
             assertEquals("Bryan Vargas", datos.getCell(0).getStringCellValue());
             assertEquals(10.0, datos.getCell(1).getNumericCellValue());
             assertEquals(5000.0, datos.getCell(2).getNumericCellValue());
-            assertEquals(40.0, datos.getCell(6).getNumericCellValue(), 0.001);
+            assertEquals(0.4, datos.getCell(6).getNumericCellValue(), 0.0001);
             assertEquals(10.0, hoja.getRow(6).getCell(1).getNumericCellValue());
         }
     }
