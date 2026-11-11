@@ -87,6 +87,7 @@ import { DetailClienteComponent } from './components/clientes/detail-cliente/det
 import { ModalBuscarProductoSucursalComponent } from './components/devoluciones-bodega/modal-buscar-producto-sucursal/modal-buscar-producto-sucursal.component';
 import { TooltipDirective } from './directives/tooltip.directive';
 import { DateRangePickerComponent } from './components/shared/date-range-picker/date-range-picker.component';
+import { SucursalSubtituloComponent } from './components/shared/sucursal-subtitulo/sucursal-subtitulo.component';
 import { ReportesComponent } from './components/reportes/reportes.component';
 import { ReporteSelectorComponent } from './components/reportes/reporte-selector/reporte-selector.component';
 
@@ -172,6 +173,7 @@ import { ReporteSelectorComponent } from './components/reportes/reporte-selector
     ModalBuscarProductoSucursalComponent,
     TooltipDirective,
     DateRangePickerComponent,
+    SucursalSubtituloComponent,
     ReportesComponent,
     ReporteSelectorComponent
   ],

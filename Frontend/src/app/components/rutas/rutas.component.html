@@ -1,6 +1,7 @@
 <header class="management-header">
   <div class="management-heading">
     <h1>{{title}}</h1>
+    <app-sucursal-subtitulo></app-sucursal-subtitulo>
     <p>Organiza las zonas de venta, los días de visita y sus vendedores.</p>
   </div>
   <div class="listing-actions"><a *ngIf="auth.hasRole('ROLE_ADMIN')" [routerLink]="['/rutas/create']"

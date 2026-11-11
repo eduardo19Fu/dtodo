@@ -1,6 +1,7 @@
 <header class="management-header">
   <div class="management-heading">
     <h1>{{title}}</h1>
+    <app-sucursal-subtitulo></app-sucursal-subtitulo>
     <p *ngIf="!esRepartidor">Prepara y entrega los pedidos mayoristas de cada ruta.</p>
     <p *ngIf="esRepartidor">Consulta tus pedidos en ruta y registra lo entregado a cada cliente.</p>
   </div>
