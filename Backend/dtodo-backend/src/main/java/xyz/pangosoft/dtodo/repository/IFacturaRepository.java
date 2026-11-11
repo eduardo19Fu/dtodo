@@ -6,6 +6,9 @@ import xyz.pangosoft.dtodo.dto.FacturaDto;
 import xyz.pangosoft.dtodo.dto.DetalleDocumentoDto;
 import xyz.pangosoft.dtodo.dto.DocumentoOrigenNotaDto;
 import xyz.pangosoft.dtodo.model.Factura;
+import xyz.pangosoft.dtodo.model.Proforma;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
@@ -26,6 +29,19 @@ public interface IFacturaRepository extends JpaRepository<Factura, Long> {
     Long getCantidadVentasPorUsuario(@Param("idUsuario") Integer idUsuario);
 
     List<Factura> findByFechaBetween(Date iniDate, Date endDate);
+
+    /**
+     * Bloquea la fila de la proforma. Al emitir una factura se toma antes de revisar las vigentes: dos facturas
+     * simultáneas de la misma proforma se serializan y la segunda ve la primera.
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select p from Proforma p where p.idProforma = :idProforma")
+    Optional<Proforma> bloquearProforma(@Param("idProforma") Long idProforma);
+
+    /** Facturas vigentes (no anuladas) de la proforma, con lectura bloqueante. */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select f from Factura f where f.idProformaOrigen = :idProformaOrigen and f.estado.estado <> 'ANULADO' order by f.idFactura")
+    List<Factura> bloquearVigentesDeProforma(@Param("idProformaOrigen") Long idProformaOrigen);
 
     Optional<Factura> findFacturaByNoFactura(Long noFactura);
 
