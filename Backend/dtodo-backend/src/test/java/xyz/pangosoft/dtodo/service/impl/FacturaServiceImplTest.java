@@ -260,6 +260,42 @@ class FacturaServiceImplTest {
     }
 
     @Test
+    void rechazaFacturarUnaProformaQueYaTieneFacturaVigente() {
+        FacturaServiceImpl service = servicioDeVenta();
+        Factura existente = new Factura();
+        existente.setSerie("A");
+        existente.setNoFactura(55L);
+        when(repoVenta.bloquearVigentesDeProforma(33L)).thenReturn(java.util.List.of(existente));
+        Factura venta = venta();
+        venta.setIdProformaOrigen(33L);
+
+        xyz.pangosoft.dtodo.error.exceptions.ReglaNegocioException error = assertThrows(
+                xyz.pangosoft.dtodo.error.exceptions.ReglaNegocioException.class, () -> service.facturaFel(venta));
+
+        org.junit.jupiter.api.Assertions.assertTrue(error.getMessage().contains("A-55"));
+        verify(repoVenta, never()).saveAndFlush(any());
+        verify(felVenta, never()).certificar(any(), any(), any(), any());
+    }
+
+    @Test
+    void unaProformaConSuFacturaAnuladaSePuedeFacturarDeNuevo() {
+        FacturaServiceImpl service = servicioDeVenta();
+        // La factura anulada no es vigente: la consulta de vigentes viene vacia y la reemision sigue su curso.
+        when(repoVenta.bloquearVigentesDeProforma(33L)).thenReturn(Collections.emptyList());
+        when(felVenta.certificar(any(), any(), any(), eq("CERTIFICACION"))).thenReturn(certificacion(true));
+        Factura venta = venta();
+        venta.setIdProformaOrigen(33L);
+
+        Factura resultado = service.facturaFel(venta);
+
+        assertEquals("UUID-123", resultado.getCertificacionSat());
+        InOrder orden = inOrder(repoVenta);
+        orden.verify(repoVenta).bloquearProforma(33L);
+        orden.verify(repoVenta).bloquearVigentesDeProforma(33L);
+        orden.verify(repoVenta).saveAndFlush(any());
+    }
+
+    @Test
     void siLaCertificacionFallaLanzaExcepcionParaRevertirLaVenta() {
         FacturaServiceImpl service = servicioDeVenta();
         when(felVenta.certificar(any(), any(), any(), eq("CERTIFICACION"))).thenReturn(certificacion(false));
