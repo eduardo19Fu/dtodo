@@ -29,6 +29,7 @@ import xyz.pangosoft.dtodo.dto.FacturaDto;
 import xyz.pangosoft.dtodo.dto.DetalleDocumentoDto;
 import xyz.pangosoft.dtodo.dto.DocumentoOrigenNotaDto;
 import xyz.pangosoft.dtodo.error.exceptions.NotFoundException;
+import xyz.pangosoft.dtodo.error.exceptions.ReglaNegocioException;
 import xyz.pangosoft.dtodo.error.exceptions.ReportGenerationException;
 import xyz.pangosoft.dtodo.model.Certificador;
 import xyz.pangosoft.dtodo.model.Cliente;
@@ -405,6 +406,7 @@ public class FacturaServiceImpl implements IFacturaService {
 			DocumentoFel documentoFel = new DocumentoFel();
 
 			if(factura.getIdFactura() == null) {
+				validarProformaSinFacturaVigente(factura.getIdProformaOrigen());
 				log.info("********** Registrando nueva venta **********");
 				List<String> lineasSolicitadas = resumirLineasSolicitadas(factura.getItemsFactura());
 				log.info("Detalle recibido para factura {}-{}: {}", factura.getSerie(), factura.getNoFactura(), lineasSolicitadas);
@@ -458,7 +460,7 @@ public class FacturaServiceImpl implements IFacturaService {
 			}
 
 			return newFactura;
-		} catch (BadRequestException e) {
+		} catch (BadRequestException | ReglaNegocioException e) {
 			throw e;
 		} catch (DataAccessException e) {
 			log.error("Ha ocurrido un error a nivel de base de datos: {}", e.getMessage());
@@ -467,6 +469,24 @@ public class FacturaServiceImpl implements IFacturaService {
 			log.error("Ha ocurrido un error inesperado: {}", e);
 			throw new RuntimeException("Ha ocurrido un error inesperado: ", e);
 		}
+	}
+
+	/**
+	 * Rechaza la venta si la proforma de origen ya tiene una factura vigente. Una factura anulada no cuenta: la
+	 * proforma se puede volver a facturar (por ejemplo, con el NIT correcto). Se bloquea la proforma antes de leer
+	 * las vigentes para que dos facturas simultáneas de la misma proforma no pasen la validación a la vez.
+	 */
+	private void validarProformaSinFacturaVigente(Long idProformaOrigen) {
+		if (idProformaOrigen == null) {
+			return;
+		}
+
+		repoFactura.bloquearProforma(idProformaOrigen);
+		repoFactura.bloquearVigentesDeProforma(idProformaOrigen).stream().findFirst().ifPresent(existente -> {
+			String referencia = (existente.getSerie() == null ? "" : existente.getSerie() + "-") + existente.getNoFactura();
+			throw new ReglaNegocioException("Esta proforma ya fue facturada con la factura " + referencia
+					+ ". Para facturarla de nuevo anule primero esa factura.");
+		});
 	}
 
 	private List<String> resumirLineasSolicitadas(List<DetalleFactura> items) {
