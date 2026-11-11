@@ -149,7 +149,7 @@ describe('Botonera del listado de pedidos', () => {
     const select = fixture.nativeElement.querySelector('.entrega-campos select') as HTMLElement;
     const fecha = fixture.nativeElement.querySelector('.entrega-campos .date-trigger') as HTMLElement;
     const entrego = fixture.nativeElement.querySelector('.entrega-campos input[name="entregaPor"]') as HTMLElement;
-    [select, fecha, entrego].forEach(control => expect(control.getBoundingClientRect().height).withContext(control.outerHTML.slice(0, 80)).toBe(46));
+    [select, fecha, entrego].forEach(control => expect(control.getBoundingClientRect().height).withContext(control.outerHTML.slice(0, 80)).toBe(50));
     if (window.innerWidth >= 1100) {
       expect(Math.round(fecha.getBoundingClientRect().top)).toBe(Math.round(select.getBoundingClientRect().top));
       expect(Math.round(entrego.getBoundingClientRect().top)).toBe(Math.round(select.getBoundingClientRect().top));

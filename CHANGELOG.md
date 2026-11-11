@@ -6,6 +6,9 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Cambiado — Altura de campos y textos como en el resto del sistema
+- Todos los campos de fecha (también los de mayoristas) miden como mínimo 50 px, y los campos de las pantallas de mayoristas suben a 50 px para quedar alineados. Los títulos de página usan el tamaño y el peso de AdminLTE, los subtítulos el gris de 0.95 rem de las demás pantallas y los encabezados de tarjeta el mismo estilo de los listados.
+
 ### Cambiado — Filtros y tablas con un solo estilo
 - Los filtros de Recibos de caja, Control de cheques, Devoluciones de clientes, Cobranza, Clientes y Pedidos usan la tarjeta de filtros de Movimientos (encabezado gris pizarra con icono, título y estado, y botones Buscar y Restablecer). Las tablas de las pantallas antiguas (movimientos, facturas, proformas, notas de crédito, clientes, catálogos y usuarios) pasan al encabezado gris claro, sin rejilla y con filas separadas por una línea fina, como las pantallas de mayoristas.
 

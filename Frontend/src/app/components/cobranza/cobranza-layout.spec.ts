@@ -52,7 +52,7 @@ describe('Distribución de filtros de cobranza', () => {
         '.form-control, .cobranza-balance-toggle'
       )) as HTMLElement[];
       expect(controls.length).toBe(3);
-      controls.forEach(control => expect(control.getBoundingClientRect().height).toBe(46));
+      controls.forEach(control => expect(control.getBoundingClientRect().height).toBe(50));
       expect(fields.scrollWidth).toBeLessThanOrEqual(fields.clientWidth);
 
       if (width === 960) {

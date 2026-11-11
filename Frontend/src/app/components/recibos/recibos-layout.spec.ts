@@ -86,8 +86,8 @@ describe('Selector de sucursal de recibos', () => {
     expect(user.disabled).toBeTrue();
     expect(getComputedStyle(user).backgroundColor).toBe('rgb(255, 255, 255)');
     const button: HTMLButtonElement = root.querySelector('.receipt-search-client');
-    expect(button.getBoundingClientRect().width).toBe(46);
-    expect(button.getBoundingClientRect().height).toBe(46);
+    expect(button.getBoundingClientRect().width).toBe(50);
+    expect(button.getBoundingClientRect().height).toBe(50);
     expect(button.getAttribute('aria-label')).toBe('Buscar cliente');
     spyOn(fixture.componentInstance, 'emitir');
     root.querySelector('#clienteRecibo').dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', cancelable: true }));
@@ -145,7 +145,7 @@ describe('Selector de sucursal de recibos', () => {
       const button: HTMLButtonElement = picker.querySelector('.receipt-search-client');
 
       expect(picker.scrollWidth).toBeLessThanOrEqual(picker.clientWidth);
-      expect(input.getBoundingClientRect().height).toBe(46);
+      expect(input.getBoundingClientRect().height).toBe(50);
       expect(button.getBoundingClientRect().right).toBeLessThanOrEqual(picker.getBoundingClientRect().right);
       expect(getComputedStyle(page.querySelector('.card-hero')).backgroundImage).toContain('linear-gradient');
       expect(page.querySelectorAll('.section-number').length).toBe(2);
@@ -167,7 +167,7 @@ describe('Selector de sucursal de recibos', () => {
 
     expect(bounds.left).toBe(field.left);
     expect(bounds.width).toBe(field.width);
-    expect(bounds.height).toBe(46);
+    expect(bounds.height).toBe(50);
     expect(select.clientWidth).toBeGreaterThan(requiredWidth);
     select.style.transition = 'none';
     select.focus();
@@ -188,8 +188,8 @@ describe('Selector de sucursal de recibos', () => {
 
       expect(filters.scrollWidth).toBeLessThanOrEqual(filters.clientWidth);
       expect(status.textContent).toContain('Incluir anulados');
-      expect(branch.getBoundingClientRect().height).toBe(46);
-      expect(status.getBoundingClientRect().height).toBe(46);
+      expect(branch.getBoundingClientRect().height).toBe(50);
+      expect(status.getBoundingClientRect().height).toBe(50);
       expect(root.querySelector('.receipt-list.listing-card .card-header')).toBeNull();
       expect(root.querySelector('.filter-card .filter-card-header')).not.toBeNull();
       if (width === 1240) {

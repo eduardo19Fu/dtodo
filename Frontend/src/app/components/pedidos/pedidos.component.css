@@ -452,7 +452,7 @@
   border-radius: 7px;
   box-sizing: border-box;
   font-size: 15px;
-  height: 46px;
+  height: 50px;
   padding: 0 14px;
 }
 .entrega-campos select.form-control {
@@ -469,7 +469,7 @@
   box-shadow: 0 0 0 3px rgba(47, 125, 107, 0.18);
   outline: 0;
 }
-.entrega-fecha { min-width: 0; --management-control-height: 46px; }
+.entrega-fecha { min-width: 0; --management-control-height: 50px; }
 .entrega-fecha app-date-range-picker { display: block; }
 .entrega-observaciones { margin-top: 18px; }
 .cantidad-entrega.form-control { border: 1px solid #cbd6e2; border-radius: 8px; display: inline-block; font-weight: 700; height: 40px; margin-left: auto; max-width: 110px; text-align: right; }

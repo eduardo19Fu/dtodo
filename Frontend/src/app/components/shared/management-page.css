@@ -7,7 +7,7 @@
   --management-ink: #24344d;
   --management-muted: #607087;
   --management-border: #dce4ec;
-  --management-control-height: 46px;
+  --management-control-height: 50px;
   display: block;
   margin: 0 auto;
   max-width: 1440px;
@@ -25,8 +25,9 @@
 }
 
 :host .management-heading { flex: 1 1 340px; min-width: 0; }
-:host .management-heading h1 { color: var(--management-ink); font-size: 28px; font-weight: 700; margin: 0; }
-:host .management-heading p { color: var(--management-muted); font-size: 14px; line-height: 1.6; margin: 8px 0 0; max-width: 780px; }
+/* Textos como en el resto del sistema: título de página de AdminLTE (1.8rem) y subtítulo gris de 0.95rem. */
+:host .management-heading h1 { color: #212529; font-size: 1.8rem; font-weight: 500; line-height: 1.2; margin: 0; }
+:host .management-heading p { color: #6c757d; font-size: 0.95rem; line-height: 1.5; margin: 0.15rem 0 0; max-width: 780px; }
 :host .management-heading > a { color: var(--management-accent-dark); display: inline-block; font-size: 13px; margin-bottom: 8px; }
 :host .management-heading > a i { margin-right: 6px; }
 :host .management-header .listing-actions { flex: 0 1 auto; }
@@ -48,13 +49,13 @@
   background: #fff;
   border-bottom: 1px solid var(--management-border);
   border-radius: 10px 10px 0 0;
-  color: var(--management-ink);
+  color: #24344d;
   display: flex;
   flex-wrap: wrap;
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 650;
   gap: 8px;
-  padding: 16px 20px;
+  padding: 1rem 1.25rem;
 }
 
 :host .listing-card-header > i { color: var(--management-accent); font-size: 17px; margin-right: 4px; }

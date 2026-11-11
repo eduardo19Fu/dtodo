@@ -125,8 +125,8 @@
 .date-range-theme-fields .date-trigger {
   border-color: #cbd6e2;
   border-radius: 7px;
-  height: var(--management-control-height, 46px);
-  min-height: var(--management-control-height, 46px);
+  height: max(var(--management-control-height, 50px), 50px);
+  min-height: max(var(--management-control-height, 50px), 50px);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .date-range-theme-fields .date-trigger:hover { transform: none; }

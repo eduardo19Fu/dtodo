@@ -1104,7 +1104,7 @@
 .extra-observaciones { grid-column: 1 / -1; }
 
 /* Misma tipografía que la etiqueta interna del selector de fecha, para que las tres cuadren. */
-.mayorista-extra { --management-control-height: 46px; }
+.mayorista-extra { --management-control-height: 50px; }
 
 .mayorista-extra .extra-label {
   color: #344459;

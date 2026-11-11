@@ -18,26 +18,26 @@
 :host .return-span-all { grid-column: 1 / -1; }
 :host .return-form-page .field-group { min-width: 0; }
 :host .return-form-page .field-group > label { font-weight: 600; line-height: 1.5; margin-bottom: 6px; }
-:host .return-form-page .field-group .form-control { background-color: #fff; box-sizing: border-box; height: 46px; padding: 10px 12px 10px 40px; width: 100%; }
+:host .return-form-page .field-group .form-control { background-color: #fff; box-sizing: border-box; height: 50px; padding: 10px 12px 10px 40px; width: 100%; }
 :host .return-form-page .field-group select.form-control { padding-right: 42px; }
 :host .return-form-page .field-group textarea.form-control { height: auto; min-height: 92px; padding-top: 12px; resize: vertical; }
 :host .return-form-page .control-with-icon > i { color: #648575; top: 16px; }
 :host .return-form-page .field-group small { color: #607087; font-size: 12px; line-height: 1.6; margin-top: 8px; }
 
 /* Cliente: el campo abre el directorio, igual que en Recibos y Proformas. */
-:host .return-client-picker { align-items: center; display: grid; gap: 9px; grid-template-columns: minmax(0, 1fr) 46px; }
-:host .return-client-picker.has-client { grid-template-columns: minmax(0, 1fr) 46px 46px; }
+:host .return-client-picker { align-items: center; display: grid; gap: 9px; grid-template-columns: minmax(0, 1fr) 50px; }
+:host .return-client-picker.has-client { grid-template-columns: minmax(0, 1fr) 50px 50px; }
 :host .return-client-value { flex: 1 1 280px; min-width: 0; }
 :host .return-form-page .return-client-value input { cursor: pointer; padding-right: 12px; }
 :host .return-client-picker.is-elegido .form-control { border-color: #83b4a5; color: #245b4b; font-weight: 600; }
 :host .return-search-client,
 :host .return-cancel-action,
-:host .return-remove-client { align-items: center; background: #fff; border: 1px solid #cbd6e2; border-radius: 7px; color: #245b4b; cursor: pointer; display: inline-flex; font-size: 14px; font-weight: 600; gap: 8px; justify-content: center; min-height: 46px; padding: 10px 16px; }
+:host .return-remove-client { align-items: center; background: #fff; border: 1px solid #cbd6e2; border-radius: 7px; color: #245b4b; cursor: pointer; display: inline-flex; font-size: 14px; font-weight: 600; gap: 8px; justify-content: center; min-height: 50px; padding: 10px 16px; }
 :host .return-search-client:hover,
 :host .return-cancel-action:hover,
 :host .return-remove-client:hover { background: #edf6f2; border-color: #83b4a5; }
-:host .return-remove-client { color: #607087; min-width: 46px; padding: 10px; }
-:host .return-client-picker .return-search-client { background: linear-gradient(135deg, #4d61ad, #7183cc); border: 0; border-radius: 9px; box-shadow: 0 2px 8px rgba(77, 97, 173, 0.2); color: #fff; height: 46px; min-width: 46px; padding: 0; width: 46px; }
+:host .return-remove-client { color: #607087; min-width: 50px; padding: 10px; }
+:host .return-client-picker .return-search-client { background: linear-gradient(135deg, #4d61ad, #7183cc); border: 0; border-radius: 9px; box-shadow: 0 2px 8px rgba(77, 97, 173, 0.2); color: #fff; height: 50px; min-width: 50px; padding: 0; width: 50px; }
 :host .return-client-picker .return-search-client:hover { background: #43559b; }
 :host .return-search-client:disabled,
 :host .return-cancel-action:disabled,
@@ -54,7 +54,7 @@
 :host .return-form-actions > p { color: #607087; font-size: 13px; }
 :host .return-action-buttons { display: flex; flex-wrap: wrap; gap: 12px; margin-left: auto; }
 :host .return-action-buttons > .primary-action { width: auto; }
-:host .return-form-page .primary-action { background: linear-gradient(135deg, #2f7d6b, #3a937e); min-height: 46px; }
+:host .return-form-page .primary-action { background: linear-gradient(135deg, #2f7d6b, #3a937e); min-height: 50px; }
 :host .return-form-page .primary-action:hover:not(:disabled) { background: #1f5a4c; }
 
 @media (max-width: 767.98px) {

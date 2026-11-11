@@ -38,7 +38,7 @@ describe('Filtros de pedidos: integración visual', () => {
 
     expect(controls.length).toBe(5);
     controls.forEach(control => {
-      expect(control.getBoundingClientRect().height).withContext(control.outerHTML).toBe(46);
+      expect(control.getBoundingClientRect().height).withContext(control.outerHTML).toBe(50);
     });
 
     const labels = Array.from(fixture.nativeElement.querySelectorAll(

@@ -18,7 +18,7 @@
 :host .receipt-span-all { grid-column: 1 / -1; }
 :host .receipt-form-page .field-group { min-width: 0; }
 :host .receipt-form-page .field-group > label { font-weight: 600; line-height: 1.5; margin-bottom: 6px; }
-:host .receipt-form-page .field-group .form-control { background-color: #fff; box-sizing: border-box; height: 46px; padding: 10px 12px 10px 40px; width: 100%; }
+:host .receipt-form-page .field-group .form-control { background-color: #fff; box-sizing: border-box; height: 50px; padding: 10px 12px 10px 40px; width: 100%; }
 :host .receipt-form-page .field-group select.form-control { padding-right: 42px; }
 :host .receipt-form-page .control-with-icon > i { color: #648575; top: 16px; }
 :host .receipt-form-page .field-group small { color: #607087; font-size: 12px; line-height: 1.6; margin-top: 8px; }
@@ -26,19 +26,19 @@
 :host .receipt-client-section .section-number { background: #f7f8fd; border-color: #e3e7f7; color: #4d61ad; }
 :host .receipt-client-section .control-with-icon > i { color: #648ba0; }
 :host .receipt-client-section .form-control:disabled { background-color: #f2f6fb; color: #40506b; opacity: 1; }
-:host .receipt-client-picker { align-items: center; display: grid; gap: 9px; grid-template-columns: minmax(0, 1fr) 46px; }
-:host .receipt-client-picker.has-client { grid-template-columns: minmax(0, 1fr) 46px 46px; }
+:host .receipt-client-picker { align-items: center; display: grid; gap: 9px; grid-template-columns: minmax(0, 1fr) 50px; }
+:host .receipt-client-picker.has-client { grid-template-columns: minmax(0, 1fr) 50px 50px; }
 :host .receipt-client-value { flex: 1 1 280px; min-width: 0; }
 :host .receipt-form-page .receipt-client-value input { cursor: pointer; padding-right: 12px; }
 :host .receipt-client-picker.is-elegido .form-control { border-color: #83b4a5; color: #245b4b; font-weight: 600; }
 :host .receipt-search-client,
 :host .receipt-cancel-action,
-:host .receipt-remove-client { align-items: center; background: #fff; border: 1px solid #cbd6e2; border-radius: 7px; color: #245b4b; cursor: pointer; display: inline-flex; font-size: 14px; font-weight: 600; gap: 8px; justify-content: center; min-height: 46px; padding: 10px 16px; }
+:host .receipt-remove-client { align-items: center; background: #fff; border: 1px solid #cbd6e2; border-radius: 7px; color: #245b4b; cursor: pointer; display: inline-flex; font-size: 14px; font-weight: 600; gap: 8px; justify-content: center; min-height: 50px; padding: 10px 16px; }
 :host .receipt-search-client:hover,
 :host .receipt-cancel-action:hover,
 :host .receipt-remove-client:hover { background: #edf6f2; border-color: #83b4a5; }
-:host .receipt-remove-client { color: #607087; min-width: 46px; padding: 10px; }
-:host .receipt-client-picker .receipt-search-client { background: linear-gradient(135deg, #4d61ad, #7183cc); border: 0; border-radius: 9px; box-shadow: 0 2px 8px rgba(77, 97, 173, 0.2); color: #fff; height: 46px; min-width: 46px; padding: 0; width: 46px; }
+:host .receipt-remove-client { color: #607087; min-width: 50px; padding: 10px; }
+:host .receipt-client-picker .receipt-search-client { background: linear-gradient(135deg, #4d61ad, #7183cc); border: 0; border-radius: 9px; box-shadow: 0 2px 8px rgba(77, 97, 173, 0.2); color: #fff; height: 50px; min-width: 50px; padding: 0; width: 50px; }
 :host .receipt-client-picker .receipt-search-client:hover { background: #43559b; }
 :host .receipt-search-client:disabled,
 :host .receipt-cancel-action:disabled,
@@ -51,7 +51,7 @@
 :host .receipt-form-actions > p { color: #607087; font-size: 13px; }
 :host .receipt-action-buttons { display: flex; flex-wrap: wrap; gap: 12px; margin-left: auto; }
 :host .receipt-action-buttons > .primary-action { width: auto; }
-:host .receipt-form-page .primary-action { background: linear-gradient(135deg, #2f7d6b, #3a937e); min-height: 46px; }
+:host .receipt-form-page .primary-action { background: linear-gradient(135deg, #2f7d6b, #3a937e); min-height: 50px; }
 :host .receipt-form-page .primary-action:hover { background: #1f5a4c; }
 
 @media (max-width: 767.98px) {
