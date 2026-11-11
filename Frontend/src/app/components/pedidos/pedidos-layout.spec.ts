@@ -51,10 +51,11 @@ describe('Filtros de pedidos: integración visual', () => {
     });
   });
 
-  it('muestra una sola línea por fecha y conserva la apertura del calendario', () => {
+  it('muestra el selector de fechas del sistema (DESDE/HASTA) y conserva la apertura del calendario', () => {
     const trigger: HTMLButtonElement = fixture.nativeElement.querySelector('.date-trigger');
-    const redundantLabel: HTMLElement = trigger.querySelector('small');
-    expect(getComputedStyle(redundantLabel).display).toBe('none');
+    const rotulo: HTMLElement = trigger.querySelector('small');
+    expect(getComputedStyle(rotulo).display).toBe('block');
+    expect(rotulo.textContent.trim().toLowerCase()).toBe('desde');
 
     trigger.click();
     fixture.detectChanges();

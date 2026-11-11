@@ -23,7 +23,8 @@ export class DateRangePickerComponent implements OnDestroy {
   @Input() fecha: string;
   @Input() modo: 'rango' | 'fecha' = 'rango';
   @Input() etiquetaFecha = 'Fecha de corte';
-  @Input() apariencia: 'ficha' | 'campo' = 'ficha';
+  /** ficha: el selector completo de las listas; campo: un campo de formulario; filtro: el selector completo con la altura de los campos de la página. */
+  @Input() apariencia: 'ficha' | 'campo' | 'filtro' = 'ficha';
   @Input() tema: 'productos' | 'ventas' | 'proformas' | 'notas' | 'compras' | 'usuarios' | 'bodegas' = 'productos';
   @Output() fechaInicioChange = new EventEmitter<string>();
   @Output() fechaFinChange = new EventEmitter<string>();

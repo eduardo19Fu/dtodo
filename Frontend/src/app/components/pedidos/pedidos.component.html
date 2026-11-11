@@ -34,7 +34,7 @@
         </select>
       </label>
       <div class="row listing-date-range">
-        <app-date-range-picker apariencia="campo" [(fechaInicio)]="fechaInicio" [(fechaFin)]="fechaFin" tema="proformas"
+        <app-date-range-picker apariencia="filtro" [(fechaInicio)]="fechaInicio" [(fechaFin)]="fechaFin" tema="proformas"
           (fechaInicioChange)="cargar()" (fechaFinChange)="cargar()"></app-date-range-picker>
       </div>
       <button type="button" class="btn filter-button search-button filtro-boton" (click)="cargar()"

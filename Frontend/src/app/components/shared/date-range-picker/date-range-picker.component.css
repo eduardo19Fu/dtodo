@@ -146,6 +146,25 @@
 .date-range-theme-fields .date-trigger-copy .date-placeholder { color: #718095; font-weight: 400; }
 .date-range-theme-fields .date-trigger-chevron { margin-right: 12px; }
 
+/* Variante de filtro: el mismo selector de las listas (icono tintado, DESDE/HASTA, valor en negrita) pero con la altura de los campos de la
+   página, que es menor que la de la ficha. */
+.date-range-theme-filter .date-trigger { border-color: #cbd6e4; border-radius: 10px; }
+.date-range-theme-filter .date-trigger:hover { transform: translateY(-1px); }
+.date-range-theme-filter .date-trigger-icon {
+  align-self: stretch;
+  background: var(--date-tint);
+  border-radius: 9px 0 0 9px;
+  color: var(--date-accent-dark);
+  flex: 0 0 48px;
+  font-size: 1rem;
+  margin-left: 0;
+}
+.date-range-theme-filter .date-trigger-copy { padding: 4px 12px; }
+.date-range-theme-filter .date-trigger-copy small { display: block; }
+.date-range-theme-filter .date-trigger-copy strong { font-size: 0.88rem; font-weight: 700; line-height: 1.3; }
+.date-range-theme-filter .date-trigger-copy .date-placeholder { color: #9aa5b4; font-weight: 550; }
+.date-range-theme-filter .date-trigger-chevron { margin-right: 14px; }
+
 .custom-calendar-panel {
   animation: calendarReveal 0.18s ease-out;
   background: #fff;
