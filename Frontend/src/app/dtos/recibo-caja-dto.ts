@@ -2,6 +2,8 @@ export type FormaPagoRecibo = 'EFECTIVO' | 'DEPOSITO' | 'TRANSFERENCIA' | 'CHEQU
 
 /** Un recibo de caja en la lista y el detalle. */
 export class ReciboCajaDto {
+  /** Solo en un recibo que paga varios pedidos. */
+  pedidos?: PartidaRecibo[];
   idRecibo: number;
   numero: number;
   /** Número del papel, por ejemplo "S2-000015". */
@@ -56,6 +58,9 @@ export class ChequeDto {
   fechaEstado: string;
   usuarioEstado?: string | null;
   motivoRechazo?: string | null;
+  /** Nombre del archivo adjunto (foto o PDF del cheque). */
+  adjuntoNombre?: string | null;
+  tieneAdjunto?: boolean;
 }
 
 /** Los datos del cheque que se mandan al emitir un recibo con forma de pago CHEQUE. */
@@ -81,4 +86,12 @@ export class CrearReciboCajaDto {
   idSucursal?: number | null;
   /** Obligatorio si la forma de pago es CHEQUE. */
   cheque?: DatosChequeDto | null;
+  /** Si un solo recibo paga varios pedidos: cuánto se aplica a cada uno (la suma es el monto). */
+  pedidos?: PartidaRecibo[] | null;
+}
+
+export interface PartidaRecibo {
+  idProforma: number;
+  noProforma?: string;
+  monto: number;
 }

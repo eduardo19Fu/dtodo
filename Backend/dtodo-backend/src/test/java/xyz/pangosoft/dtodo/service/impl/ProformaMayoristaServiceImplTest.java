@@ -358,4 +358,63 @@ class ProformaMayoristaServiceImplTest {
 
         assertEquals(xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum.PENDIENTE, editada.getCreditoAutorizacion());
     }
+
+    @Test
+    void laModalidadDeEntregaEsRutaPorDefectoYElTransporteSoloSeGuardaSiEsTransporte() {
+        cliente(TipoClienteEnum.MAYORISTA, new Ruta());
+        Proforma porDefecto = proforma(TipoProformaEnum.MAYORISTA);
+        porDefecto.setModalidadEntrega(null);
+        porDefecto.setTransporte("Cargo Express");
+        service.preparar(porDefecto);
+        assertEquals(xyz.pangosoft.dtodo.model.enums.ModalidadEntregaEnum.RUTA, porDefecto.getModalidadEntrega());
+        assertNull(porDefecto.getTransporte());
+
+        Proforma enTransporte = proforma(TipoProformaEnum.MAYORISTA);
+        enTransporte.setModalidadEntrega(xyz.pangosoft.dtodo.model.enums.ModalidadEntregaEnum.TRANSPORTE);
+        enTransporte.setTransporte("  Cargo Express guía 123  ");
+        service.preparar(enTransporte);
+        assertEquals("Cargo Express guía 123", enTransporte.getTransporte());
+
+        Proforma largo = proforma(TipoProformaEnum.MAYORISTA);
+        largo.setModalidadEntrega(xyz.pangosoft.dtodo.model.enums.ModalidadEntregaEnum.TRANSPORTE);
+        largo.setTransporte(String.join("", java.util.Collections.nCopies(121, "x")));
+        org.junit.jupiter.api.Assertions.assertThrows(xyz.pangosoft.dtodo.error.exceptions.ReglaNegocioException.class, () -> service.preparar(largo));
+    }
+
+    @Test
+    void unaProformaNormalNuncaEsCotizacionNiTieneModalidad() {
+        Proforma normal = proforma(TipoProformaEnum.MINORISTA);
+        normal.setEsCotizacion(true);
+        normal.setModalidadEntrega(xyz.pangosoft.dtodo.model.enums.ModalidadEntregaEnum.TIENDA);
+
+        service.preparar(normal);
+
+        org.junit.jupiter.api.Assertions.assertFalse(normal.isEsCotizacion());
+        assertEquals(xyz.pangosoft.dtodo.model.enums.ModalidadEntregaEnum.RUTA, normal.getModalidadEntrega());
+    }
+
+    @Test
+    void unaCotizacionNoPideAutorizacionYSeConvierteEnPedidoConfirmado() {
+        Proforma cotizacion = proforma(TipoProformaEnum.MAYORISTA);
+        cotizacion.setIdProforma(40L);
+        cotizacion.setNoProforma("40P");
+        cotizacion.setEsCotizacion(true);
+        DetalleProforma linea = new DetalleProforma();
+        linea.setDescuento(40f);
+        cotizacion.getItemsProforma().add(linea);
+        when(proformaRepository.findById(40L)).thenReturn(Optional.of(cotizacion));
+        when(proformaRepository.save(org.mockito.ArgumentMatchers.any(Proforma.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        service.evaluarAutorizacion(cotizacion);
+        assertNull(cotizacion.getEstadoAutorizacion());
+
+        Proforma pedido = service.convertirCotizacion(40L);
+
+        org.junit.jupiter.api.Assertions.assertFalse(pedido.isEsCotizacion());
+        assertEquals(xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum.CONFIRMADA, pedido.getEstadoPedido());
+        assertEquals(xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum.PENDIENTE, pedido.getEstadoAutorizacion(),
+                "al convertirse, el descuento sobre el tope sí pide autorización");
+        org.junit.jupiter.api.Assertions.assertThrows(xyz.pangosoft.dtodo.error.exceptions.ReglaNegocioException.class,
+                () -> service.convertirCotizacion(40L));
+    }
 }

@@ -583,3 +583,6 @@
   .pedidos-toolbar-acciones .barra-boton { flex: 1 1 auto; justify-content: center; }
 }
 @media (prefers-reduced-motion: reduce) { .grupo-chevron { transition: none; } }
+
+.modalidad-pill { background: #eef2f7; border-radius: 999px; color: #3e526b; display: inline-block; font-size: 0.72rem; font-weight: 600; margin-top: 0.3rem; padding: 0.15rem 0.6rem; white-space: nowrap; }
+.modalidad-pill i { margin-right: 0.25rem; }

@@ -398,4 +398,23 @@ class PedidoServiceImplTest {
         assertTrue(rechazada.getMessage().contains("rechazado"));
         assertEquals(EstadoPedidoEnum.CONFIRMADA, proforma.getEstadoPedido());
     }
+
+    @Test
+    void unPedidoQueSeRecogeEnTiendaOVaPorTransporteSaleSinPiloto() {
+        Proforma proforma = pedido(EstadoPedidoEnum.EMPACADA);
+        proforma.setModalidadEntrega(xyz.pangosoft.dtodo.model.enums.ModalidadEntregaEnum.TIENDA);
+
+        service.avanzar(7L, null, null);
+
+        assertEquals(EstadoPedidoEnum.EN_RUTA, proforma.getEstadoPedido());
+        assertNull(proforma.getRepartidor());
+        assertTrue(etapaGuardada().getMotivo().contains("recoge el cliente en la tienda"));
+    }
+
+    @Test
+    void unPedidoPorRutaSigueExigiendoElPiloto() {
+        pedido(EstadoPedidoEnum.EMPACADA);
+
+        assertThrows(ReglaNegocioException.class, () -> service.avanzar(7L, null, null));
+    }
 }

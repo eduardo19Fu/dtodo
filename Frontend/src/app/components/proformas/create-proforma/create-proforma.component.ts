@@ -1,3 +1,4 @@
+import { ETIQUETAS_MODALIDAD } from '../../../dtos/pedido-dto';
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin, Subject, Subscription } from 'rxjs';
@@ -124,6 +125,12 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
   readonly vigenciaDiasMayorista = 15;
   /** Porcentaje sobre el que el servidor pide autorización (solo para avisar; el servidor decide). */
   readonly topeDescuento = 15;
+
+  readonly modalidades: Array<{ valor: 'RUTA' | 'TIENDA' | 'TRANSPORTE'; texto: string }> = [
+    { valor: 'RUTA', texto: ETIQUETAS_MODALIDAD.RUTA },
+    { valor: 'TIENDA', texto: ETIQUETAS_MODALIDAD.TIENDA },
+    { valor: 'TRANSPORTE', texto: ETIQUETAS_MODALIDAD.TRANSPORTE }
+  ];
 
   /** El pedido ya se entregó (completo o en parte): el servidor rechaza cualquier cambio a la proforma. */
   get pedidoEntregado(): boolean {
@@ -707,6 +714,10 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
         if (response) {
           const generar = () => this.generarProformaPdf(response.idProforma, this.esProformaMayorista);
           const avisos: string[] = [];
+          if (response.esCotizacion) {
+            avisos.push(`La cotización ${response.noProforma} es solo de precios: no genera un pedido ni pasa por bodega. `
+              + 'Cuando el cliente confirme, conviértela en pedido desde la lista de proformas.');
+          }
           if (response.estadoAutorizacion === 'PENDIENTE') {
             avisos.push(`La proforma ${response.noProforma} tiene un descuento mayor a ${this.topeDescuento} %. `
               + 'No se podrá facturar hasta que un administrador la apruebe.');
@@ -734,10 +745,15 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
       this.proforma.tipoProforma = 'MAYORISTA';
       this.proforma.observaciones = (this.proforma.observaciones || '').trim() || null;
       this.proforma.fechaEntregaEstimada = this.proforma.fechaEntregaEstimada || null;
+      this.proforma.modalidadEntrega = this.proforma.modalidadEntrega || 'RUTA';
+      this.proforma.transporte = this.proforma.modalidadEntrega === 'TRANSPORTE' ? (this.proforma.transporte || '').trim() || null : null;
       // Sin crédito en el cliente el pedido es de contado, aunque antes se hubiera elegido crédito.
       this.proforma.condicionPago = this.clienteConCredito && this.proforma.condicionPago === 'CREDITO' ? 'CREDITO' : 'CONTADO';
     } else {
       this.proforma.tipoProforma = 'MINORISTA';
+      this.proforma.esCotizacion = false;
+      this.proforma.modalidadEntrega = 'RUTA';
+      this.proforma.transporte = null;
       this.proforma.condicionPago = 'CONTADO';
       this.proforma.observaciones = null;
       this.proforma.fechaEntregaEstimada = null;
@@ -777,6 +793,9 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
           this.proforma.creditoAutorizacion = response.creditoAutorizacion;
           this.proforma.excesoCredito = response.excesoCredito;
           this.proforma.estadoPedido = response.estadoPedido;
+          this.proforma.esCotizacion = !!response.esCotizacion;
+          this.proforma.modalidadEntrega = response.modalidadEntrega || 'RUTA';
+          this.proforma.transporte = response.transporte || null;
           this.proforma.observaciones = response.observaciones;
           this.proforma.fechaEntregaEstimada = response.fechaEntregaEstimada;
           this.proforma.condicionPago = response.condicionPago || 'CONTADO';
@@ -883,7 +902,7 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (!this.esProformaMayorista) {
+    if (!this.esProformaMayorista || this.proforma.esCotizacion) {
       this.guardarCambios();
       return;
     }

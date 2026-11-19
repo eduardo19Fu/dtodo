@@ -141,6 +141,33 @@ export class ProformasComponent implements OnInit, OnDestroy {
     return proforma.estadoPedido === 'ENTREGADA' || proforma.estadoPedido === 'ENTREGADA_PARCIAL';
   }
 
+  /** Una cotización es solo de precios: no es un pedido y no se factura hasta que se convierta. */
+  esCotizacion(proforma: ProformaDto): boolean {
+    return !!proforma.esCotizacion;
+  }
+
+  /** El cliente confirmó una cotización: pasa a ser un pedido (etapa Confirmado) y entra a bodega. */
+  convertirEnPedido(proforma: ProformaDto): void {
+    Swal.fire({
+      title: 'Convertir en pedido',
+      html: `La cotización <strong>${proforma.noProforma}</strong> pasará a ser un pedido: se evalúan de nuevo los descuentos y el crédito, ` +
+        'entra a la lista de pedidos de bodega y empieza a correr su vigencia.',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Convertir en pedido',
+      cancelButtonText: 'Cancelar'
+    }).then(resultado => {
+      if (!resultado.isConfirmed) {
+        return;
+      }
+      this.proformaService.convertirEnPedido(proforma.idProforma).subscribe(respuesta => {
+        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: `Pedido ${respuesta.noProforma} confirmado`,
+          showConfirmButton: false, timer: 2500 });
+        this.cargarProformas(0);
+      }, error => Swal.fire('No se pudo convertir', error?.error?.message || 'Ha ocurrido un error inesperado', 'error'));
+    });
+  }
+
   /** La etapa del pedido mayorista con su nombre, o vacío si la proforma no es de un pedido. */
   etapaPedido(proforma: ProformaDto): string {
     return proforma.estadoPedido ? (ETIQUETAS_ESTADO_PEDIDO[proforma.estadoPedido] || proforma.estadoPedido) : '';

@@ -380,6 +380,8 @@ public class ProformaServiceImpl implements IProformaService {
                         .ruta(proforma.getRuta())
                         .estadoAutorizacion(proforma.getEstadoAutorizacion())
                         .observaciones(proforma.getObservaciones())
+                        .modalidadEntrega(proforma.getModalidadEntrega())
+                        .transporte(proforma.getTransporte())
                         .fechaEntregaEstimada(proforma.getFechaEntregaEstimada())
                         .fechaVencimiento(vencimiento)
                         .build();
@@ -398,8 +400,8 @@ public class ProformaServiceImpl implements IProformaService {
             }
             if (proforma.getTipoProforma() == TipoProformaEnum.MAYORISTA) {
                 proforma.setFechaVencimiento(LocalDate.now().plusDays(VIGENCIA_DIAS_MAYORISTA));
-                // Una proforma mayorista es un pedido desde que se crea.
-                proforma.setEstadoPedido(EstadoPedidoEnum.CONFIRMADA);
+                // Una proforma mayorista es un pedido desde que se crea, salvo que sea solo una cotización.
+                proforma.setEstadoPedido(proforma.isEsCotizacion() ? null : EstadoPedidoEnum.CONFIRMADA);
             } else {
                 proforma.setEstadoPedido(null);
             }
@@ -555,6 +557,7 @@ public class ProformaServiceImpl implements IProformaService {
 
             boolean mayorista = proformaRepository.findById(idproforma)
                     .map(proforma -> proforma.getTipoProforma() == TipoProformaEnum.MAYORISTA).orElse(false);
+            params.put("ES_COTIZACION", proformaRepository.findById(idproforma).map(Proforma::isEsCotizacion).orElse(false));
             String plantilla = mayorista ? "/reports/proforma_mayorista.jrxml" : "/reports/proforma.jrxml";
 
             etapa = "cargar plantilla " + plantilla;

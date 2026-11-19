@@ -93,3 +93,16 @@
   width: 2rem;
 }
 .cliente-quitar:hover { color: #c0392b; }
+
+:host .adjunto-formulario { align-items: center; background: #fff; border: 1px dashed #9fb2c8; border-radius: 7px; color: #3e526b; cursor: pointer; display: flex; font-size: 14px; gap: 8px; margin: 8px 0 0; min-height: 44px; padding: 8px 12px; }
+:host .adjunto-formulario:hover { border-color: #2f7d6b; color: #1f5a4c; }
+:host .adjunto-formulario span { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+:host .adjunto-formulario .adjunto-quitar { background: none; border: 0; color: #9a3b3b; cursor: pointer; padding: 0 4px; }
+
+/* Un solo recibo para varios pedidos. */
+.varios-toggle { background: none; border: 0; color: #2b5fb4; cursor: pointer; font-size: 13px; font-weight: 600; margin-top: 8px; padding: 0; }
+.varios-toggle:hover { text-decoration: underline; }
+.varios-pedidos { background: #f6f8fb; border: 1px solid #e1e6ee; border-radius: 8px; margin-top: 8px; padding: 10px 12px; }
+.varios-fila { align-items: center; display: flex; gap: 12px; justify-content: space-between; padding: 4px 0; }
+.varios-pedido { align-items: center; display: flex; flex: 1; font-weight: 500; gap: 8px; margin: 0; }
+.varios-monto { max-width: 130px; text-align: right; }

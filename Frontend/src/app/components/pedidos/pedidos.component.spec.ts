@@ -115,6 +115,14 @@ describe('PedidosComponent', () => {
     expect(component.textoAvance(pedido({ estadoPedido: 'EN_PREPARACION' }))).toBe('Marcar listo para empaque');
     expect(component.textoAvance(pedido({ estadoPedido: 'LISTO_PARA_EMPAQUE' }))).toBe('Marcar empacado');
     expect(component.textoAvance(pedido({ estadoPedido: 'EMPACADA' }))).toBe('Cargar y salir a ruta');
+    expect(component.textoAvance(pedido({ estadoPedido: 'EMPACADA', modalidadEntrega: 'TIENDA' }))).toBe('Dejar listo para recoger');
+    expect(component.textoAvance(pedido({ estadoPedido: 'EMPACADA', modalidadEntrega: 'TRANSPORTE' }))).toBe('Enviar por transporte');
+    expect(component.llevaPiloto(pedido({}))).toBeTrue();
+    expect(component.llevaPiloto(pedido({ modalidadEntrega: 'TIENDA' }))).toBeFalse();
+    expect(component.etiquetaEstado('EN_RUTA', 'TIENDA')).toBe('Listo para recoger');
+    expect(component.etiquetaEstado('EN_RUTA', 'TRANSPORTE')).toBe('Enviado por transporte');
+    expect(component.etiquetaEstado('EN_RUTA')).toBe('En ruta');
+    expect(component.textoAvance(pedido({ estadoPedido: 'EMPACADA' }))).toBe('Cargar y salir a ruta');
     expect(component.puedeAvanzar(pedido({ estadoPedido: 'EN_RUTA' }))).toBeFalse();
     expect(component.puedeAvanzar(pedido({ estadoAutorizacion: 'PENDIENTE' }))).toBeFalse();
     expect(component.puedeAvanzar(pedido({ estadoAutorizacion: 'RECHAZADA' }))).toBeFalse();

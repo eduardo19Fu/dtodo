@@ -16,6 +16,7 @@
 		</conditionalStyle>
 	</style>
 	<parameter name="proformaId" class="java.lang.Long"/>
+	<parameter name="ES_COTIZACION" class="java.lang.Boolean"><defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression></parameter>
 	<parameter name="COPIA" class="java.lang.String">
 		<defaultValueExpression><![CDATA["CLIENTE"]]></defaultValueExpression>
 	</parameter>
@@ -93,7 +94,7 @@ ORDER BY p.nombre ASC]]>
 <textField isBlankWhenNull="true"><reportElement x="160" y="35" width="205" height="13" forecolor="#6B7A90"></reportElement><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="8.5"/></textElement><textFieldExpression><![CDATA["NIT.: 4514627-6"]]></textFieldExpression></textField>
 <textField textAdjust="ScaleFont" isBlankWhenNull="true"><reportElement x="160" y="49" width="205" height="13" forecolor="#6B7A90"></reportElement><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="SansSerif" size="8.5"/></textElement><textFieldExpression><![CDATA["Teléfonos: " + $F{sucursal_telefono}]]></textFieldExpression></textField>
 <rectangle radius="9"><reportElement x="380" y="2" width="192" height="66" mode="Opaque" backcolor="#2B3990"></reportElement><graphicElement><pen lineWidth="0" lineColor="#2B3990"/></graphicElement></rectangle>
-<staticText><reportElement x="390" y="8" width="172" height="11" forecolor="#C3CFFF"/><textElement textAlignment="Left" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement><text><![CDATA[PROFORMA]]></text></staticText>
+<textField><reportElement x="390" y="8" width="172" height="11" forecolor="#C3CFFF"/><textElement textAlignment="Left" verticalAlignment="Middle"><font fontName="SansSerif" size="8" isBold="true"/></textElement><textFieldExpression><![CDATA[Boolean.TRUE.equals($P{ES_COTIZACION}) ? "COTIZACIÓN · SOLO PRECIOS" : "PROFORMA"]]></textFieldExpression></textField>
 <textField textAdjust="ScaleFont" isBlankWhenNull="true"><reportElement x="390" y="19" width="172" height="24" forecolor="#FFFFFF"></reportElement><textElement textAlignment="Left" verticalAlignment="Middle"><font fontName="SansSerif" size="16" isBold="true"/></textElement><textFieldExpression><![CDATA[$F{no_proforma}]]></textFieldExpression></textField>
 <textField isBlankWhenNull="true"><reportElement x="390" y="47" width="90" height="14" forecolor="#FFFFFF"></reportElement><textElement textAlignment="Left" verticalAlignment="Middle"><font fontName="SansSerif" size="8.5" isBold="true"/></textElement><textFieldExpression><![CDATA["Fecha: " + $F{date_format(pr.fecha_emision,'%d/%m/%Y')}]]></textFieldExpression></textField>
 <textField isBlankWhenNull="true"><reportElement x="480" y="47" width="52" height="14" forecolor="#FFFFFF"></reportElement><textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="SansSerif" size="8.5" isBold="true"/></textElement><textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER}]]></textFieldExpression></textField>

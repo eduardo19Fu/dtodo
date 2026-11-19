@@ -59,6 +59,7 @@
           LEFT JOIN facturas f ON f.id_proforma_origen = p.id_proforma AND f.id_estado != 4
          WHERE p.tipo_proforma = 'MAYORISTA'
            AND p.id_estado != 4
+           AND p.es_cotizacion = 0
            AND p.fecha_emision >= $P{FECHA_INICIO} AND p.fecha_emision < $P{FECHA_FIN_EXCLUSIVA}
            AND ($P{ID_RUTA} IS NULL OR p.id_ruta = $P{ID_RUTA})
          GROUP BY u.id_usuario, u.primer_nombre, u.apellido

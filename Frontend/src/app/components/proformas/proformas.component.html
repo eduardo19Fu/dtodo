@@ -143,6 +143,10 @@
                                   && proforma.estado !== 'ANULADO'}">
               {{proforma.estado}}
             </span>
+            <span *ngIf="esCotizacion(proforma) && proforma.idEstado !== 4" class="listing-status-pill listing-status-warning"
+                  title="Solo precios: no es un pedido ni se factura hasta que se convierta">
+              <i class="fas fa-file-alt" aria-hidden="true"></i> Cotización
+            </span>
             <span *ngIf="etapaPedido(proforma) && proforma.idEstado !== 4" class="listing-status-pill etapa-pedido-pill"
                   [ngClass]="entregada(proforma) ? 'listing-status-success' : 'listing-status-info'"
                   [title]="entregada(proforma) ? 'El pedido ya se entregó: la proforma no se puede modificar' : 'Etapa del pedido'">
@@ -189,11 +193,16 @@
                     [routerLink]="entregada(proforma) ? null : ['/proformas/create', proforma.idProforma]">
               <i class="fas fa-edit"></i>
             </button>
+            <button class="btn btn-sm table-action action-convert" type="button" *ngIf="esCotizacion(proforma) && proforma.idEstado !== 4 && (auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_INVENTARIO') || auth.hasRole('ROLE_VENDEDOR'))"
+                    appTooltip="Convertir la cotización en pedido" aria-label="Convertir la cotización en pedido"
+                    (click)="convertirEnPedido(proforma)">
+              <i class="fas fa-dolly"></i>
+            </button>
             <button class="btn btn-sm table-action action-invoice" type="button"
-                    [appTooltip]="proforma.estadoFactura === 'ANULADO' ? 'Volver a facturar: su factura fue anulada' : 'Crear factura desde esta proforma'"
+                    [appTooltip]="esCotizacion(proforma) ? 'Es una cotización: conviértela en pedido para facturar' : proforma.estadoFactura === 'ANULADO' ? 'Volver a facturar: su factura fue anulada' : 'Crear factura desde esta proforma'"
                     aria-label="Crear factura desde esta proforma"
                     *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_INVENTARIO') || auth.hasRole('ROLE_VENDEDOR')"
-                    [disabled]="proforma.idEstado === 4 || facturada(proforma)" [routerLink]="['/facturas/create', proforma.idProforma]">
+                    [disabled]="proforma.idEstado === 4 || facturada(proforma) || esCotizacion(proforma)" [routerLink]="['/facturas/create', proforma.idProforma]">
               <i class="fas fa-file-invoice"></i>
             </button>
             </div>

@@ -30,6 +30,9 @@
                c.nit AS nit,
                p.no_proforma AS no_proforma,
                f.no_factura AS no_factura,
+               (SELECT GROUP_CONCAT(px.no_proforma ORDER BY rp.id_partida SEPARATOR ', ')
+                  FROM recibos_caja_pedidos rp JOIN proformas px ON px.id_proforma = rp.id_proforma
+                 WHERE rp.id_recibo = r.id_recibo) AS pedidos,
                TRIM(CONCAT(COALESCE(u.primer_nombre, ''), ' ', COALESCE(u.apellido, ''))) AS emitido_por,
                r.anulado AS anulado,
                r.motivo_anulacion AS motivo_anulacion
@@ -55,6 +58,7 @@
     <field name="nit" class="java.lang.String"/>
     <field name="no_proforma" class="java.lang.String"/>
     <field name="no_factura" class="java.lang.Long"/>
+    <field name="pedidos" class="java.lang.String"/>
     <field name="emitido_por" class="java.lang.String"/>
     <field name="anulado" class="java.lang.Boolean"/>
     <field name="motivo_anulacion" class="java.lang.String"/>
@@ -112,7 +116,7 @@
             <textField isBlankWhenNull="true"><reportElement style="Base" x="18" y="173" width="350" height="13" forecolor="#6B7A90"/><textElement><font size="8.5"/></textElement><textFieldExpression><![CDATA[$F{nit} == null || $F{nit}.isEmpty() ? "" : "NIT: " + $F{nit}]]></textFieldExpression></textField>
 
             <staticText><reportElement style="Etiqueta" x="18" y="198" width="200" height="12"/><text><![CDATA[Por concepto de]]></text></staticText>
-            <textField isBlankWhenNull="true" textAdjust="ScaleFont"><reportElement style="Valor" x="18" y="211" width="350" height="17"/><textElement verticalAlignment="Middle"/><textFieldExpression><![CDATA[($F{no_proforma} == null && $F{no_factura} == null) ? "Abono a la cuenta del cliente" : "Pago de" + ($F{no_proforma} == null ? "" : " pedido " + $F{no_proforma}) + ($F{no_factura} == null ? "" : " factura " + $F{no_factura})]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true" textAdjust="ScaleFont"><reportElement style="Valor" x="18" y="211" width="350" height="17"/><textElement verticalAlignment="Middle"/><textFieldExpression><![CDATA[$F{pedidos} != null ? "Pago de los pedidos " + $F{pedidos} : ($F{no_proforma} == null && $F{no_factura} == null) ? "Abono a la cuenta del cliente" : "Pago de" + ($F{no_proforma} == null ? "" : " pedido " + $F{no_proforma}) + ($F{no_factura} == null ? "" : " factura " + $F{no_factura})]]></textFieldExpression></textField>
 
             <line><reportElement x="388" y="144" width="1" height="104" forecolor="#E1E7F3"/></line>
             <staticText><reportElement style="Etiqueta" x="404" y="142" width="150" height="12"/><text><![CDATA[Forma de pago]]></text></staticText>

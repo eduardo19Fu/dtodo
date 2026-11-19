@@ -4,6 +4,10 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +18,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import xyz.pangosoft.dtodo.dto.CrearReciboCajaDto;
 import xyz.pangosoft.dtodo.dto.DatosChequeDto;
+import xyz.pangosoft.dtodo.dto.PartidaReciboDto;
+import xyz.pangosoft.dtodo.model.ReciboCajaPedido;
 import xyz.pangosoft.dtodo.dto.ReciboCajaDto;
 import xyz.pangosoft.dtodo.error.exceptions.NotFoundException;
 import xyz.pangosoft.dtodo.error.exceptions.ReglaNegocioException;
@@ -29,6 +35,7 @@ import xyz.pangosoft.dtodo.model.enums.EstadoChequeEnum;
 import xyz.pangosoft.dtodo.model.enums.FormaPagoReciboEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoProformaEnum;
 import xyz.pangosoft.dtodo.repository.IChequeReciboRepository;
+import xyz.pangosoft.dtodo.repository.IReciboCajaPedidoRepository;
 import xyz.pangosoft.dtodo.repository.IClienteRepository;
 import xyz.pangosoft.dtodo.repository.IFacturaRepository;
 import xyz.pangosoft.dtodo.repository.IProformaRepository;
@@ -51,6 +58,7 @@ public class ReciboCajaServiceImpl implements IReciboCajaService {
 
     private final IReciboCajaRepository reciboRepository;
     private final IChequeReciboRepository chequeRepository;
+    private final IReciboCajaPedidoRepository partidaRepository;
     private final IReciboCorrelativoRepository correlativoRepository;
     private final IClienteRepository clienteRepository;
     private final IProformaRepository proformaRepository;
@@ -83,8 +91,12 @@ public class ReciboCajaServiceImpl implements IReciboCajaService {
         if (fechaPago.isAfter(LocalDate.now())) {
             throw new ReglaNegocioException("La fecha de pago no puede ser futura.");
         }
-        Proforma proforma = proformaDelCliente(solicitud.getIdProforma(), cliente);
-        Factura factura = facturaDelCliente(solicitud.getIdFactura(), cliente);
+        List<PartidaReciboDto> partidasSolicitadas = partidasValidas(solicitud, cliente, monto);
+        // Un recibo de un solo pedido se guarda como siempre; solo con dos o más pedidos lleva partidas.
+        Long idPedidoUnico = partidasSolicitadas.size() == 1 ? partidasSolicitadas.get(0).getIdProforma() : solicitud.getIdProforma();
+        boolean variosPedidos = partidasSolicitadas.size() > 1;
+        Proforma proforma = variosPedidos ? null : proformaDelCliente(idPedidoUnico, cliente);
+        Factura factura = variosPedidos ? null : facturaDelCliente(solicitud.getIdFactura(), cliente);
         if (proforma != null && factura != null && !proforma.getIdProforma().equals(factura.getIdProformaOrigen())) {
             throw new ReglaNegocioException("La factura " + factura.getNoFactura() + " no corresponde al pedido " + proforma.getNoProforma() + ".");
         }
@@ -104,6 +116,12 @@ public class ReciboCajaServiceImpl implements IReciboCajaService {
                 .usuario(usuario)
                 .build();
         recibo = reciboRepository.save(recibo);
+        if (variosPedidos) {
+            for (PartidaReciboDto partida : partidasSolicitadas) {
+                partidaRepository.save(ReciboCajaPedido.builder().recibo(recibo).proforma(proformaDelCliente(partida.getIdProforma(), cliente))
+                        .monto(partida.getMonto().setScale(2, RoundingMode.HALF_UP)).build());
+            }
+        }
         if (cheque != null) {
             chequeRepository.save(ChequeRecibo.builder().recibo(recibo).banco(cheque.getBanco()).numeroCheque(cheque.getNumeroCheque())
                     .girador(cheque.getGirador()).fechaCheque(cheque.getFechaCheque()).notas(cheque.getNotas())
@@ -213,6 +231,43 @@ public class ReciboCajaServiceImpl implements IReciboCajaService {
         return redondeado;
     }
 
+    /**
+     * Las partidas de un recibo que paga varios pedidos: cada pedido es del cliente y no se repite, cada monto es mayor que cero y la
+     * suma es el monto del recibo. Sin partidas devuelve una lista vacía; con una sola, el recibo se guarda ligado a ese pedido.
+     */
+    List<PartidaReciboDto> partidasValidas(CrearReciboCajaDto solicitud, Cliente cliente, BigDecimal monto) {
+        List<PartidaReciboDto> partidas = solicitud.getPedidos();
+        if (partidas == null || partidas.isEmpty()) {
+            return new ArrayList<>();
+        }
+        if (solicitud.getIdProforma() != null || solicitud.getIdFactura() != null) {
+            throw new ReglaNegocioException("Elija un solo pedido o la lista de pedidos que paga el recibo, no ambos.");
+        }
+        BigDecimal suma = BigDecimal.ZERO;
+        Set<Long> vistos = new HashSet<>();
+        List<PartidaReciboDto> limpias = new ArrayList<>();
+        for (PartidaReciboDto partida : partidas) {
+            if (partida == null || partida.getIdProforma() == null) {
+                throw new ReglaNegocioException("Indique el pedido de cada renglón del recibo.");
+            }
+            if (!vistos.add(partida.getIdProforma())) {
+                throw new ReglaNegocioException("Un pedido solo puede aparecer una vez en el recibo.");
+            }
+            BigDecimal parte = validarMonto(partida.getMonto());
+            proformaDelCliente(partida.getIdProforma(), cliente);
+            suma = suma.add(parte);
+            PartidaReciboDto limpia = new PartidaReciboDto();
+            limpia.setIdProforma(partida.getIdProforma());
+            limpia.setMonto(parte);
+            limpias.add(limpia);
+        }
+        if (suma.compareTo(monto) != 0) {
+            throw new ReglaNegocioException("Lo aplicado a los pedidos (Q" + suma.toPlainString() + ") no coincide con el monto del recibo (Q"
+                    + monto.toPlainString() + ").");
+        }
+        return limpias;
+    }
+
     /** Un pago con cheque pide banco, número y la fecha escrita en el cheque; el mismo cheque no se registra dos veces. */
     DatosChequeDto validarCheque(DatosChequeDto datos) {
         if (datos == null) {
@@ -264,6 +319,9 @@ public class ReciboCajaServiceImpl implements IReciboCajaService {
         }
         if (proforma.getEstado() != null && "ANULADO".equals(proforma.getEstado().getEstado())) {
             throw new ReglaNegocioException("El pedido " + proforma.getNoProforma() + " está anulado.");
+        }
+        if (proforma.isEsCotizacion()) {
+            throw new ReglaNegocioException(proforma.getNoProforma() + " es una cotización, no un pedido: no recibe pagos.");
         }
         return proforma;
     }
@@ -324,6 +382,18 @@ public class ReciboCajaServiceImpl implements IReciboCajaService {
         dto.setFechaAnulacion(recibo.getFechaAnulacion());
         dto.setUsuarioAnulacion(nombre(recibo.getUsuarioAnulacion()));
         dto.setMotivoAnulacion(recibo.getMotivoAnulacion());
+        List<ReciboCajaPedido> partidas = partidaRepository.findByRecibo_IdReciboOrderByIdPartida(recibo.getIdRecibo());
+        if (partidas != null && !partidas.isEmpty()) {
+            List<PartidaReciboDto> lista = new ArrayList<>();
+            for (ReciboCajaPedido partida : partidas) {
+                PartidaReciboDto p = new PartidaReciboDto();
+                p.setIdProforma(partida.getProforma().getIdProforma());
+                p.setNoProforma(partida.getProforma().getNoProforma());
+                p.setMonto(partida.getMonto());
+                lista.add(p);
+            }
+            dto.setPedidos(lista);
+        }
         if (recibo.getFormaPago() == FormaPagoReciboEnum.CHEQUE) {
             chequeRepository.findByRecibo_IdRecibo(recibo.getIdRecibo()).ifPresent(cheque -> dto.setCheque(ChequeServiceImpl.aDto(cheque)));
         }

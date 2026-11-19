@@ -26,6 +26,12 @@ export class Proforma {
     observaciones?: string | null;
     /** Fecha de entrega estimada, yyyy-MM-dd. */
     fechaEntregaEstimada?: string | null;
+    /** Solo una cotización (precios): no es un pedido. La decide quien la crea; el servidor la conserva al editar. */
+    esCotizacion?: boolean;
+    /** Cómo recibe el cliente el pedido: por la ruta (por defecto), recogiendo en tienda o por un transporte ajeno. */
+    modalidadEntrega?: 'RUTA' | 'TIENDA' | 'TRANSPORTE';
+    /** Nombre del transporte cuando la modalidad es TRANSPORTE. */
+    transporte?: string | null;
     /** Contado o crédito. A crédito solo si el cliente tiene límite y días de crédito; el servidor lo valida. */
     condicionPago?: 'CONTADO' | 'CREDITO' = 'CONTADO';
     /** PENDIENTE si el pedido a crédito pasa del límite del cliente (lo calcula el servidor); nulo si cabe. */

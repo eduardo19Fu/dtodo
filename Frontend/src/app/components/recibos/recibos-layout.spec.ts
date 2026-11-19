@@ -7,6 +7,7 @@ import { of } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { ClienteService } from '../../services/cliente.service';
 import { ReciboCajaService } from '../../services/recibo-caja.service';
+import { ChequeService } from '../../services/cheque.service';
 import { SaldoService } from '../../services/saldo.service';
 import { SucursalService } from '../../services/sucursal.service';
 import { DateRangePickerComponent } from '../shared/date-range-picker/date-range-picker.component';
@@ -29,6 +30,7 @@ describe('Selector de sucursal de recibos', () => {
         { provide: SaldoService, useValue: { cliente: jasmine.createSpy('saldoCliente').and.returnValue(of({
           entregado: 100, devuelto: 0, abonado: 60, saldo: 40, pedidos: []
         })) } },
+        { provide: ChequeService, useValue: { adjuntar: () => of({}) } },
         { provide: SucursalService, useValue: { getSucursales: () => of([{ idSucursal: 1, nombre: 'Sucursal Central' }]) } },
         { provide: ReciboCajaService, useValue: { getListado: () => of({
           content: [], number: 0, totalPages: 0, totalElements: 0, first: true, last: true

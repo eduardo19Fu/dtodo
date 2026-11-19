@@ -38,6 +38,7 @@ class ReciboCajaReporteTest {
             statement.execute("CREATE TABLE usuarios (id_usuario INT PRIMARY KEY, primer_nombre VARCHAR(50), apellido VARCHAR(50))");
             statement.execute("CREATE TABLE proformas (id_proforma BIGINT PRIMARY KEY, no_proforma VARCHAR(30))");
             statement.execute("CREATE TABLE facturas (id_factura BIGINT PRIMARY KEY, no_factura BIGINT)");
+            statement.execute("CREATE TABLE recibos_caja_pedidos (id_partida BIGINT PRIMARY KEY, id_recibo BIGINT, id_proforma BIGINT, monto DECIMAL(12,2))");
             statement.execute("CREATE TABLE recibos_caja (id_recibo BIGINT PRIMARY KEY, id_sucursal INT, numero BIGINT, id_cliente INT, "
                     + "id_proforma BIGINT, id_factura BIGINT, monto DECIMAL(12,2), forma_pago VARCHAR(20), referencia VARCHAR(100), "
                     + "observaciones VARCHAR(255), fecha_pago DATE, id_usuario INT, anulado TINYINT, motivo_anulacion VARCHAR(500))");

@@ -56,7 +56,7 @@
           LEFT JOIN usuarios v ON v.id_usuario = r.id_vendedor
           LEFT JOIN (SELECT x.id_cliente, MAX(x.fecha) AS ultima_compra
                        FROM (SELECT p.id_cliente, p.fecha_emision AS fecha
-                               FROM proformas p WHERE p.id_estado != 4
+                               FROM proformas p WHERE p.id_estado != 4 AND p.es_cotizacion = 0
                               UNION ALL
                              SELECT f.id_cliente, f.fecha
                                FROM facturas f WHERE f.id_estado != 4) x
@@ -64,7 +64,7 @@
          WHERE c.tipo_cliente = 'MAYORISTA'
            AND ($P{ID_RUTA} IS NULL OR c.id_ruta = $P{ID_RUTA})
            AND NOT EXISTS (SELECT 1 FROM proformas p
-                            WHERE p.id_cliente = c.id_cliente AND p.id_estado != 4
+                            WHERE p.id_cliente = c.id_cliente AND p.id_estado != 4 AND p.es_cotizacion = 0
                               AND p.fecha_emision >= $P{FECHA_INICIO} AND p.fecha_emision < $P{FECHA_FIN_EXCLUSIVA})
            AND NOT EXISTS (SELECT 1 FROM facturas f
                             WHERE f.id_cliente = c.id_cliente AND f.id_estado != 4

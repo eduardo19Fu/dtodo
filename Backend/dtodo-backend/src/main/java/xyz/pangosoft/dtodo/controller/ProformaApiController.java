@@ -204,6 +204,7 @@ public class ProformaApiController {
         Proforma newProforma = proformaService.save(proforma, null);
         auditoriaService.registrar(newProforma.getIdProforma(), AccionAuditoriaEnum.CREACION, null,
                 auditoriaService.resumen(newProforma));
+        // Una cotización no es un pedido: no tiene etapa que registrar.
         pedidoService.registrarConfirmacion(newProforma);
         return ResponseEntity.status(HttpStatus.CREATED).body(newProforma);
     }
@@ -220,12 +221,17 @@ public class ProformaApiController {
         }
         ambito.prepararProforma(proforma);
         proformaMayoristaService.preparar(proforma);
+        // Si es o no una cotización lo decide la creación y la conversión, nunca una edición.
+        proforma.setEsCotizacion(existente.isEsCotizacion());
 
         // Una proforma mayorista se edita mientras no esté facturada, y siempre con motivo.
         boolean mayorista = proforma.getTipoProforma() == TipoProformaEnum.MAYORISTA
                 || existente.getTipoProforma() == TipoProformaEnum.MAYORISTA;
         String motivoLimpio;
-        if (mayorista) {
+        if (mayorista && existente.isEsCotizacion()) {
+            // Una cotización se corrige sin trámite: aún no compromete nada.
+            motivoLimpio = auditoriaService.motivoOpcional(motivo);
+        } else if (mayorista) {
             autorizacionService.exigirSinFactura(existente);
             pedidoService.exigirEditable(existente);
             motivoLimpio = auditoriaService.motivoObligatorio(motivo, "editar una proforma mayorista");
@@ -242,6 +248,24 @@ public class ProformaApiController {
                 "Antes: " + antes + "\nDespués: " + auditoriaService.resumen(proformaUpdated));
         pedidoService.reiniciarSiEditado(proformaUpdated, motivoLimpio);
         return ResponseEntity.status(HttpStatus.CREATED).body(proformaUpdated);
+    }
+
+    /**
+     * Convierte una cotización en un pedido: el cliente confirmó. Desde ahí es una proforma mayorista normal (etapa
+     * Confirmado, descuentos y crédito evaluados, vigencia desde hoy).
+     */
+    @Secured(value = {"ROLE_ADMIN", "ROLE_INVENTARIO", "ROLE_VENDEDOR"})
+    @PostMapping(value = "/proformas/{id}/convertir-pedido")
+    public ResponseEntity<Proforma> convertirEnPedido(@PathVariable Long id) {
+        Proforma existente = proformaService.findProforma(id);
+        if (ambito.esVendedor()) {
+            ambito.exigirProformaPropia(existente);
+        }
+        Proforma convertida = proformaMayoristaService.convertirCotizacion(id);
+        auditoriaService.registrar(id, AccionAuditoriaEnum.MODIFICACION, "Cotización convertida en pedido",
+                "Pedido " + convertida.getNoProforma() + ". " + auditoriaService.resumen(convertida));
+        pedidoService.registrarConfirmacion(convertida);
+        return ResponseEntity.ok(convertida);
     }
 
     @Secured(value = "ROLE_ADMIN")

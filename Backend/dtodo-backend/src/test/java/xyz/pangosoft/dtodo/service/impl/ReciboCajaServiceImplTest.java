@@ -44,6 +44,7 @@ import xyz.pangosoft.dtodo.model.enums.TipoProformaEnum;
 import xyz.pangosoft.dtodo.repository.IClienteRepository;
 import xyz.pangosoft.dtodo.repository.IFacturaRepository;
 import xyz.pangosoft.dtodo.repository.IProformaRepository;
+import xyz.pangosoft.dtodo.repository.IReciboCajaPedidoRepository;
 import xyz.pangosoft.dtodo.repository.IReciboCajaRepository;
 import xyz.pangosoft.dtodo.repository.IReciboCorrelativoRepository;
 import xyz.pangosoft.dtodo.repository.ISucursalRepository;
@@ -57,13 +58,14 @@ class ReciboCajaServiceImplTest {
     private final xyz.pangosoft.dtodo.repository.IChequeReciboRepository chequeRepository = mock(xyz.pangosoft.dtodo.repository.IChequeReciboRepository.class);
     private final IReciboCorrelativoRepository correlativoRepository = mock(IReciboCorrelativoRepository.class);
     private final IClienteRepository clienteRepository = mock(IClienteRepository.class);
+    private final IReciboCajaPedidoRepository partidaRepository = mock(IReciboCajaPedidoRepository.class);
     private final IProformaRepository proformaRepository = mock(IProformaRepository.class);
     private final IFacturaRepository facturaRepository = mock(IFacturaRepository.class);
     private final ISucursalRepository sucursalRepository = mock(ISucursalRepository.class);
     private final IUsuarioService usuarioService = mock(IUsuarioService.class);
     private final IAmbitoVendedorService ambito = mock(IAmbitoVendedorService.class);
     private final IProformaAuditoriaService auditoria = mock(IProformaAuditoriaService.class);
-    private final ReciboCajaServiceImpl service = new ReciboCajaServiceImpl(reciboRepository, chequeRepository, correlativoRepository, clienteRepository,
+    private final ReciboCajaServiceImpl service = new ReciboCajaServiceImpl(reciboRepository, chequeRepository, partidaRepository, correlativoRepository, clienteRepository,
             proformaRepository, facturaRepository, sucursalRepository, usuarioService, ambito, auditoria);
 
     private final Sucursal centro = Sucursal.builder().idSucursal(2).nombre("Centro").build();
@@ -133,6 +135,67 @@ class ReciboCajaServiceImplTest {
         f.setEstado(Estado.builder().estado(estado).build());
         when(facturaRepository.findById(id)).thenReturn(Optional.of(f));
         return f;
+    }
+
+    // ------------------------------------------------------------------------------------------ varios pedidos
+
+    private static xyz.pangosoft.dtodo.dto.PartidaReciboDto partida(long idProforma, String monto) {
+        xyz.pangosoft.dtodo.dto.PartidaReciboDto p = new xyz.pangosoft.dtodo.dto.PartidaReciboDto();
+        p.setIdProforma(idProforma);
+        p.setMonto(new BigDecimal(monto));
+        return p;
+    }
+
+    @Test
+    void unReciboPuedePagarVariosPedidosYGuardaUnaPartidaPorCadaUno() {
+        pedido(10, cliente, "ACTIVO");
+        pedido(11, cliente, "ACTIVO");
+        CrearReciboCajaDto dto = solicitud();
+        dto.setMonto(new BigDecimal("300.00"));
+        dto.setPedidos(java.util.Arrays.asList(partida(10, "200.00"), partida(11, "100.00")));
+
+        ReciboCajaDto recibo = service.emitir(dto);
+
+        verify(partidaRepository, org.mockito.Mockito.times(2)).save(any(xyz.pangosoft.dtodo.model.ReciboCajaPedido.class));
+        assertNull(recibo.getIdProforma());
+    }
+
+    @Test
+    void lasPartidasDebenSumarElMontoDelRecibo() {
+        pedido(10, cliente, "ACTIVO");
+        pedido(11, cliente, "ACTIVO");
+        CrearReciboCajaDto dto = solicitud();
+        dto.setMonto(new BigDecimal("300.00"));
+        dto.setPedidos(java.util.Arrays.asList(partida(10, "200.00"), partida(11, "50.00")));
+
+        assertThrows(ReglaNegocioException.class, () -> service.emitir(dto));
+    }
+
+    @Test
+    void unPedidoNoSePuedeRepetirNiMezclarseConUnPedidoUnico() {
+        pedido(10, cliente, "ACTIVO");
+        CrearReciboCajaDto repetido = solicitud();
+        repetido.setMonto(new BigDecimal("300.00"));
+        repetido.setPedidos(java.util.Arrays.asList(partida(10, "200.00"), partida(10, "100.00")));
+        assertThrows(ReglaNegocioException.class, () -> service.emitir(repetido));
+
+        CrearReciboCajaDto mezclado = solicitud();
+        mezclado.setMonto(new BigDecimal("300.00"));
+        mezclado.setIdProforma(10L);
+        mezclado.setPedidos(java.util.Arrays.asList(partida(10, "200.00"), partida(11, "100.00")));
+        assertThrows(ReglaNegocioException.class, () -> service.emitir(mezclado));
+    }
+
+    @Test
+    void conUnSoloPedidoElReciboQuedaLigadoAEseYNoLlevaPartidas() {
+        pedido(10, cliente, "ACTIVO");
+        CrearReciboCajaDto dto = solicitud();
+        dto.setMonto(new BigDecimal("200.00"));
+        dto.setPedidos(java.util.Collections.singletonList(partida(10, "200.00")));
+
+        service.emitir(dto);
+
+        verify(partidaRepository, org.mockito.Mockito.never()).save(any(xyz.pangosoft.dtodo.model.ReciboCajaPedido.class));
     }
 
     // ------------------------------------------------------------------------------------------ emitir

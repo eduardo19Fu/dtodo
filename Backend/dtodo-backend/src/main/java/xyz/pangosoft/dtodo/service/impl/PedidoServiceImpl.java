@@ -26,6 +26,7 @@ import xyz.pangosoft.dtodo.model.ProformaEtapa;
 import xyz.pangosoft.dtodo.model.Usuario;
 import xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum;
 import xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum;
+import xyz.pangosoft.dtodo.model.enums.ModalidadEntregaEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoProformaEnum;
 import xyz.pangosoft.dtodo.repository.IProformaEntregaRepository;
 import xyz.pangosoft.dtodo.repository.IProformaEtapaRepository;
@@ -99,9 +100,16 @@ public class PedidoServiceImpl implements IPedidoService {
 
         String motivo = null;
         if (siguiente == EstadoPedidoEnum.EN_RUTA) {
-            Usuario piloto = cargarRepartidor(idRepartidor);
-            proforma.setRepartidor(piloto);
-            motivo = "Piloto: " + nombre(piloto);
+            if (proforma.getModalidadEntrega() == null || proforma.getModalidadEntrega().llevaPiloto()) {
+                Usuario piloto = cargarRepartidor(idRepartidor);
+                proforma.setRepartidor(piloto);
+                motivo = "Piloto: " + nombre(piloto);
+            } else {
+                // Recoge en tienda o va por transporte ajeno: no sale con un piloto de la empresa.
+                proforma.setRepartidor(null);
+                motivo = proforma.getModalidadEntrega() == ModalidadEntregaEnum.TIENDA ? "Lo recoge el cliente en la tienda"
+                        : "Envío por transporte ajeno" + (proforma.getTransporte() == null ? "" : ": " + proforma.getTransporte());
+            }
         }
 
         proforma.setEstadoPedido(siguiente);
@@ -295,6 +303,8 @@ public class PedidoServiceImpl implements IPedidoService {
                     + (proforma.getUsuario().getApellido() == null ? "" : proforma.getUsuario().getApellido())).trim());
         }
         dto.setEstadoPedido(proforma.getEstadoPedido());
+        dto.setModalidadEntrega(proforma.getModalidadEntrega());
+        dto.setTransporte(proforma.getTransporte());
         dto.setEstadoAutorizacion(proforma.getEstadoAutorizacion());
         if (proforma.getRepartidor() != null) {
             dto.setIdRepartidor(proforma.getRepartidor().getIdUsuario());

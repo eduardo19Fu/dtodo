@@ -34,6 +34,7 @@
           INNER JOIN usuarios u ON u.id_usuario = p.id_usuario
           LEFT JOIN facturas f ON f.id_proforma_origen = p.id_proforma AND f.id_estado != 4
          WHERE p.id_estado != 4
+           AND p.es_cotizacion = 0
            AND p.id_sucursal = $P{ID_SUCURSAL}
            AND p.id_usuario = $P{ID_USUARIO}
            AND p.fecha_emision >= $P{FECHA_INICIO}

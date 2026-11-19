@@ -29,6 +29,7 @@ import java.time.LocalDate;
 import xyz.pangosoft.dtodo.model.enums.CondicionPagoEnum;
 import xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum;
 import xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum;
+import xyz.pangosoft.dtodo.model.enums.ModalidadEntregaEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoProformaEnum;
 import java.util.ArrayList;
 import java.util.Date;
@@ -122,6 +123,20 @@ public class Proforma implements Serializable {
      */
     @Enumerated(EnumType.STRING)
     private EstadoPedidoEnum estadoPedido;
+
+    /** Cómo recibe el cliente el pedido: por la ruta (por defecto), recogiendo en tienda o por un transporte ajeno. */
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private ModalidadEntregaEnum modalidadEntrega = ModalidadEntregaEnum.RUTA;
+
+    /** Nombre del transporte (y guía) cuando la modalidad es TRANSPORTE. */
+    private String transporte;
+
+    /**
+     * Una cotización es solo una lista de precios: no es un pedido (no tiene etapa, no pasa por bodega, no entra a la cobranza ni se
+     * factura) hasta que se convierte. Solo la crea un usuario al hacer una proforma mayorista; el servidor la conserva al editar.
+     */
+    private boolean esCotizacion;
 
     /** Piloto asignado al cargar el pedido a ruta; lo fija el servidor. */
     @ManyToOne(fetch = FetchType.LAZY)

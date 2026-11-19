@@ -2,7 +2,7 @@ import { Component, OnInit, HostListener } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import {
-  CategoriaHistorial, EntregaDto, EntregaSolicitudDto, EstadoPedido, ETIQUETAS_ESTADO_PEDIDO, HistorialEventoDto, PedidoDetalleDto,
+  CategoriaHistorial, EntregaDto, EntregaSolicitudDto, EstadoPedido, ETIQUETAS_ESTADO_PEDIDO, ETIQUETAS_MODALIDAD, etiquetaEtapa, HistorialEventoDto, PedidoDetalleDto,
   PedidoDto
 } from '../../dtos/pedido-dto';
 import { ReporteSelectorOpcionDto } from '../../dtos/reporte-selector-opcion-dto';
@@ -263,11 +263,27 @@ export class PedidosComponent implements OnInit {
     this.abrirPdf(this.pedidoService.notaEnvioTodas());
   }
 
-  etiquetaEstado(estado: string): string {
-    return ETIQUETAS_ESTADO_PEDIDO[estado] || estado;
+  /** El nombre de la etapa; si el pedido no va por la ruta, «En ruta» se dice según cómo se entrega. */
+  etiquetaEstado(estado: string, modalidad?: string | null): string {
+    return etiquetaEtapa(estado, modalidad);
+  }
+
+  /** Solo lo que sale por la ruta lleva piloto y entra a la nota de envío. */
+  llevaPiloto(pedido: { modalidadEntrega?: string | null }): boolean {
+    return !pedido.modalidadEntrega || pedido.modalidadEntrega === 'RUTA';
+  }
+
+  etiquetaModalidad(modalidad?: string | null): string {
+    return (modalidad && ETIQUETAS_MODALIDAD[modalidad]) || '';
   }
 
   textoAvance(pedido: PedidoDto): string {
+    if (pedido.estadoPedido === 'EMPACADA' && pedido.modalidadEntrega === 'TIENDA') {
+      return 'Dejar listo para recoger';
+    }
+    if (pedido.estadoPedido === 'EMPACADA' && pedido.modalidadEntrega === 'TRANSPORTE') {
+      return 'Enviar por transporte';
+    }
     return ACCION_AVANCE[pedido.estadoPedido] || '';
   }
 
@@ -277,7 +293,7 @@ export class PedidosComponent implements OnInit {
       <div class="ancho"><span>Cliente</span><strong>${escaparHtml(pedido.negocio || pedido.cliente)}</strong></div>
       <div><span>Ruta</span><strong>${escaparHtml(pedido.ruta || 'Sin ruta')}</strong></div>
       <div><span>Unidades</span><strong>${Number(pedido.unidades) || 0}</strong></div>
-      <div><span>Etapa actual</span><strong>${escaparHtml(this.etiquetaEstado(pedido.estadoPedido))}</strong></div>
+      <div><span>Etapa actual</span><strong>${escaparHtml(this.etiquetaEstado(pedido.estadoPedido, pedido.modalidadEntrega))}</strong></div>
       <div><span>Vendedor</span><strong>${escaparHtml(pedido.vendedor)}</strong></div>
     </div>`;
   }
@@ -320,7 +336,7 @@ export class PedidosComponent implements OnInit {
   }
 
   avanzar(pedido: PedidoDto): void {
-    if (pedido.estadoPedido === 'EMPACADA') {
+    if (pedido.estadoPedido === 'EMPACADA' && this.llevaPiloto(pedido)) {
       this.elegirPiloto(`${this.textoAvance(pedido)}: pedido ${pedido.noProforma}`, this.textoAvance(pedido)).then(idRepartidor => {
         if (idRepartidor) {
           this.ejecutar(pedido, this.pedidoService.avanzar(pedido.idProforma, undefined, idRepartidor));

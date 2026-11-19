@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum;
 import xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum;
+import xyz.pangosoft.dtodo.model.enums.ModalidadEntregaEnum;
 
 /** Una fila de la lista de pedidos. No lleva importes: la lista es operativa (bodega y entrega). */
 @Data
@@ -33,4 +34,8 @@ public class PedidoDto {
     /** Piloto asignado; nulo mientras el pedido no sale a ruta. */
     private Integer idRepartidor;
     private String repartidor;
+    /** Cómo recibe el cliente el pedido: por la ruta, recogiendo en tienda o por un transporte ajeno. */
+    private ModalidadEntregaEnum modalidadEntrega;
+    /** Nombre del transporte cuando la modalidad es TRANSPORTE. */
+    private String transporte;
 }

@@ -31,4 +31,10 @@ public interface IProformaMayoristaService {
 
     /** Tope de descuento (en %) sobre el que se pide autorización. */
     double descuentoMaximo();
+
+    /**
+     * Convierte una cotización en pedido: deja de ser cotización, queda Confirmado, se evalúan de nuevo los descuentos y el
+     * crédito y la vigencia corre desde hoy. 422 si la proforma no es una cotización o está anulada.
+     */
+    Proforma convertirCotizacion(Long idProforma);
 }

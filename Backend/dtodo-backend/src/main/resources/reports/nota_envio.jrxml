@@ -46,6 +46,7 @@
          WHERE pr.id_ruta = $P{ID_RUTA}
            AND pr.tipo_proforma = 'MAYORISTA'
            AND pr.id_estado != 4
+           AND pr.modalidad_entrega = 'RUTA'
            AND (pr.estado_pedido = 'EMPACADA'
                 OR (pr.estado_pedido = 'EN_RUTA'
                     AND EXISTS (SELECT 1 FROM proformas_etapas e

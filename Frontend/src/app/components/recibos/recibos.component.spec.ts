@@ -44,7 +44,7 @@ describe('RecibosComponent', () => {
     sucursales = { getSucursales: jasmine.createSpy('getSucursales').and.returnValue(of([])) };
     auth = { hasRole: (rol: string) => rol === 'ROLE_ADMIN' };
     saldos = { cliente: jasmine.createSpy('cliente').and.returnValue(of({ idCliente: 5, saldo: 40, pedidos: [] })) };
-    component = new RecibosComponent(recibos, clientes, sucursales, auth, saldos);
+    component = new RecibosComponent(recibos, clientes, sucursales, auth, saldos, { adjuntar: jasmine.createSpy("adjuntar").and.returnValue(of({})) } as any);
     spyOn(window, 'open');
     spyOn(window.URL, 'createObjectURL').and.returnValue('blob:x');
   });
@@ -174,6 +174,33 @@ describe('RecibosComponent', () => {
     const enviado = recibos.emitir.calls.mostRecent().args[0];
     expect(enviado.referencia).toBeNull();
     expect(enviado.cheque).toEqual({ banco: 'Banrural', numeroCheque: '0045123', girador: 'Nestor Lemus', fechaCheque: '2026-11-20', notas: null });
+  });
+
+  it('un recibo para varios pedidos suma lo aplicado y manda una partida por pedido', () => {
+    saldos.cliente.and.returnValue(of({ idCliente: 5, saldo: 500, pedidos: [
+      { idProforma: 10, noProforma: 'P-10', condicionPago: 'CREDITO', total: 300, cobrado: 0, pendiente: 300 },
+      { idProforma: 11, noProforma: 'P-11', condicionPago: 'CREDITO', total: 200, cobrado: 0, pendiente: 200 }
+    ] }));
+    component.elegirCliente(cliente());
+    component.alternarVarios();
+
+    expect(component.partidas.length).toBe(2);
+    component.partidas[0].marcado = true;
+    component.marcarPartida(component.partidas[0]);
+    expect(component.faltante).toContain('al menos dos pedidos');
+
+    component.partidas[1].marcado = true;
+    component.marcarPartida(component.partidas[1]);
+    component.partidas[1].monto = 150;
+    component.recalcularMonto();
+    expect(component.monto).toBe(450);
+    expect(component.faltante).toBe('');
+
+    component.emitir();
+    const enviado = recibos.emitir.calls.mostRecent().args[0];
+    expect(enviado.idProforma).toBeNull();
+    expect(enviado.monto).toBe(450);
+    expect(enviado.pedidos).toEqual([{ idProforma: 10, monto: 300 }, { idProforma: 11, monto: 150 }]);
   });
 
   it('dice qué falta antes de poder emitir', () => {

@@ -31,4 +31,7 @@ public class ChequeDto {
     private LocalDateTime fechaEstado;
     private String usuarioEstado;
     private String motivoRechazo;
+    /** Nombre del archivo adjunto (foto o PDF del cheque); nulo si no tiene. */
+    private String adjuntoNombre;
+    private boolean tieneAdjunto;
 }

@@ -118,7 +118,8 @@
           <td data-label="Entrega est.">{{pedido.fechaEntregaEstimada ? (pedido.fechaEntregaEstimada | date: 'dd/MM/yyyy') : '—'}}</td>
           <td data-label="Unidades" class="text-right">{{pedido.unidades | number}}</td>
           <td data-label="Etapa" class="etapa-celda">
-            <span class="etapa-pill" [ngClass]="'etapa-' + pedido.estadoPedido">{{etiquetaEstado(pedido.estadoPedido)}}</span>
+            <span class="etapa-pill" [ngClass]="'etapa-' + pedido.estadoPedido">{{etiquetaEstado(pedido.estadoPedido, pedido.modalidadEntrega)}}</span>
+            <span class="modalidad-pill" *ngIf="!llevaPiloto(pedido)" [title]="pedido.transporte || ''"><i class="fas" [ngClass]="pedido.modalidadEntrega === 'TIENDA' ? 'fa-store' : 'fa-truck'" aria-hidden="true"></i> {{etiquetaModalidad(pedido.modalidadEntrega)}}</span>
             <span *ngFor="let bloqueo of bloqueos(pedido)" class="etapa-pill etapa-bloqueada" [appTooltip]="bloqueo.ayuda">
               {{bloqueo.texto}}
             </span>
@@ -194,7 +195,7 @@
                 <strong>Resumen del pedido</strong>
                 <small>Cliente, ruta y condición de pago</small>
               </div>
-              <span class="etapa-pill etapa-grande" [ngClass]="'etapa-' + detalle.estadoPedido">{{etiquetaEstado(detalle.estadoPedido)}}</span>
+              <span class="etapa-pill etapa-grande" [ngClass]="'etapa-' + detalle.estadoPedido">{{etiquetaEstado(detalle.estadoPedido, detalle.modalidadEntrega)}}</span>
             </div>
 
             <div class="summary-grid">
@@ -453,7 +454,7 @@
             </div>
             <ol class="etapas-lista">
               <li *ngFor="let etapa of detalle.etapas">
-                <strong>{{etiquetaEstado(etapa.etapa)}}</strong>
+                <strong>{{etiquetaEstado(etapa.etapa, detalle.modalidadEntrega)}}</strong>
                 <span>{{etapa.usuario}}<ng-container *ngIf="etapa.responsable"> · {{etapa.responsable}}</ng-container>
                   · {{etapa.fecha | date: 'dd/MM/yyyy HH:mm'}}</span>
                 <em *ngIf="etapa.motivo">{{etapa.motivo}}</em>

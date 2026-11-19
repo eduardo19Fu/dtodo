@@ -1,5 +1,27 @@
 export type EstadoPedido = 'CONFIRMADA' | 'EN_PREPARACION' | 'LISTO_PARA_EMPAQUE' | 'EMPACADA' | 'EN_RUTA' | 'ENTREGADA_PARCIAL' | 'ENTREGADA';
 
+export type ModalidadEntrega = 'RUTA' | 'TIENDA' | 'TRANSPORTE';
+
+export const ETIQUETAS_MODALIDAD: { [modalidad: string]: string } = {
+  RUTA: 'Entrega en ruta',
+  TIENDA: 'Recoge en tienda',
+  TRANSPORTE: 'Envío por transporte ajeno'
+};
+
+/**
+ * El nombre de la etapa según cómo se entrega: «En ruta» solo es cierto cuando sale con el piloto; si lo recoge el cliente está
+ * «Listo para recoger» y si va por transporte ajeno, «Enviado por transporte».
+ */
+export function etiquetaEtapa(estado: string, modalidad?: string | null): string {
+  if (estado === 'EN_RUTA' && modalidad === 'TIENDA') {
+    return 'Listo para recoger';
+  }
+  if (estado === 'EN_RUTA' && modalidad === 'TRANSPORTE') {
+    return 'Enviado por transporte';
+  }
+  return ETIQUETAS_ESTADO_PEDIDO[estado] || estado;
+}
+
 export const ETIQUETAS_ESTADO_PEDIDO: { [estado: string]: string } = {
   CONFIRMADA: 'Confirmado',
   EN_PREPARACION: 'En preparación',
@@ -23,6 +45,10 @@ export class PedidoDto {
   ruta?: string | null;
   vendedor: string;
   estadoPedido: EstadoPedido;
+  /** Cómo recibe el cliente el pedido; nulo se toma como por la ruta. */
+  modalidadEntrega?: ModalidadEntrega | null;
+  /** Nombre del transporte cuando la modalidad es TRANSPORTE. */
+  transporte?: string | null;
   unidades: number;
   estadoAutorizacion?: 'PENDIENTE' | 'APROBADA' | 'RECHAZADA' | null;
   /** Autorización del crédito cuando el pedido pasa del límite del cliente. */
@@ -103,6 +129,10 @@ export class PedidoDetalleDto {
   ruta?: string | null;
   vendedor: string;
   estadoPedido: EstadoPedido;
+  /** Cómo recibe el cliente el pedido; nulo se toma como por la ruta. */
+  modalidadEntrega?: ModalidadEntrega | null;
+  /** Nombre del transporte cuando la modalidad es TRANSPORTE. */
+  transporte?: string | null;
   estadoAutorizacion?: 'PENDIENTE' | 'APROBADA' | 'RECHAZADA' | null;
   idRepartidor?: number | null;
   repartidor?: string | null;

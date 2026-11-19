@@ -497,7 +497,10 @@ public class FacturaServiceImpl implements IFacturaService {
 		// Una factura anulada no cuenta: la proforma se puede volver a facturar (por ejemplo, con el NIT correcto).
 		// Se bloquea la proforma y se leen las vigentes con lectura bloqueante para que dos facturas simultáneas
 		// de la misma proforma no pasen la validación a la vez.
-		repoFactura.bloquearProforma(idProformaOrigen);
+		repoFactura.bloquearProforma(idProformaOrigen).filter(proforma -> proforma.isEsCotizacion()).ifPresent(proforma -> {
+			throw new ReglaNegocioException("La proforma " + proforma.getNoProforma()
+					+ " es una cotización: conviértala en pedido antes de facturarla.");
+		});
 		repoFactura.bloquearVigentesDeProforma(idProformaOrigen).stream().findFirst().ifPresent(existente -> {
 			String referencia = (existente.getSerie() == null ? "" : existente.getSerie() + "-") + existente.getNoFactura();
 			String emitidaPor = existente.getUsuario() == null ? "" : (

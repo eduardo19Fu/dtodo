@@ -414,3 +414,6 @@
 .sort-header .fa-sort-up,
 .sort-header .fa-sort-down { color: #2f7d6b; }
 .sort-header:focus { outline: 2px solid rgba(47, 125, 107, 0.45); outline-offset: 2px; }
+
+.action-convert { background: #fff; border: 1px solid #b9cceb; color: #2b5fb4; }
+.action-convert:hover, .action-convert:focus { background: #2b5fb4; border-color: #2b5fb4; color: #fff; }

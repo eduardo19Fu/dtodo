@@ -43,6 +43,21 @@ export class ChequeService {
     return this.http.post<ChequeDto>(`${this.url}/${idCheque}/estado`, { estado, motivo: motivo || null });
   }
 
+  /** Adjunta la foto o el PDF del cheque (máximo 5 MB); reemplaza el anterior. */
+  adjuntar(idCheque: number, archivo: File): Observable<ChequeDto> {
+    const datos = new FormData();
+    datos.append('archivo', archivo, archivo.name);
+    return this.http.post<ChequeDto>(`${this.url}/${idCheque}/adjunto`, datos);
+  }
+
+  descargarAdjunto(idCheque: number): Observable<HttpResponse<Blob>> {
+    return this.http.get(`${this.url}/${idCheque}/adjunto`, { observe: 'response', responseType: 'blob' });
+  }
+
+  quitarAdjunto(idCheque: number): Observable<ChequeDto> {
+    return this.http.delete<ChequeDto>(`${this.url}/${idCheque}/adjunto`);
+  }
+
   /** El control de cheques del período en PDF o Excel; el cobrador solo obtiene los de su sucursal. */
   reporte(formato: 'PDF' | 'XLSX', filtros: { idSucursal?: number; estado?: string; desde: string; hasta: string }):
       Observable<HttpResponse<Blob>> {

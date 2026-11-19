@@ -1,2 +1,10 @@
 /* Comparte con Recibos de caja los estilos de la lista, los filtros y la tabla; aquí solo lo propio del control de cheques. */
 .listing-actions { display: flex; gap: 8px; }
+
+/* Archivo del cheque (foto o PDF): un enlace con su nombre, o el botón para adjuntarlo. */
+.adjunto-cheque { align-items: center; display: flex; gap: 6px; margin-top: 4px; }
+.adjunto-enlace, .adjunto-agregar { background: none; border: 0; color: #2b5fb4; cursor: pointer; font-size: 12px; font-weight: 600; margin: 0; max-width: 220px; overflow: hidden; padding: 0; text-align: left; text-overflow: ellipsis; white-space: nowrap; }
+.adjunto-enlace:hover, .adjunto-agregar:hover { text-decoration: underline; }
+.adjunto-agregar { color: #607087; font-weight: 500; }
+.adjunto-agregar.is-disabled, .adjunto-enlace:disabled { cursor: wait; opacity: 0.7; }
+.adjunto-quitar { background: none; border: 0; color: #9a3b3b; cursor: pointer; font-size: 11px; padding: 0 4px; }

@@ -36,4 +36,6 @@ public class ReciboCajaDto {
     private String motivoAnulacion;
     /** Solo en recibos pagados con cheque: sus datos y su seguimiento. */
     private ChequeDto cheque;
+    /** Solo en un recibo que paga varios pedidos: cuánto se aplicó a cada uno. */
+    private java.util.List<PartidaReciboDto> pedidos;
 }

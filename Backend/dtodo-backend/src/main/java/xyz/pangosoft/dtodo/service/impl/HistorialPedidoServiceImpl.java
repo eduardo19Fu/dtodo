@@ -71,7 +71,12 @@ public class HistorialPedidoServiceImpl implements IHistorialPedidoService {
         for (Factura factura : facturaRepository.findByIdProformaOrigenOrderByIdFactura(idProforma)) {
             eventos.add(deFactura(factura));
         }
-        for (ReciboCaja recibo : reciboRepository.findByProforma_IdProformaOrderByFechaRegistroAscIdReciboAsc(idProforma)) {
+        List<ReciboCaja> recibos = new ArrayList<>(reciboRepository.findByProforma_IdProformaOrderByFechaRegistroAscIdReciboAsc(idProforma));
+        List<ReciboCaja> porPartidas = reciboRepository.recibosPorPartidas(idProforma);
+        if (porPartidas != null) {
+            recibos.addAll(porPartidas);
+        }
+        for (ReciboCaja recibo : recibos) {
             eventos.addAll(deRecibo(recibo));
         }
         // Estable: lo que ocurrió a la misma hora conserva el orden en que se agregó (auditoría, etapas, entregas...).

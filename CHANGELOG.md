@@ -6,6 +6,12 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Segunda tanda de ajustes pedidos por el cliente
+- **Modalidad de entrega** de cada pedido mayorista: *Entrega en ruta*, *Recoge en tienda* o *Envío por transporte ajeno* (con el nombre del transporte). Solo la entrega en ruta pide piloto y entra a la nota de envío; las otras dos se cierran sin piloto. Script `23_modalidad_entrega_y_cotizacion.sql`.
+- **Cotización**: una proforma mayorista puede guardarse como cotización (solo precios): no es un pedido, no pide autorización ni crédito, no se factura ni recibe recibos, sale en el PDF como «COTIZACIÓN · SOLO PRECIOS» y se convierte en pedido con el botón de la lista (nace confirmada y vigente 15 días).
+- **Archivo del cheque**: foto o PDF (hasta 5 MB) adjunto al cheque, al emitir el recibo o después en Control de cheques. Script `24_cheques_adjunto.sql`.
+- **Un recibo para varios pedidos**: el recibo de caja puede repartirse entre varios pedidos del mismo cliente; cada pedido descuenta solo su parte y el PDF lista los pedidos. Se guarda en la tabla nueva `recibos_caja_pedidos` (script `25_recibos_varios_pedidos.sql`, que debe aplicarse antes de desplegar). El saldo, la cobranza, el historial del pedido y el control de crédito cuentan estas partidas.
+
 ### Cambiado — Ajustes pedidos por el cliente (primera tanda)
 - Nueva etapa **Listo para empaque** entre En preparación y Empacado (botones «Marcar listo para empaque» y «Marcar empacado»; también al regresar de etapa).
 - La lista de proformas muestra la **etapa del pedido mayorista**; un pedido entregado (completo o en parte) queda con un candado, el botón de editar deshabilitado y, al abrir la proforma, un aviso. El servidor ya rechazaba esos cambios.

@@ -974,6 +974,7 @@
           <ul>
             <li><strong>Abono a la cuenta (se aplica a lo más antiguo):</strong> baja el saldo general; el sistema lo asigna a la entrega más antigua primero.</li>
             <li><strong>Un pedido concreto:</strong> la lista muestra, por pedido, su condición (contado o crédito), su total, lo cobrado y lo pendiente. Al elegirlo, el <strong>Monto</strong> se propone con lo que falta.</li>
+            <li><strong>Varios pedidos con un solo recibo:</strong> pulsa <em>Un solo recibo para varios pedidos</em> (aparece cuando el cliente tiene más de uno). Marca los pedidos que paga el recibo (por ejemplo, los de un mismo día y ruta) e indica cuánto se aplica a cada uno; el <strong>Monto</strong> del recibo es la suma. Hay que marcar al menos dos. Cada pedido descuenta solo su parte, y el recibo impreso dice &laquo;Pago de los pedidos P-10, P-11&raquo;.</li>
           </ul>
         </li>
         <li>En <strong>Datos del pago</strong> indica el <strong>Monto (Q)</strong>, la <strong>Fecha de pago</strong> y la <strong>Forma de pago</strong>: <em>Efectivo, Depósito, Transferencia</em> o <em>Cheque</em>.</li>
@@ -994,6 +995,11 @@
 
       <h4>Anular un recibo <small style="font-weight:400;color:var(--muted)">(solo administrador)</small></h4>
       <p>Con el botón <span class="btn red">Anular</span> y un <strong>motivo obligatorio</strong>. El recibo queda marcado como anulado y <strong>deja de contar</strong> para el saldo del cliente, y el pedido que había liberado vuelve a mostrar lo que falta cobrar.</p>
+
+      <div class="callout">
+        <span class="callout-title">Archivo del cheque</span>
+        <p>Al emitir un recibo con cheque puedes <strong>adjuntar la foto o el PDF del cheque</strong> (hasta 5 MB). También se agrega, se ve o se quita después en <strong>Control de cheques</strong>, con el clip de cada fila.</p>
+      </div>
 
       <h3 id="cheques">Control de cheques <small style="font-weight:400;color:var(--muted)">(cobrador y administrador)</small></h3>
       <p>Muchos clientes pagan con cheque. Al emitir un recibo con forma de pago <strong>Cheque</strong> el formulario pide:</p>

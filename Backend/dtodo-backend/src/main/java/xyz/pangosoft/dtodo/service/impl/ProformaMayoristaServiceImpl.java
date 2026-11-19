@@ -8,11 +8,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import xyz.pangosoft.dtodo.error.exceptions.NotFoundException;
 import xyz.pangosoft.dtodo.error.exceptions.ReglaNegocioException;
+import xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum;
+import java.time.LocalDate;
 import xyz.pangosoft.dtodo.model.Cliente;
 import xyz.pangosoft.dtodo.model.DetalleProforma;
 import xyz.pangosoft.dtodo.model.Proforma;
 import xyz.pangosoft.dtodo.model.enums.CondicionPagoEnum;
+import xyz.pangosoft.dtodo.model.enums.ModalidadEntregaEnum;
 import xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoClienteEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoDescuentoEnum;
@@ -44,9 +48,28 @@ public class ProformaMayoristaServiceImpl implements IProformaMayoristaService {
         return descuentoMaximo;
     }
 
+    @Transactional
+    @Override
+    public Proforma convertirCotizacion(Long idProforma) {
+        Proforma proforma = proformaRepository.findById(idProforma)
+                .orElseThrow(() -> new NotFoundException("La proforma solicitada no se encuentra registrada."));
+        if (!proforma.isEsCotizacion()) {
+            throw new ReglaNegocioException("La proforma " + proforma.getNoProforma() + " ya es un pedido, no una cotización.");
+        }
+        if (proforma.getEstado() != null && "ANULADO".equals(proforma.getEstado().getEstado())) {
+            throw new ReglaNegocioException("La cotización " + proforma.getNoProforma() + " está anulada.");
+        }
+        proforma.setEsCotizacion(false);
+        proforma.setEstadoPedido(EstadoPedidoEnum.CONFIRMADA);
+        proforma.setFechaVencimiento(LocalDate.now().plusDays(ProformaServiceImpl.VIGENCIA_DIAS_MAYORISTA));
+        evaluarAutorizacion(proforma);
+        evaluarCredito(proforma);
+        return proformaRepository.save(proforma);
+    }
+
     @Override
     public void evaluarAutorizacion(Proforma proforma) {
-        boolean requiere = proforma.getTipoProforma() == TipoProformaEnum.MAYORISTA
+        boolean requiere = proforma.getTipoProforma() == TipoProformaEnum.MAYORISTA && !proforma.isEsCotizacion()
                 && proforma.getItemsProforma() != null
                 && proforma.getItemsProforma().stream().anyMatch(linea -> linea != null
                         && linea.getTipoDescuento() != TipoDescuentoEnum.PRECIO_MAYORISTA
@@ -59,7 +82,8 @@ public class ProformaMayoristaServiceImpl implements IProformaMayoristaService {
     public void evaluarCredito(Proforma proforma) {
         proforma.setCreditoAutorizacion(null);
         proforma.setExcesoCredito(null);
-        if (proforma.getTipoProforma() != TipoProformaEnum.MAYORISTA || proforma.getCondicionPago() != CondicionPagoEnum.CREDITO
+        if (proforma.getTipoProforma() != TipoProformaEnum.MAYORISTA || proforma.isEsCotizacion()
+                || proforma.getCondicionPago() != CondicionPagoEnum.CREDITO
                 || proforma.getCliente() == null || proforma.getCliente().getIdCliente() == null) {
             return;
         }
@@ -116,7 +140,11 @@ public class ProformaMayoristaServiceImpl implements IProformaMayoristaService {
             }
             proforma.setRuta(cliente.getRuta());
             definirCondicionDePago(proforma, cliente);
+            definirModalidadDeEntrega(proforma);
         } else {
+            proforma.setModalidadEntrega(ModalidadEntregaEnum.RUTA);
+            proforma.setTransporte(null);
+            proforma.setEsCotizacion(false);
             proforma.setRuta(null);
             proforma.setCondicionPago(CondicionPagoEnum.CONTADO);
             proforma.setDiasCredito(null);
@@ -142,6 +170,19 @@ public class ProformaMayoristaServiceImpl implements IProformaMayoristaService {
                 }
             }
         }
+    }
+
+    static final int MAX_TRANSPORTE = 120;
+
+    /** RUTA por defecto. El nombre del transporte solo se guarda si la modalidad es TRANSPORTE. */
+    static void definirModalidadDeEntrega(Proforma proforma) {
+        ModalidadEntregaEnum modalidad = proforma.getModalidadEntrega() == null ? ModalidadEntregaEnum.RUTA : proforma.getModalidadEntrega();
+        String transporte = proforma.getTransporte() == null ? null : proforma.getTransporte().trim();
+        if (transporte != null && transporte.length() > MAX_TRANSPORTE) {
+            throw new ReglaNegocioException("El nombre del transporte no puede pasar de " + MAX_TRANSPORTE + " caracteres.");
+        }
+        proforma.setModalidadEntrega(modalidad);
+        proforma.setTransporte(modalidad == ModalidadEntregaEnum.TRANSPORTE && transporte != null && !transporte.isEmpty() ? transporte : null);
     }
 
     /**

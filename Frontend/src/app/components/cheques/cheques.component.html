@@ -111,6 +111,25 @@
               <small class="d-block text-muted">No. {{cheque.numeroCheque}}</small>
               <small class="d-block text-muted" *ngIf="cheque.girador">Girador: {{cheque.girador}}</small>
               <small class="d-block text-muted" *ngIf="cheque.notas">{{cheque.notas}}</small>
+              <div class="adjunto-cheque">
+                <ng-container *ngIf="cheque.tieneAdjunto; else sinAdjunto">
+                  <button type="button" class="adjunto-enlace" (click)="verAdjunto(cheque)" [disabled]="subiendoAdjunto === cheque.idCheque"
+                    [appTooltip]="'Ver ' + cheque.adjuntoNombre" aria-label="Ver el archivo del cheque">
+                    <i class="fas" [ngClass]="subiendoAdjunto === cheque.idCheque ? 'fa-spinner fa-spin' : 'fa-paperclip'" aria-hidden="true"></i>
+                    {{cheque.adjuntoNombre}}
+                  </button>
+                  <button type="button" class="adjunto-quitar" (click)="quitarAdjunto(cheque)" appTooltip="Quitar el archivo"
+                    aria-label="Quitar el archivo del cheque"><i class="fas fa-times" aria-hidden="true"></i></button>
+                </ng-container>
+                <ng-template #sinAdjunto>
+                  <label class="adjunto-agregar" [class.is-disabled]="subiendoAdjunto === cheque.idCheque">
+                    <i class="fas" [ngClass]="subiendoAdjunto === cheque.idCheque ? 'fa-spinner fa-spin' : 'fa-paperclip'" aria-hidden="true"></i>
+                    Adjuntar foto o PDF
+                    <input type="file" [accept]="tiposAdjunto" hidden #archivoCheque
+                      [disabled]="subiendoAdjunto === cheque.idCheque" (change)="elegirArchivo(cheque, archivoCheque)">
+                  </label>
+                </ng-template>
+              </div>
             </td>
             <td data-label="Cliente">
               <strong>{{cheque.cliente}}</strong>

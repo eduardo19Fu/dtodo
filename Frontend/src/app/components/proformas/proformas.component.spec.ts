@@ -35,6 +35,12 @@ describe('ProformasComponent - etapa del pedido mayorista', () => {
     expect(component.entregada({} as any)).toBeFalse();
   });
 
+  it('una cotización se reconoce y no se confunde con un pedido', () => {
+    expect(component.esCotizacion({ esCotizacion: true } as any)).toBeTrue();
+    expect(component.esCotizacion({ esCotizacion: false } as any)).toBeFalse();
+    expect(component.esCotizacion({} as any)).toBeFalse();
+  });
+
   it('muestra la etapa con su nombre y nada si la proforma no es de un pedido', () => {
     expect(component.etapaPedido({ estadoPedido: 'LISTO_PARA_EMPAQUE' } as any)).toBe('Listo para empaque');
     expect(component.etapaPedido({ estadoPedido: 'ENTREGADA' } as any)).toBe('Entregado');

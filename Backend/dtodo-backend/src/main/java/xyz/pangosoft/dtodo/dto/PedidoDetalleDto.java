@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import xyz.pangosoft.dtodo.model.enums.CondicionPagoEnum;
 import xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum;
 import xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum;
+import xyz.pangosoft.dtodo.model.enums.ModalidadEntregaEnum;
 
 /** Un pedido con sus líneas y sus etapas. Sin precios ni costos. */
 @Data
@@ -28,6 +29,9 @@ public class PedidoDetalleDto {
     private String ruta;
     private String vendedor;
     private EstadoPedidoEnum estadoPedido;
+    /** Cómo recibe el cliente el pedido y, si es transporte ajeno, cuál. */
+    private ModalidadEntregaEnum modalidadEntrega;
+    private String transporte;
     private EstadoAutorizacionEnum estadoAutorizacion;
     private CondicionPagoEnum condicionPago;
     private EstadoAutorizacionEnum creditoAutorizacion;

@@ -30,7 +30,10 @@ describe('ChequesComponent', () => {
     servicio = {
       getListado: jasmine.createSpy('getListado').and.returnValue(of(pagina([cheque()]))),
       cambiarEstado: jasmine.createSpy('cambiarEstado').and.returnValue(of(cheque({ estado: 'DEPOSITADO' }))),
-      reporte: jasmine.createSpy('reporte').and.returnValue(of({ body: new Blob(['x']) }))
+      reporte: jasmine.createSpy('reporte').and.returnValue(of({ body: new Blob(['x']) })),
+      adjuntar: jasmine.createSpy('adjuntar').and.returnValue(of(cheque({ tieneAdjunto: true, adjuntoNombre: 'foto.png' }))),
+      descargarAdjunto: jasmine.createSpy('descargarAdjunto').and.returnValue(of({ body: new Blob(['x']) })),
+      quitarAdjunto: jasmine.createSpy('quitarAdjunto').and.returnValue(of(cheque({ tieneAdjunto: false })))
     };
     sucursales = { getSucursales: jasmine.createSpy('getSucursales').and.returnValue(of([])) };
     auth = { hasRole: (rol: string) => rol === 'ROLE_ADMIN' };
@@ -168,5 +171,55 @@ describe('ChequesComponent', () => {
     expect(component.claseEstado('COBRADO')).toBe('listing-status-success');
     expect(component.claseEstado('RECHAZADO')).toBe('listing-status-danger');
     expect(component.claseEstado('RECIBIDO')).toBe('listing-status-warning');
+  });
+
+  function entradaCon(archivo: File | null): HTMLInputElement {
+    return { files: archivo ? [archivo] : [], value: 'x' } as any;
+  }
+
+  it('adjuntar sube el archivo y actualiza la fila con su nombre', () => {
+    spyOn(Swal, 'fire');
+    component.cheques = [cheque()];
+    const archivo = new File([new Uint8Array(10)], 'foto.png', { type: 'image/png' });
+
+    component.elegirArchivo(component.cheques[0], entradaCon(archivo));
+
+    expect(servicio.adjuntar).toHaveBeenCalledWith(1, archivo);
+    expect(component.cheques[0].tieneAdjunto).toBeTrue();
+    expect(component.cheques[0].adjuntoNombre).toBe('foto.png');
+    expect(component.subiendoAdjunto).toBeNull();
+  });
+
+  it('un archivo de más de 5 MB no se sube', () => {
+    const fire = spyOn(Swal, 'fire');
+    const grande = new File([new Uint8Array(5 * 1024 * 1024 + 1)], 'grande.pdf', { type: 'application/pdf' });
+
+    component.elegirArchivo(cheque(), entradaCon(grande));
+
+    expect(servicio.adjuntar).not.toHaveBeenCalled();
+    expect(fire).toHaveBeenCalled();
+  });
+
+  it('si el servidor rechaza el archivo muestra el mensaje y libera el botón', () => {
+    const fire = spyOn(Swal, 'fire');
+    servicio.adjuntar.and.returnValue(throwError({ error: { message: 'El archivo debe ser una foto (PNG o JPG) o un PDF.' } }));
+
+    component.elegirArchivo(cheque(), entradaCon(new File([new Uint8Array(3)], 'a.pdf')));
+
+    expect(fire).toHaveBeenCalledWith('No se pudo guardar el archivo', 'El archivo debe ser una foto (PNG o JPG) o un PDF.', 'error');
+    expect(component.subiendoAdjunto).toBeNull();
+  });
+
+  it('ver el adjunto lo abre en otra pestaña y quitarlo pide confirmación', async () => {
+
+    component.verAdjunto(cheque({ tieneAdjunto: true }));
+    expect(window.open).toHaveBeenCalledWith('blob:x', '_blank');
+
+    spyOn(Swal, 'fire').and.returnValue(Promise.resolve({ isConfirmed: true } as any));
+    component.cheques = [cheque({ tieneAdjunto: true, adjuntoNombre: 'foto.png' })];
+    component.quitarAdjunto(component.cheques[0]);
+    await esperar();
+    expect(servicio.quitarAdjunto).toHaveBeenCalledWith(1);
+    expect(component.cheques[0].tieneAdjunto).toBeFalse();
   });
 });

@@ -64,4 +64,9 @@ public class ChequeRecibo implements Serializable {
     private Usuario usuarioEstado;
 
     private String motivoRechazo;
+
+    /** Foto o PDF del cheque: el nombre original, el nombre con que se guardó (nunca viene del usuario) y su tipo. */
+    private String adjuntoNombre;
+    private String adjuntoArchivo;
+    private String adjuntoTipo;
 }

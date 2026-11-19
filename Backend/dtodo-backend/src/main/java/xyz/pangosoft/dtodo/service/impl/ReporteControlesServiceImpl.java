@@ -122,8 +122,12 @@ public class ReporteControlesServiceImpl implements IReporteControlesService {
         fila.noProforma = pedido.getNoProforma();
         fila.montoTotal = saldo.getEntregado().subtract(saldo.getDevuelto()).max(BigDecimal.ZERO);
         fila.saldo = saldo.getPendiente();
-        List<ReciboCaja> recibos = reciboRepository.findByProforma_IdProformaOrderByFechaRegistroAscIdReciboAsc(pedido.getIdProforma())
-                .stream().filter(r -> !r.isAnulado()).collect(Collectors.toList());
+        List<ReciboCaja> todos = new ArrayList<>(reciboRepository.findByProforma_IdProformaOrderByFechaRegistroAscIdReciboAsc(pedido.getIdProforma()));
+        List<ReciboCaja> porPartidas = reciboRepository.recibosPorPartidas(pedido.getIdProforma());
+        if (porPartidas != null) {
+            todos.addAll(porPartidas);
+        }
+        List<ReciboCaja> recibos = todos.stream().filter(r -> !r.isAnulado()).collect(Collectors.toList());
         fila.abono1 = recibos.size() > 0 ? recibos.get(0).getMonto() : null;
         fila.abono2 = recibos.size() > 1 ? recibos.get(1).getMonto() : null;
         // Si hubo más de tres abonos, el último casillero los junta para que el saldo siga cuadrando.

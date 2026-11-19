@@ -52,7 +52,7 @@
         [disabled]="!cliente.idCliente || (proforma.itemsProforma.length <= 0) || !cantidadesValidas() || isSaving"
         (click)="createProforma()">
         <i class="fas" [ngClass]="isSaving ? 'fa-spinner fa-spin' : 'fa-save'" aria-hidden="true"></i>
-        {{ isSaving ? 'Guardando...' : 'Guardar proforma' }}
+        {{ isSaving ? 'Guardando...' : (proforma.esCotizacion ? 'Guardar cotización' : 'Guardar proforma') }}
       </button>
 
       <ng-template #elseBlock>
@@ -146,6 +146,25 @@
               <app-date-range-picker apariencia="campo" modo="fecha" [(fecha)]="proforma.fechaEntregaEstimada"
                 etiquetaFecha="Fecha de entrega estimada" tema="proformas"></app-date-range-picker>
               <small>Vigencia: {{ vigenciaDiasMayorista }} días desde la emisión.</small>
+            </div>
+            <div class="extra-field extra-modalidad">
+              <label class="extra-label" for="modalidad-entrega">Cómo recibe el cliente el pedido</label>
+              <select id="modalidad-entrega" name="modalidadEntrega" class="form-control" [(ngModel)]="proforma.modalidadEntrega">
+                <option *ngFor="let modalidad of modalidades" [ngValue]="modalidad.valor">{{ modalidad.texto }}</option>
+              </select>
+              <input *ngIf="proforma.modalidadEntrega === 'TRANSPORTE'" type="text" class="form-control mt-2" name="transporte"
+                maxlength="120" [(ngModel)]="proforma.transporte" placeholder="Transporte y guía (opcional)"
+                aria-label="Nombre del transporte">
+              <small *ngIf="proforma.modalidadEntrega === 'TIENDA'">El cliente lo recoge: no sale con un piloto ni va en la nota de envío.</small>
+              <small *ngIf="proforma.modalidadEntrega === 'TRANSPORTE'">Va con un transporte ajeno a la empresa: no sale con un piloto ni va en la nota de envío.</small>
+            </div>
+            <div class="extra-field extra-cotizacion" *ngIf="!proforma.idProforma || proforma.esCotizacion">
+              <label class="extra-label" for="es-cotizacion">Tipo de documento</label>
+              <label class="cotizacion-toggle" for="es-cotizacion" [class.is-on]="proforma.esCotizacion">
+                <span><strong>Es una cotización</strong><small>Solo precios: no genera pedido ni pasa por bodega.</small></span>
+                <input type="checkbox" role="switch" id="es-cotizacion" name="esCotizacion" [(ngModel)]="proforma.esCotizacion"
+                  [disabled]="!!proforma.idProforma">
+              </label>
             </div>
             <div class="extra-field extra-pago">
               <label class="extra-label" for="condicion-pago">Condición de pago</label>
@@ -301,6 +320,11 @@
           </span>
         </div>
 
+        <div class="autorizacion-aviso" *ngIf="proforma.esCotizacion" role="status">
+          <i class="fas fa-file-alt" aria-hidden="true"></i>
+          <span>Esto es una <strong>cotización</strong>: solo lleva precios. No es un pedido, no pasa por bodega ni se factura;
+            cuando el cliente confirme, se convierte en pedido desde la lista de proformas.</span>
+        </div>
         <div class="autorizacion-aviso aviso-entregado" *ngIf="pedidoEntregado" role="alert">
           <i class="fas fa-lock" aria-hidden="true"></i>
           <span>Este pedido <strong>ya se entregó</strong>: la proforma no se puede modificar. Para corregir algo, usa una

@@ -184,6 +184,8 @@ public class ChequeServiceImpl implements IChequeService {
                     + (usuario.getApellido() == null ? "" : usuario.getApellido())).trim());
         }
         dto.setMotivoRechazo(cheque.getMotivoRechazo());
+        dto.setAdjuntoNombre(cheque.getAdjuntoNombre());
+        dto.setTieneAdjunto(cheque.getAdjuntoArchivo() != null);
         return dto;
     }
 }

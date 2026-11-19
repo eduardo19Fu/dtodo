@@ -28,4 +28,9 @@ public class CrearReciboCajaDto {
     private Integer idSucursal;
     /** Solo si la forma de pago es CHEQUE: banco, número, fecha y demás datos del cheque. */
     private DatosChequeDto cheque;
+    /**
+     * Opcional: si un solo recibo paga varios pedidos del cliente, cuánto se aplica a cada uno. La suma debe ser el monto del recibo.
+     * No se combina con {@code idProforma} ni {@code idFactura}.
+     */
+    private java.util.List<PartidaReciboDto> pedidos;
 }

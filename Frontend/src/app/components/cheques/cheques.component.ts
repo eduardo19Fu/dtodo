@@ -205,6 +205,67 @@ export class ChequesComponent implements OnInit {
       });
   }
 
+  // ---- archivo del cheque (foto o PDF)
+
+  /** Cheque cuyo archivo se está subiendo o descargando. */
+  subiendoAdjunto: number = null;
+  readonly tiposAdjunto = 'application/pdf,image/png,image/jpeg';
+
+  elegirArchivo(cheque: ChequeDto, entrada: HTMLInputElement): void {
+    const archivo = entrada.files && entrada.files[0];
+    entrada.value = '';
+    if (!archivo) {
+      return;
+    }
+    if (archivo.size > 5 * 1024 * 1024) {
+      Swal.fire('El archivo es muy pesado', 'Debe pesar menos de 5 MB. Reduce la foto o usa un PDF más liviano.', 'warning');
+      return;
+    }
+    this.subiendoAdjunto = cheque.idCheque;
+    this.chequeService.adjuntar(cheque.idCheque, archivo).subscribe(actualizado => {
+      this.subiendoAdjunto = null;
+      this.reemplazar(actualizado);
+      Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Archivo del cheque guardado', showConfirmButton: false, timer: 2500 });
+    }, error => {
+      this.subiendoAdjunto = null;
+      Swal.fire('No se pudo guardar el archivo', this.mensaje(error), 'error');
+    });
+  }
+
+  verAdjunto(cheque: ChequeDto): void {
+    this.subiendoAdjunto = cheque.idCheque;
+    this.chequeService.descargarAdjunto(cheque.idCheque).subscribe(respuesta => {
+      this.subiendoAdjunto = null;
+      const url = window.URL.createObjectURL(respuesta.body);
+      window.open(url, '_blank');
+      window.setTimeout(() => window.URL.revokeObjectURL(url), 60000);
+    }, error => {
+      this.subiendoAdjunto = null;
+      Swal.fire('No se pudo abrir el archivo', this.mensaje(error), 'error');
+    });
+  }
+
+  quitarAdjunto(cheque: ChequeDto): void {
+    Swal.fire({
+      title: 'Quitar el archivo del cheque',
+      text: `Se borra «${cheque.adjuntoNombre}» del servidor. Puedes adjuntar otro después.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Quitar',
+      cancelButtonText: 'Cancelar'
+    }).then(resultado => {
+      if (!resultado.isConfirmed) {
+        return;
+      }
+      this.chequeService.quitarAdjunto(cheque.idCheque).subscribe(actualizado => this.reemplazar(actualizado),
+        error => Swal.fire('No se pudo quitar el archivo', this.mensaje(error), 'error'));
+    });
+  }
+
+  private reemplazar(actualizado: ChequeDto): void {
+    this.cheques = this.cheques.map(c => c.idCheque === actualizado.idCheque ? actualizado : c);
+  }
+
   etiquetaEstado(estado: string): string {
     return estado ? estado.charAt(0) + estado.slice(1).toLowerCase() : '';
   }

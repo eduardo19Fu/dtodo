@@ -7,6 +7,7 @@ import { Cliente } from '../../models/cliente';
 import { CrearReciboCajaDto, FormaPagoRecibo, ReciboCajaDto } from '../../dtos/recibo-caja-dto';
 import { Sucursal } from '../../models/sucursal';
 import { AuthService } from '../../services/auth.service';
+import { ChequeService } from '../../services/cheque.service';
 import { ClienteService } from '../../services/cliente.service';
 import { ReciboCajaService } from '../../services/recibo-caja.service';
 import { SaldoService } from '../../services/saldo.service';
@@ -63,6 +64,9 @@ export class RecibosComponent implements OnInit, OnDestroy {
   girador = '';
   fechaCheque = '';
   notasCheque = '';
+  /** Foto o PDF del cheque (opcional): se sube justo después de emitir el recibo. */
+  archivoCheque: File = null;
+  readonly tiposAdjunto = 'application/pdf,image/png,image/jpeg';
 
   // ---- lista
   recibos: ReciboCajaDto[] = [];
@@ -89,7 +93,8 @@ export class RecibosComponent implements OnInit, OnDestroy {
     private clienteService: ClienteService,
     private sucursalService: SucursalService,
     public auth: AuthService,
-    private saldoService: SaldoService
+    private saldoService: SaldoService,
+    private chequeService: ChequeService
   ) { }
 
   ngOnInit(): void {
@@ -190,6 +195,8 @@ export class RecibosComponent implements OnInit, OnDestroy {
     this.clienteElegido = null;
     this.saldo = null;
     this.idProformaElegida = null;
+    this.variosPedidos = false;
+    this.partidas = [];
     this.monto = null;
     this.formaPago = 'EFECTIVO';
     this.referencia = '';
@@ -201,6 +208,7 @@ export class RecibosComponent implements OnInit, OnDestroy {
     this.girador = '';
     this.fechaCheque = this.hoy();
     this.notasCheque = '';
+    this.archivoCheque = null;
   }
 
   onBuscarCliente(texto: string): void {
@@ -249,6 +257,8 @@ export class RecibosComponent implements OnInit, OnDestroy {
     this.sinResultados = false;
     this.saldo = null;
     this.idProformaElegida = null;
+    this.variosPedidos = false;
+    this.partidas = [];
     this.saldoService.cliente(cliente.idCliente).subscribe(saldo => {
       if (this.clienteElegido && this.clienteElegido.idCliente === cliente.idCliente) {
         this.saldo = saldo;
@@ -267,6 +277,39 @@ export class RecibosComponent implements OnInit, OnDestroy {
     this.monto = Math.max(0, Math.round(porCobrar * 100) / 100) || this.monto;
   }
 
+  // ---- un recibo para varios pedidos
+
+  variosPedidos = false;
+  partidas: { idProforma: number; noProforma: string; marcado: boolean; monto: number | null; pendiente: number }[] = [];
+
+  /** Cambia entre pagar un solo pedido (o abonar a la cuenta) y repartir el recibo entre varios pedidos. */
+  alternarVarios(): void {
+    this.variosPedidos = !this.variosPedidos;
+    this.idProformaElegida = null;
+    this.monto = null;
+    this.partidas = !this.variosPedidos || !this.saldo ? [] : this.saldo.pedidos.map(pedido => {
+      const porCobrar = pedido.condicionPago === 'CONTADO' && pedido.cobrado < pedido.total
+        ? Number(pedido.total) - Number(pedido.cobrado) : Number(pedido.pendiente);
+      return { idProforma: pedido.idProforma, noProforma: pedido.noProforma, marcado: false, monto: null,
+        pendiente: Math.max(0, Math.round(porCobrar * 100) / 100) };
+    });
+  }
+
+  /** Al marcar un pedido se ofrece lo que le falta; al desmarcarlo se quita. */
+  marcarPartida(partida: { marcado: boolean; monto: number | null; pendiente: number }): void {
+    partida.monto = partida.marcado ? (partida.monto || partida.pendiente || null) : null;
+    this.recalcularMonto();
+  }
+
+  recalcularMonto(): void {
+    const suma = this.partidasElegidas.reduce((total, p) => total + Number(p.monto), 0);
+    this.monto = suma > 0 ? Math.round(suma * 100) / 100 : null;
+  }
+
+  get partidasElegidas() {
+    return this.partidas.filter(p => p.marcado && Number(p.monto) > 0);
+  }
+
   get esCheque(): boolean {
     return this.formaPago === 'CHEQUE';
   }
@@ -274,6 +317,16 @@ export class RecibosComponent implements OnInit, OnDestroy {
   /** El cheque pide sus propios datos (banco, número, fecha); los demás pagos piden la referencia. */
   get pideReferencia(): boolean {
     return this.formaPago === 'DEPOSITO' || this.formaPago === 'TRANSFERENCIA';
+  }
+
+  elegirArchivoCheque(entrada: HTMLInputElement): void {
+    const archivo = entrada.files && entrada.files[0];
+    entrada.value = '';
+    if (archivo && archivo.size > 5 * 1024 * 1024) {
+      Swal.fire('El archivo es muy pesado', 'Debe pesar menos de 5 MB. Reduce la foto o usa un PDF más liviano.', 'warning');
+      return;
+    }
+    this.archivoCheque = archivo || null;
   }
 
   /** El cheque lleva una fecha posterior a la del pago: se puede depositar hasta ese día. */
@@ -295,6 +348,9 @@ export class RecibosComponent implements OnInit, OnDestroy {
   get faltante(): string {
     if (!this.clienteElegido) {
       return 'Elige el cliente.';
+    }
+    if (this.variosPedidos && this.partidasElegidas.length < 2) {
+      return 'Marca al menos dos pedidos e indica cuánto se aplica a cada uno.';
     }
     if (!(Number(this.monto) > 0)) {
       return 'Indica el monto.';
@@ -318,7 +374,7 @@ export class RecibosComponent implements OnInit, OnDestroy {
     }
     const solicitud: CrearReciboCajaDto = {
       idCliente: this.clienteElegido.idCliente,
-      idProforma: this.idProformaElegida || null,
+      idProforma: this.variosPedidos ? null : this.idProformaElegida || null,
       monto: Number(this.monto),
       formaPago: this.formaPago,
       referencia: this.esCheque ? null : this.referencia.trim() || null,
@@ -330,9 +386,17 @@ export class RecibosComponent implements OnInit, OnDestroy {
         fechaCheque: this.fechaCheque, notas: this.notasCheque.trim() || null
       } : null
     };
+    if (this.variosPedidos) {
+      solicitud.pedidos = this.partidasElegidas.map(p => ({ idProforma: p.idProforma, monto: Number(p.monto) }));
+    }
+    const archivo = this.esCheque ? this.archivoCheque : null;
     this.emitiendo = true;
     this.reciboService.emitir(solicitud).subscribe(recibo => {
       this.emitiendo = false;
+      if (archivo && recibo.cheque) {
+        this.chequeService.adjuntar(recibo.cheque.idCheque, archivo).subscribe(() => { }, error =>
+          Swal.fire('El recibo se emitió, pero no se guardó el archivo del cheque', `${this.mensaje(error)} Puedes adjuntarlo después en Control de cheques.`, 'warning'));
+      }
       this.formularioAbierto = false;
       this.limpiarFormulario();
       Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: `Recibo ${recibo.numeroVisible} emitido`,

@@ -166,6 +166,11 @@ export class ProformaService {
     );
   }
 
+  /** Convierte una cotización en pedido: el cliente confirmó. */
+  convertirEnPedido(id: number): Observable<any> {
+    return this.httpClient.post<any>(`${this.url}/proformas/${id}/convertir-pedido`, {});
+  }
+
   /** {@code motivo}: obligatorio al anular una proforma mayorista. */
   delete(id: number, motivo?: string): Observable<any> {
     const params = motivo ? new HttpParams().set('motivo', motivo) : new HttpParams();
