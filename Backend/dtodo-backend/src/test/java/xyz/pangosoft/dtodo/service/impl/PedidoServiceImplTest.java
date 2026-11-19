@@ -95,6 +95,8 @@ class PedidoServiceImplTest {
         assertTrue(etapa.getFecha() != null);
 
         service.avanzar(7L, null, null);
+        assertEquals(EstadoPedidoEnum.LISTO_PARA_EMPAQUE, proforma.getEstadoPedido());
+        service.avanzar(7L, null, null);
         assertEquals(EstadoPedidoEnum.EMPACADA, proforma.getEstadoPedido());
         service.avanzar(7L, "", 21);
         assertEquals(EstadoPedidoEnum.EN_RUTA, proforma.getEstadoPedido());
@@ -170,10 +172,13 @@ class PedidoServiceImplTest {
 
         service.retroceder(7L, "faltó un producto");
 
-        assertEquals(EstadoPedidoEnum.EN_PREPARACION, proforma.getEstadoPedido());
+        assertEquals(EstadoPedidoEnum.LISTO_PARA_EMPAQUE, proforma.getEstadoPedido());
         ProformaEtapa etapa = etapaGuardada();
-        assertEquals(EstadoPedidoEnum.EN_PREPARACION, etapa.getEtapa());
+        assertEquals(EstadoPedidoEnum.LISTO_PARA_EMPAQUE, etapa.getEtapa());
         assertTrue(etapa.getMotivo().contains("faltó un producto"));
+
+        service.retroceder(7L, "se mezcló con otro pedido");
+        assertEquals(EstadoPedidoEnum.EN_PREPARACION, proforma.getEstadoPedido());
     }
 
     @Test

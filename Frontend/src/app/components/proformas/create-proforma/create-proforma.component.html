@@ -220,7 +220,7 @@
                   [attr.aria-expanded]="selectorDescuentoAbierto" (click)="alternarSelectorDescuento($event)">
                   <i class="fas" [ngClass]="iconoTipo(tipoDescuento)" aria-hidden="true"></i>
                   <span class="descuento-trigger-copy">
-                    <strong>{{ descuentoProducto || 0 }} %</strong>
+                    <strong>{{ textoDescuentoElegido }}</strong>
                     <small>{{ etiquetaTipo(tipoDescuento) }}{{ nivelSeleccionado !== null ? ' · nivel ' + nivelSeleccionado + ' %' : '' }}</small>
                   </span>
                   <i class="fas fa-chevron-down descuento-trigger-chevron" aria-hidden="true"></i>
@@ -243,7 +243,7 @@
                         </strong>
                         <small>{{ detalleOpcion(opcion) }}</small>
                       </span>
-                      <span class="descuento-option-value" *ngIf="opcion.tipo !== 'MANUAL' && opcion.porcentaje !== null">{{ opcion.porcentaje }} %</span>
+                      <span class="descuento-option-value" *ngIf="opcion.tipo !== 'MANUAL' && opcion.porcentaje !== null">{{ textoValorOpcion(opcion) }}</span>
                       <i class="fas fa-check descuento-option-check" aria-hidden="true"></i>
                     </button>
                     <div class="descuento-niveles" *ngIf="opcion.tipo === 'CATEGORIA' && opcion.tipo === tipoDescuento && nivelesDisponibles.length > 0">
@@ -301,6 +301,11 @@
           </span>
         </div>
 
+        <div class="autorizacion-aviso aviso-entregado" *ngIf="pedidoEntregado" role="alert">
+          <i class="fas fa-lock" aria-hidden="true"></i>
+          <span>Este pedido <strong>ya se entregó</strong>: la proforma no se puede modificar. Para corregir algo, usa una
+            devolución o una nota de crédito.</span>
+        </div>
         <div class="autorizacion-aviso" *ngIf="pedidoEnPreparacion" role="status">
           <i class="fas fa-dolly" aria-hidden="true"></i>
           <span>Bodega ya empezó a preparar este pedido. Si guardas los cambios volverá a <strong>Confirmado</strong> y

@@ -17,5 +17,7 @@ export class ProformaDto {
   serieFactura?: string | null;
   noFactura?: number | null;
   estadoFactura?: string | null;
+  /** Etapa del pedido mayorista; nula en una proforma minorista. */
+  estadoPedido?: string | null;
   facturadoPor?: string | null;
 }

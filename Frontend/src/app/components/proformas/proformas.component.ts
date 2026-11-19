@@ -1,3 +1,4 @@
+import { ETIQUETAS_ESTADO_PEDIDO } from '../../dtos/pedido-dto';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
@@ -135,6 +136,16 @@ export class ProformasComponent implements OnInit, OnDestroy {
   }
 
   /** Tiene una factura vigente. Una factura anulada no cuenta: la proforma se puede volver a facturar. */
+  /** El pedido mayorista de esta proforma ya se entregó (completo o en parte): la proforma no se puede modificar. */
+  entregada(proforma: ProformaDto): boolean {
+    return proforma.estadoPedido === 'ENTREGADA' || proforma.estadoPedido === 'ENTREGADA_PARCIAL';
+  }
+
+  /** La etapa del pedido mayorista con su nombre, o vacío si la proforma no es de un pedido. */
+  etapaPedido(proforma: ProformaDto): string {
+    return proforma.estadoPedido ? (ETIQUETAS_ESTADO_PEDIDO[proforma.estadoPedido] || proforma.estadoPedido) : '';
+  }
+
   facturada(proforma: ProformaDto): boolean {
     return !!proforma.idFactura && proforma.estadoFactura !== 'ANULADO';
   }

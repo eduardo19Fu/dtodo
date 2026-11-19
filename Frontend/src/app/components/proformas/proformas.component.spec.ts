@@ -25,6 +25,23 @@ describe('ProformasComponent - estado de facturación', () => {
   });
 });
 
+describe('ProformasComponent - etapa del pedido mayorista', () => {
+  const component = new ProformasComponent(null, null);
+
+  it('un pedido entregado, completo o en parte, no se puede editar', () => {
+    expect(component.entregada({ estadoPedido: 'ENTREGADA' } as any)).toBeTrue();
+    expect(component.entregada({ estadoPedido: 'ENTREGADA_PARCIAL' } as any)).toBeTrue();
+    expect(component.entregada({ estadoPedido: 'EN_RUTA' } as any)).toBeFalse();
+    expect(component.entregada({} as any)).toBeFalse();
+  });
+
+  it('muestra la etapa con su nombre y nada si la proforma no es de un pedido', () => {
+    expect(component.etapaPedido({ estadoPedido: 'LISTO_PARA_EMPAQUE' } as any)).toBe('Listo para empaque');
+    expect(component.etapaPedido({ estadoPedido: 'ENTREGADA' } as any)).toBe('Entregado');
+    expect(component.etapaPedido({} as any)).toBe('');
+  });
+});
+
 describe('ProformasComponent - reemisión tras anular la factura', () => {
   const component = new ProformasComponent(null, null);
 

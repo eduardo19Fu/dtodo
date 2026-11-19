@@ -24,7 +24,8 @@ interface GrupoRuta {
 /** Texto del botón que avanza cada etapa, y a cuál pasa. */
 const ACCION_AVANCE: { [estado: string]: string } = {
   CONFIRMADA: 'Iniciar picking',
-  EN_PREPARACION: 'Marcar empacado',
+  EN_PREPARACION: 'Marcar listo para empaque',
+  LISTO_PARA_EMPAQUE: 'Marcar empacado',
   EMPACADA: 'Cargar y salir a ruta'
 };
 
@@ -72,6 +73,7 @@ export class PedidosComponent implements OnInit {
     { codigo: '', nombre: 'Por entregar' },
     { codigo: 'CONFIRMADA', nombre: ETIQUETAS_ESTADO_PEDIDO.CONFIRMADA },
     { codigo: 'EN_PREPARACION', nombre: ETIQUETAS_ESTADO_PEDIDO.EN_PREPARACION },
+    { codigo: 'LISTO_PARA_EMPAQUE', nombre: ETIQUETAS_ESTADO_PEDIDO.LISTO_PARA_EMPAQUE },
     { codigo: 'EMPACADA', nombre: ETIQUETAS_ESTADO_PEDIDO.EMPACADA },
     { codigo: 'EN_RUTA', nombre: ETIQUETAS_ESTADO_PEDIDO.EN_RUTA },
     { codigo: 'ENTREGADA_PARCIAL', nombre: ETIQUETAS_ESTADO_PEDIDO.ENTREGADA_PARCIAL },
@@ -250,7 +252,7 @@ export class PedidosComponent implements OnInit {
 
   /** Cuántos pedidos hay en cada etapa de la ruta, en el orden del flujo, para los chips del encabezado. */
   resumenEtapas(grupo: GrupoRuta): Array<{ estado: string; cantidad: number; texto: string }> {
-    const orden = ['CONFIRMADA', 'EN_PREPARACION', 'EMPACADA', 'EN_RUTA', 'ENTREGADA_PARCIAL', 'ENTREGADA'];
+    const orden = ['CONFIRMADA', 'EN_PREPARACION', 'LISTO_PARA_EMPAQUE', 'EMPACADA', 'EN_RUTA', 'ENTREGADA_PARCIAL', 'ENTREGADA'];
     return orden
       .map(estado => ({ estado, cantidad: grupo.pedidos.filter(pedido => pedido.estadoPedido === estado).length }))
       .filter(etapa => etapa.cantidad > 0)

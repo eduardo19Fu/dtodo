@@ -144,7 +144,7 @@ public interface IProformaRepository extends JpaRepository<Proforma, Long> {
             "p.idProforma, p.noProforma, p.fechaEmision, p.total, e.idEstado, e.estado, " +
             "u.usuario, concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, '')), c.nombre, c.nit, " +
             "f.idFactura, f.serie, f.noFactura, fe.estado, " +
-            "concat(coalesce(fu.primerNombre, ''), ' ', coalesce(fu.apellido, '')), p.tipoProforma, rt.nombre, p.estadoAutorizacion) " +
+            "concat(coalesce(fu.primerNombre, ''), ' ', coalesce(fu.apellido, '')), p.tipoProforma, rt.nombre, p.estadoAutorizacion, p.estadoPedido) " +
             "from Proforma p join p.estado e join p.usuario u join p.cliente c " +
             "left join p.ruta rt " +
             "left join Factura f on f.idFactura = " + FACTURA_ACTUAL + " " +
@@ -157,7 +157,7 @@ public interface IProformaRepository extends JpaRepository<Proforma, Long> {
             "p.idProforma, p.noProforma, p.fechaEmision, p.total, e.idEstado, e.estado, " +
             "u.usuario, concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, '')), c.nombre, c.nit, " +
             "f.idFactura, f.serie, f.noFactura, fe.estado, " +
-            "concat(coalesce(fu.primerNombre, ''), ' ', coalesce(fu.apellido, '')), p.tipoProforma, rt.nombre, p.estadoAutorizacion) " +
+            "concat(coalesce(fu.primerNombre, ''), ' ', coalesce(fu.apellido, '')), p.tipoProforma, rt.nombre, p.estadoAutorizacion, p.estadoPedido) " +
             "from Proforma p join p.estado e join p.usuario u join p.cliente c " +
             "left join p.ruta rt " +
             "left join Factura f on f.idFactura = " + FACTURA_ACTUAL + " " +
@@ -173,7 +173,7 @@ public interface IProformaRepository extends JpaRepository<Proforma, Long> {
             "p.idProforma, p.noProforma, p.fechaEmision, p.total, e.idEstado, e.estado, " +
             "u.usuario, concat(coalesce(u.primerNombre, ''), ' ', coalesce(u.apellido, '')), c.nombre, c.nit, " +
             "f.idFactura, f.serie, f.noFactura, fe.estado, " +
-            "concat(coalesce(fu.primerNombre, ''), ' ', coalesce(fu.apellido, '')), p.tipoProforma, rt.nombre, p.estadoAutorizacion) " +
+            "concat(coalesce(fu.primerNombre, ''), ' ', coalesce(fu.apellido, '')), p.tipoProforma, rt.nombre, p.estadoAutorizacion, p.estadoPedido) " +
             "from Proforma p join p.estado e join p.usuario u join p.cliente c " +
             "left join p.ruta rt " +
             "left join Factura f on f.idFactura = " + FACTURA_ACTUAL + " " +

@@ -430,7 +430,7 @@
         </div>
         <div class="card">
           <h4>Pedido</h4>
-          <p>La proforma mayorista vista como trabajo de bodega: pasa por <em>Confirmado, En preparación, Empacado, En ruta</em> y <em>Entregado</em>.</p>
+          <p>La proforma mayorista vista como trabajo de bodega: pasa por <em>Confirmado, En preparación, Listo para empaque, Empacado, En ruta</em> y <em>Entregado</em>.</p>
         </div>
         <div class="card">
           <h4>Entrega</h4>
@@ -774,7 +774,8 @@
       <p>Al <strong>guardar cambios</strong> de una proforma mayorista el sistema pide el <strong>motivo del cambio</strong> (obligatorio) y lo guarda en el historial. Lo mismo ocurre al anularla.</p>
       <div class="callout warn">
         <span class="callout-title">Si bodega ya empezó</span>
-        <p>Si el pedido ya está <em>En preparación</em> y guardas cambios, el pedido <strong>vuelve a Confirmado</strong> y hay que imprimir de nuevo la hoja de picking. El formulario te lo avisa antes de guardar.</p>
+        <p><strong>Un pedido ya entregado</strong> (completo o en parte) <strong>no se puede modificar</strong>: en la lista de proformas aparece con su etapa y un candado, el botón de editar queda deshabilitado y, si se abre la proforma, un aviso lo explica. Para corregir algo se usa una devolución o una nota de crédito.</p>
+        <p>Si el pedido ya está <em>En preparación</em> (o más adelante, hasta <em>En ruta</em>) y guardas cambios, el pedido <strong>vuelve a Confirmado</strong> y hay que imprimir de nuevo la hoja de picking. El formulario te lo avisa antes de guardar.</p>
       </div>
       <div class="callout warn">
         <span class="callout-title">Editar puede volver a pedir autorización</span>
@@ -831,7 +832,8 @@
           <thead><tr><th>Etapa</th><th>Significa</th><th>Quién avanza</th><th>Botón</th></tr></thead>
           <tbody>
             <tr><td><span class="pill wait">Confirmado</span></td><td>La proforma se creó y espera a bodega. Es la etapa inicial.</td><td>Administrador, Bodega</td><td><span class="btn green">Iniciar picking</span></td></tr>
-            <tr><td><span class="pill wait">En preparación</span></td><td>Bodega junta los productos del pedido (picking).</td><td>Administrador, Bodega</td><td><span class="btn green">Marcar empacado</span></td></tr>
+            <tr><td><span class="pill wait">En preparación</span></td><td>Bodega junta los productos del pedido (picking).</td><td>Administrador, Bodega</td><td><span class="btn green">Marcar listo para empaque</span></td></tr>
+            <tr><td><span class="pill wait">Listo para empaque</span></td><td>Bodega ya juntó los productos (picking) y falta empacarlos.</td><td>Administrador, Bodega</td><td><span class="btn green">Marcar empacado</span></td></tr>
             <tr><td><span class="pill ok">Empacado</span></td><td>El pedido está listo y empacado, esperando salir.</td><td>Administrador, Bodega</td><td><span class="btn green">Cargar y salir a ruta</span></td></tr>
             <tr><td><span class="pill ok">En ruta</span></td><td>El pedido salió con su <strong>piloto</strong>. Es el único momento en que se registran entregas.</td><td>&mdash;</td><td><span class="btn">Registrar entrega</span></td></tr>
             <tr><td><span class="pill wait">Entrega parcial</span></td><td>Se entregó una parte; el resto sigue pendiente.</td><td>&mdash;</td><td><span class="btn">Registrar entrega</span></td></tr>
@@ -849,7 +851,7 @@
       <ol class="steps">
         <li>Pulsa <span class="btn green">Iniciar picking</span>, la píldora que aparece <strong>bajo la etiqueta de la etapa</strong> (el siguiente paso de cada pedido). Se abre una ventana con el resumen del pedido (cliente, ruta, unidades, etapa y vendedor) que pregunta <em>&iquest;Quién lo hizo? (opcional, si no tiene usuario)</em>: sirve cuando quien trabaja no tiene usuario propio. Confirma.</li>
         <li>Imprime la <strong>hoja de picking</strong> con el icono de la lista (al pasar el cursor, un tooltip dice qué hace cada icono) para juntar los productos. La hoja lleva el logo, los datos del cliente y del pedido, la tabla con casillas para marcar lo preparado, el total de unidades y las líneas de firma.</li>
-        <li>Al terminar pulsa <span class="btn green">Marcar empacado</span> y, si quieres, imprime la <strong>lista de empaque</strong> con el icono de la caja.</li>
+        <li>Al terminar de juntar los productos pulsa <span class="btn green">Marcar listo para empaque</span>; cuando el empaque termina, pulsa <span class="btn green">Marcar empacado</span> y, si quieres, imprime la <strong>lista de empaque</strong> con el icono de la caja.</li>
         <li>Pulsa <span class="btn green">Cargar y salir a ruta</span>. El sistema pide el <strong>piloto</strong> (obligatorio): un usuario con rol Repartidor. Si no hay ninguno, avisa que el administrador debe crearlo.</li>
         <li>Para cargar el camión, imprime la <strong>nota de envío</strong>:
           <ul>
@@ -1320,7 +1322,7 @@
           <tbody>
             <tr><td class="c"><span class="box"></span></td><td><strong>Vendedor.</strong> Verifica <em>Condición de pago = Contado</em>, escribe una fecha de entrega estimada (hoy o mañana) y una observación. Pulsa <span class="btn">Guardar proforma</span>.</td><td>Se guarda. La opción <em>Crédito</em> está <strong>desactivada</strong> con el mensaje de que el cliente no tiene crédito.</td></tr>
             <tr><td class="c"><span class="box"></span></td><td><strong>Vendedor.</strong> En Proformas, imprime la proforma.</td><td>Pregunta <em>Copia cliente</em> o <em>Copia tienda</em>. La observación solo sale en la copia de la tienda.</td></tr>
-            <tr><td class="c"><span class="box"></span></td><td><strong>Bodega.</strong> Entra a <strong>Pedidos</strong>. Pulsa <span class="btn green">Iniciar picking</span>, confirma, luego <span class="btn green">Marcar empacado</span>.</td><td>El pedido pasa de <em>Confirmado</em> a <em>En preparación</em> y a <em>Empacado</em>. La lista <strong>no muestra importes</strong>.</td></tr>
+            <tr><td class="c"><span class="box"></span></td><td><strong>Bodega.</strong> Entra a <strong>Pedidos</strong>. Pulsa <span class="btn green">Iniciar picking</span>, confirma, luego <span class="btn green">Marcar listo para empaque</span> y <span class="btn green">Marcar empacado</span>.</td><td>El pedido pasa de <em>Confirmado</em> a <em>En preparación</em>, <em>Listo para empaque</em> y <em>Empacado</em>. La lista <strong>no muestra importes</strong>.</td></tr>
             <tr><td class="c"><span class="box"></span></td><td><strong>Bodega.</strong> Pulsa <span class="btn green">Cargar y salir a ruta</span> y elige a <code>repartidor.prueba</code> como piloto.</td><td>El pedido queda <em>En ruta</em> con su piloto. (Si no hay repartidores, el sistema lo avisa.)</td></tr>
             <tr><td class="c"><span class="box"></span></td><td><strong>Administrador.</strong> Abre el pedido y pulsa <span class="btn">Registrar entrega</span> con las <strong>10</strong> unidades, <strong>sin</strong> marcar ninguna casilla.</td><td>Lo <strong>rechaza</strong>: el pedido es de contado y falta cobrar <strong>Q900.00</strong>. El detalle dice que se emita un recibo ligado al pedido.</td></tr>
             <tr><td class="c"><span class="box"></span></td><td><strong>Cobrador</strong> (<code>cobrador.prueba</code>). En <strong>Recibos de caja &rarr; Nuevo recibo</strong>: busca a CLIENTE CONTADO; en <em>Aplicar pago a</em> elige <strong>este pedido</strong>; monto <strong>900</strong>; forma <em>Efectivo</em>. Pulsa <span class="btn">Emitir e imprimir</span>.</td><td>Se emite el recibo (por ejemplo <code>S1-000001</code>) y se abre su PDF.</td></tr>
@@ -1733,7 +1735,7 @@
         </div>
         <div class="card">
           <h4>Entregar</h4>
-          <p><em>Pedidos</em> (rutas plegables): Iniciar picking &rarr; Marcar empacado &rarr; Cargar y salir a ruta (piloto) con su nota de envío &rarr; Registrar entrega.</p>
+          <p><em>Pedidos</em> (rutas plegables): Iniciar picking &rarr; Marcar listo para empaque &rarr; Marcar empacado &rarr; Cargar y salir a ruta (piloto) con su nota de envío &rarr; Registrar entrega.</p>
         </div>
         <div class="card">
           <h4>Cobrar</h4>

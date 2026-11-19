@@ -190,6 +190,8 @@ public class HistorialPedidoServiceImpl implements IHistorialPedidoService {
                 return "Confirmado";
             case EN_PREPARACION:
                 return "En preparación";
+            case LISTO_PARA_EMPAQUE:
+                return "Listo para empaque";
             case EMPACADA:
                 return "Empacado";
             case EN_RUTA:

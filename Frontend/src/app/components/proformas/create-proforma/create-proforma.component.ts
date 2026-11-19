@@ -125,10 +125,16 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
   /** Porcentaje sobre el que el servidor pide autorización (solo para avisar; el servidor decide). */
   readonly topeDescuento = 15;
 
+  /** El pedido ya se entregó (completo o en parte): el servidor rechaza cualquier cambio a la proforma. */
+  get pedidoEntregado(): boolean {
+    const etapa = this.proforma.estadoPedido;
+    return this.esProformaMayorista && (etapa === 'ENTREGADA' || etapa === 'ENTREGADA_PARCIAL');
+  }
+
   /** Editar un pedido que bodega ya empezó a preparar lo devuelve a «Confirmado»: hay que imprimir de nuevo el picking. */
   get pedidoEnPreparacion(): boolean {
     const etapa = this.proforma.estadoPedido;
-    return this.esProformaMayorista && (etapa === 'EN_PREPARACION' || etapa === 'EMPACADA' || etapa === 'EN_RUTA');
+    return this.esProformaMayorista && (etapa === 'EN_PREPARACION' || etapa === 'LISTO_PARA_EMPAQUE' || etapa === 'EMPACADA' || etapa === 'EN_RUTA');
   }
 
   /** Una línea mayorista con más del tope, que no sea precio mayorista fijo, deja la proforma pendiente de autorización. */
@@ -249,6 +255,25 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
         : `Desde ${opcion.cantidadMinima} unidades · aún no se alcanza`;
     }
     return 'Según la categoría del cliente';
+  }
+
+  /** Lo que se muestra del descuento elegido: el precio fijo (Q486.19) si es precio mayorista, o el porcentaje. */
+  get textoDescuentoElegido(): string {
+    if (this.tipoDescuento === 'PRECIO_MAYORISTA' && this.opciones) {
+      const fijo = this.opciones.opciones.find(o => o.tipo === 'PRECIO_MAYORISTA');
+      if (fijo && fijo.precio !== null && fijo.precio !== undefined) {
+        return `Q${Number(fijo.precio).toFixed(2)}`;
+      }
+    }
+    return `${this.descuentoProducto || 0} %`;
+  }
+
+  /** El valor de una opción en la lista: el precio fijo para el precio mayorista (no su porcentaje equivalente) o el porcentaje. */
+  textoValorOpcion(opcion: { tipo: TipoDescuento; porcentaje: number | null; precio?: number | null }): string {
+    if (opcion.tipo === 'PRECIO_MAYORISTA' && opcion.precio !== null && opcion.precio !== undefined) {
+      return `Q${Number(opcion.precio).toFixed(2)}`;
+    }
+    return `${opcion.porcentaje} %`;
   }
 
   etiquetaTipo(tipo: TipoDescuento): string {

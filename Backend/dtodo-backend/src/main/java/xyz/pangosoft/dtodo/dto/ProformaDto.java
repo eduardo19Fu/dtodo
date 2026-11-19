@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import xyz.pangosoft.dtodo.model.enums.EstadoAutorizacionEnum;
+import xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum;
 import xyz.pangosoft.dtodo.model.enums.TipoProformaEnum;
 import java.util.Date;
 
@@ -37,12 +38,14 @@ public class ProformaDto {
     private String ruta;
     /** PENDIENTE, APROBADA, RECHAZADA o nulo si no necesita autorización. */
     private EstadoAutorizacionEnum estadoAutorizacion;
+    /** Etapa del pedido mayorista (nula en una proforma minorista): permite ver si ya se entregó y ya no se puede editar. */
+    private EstadoPedidoEnum estadoPedido;
 
     public ProformaDto(Long idProforma, String noProforma, Date fechaEmision, BigDecimal total, Integer idEstado,
                        String estado, String usuario, String vendedor, String cliente, String nitCliente,
                        Long idFactura, String serieFactura, Long noFactura, String estadoFactura,
                        String facturadoPor, TipoProformaEnum tipoProforma, String ruta,
-                       EstadoAutorizacionEnum estadoAutorizacion) {
+                       EstadoAutorizacionEnum estadoAutorizacion, EstadoPedidoEnum estadoPedido) {
         this.idProforma = idProforma;
         this.noProforma = noProforma;
         this.fechaEmision = fechaEmision;
@@ -62,5 +65,6 @@ public class ProformaDto {
         this.tipoProforma = tipoProforma == null ? TipoProformaEnum.MINORISTA : tipoProforma;
         this.ruta = ruta;
         this.estadoAutorizacion = estadoAutorizacion;
+        this.estadoPedido = estadoPedido;
     }
 }

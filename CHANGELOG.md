@@ -6,6 +6,12 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Cambiado — Ajustes pedidos por el cliente (primera tanda)
+- Nueva etapa **Listo para empaque** entre En preparación y Empacado (botones «Marcar listo para empaque» y «Marcar empacado»; también al regresar de etapa).
+- La lista de proformas muestra la **etapa del pedido mayorista**; un pedido entregado (completo o en parte) queda con un candado, el botón de editar deshabilitado y, al abrir la proforma, un aviso. El servidor ya rechazaba esos cambios.
+- El descuento por **precio mayorista fijo** se muestra como su precio (Q486.19) en lugar del porcentaje equivalente (9.9998 %).
+- El total de la proforma se redondea al centavo para evitar errores de suma con decimales.
+
 ### Cambiado — Altura de campos y textos como en el resto del sistema
 - Todos los campos de fecha (también los de mayoristas) miden como mínimo 50 px, y los campos de las pantallas de mayoristas suben a 50 px para quedar alineados. Los títulos de página usan el tamaño y el peso de AdminLTE, los subtítulos el gris de 0.95 rem de las demás pantallas y los encabezados de tarjeta el mismo estilo de los listados.
 

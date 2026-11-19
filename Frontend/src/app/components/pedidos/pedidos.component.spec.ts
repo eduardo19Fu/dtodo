@@ -112,7 +112,8 @@ describe('PedidosComponent', () => {
 
   it('el texto del botón sigue la etapa y no hay avance desde ruta ni con el descuento pendiente', () => {
     expect(component.textoAvance(pedido({ estadoPedido: 'CONFIRMADA' }))).toBe('Iniciar picking');
-    expect(component.textoAvance(pedido({ estadoPedido: 'EN_PREPARACION' }))).toBe('Marcar empacado');
+    expect(component.textoAvance(pedido({ estadoPedido: 'EN_PREPARACION' }))).toBe('Marcar listo para empaque');
+    expect(component.textoAvance(pedido({ estadoPedido: 'LISTO_PARA_EMPAQUE' }))).toBe('Marcar empacado');
     expect(component.textoAvance(pedido({ estadoPedido: 'EMPACADA' }))).toBe('Cargar y salir a ruta');
     expect(component.puedeAvanzar(pedido({ estadoPedido: 'EN_RUTA' }))).toBeFalse();
     expect(component.puedeAvanzar(pedido({ estadoAutorizacion: 'PENDIENTE' }))).toBeFalse();

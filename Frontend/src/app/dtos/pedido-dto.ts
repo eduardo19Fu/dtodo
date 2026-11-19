@@ -1,8 +1,9 @@
-export type EstadoPedido = 'CONFIRMADA' | 'EN_PREPARACION' | 'EMPACADA' | 'EN_RUTA' | 'ENTREGADA_PARCIAL' | 'ENTREGADA';
+export type EstadoPedido = 'CONFIRMADA' | 'EN_PREPARACION' | 'LISTO_PARA_EMPAQUE' | 'EMPACADA' | 'EN_RUTA' | 'ENTREGADA_PARCIAL' | 'ENTREGADA';
 
 export const ETIQUETAS_ESTADO_PEDIDO: { [estado: string]: string } = {
   CONFIRMADA: 'Confirmado',
   EN_PREPARACION: 'En preparación',
+  LISTO_PARA_EMPAQUE: 'Listo para empaque',
   EMPACADA: 'Empacado',
   EN_RUTA: 'En ruta',
   ENTREGADA_PARCIAL: 'Entrega parcial',

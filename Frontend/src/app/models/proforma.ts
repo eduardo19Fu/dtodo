@@ -37,7 +37,7 @@ export class Proforma {
     /** Lo calcula el servidor: PENDIENTE si una línea pasa del tope de descuento; nulo si no necesita autorización. */
     estadoAutorizacion?: EstadoAutorizacion | null;
     /** Etapa del pedido (solo la mayorista): la fija el servidor. */
-    estadoPedido?: 'CONFIRMADA' | 'EN_PREPARACION' | 'EMPACADA' | 'EN_RUTA' | 'ENTREGADA_PARCIAL' | 'ENTREGADA' | null;
+    estadoPedido?: 'CONFIRMADA' | 'EN_PREPARACION' | 'LISTO_PARA_EMPAQUE' | 'EMPACADA' | 'EN_RUTA' | 'ENTREGADA_PARCIAL' | 'ENTREGADA' | null;
     /** Un administrador autorizó facturarla aunque ya venció. */
     vencimientoAutorizado?: boolean;
     /** Vence a los 15 días de la emisión en una proforma mayorista; la fija el servidor. */
@@ -49,6 +49,8 @@ export class Proforma {
             this.total += item.calcularImporteDescuento();
         });
 
+        // Se redondea al centavo: la suma de decimales binarios puede quedar en 24999.999999999996 en lugar de 25000.
+        this.total = Math.round((this.total + Number.EPSILON) * 100) / 100;
         return this.total;
     }
 

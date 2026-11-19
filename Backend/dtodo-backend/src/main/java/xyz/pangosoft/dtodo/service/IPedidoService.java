@@ -10,7 +10,7 @@ import xyz.pangosoft.dtodo.model.Proforma;
 import xyz.pangosoft.dtodo.model.enums.EstadoPedidoEnum;
 
 /**
- * Pedidos mayoristas: una proforma mayorista pasa por {@code CONFIRMADA → EN_PREPARACION → EMPACADA → EN_RUTA}.
+ * Pedidos mayoristas: una proforma mayorista pasa por {@code CONFIRMADA → EN_PREPARACION → LISTO_PARA_EMPAQUE → EMPACADA → EN_RUTA}.
  * Bodega avanza cada etapa y queda quién y cuándo; la entrega, que sí descuenta inventario, llega en la fase 2B.
  * Las reglas responden 422 (401 y 403 los reserva el interceptor del frontend).
  */

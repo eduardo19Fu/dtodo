@@ -10,6 +10,8 @@ import java.util.List;
 public enum EstadoPedidoEnum {
     CONFIRMADA,
     EN_PREPARACION,
+    /** Bodega terminó de juntar los productos (picking) y falta que empaque: el empaque lo marca después. */
+    LISTO_PARA_EMPAQUE,
     EMPACADA,
     EN_RUTA,
     ENTREGADA_PARCIAL,
@@ -17,7 +19,7 @@ public enum EstadoPedidoEnum {
 
     /** Etapas en las que el pedido todavía está por entregarse (completa o lo que quedó pendiente). */
     public static final List<EstadoPedidoEnum> POR_ENTREGAR = Arrays.asList(
-            CONFIRMADA, EN_PREPARACION, EMPACADA, EN_RUTA, ENTREGADA_PARCIAL);
+            CONFIRMADA, EN_PREPARACION, LISTO_PARA_EMPAQUE, EMPACADA, EN_RUTA, ENTREGADA_PARCIAL);
 
     /** La etapa que sigue cuando bodega avanza el pedido; vacío si lo siguiente es la entrega (fase 2B). */
     public EstadoPedidoEnum siguienteEnBodega() {
@@ -25,6 +27,8 @@ public enum EstadoPedidoEnum {
             case CONFIRMADA:
                 return EN_PREPARACION;
             case EN_PREPARACION:
+                return LISTO_PARA_EMPAQUE;
+            case LISTO_PARA_EMPAQUE:
                 return EMPACADA;
             case EMPACADA:
                 return EN_RUTA;
@@ -38,8 +42,10 @@ public enum EstadoPedidoEnum {
         switch (this) {
             case EN_PREPARACION:
                 return CONFIRMADA;
-            case EMPACADA:
+            case LISTO_PARA_EMPAQUE:
                 return EN_PREPARACION;
+            case EMPACADA:
+                return LISTO_PARA_EMPAQUE;
             case EN_RUTA:
                 return EMPACADA;
             default:

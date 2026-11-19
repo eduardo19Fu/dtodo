@@ -143,6 +143,11 @@
                                   && proforma.estado !== 'ANULADO'}">
               {{proforma.estado}}
             </span>
+            <span *ngIf="etapaPedido(proforma) && proforma.idEstado !== 4" class="listing-status-pill etapa-pedido-pill"
+                  [ngClass]="entregada(proforma) ? 'listing-status-success' : 'listing-status-info'"
+                  [title]="entregada(proforma) ? 'El pedido ya se entregó: la proforma no se puede modificar' : 'Etapa del pedido'">
+              <i class="fas" [ngClass]="entregada(proforma) ? 'fa-lock' : 'fa-dolly'" aria-hidden="true"></i> {{etapaPedido(proforma)}}
+            </span>
             <span *ngIf="proforma.estadoAutorizacion === 'PENDIENTE' || proforma.estadoAutorizacion === 'RECHAZADA'"
                   class="listing-status-pill autorizacion-pill"
                   [ngClass]="proforma.estadoAutorizacion === 'PENDIENTE' ? 'listing-status-neutral' : 'listing-status-danger'"
@@ -177,9 +182,11 @@
               <i class="fas" [ngClass]="imprimiendoId === proforma.idProforma ? 'fa-spinner fa-spin' : 'fa-print'"></i>
             </button>
             <button class="btn btn-sm table-action action-edit" type="button"
-                    appTooltip="Editar proforma" aria-label="Editar proforma"
+                    [appTooltip]="entregada(proforma) ? 'Ya se entregó: la proforma no se puede editar' : 'Editar proforma'"
+                    aria-label="Editar proforma"
                     *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_INVENTARIO') || (auth.hasRole('ROLE_VENDEDOR') && !facturada(proforma))"
-                    [routerLink]="['/proformas/create', proforma.idProforma]">
+                    [disabled]="entregada(proforma)"
+                    [routerLink]="entregada(proforma) ? null : ['/proformas/create', proforma.idProforma]">
               <i class="fas fa-edit"></i>
             </button>
             <button class="btn btn-sm table-action action-invoice" type="button"
