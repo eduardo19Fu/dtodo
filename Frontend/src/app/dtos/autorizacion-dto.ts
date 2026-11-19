@@ -16,7 +16,30 @@ export class AutorizacionProformaDto {
   excesoCredito?: number | null;
   /** Solo en CREDITO: el límite de crédito del cliente. */
   limiteCredito?: number | null;
+  /** Solo en DESCUENTO: las líneas cuyo descuento pasa del tope. */
+  lineas?: LineaDescuentoDto[];
+  /** Solo en DESCUENTO: el tope sobre el que se pide autorización. */
+  topeDescuento?: number | null;
 }
+
+/** Una línea de proforma con descuento sobre el tope. */
+export interface LineaDescuentoDto {
+  codigo?: string | null;
+  producto: string;
+  cantidad: number;
+  precioUnitario?: number | null;
+  descuento: number;
+  tipoDescuento?: string | null;
+  importeDescuento?: number | null;
+}
+
+export const ETIQUETAS_TIPO_DESCUENTO: { [tipo: string]: string } = {
+  CATEGORIA: 'Categoría',
+  CIENTO: 'Por ciento',
+  FARDO: 'Fardo cerrado',
+  PRECIO_MAYORISTA: 'Precio mayorista',
+  MANUAL: 'Manual'
+};
 
 export type AccionAuditoria = 'CREACION' | 'MODIFICACION' | 'ANULACION' | 'AUTORIZACION' | 'RECHAZO'
   | 'AUTORIZACION_VENCIDA' | 'CAMBIO_CLIENTE_FACTURA';

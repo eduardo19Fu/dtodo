@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 
-import { AutorizacionProformaDto } from '../../dtos/autorizacion-dto';
+import { AutorizacionProformaDto, ETIQUETAS_TIPO_DESCUENTO } from '../../dtos/autorizacion-dto';
 import { AutorizacionProformaService } from '../../services/autorizacion-proforma.service';
 
 import { dialogo, escaparHtml, TonoDialogo } from '../../shared/dialogo-swal';
@@ -51,6 +51,26 @@ export class AutorizacionesComponent implements OnInit {
     this.autorizacionService.pendientes().subscribe(lista => { this.pendientes = lista; terminar(); }, fallar);
     this.autorizacionService.vencidas().subscribe(lista => { this.vencidas = lista; terminar(); }, fallar);
     this.autorizacionService.credito().subscribe(lista => { this.credito = lista; terminar(); }, fallar);
+  }
+
+  /** Proformas cuyo detalle de descuentos está desplegado. */
+  abiertas = new Set<number>();
+  readonly etiquetasTipo = ETIQUETAS_TIPO_DESCUENTO;
+
+  estaAbierta(proforma: AutorizacionProformaDto): boolean {
+    return this.abiertas.has(proforma.idProforma);
+  }
+
+  alternarDetalle(proforma: AutorizacionProformaDto): void {
+    if (!this.abiertas.delete(proforma.idProforma)) {
+      this.abiertas.add(proforma.idProforma);
+    }
+  }
+
+  /** Texto corto de la fila: cuántos productos pasan del tope. */
+  resumenLineas(proforma: AutorizacionProformaDto): string {
+    const n = proforma.lineas ? proforma.lineas.length : 0;
+    return n === 0 ? '' : `${n} ${n === 1 ? 'producto' : 'productos'} sobre el ${proforma.topeDescuento} %`;
   }
 
   get total(): number {

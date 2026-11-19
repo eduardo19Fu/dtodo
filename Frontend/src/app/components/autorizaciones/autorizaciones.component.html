@@ -45,8 +45,16 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let proforma of pendientes">
-            <td data-label="No. proforma"><span class="listing-id-pill">#{{proforma.noProforma}}</span></td>
+          <ng-container *ngFor="let proforma of pendientes">
+          <tr>
+            <td data-label="No. proforma">
+              <button type="button" class="detalle-toggle" (click)="alternarDetalle(proforma)" [attr.aria-expanded]="estaAbierta(proforma)"
+                [attr.aria-label]="(estaAbierta(proforma) ? 'Ocultar' : 'Ver') + ' los productos con descuento de la proforma ' + proforma.noProforma"
+                [appTooltip]="estaAbierta(proforma) ? 'Ocultar productos' : 'Ver los productos con descuento'">
+                <i class="fas" [ngClass]="estaAbierta(proforma) ? 'fa-chevron-down' : 'fa-chevron-right'" aria-hidden="true"></i>
+              </button>
+              <span class="listing-id-pill">#{{proforma.noProforma}}</span>
+            </td>
             <td data-label="Fecha">{{proforma.fechaEmision | date: 'dd/MM/yyyy HH:mm'}}</td>
             <td data-label="Cliente / ruta">
               <strong>{{proforma.cliente}}</strong>
@@ -54,7 +62,9 @@
             </td>
             <td data-label="Vendedor">{{proforma.vendedor}}</td>
             <td data-label="Total" class="text-money">{{proforma.total | currency: 'Q' : 'symbol'}}</td>
-            <td data-label="Descuento máx." class="text-center"><span class="listing-status-pill listing-status-danger">{{proforma.descuentoMaximo}} %</span></td>
+            <td data-label="Descuento máx." class="text-center"><span class="listing-status-pill listing-status-danger">{{proforma.descuentoMaximo}} %</span>
+              <small class="d-block text-muted mt-1" *ngIf="resumenLineas(proforma)">{{resumenLineas(proforma)}}</small>
+            </td>
             <td data-label="Decisión" class="text-center">
               <div class="listing-actions justify-content-center">
                 <button type="button" class="btn listing-page-action listing-primary-action listing-compact" (click)="aprobar(proforma)"
@@ -70,6 +80,43 @@
               </div>
             </td>
           </tr>
+          <tr *ngIf="estaAbierta(proforma)" class="detalle-descuento">
+            <td colspan="7">
+              <div class="detalle-descuento-caja">
+                <p class="detalle-descuento-titulo">
+                  Productos con descuento mayor al tope de {{proforma.topeDescuento}} % en la proforma #{{proforma.noProforma}}
+                </p>
+                <div class="table-responsive">
+                  <table class="table table-sm mb-0">
+                    <thead>
+                      <tr>
+                        <th scope="col">Producto</th>
+                        <th scope="col" class="text-right">Cantidad</th>
+                        <th scope="col" class="text-right">Precio</th>
+                        <th scope="col" class="text-center">Descuento</th>
+                        <th scope="col">Tipo</th>
+                        <th scope="col" class="text-right">Se deja de cobrar</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let linea of proforma.lineas">
+                        <td><strong>{{linea.producto}}</strong><small *ngIf="linea.codigo" class="d-block text-muted">{{linea.codigo}}</small></td>
+                        <td class="text-right">{{linea.cantidad}}</td>
+                        <td class="text-right">{{linea.precioUnitario | currency: 'Q' : 'symbol'}}</td>
+                        <td class="text-center"><span class="listing-status-pill listing-status-danger">{{linea.descuento}} %</span></td>
+                        <td>{{etiquetasTipo[linea.tipoDescuento] || linea.tipoDescuento}}</td>
+                        <td class="text-right">{{linea.importeDescuento | currency: 'Q' : 'symbol'}}</td>
+                      </tr>
+                      <tr *ngIf="!proforma.lineas || proforma.lineas.length === 0">
+                        <td colspan="6" class="text-muted">No hay líneas sobre el tope; la proforma pudo editarse. Actualiza la lista.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </td>
+          </tr>
+          </ng-container>
         </tbody>
       </table>
     </div>

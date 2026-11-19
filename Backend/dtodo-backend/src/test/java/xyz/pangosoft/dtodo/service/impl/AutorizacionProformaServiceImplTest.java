@@ -32,8 +32,9 @@ class AutorizacionProformaServiceImplTest {
     private final IProformaRepository proformaRepository = mock(IProformaRepository.class);
     private final IFacturaRepository facturaRepository = mock(IFacturaRepository.class);
     private final IProformaAuditoriaService auditoria = mock(IProformaAuditoriaService.class);
+    private final xyz.pangosoft.dtodo.service.IProformaMayoristaService mayoristaService = mock(xyz.pangosoft.dtodo.service.IProformaMayoristaService.class);
     private final AutorizacionProformaServiceImpl service =
-            new AutorizacionProformaServiceImpl(proformaRepository, facturaRepository, auditoria);
+            new AutorizacionProformaServiceImpl(proformaRepository, facturaRepository, auditoria, mayoristaService);
 
     @BeforeEach
     void motivos() {
@@ -255,5 +256,41 @@ class AutorizacionProformaServiceImplTest {
         service.credito();
 
         verify(proformaRepository).findCreditoPorAutorizar(EstadoAutorizacionEnum.PENDIENTE);
+    }
+
+    @Test
+    void laBandejaDeDescuentosTraeSoloLasLineasQuePasanDelTope() {
+        when(mayoristaService.descuentoMaximo()).thenReturn(15.0);
+        Proforma proforma = new Proforma();
+        proforma.setIdProforma(7L);
+        xyz.pangosoft.dtodo.model.Producto resma = xyz.pangosoft.dtodo.model.Producto.builder().codProducto("R-1").nombre("RESMA")
+                .precioVenta(new java.math.BigDecimal("50.00")).build();
+        xyz.pangosoft.dtodo.model.DetalleProforma alta = new xyz.pangosoft.dtodo.model.DetalleProforma();
+        alta.setProducto(resma);
+        alta.setCantidad(10);
+        alta.setDescuento(20f);
+        alta.setTipoDescuento(xyz.pangosoft.dtodo.model.enums.TipoDescuentoEnum.MANUAL);
+        alta.setSubTotalDescuento(new java.math.BigDecimal("400.00"));
+        xyz.pangosoft.dtodo.model.DetalleProforma normal = new xyz.pangosoft.dtodo.model.DetalleProforma();
+        normal.setProducto(resma);
+        normal.setCantidad(2);
+        normal.setDescuento(10f);
+        xyz.pangosoft.dtodo.model.DetalleProforma fijo = new xyz.pangosoft.dtodo.model.DetalleProforma();
+        fijo.setProducto(resma);
+        fijo.setCantidad(5);
+        fijo.setDescuento(30f);
+        fijo.setTipoDescuento(xyz.pangosoft.dtodo.model.enums.TipoDescuentoEnum.PRECIO_MAYORISTA);
+        proforma.setItemsProforma(java.util.Arrays.asList(alta, normal, fijo));
+        xyz.pangosoft.dtodo.dto.AutorizacionProformaDto dto = new xyz.pangosoft.dtodo.dto.AutorizacionProformaDto();
+        dto.setIdProforma(7L);
+        when(proformaRepository.findPorAutorizar(EstadoAutorizacionEnum.PENDIENTE)).thenReturn(java.util.Collections.singletonList(dto));
+        when(proformaRepository.findAllById(any())).thenReturn(java.util.Collections.singletonList(proforma));
+
+        xyz.pangosoft.dtodo.dto.AutorizacionProformaDto resultado = service.pendientes().get(0);
+
+        assertEquals(15.0, resultado.getTopeDescuento());
+        assertEquals(1, resultado.getLineas().size());
+        assertEquals("RESMA", resultado.getLineas().get(0).getProducto());
+        assertEquals(new java.math.BigDecimal("100.00"), resultado.getLineas().get(0).getImporteDescuento());
     }
 }

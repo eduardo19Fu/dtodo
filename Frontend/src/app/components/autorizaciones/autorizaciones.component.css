@@ -1,1 +1,8 @@
 /* Los estilos de botones, avisos, estados vacíos y tablas son los compartidos de src/styles.css (listing-*). */
+
+/* Detalle desplegable de los productos con descuento sobre el tope. */
+.detalle-toggle { background: none; border: 0; color: #607087; cursor: pointer; margin: 0 6px 0 0; padding: 2px 4px; }
+.detalle-toggle:hover { color: #2b5fb4; }
+.detalle-descuento > td { background: #f6f8fb; padding: 0; }
+.detalle-descuento-caja { padding: 10px 14px 12px 38px; }
+.detalle-descuento-titulo { color: #4a5568; font-size: 13px; font-weight: 600; margin: 0 0 6px; }

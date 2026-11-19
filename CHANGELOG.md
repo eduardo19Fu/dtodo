@@ -6,6 +6,9 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Cambiado — Autorizaciones: se ven los productos con descuento
+- En **Descuentos por autorizar**, cada proforma tiene una flecha que despliega los productos que pasan del tope: producto, código, cantidad, precio, descuento, tipo y cuánto se deja de cobrar. La fila indica cuántos productos pasan del tope. Ya no hace falta abrir la proforma para editarla y saber a quién se le aplica el descuento.
+
 ### Cambiado — Un producto en varias líneas y descuento por tramos (proformas)
 - Al agregar un producto que ya está en la proforma, si el descuento es **distinto** se crea una **línea aparte** (antes se sumaba la cantidad y se pisaba el descuento de la línea); con el mismo descuento se sigue sumando. El tope de stock se reparte entre todas las líneas del producto, también al editar una cantidad.
 - Con descuento de **fardo cerrado**, si la cantidad pasa de los fardos completos (por ejemplo 150 con fardo de 125), la pantalla propone **dividir**: los fardos con su descuento y el resto con el de por ciento. Es opcional: el vendedor decide si divide. Pendiente confirmar con el cliente que esa es la regla.

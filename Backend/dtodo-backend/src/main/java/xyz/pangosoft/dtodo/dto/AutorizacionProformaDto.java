@@ -32,6 +32,10 @@ public class AutorizacionProformaDto {
     private BigDecimal excesoCredito;
     /** Solo en {@link #TIPO_CREDITO}: el límite de crédito del cliente. */
     private BigDecimal limiteCredito;
+    /** Solo en {@link #TIPO_DESCUENTO}: las líneas cuyo descuento pasa del tope, con su producto. */
+    private java.util.List<LineaDescuentoDto> lineas = new java.util.ArrayList<>();
+    /** Solo en {@link #TIPO_DESCUENTO}: el tope sobre el que se pide autorización. */
+    private Double topeDescuento;
 
     public AutorizacionProformaDto(Long idProforma, String noProforma, Date fechaEmision, BigDecimal total, String cliente,
             String ruta, String vendedor, LocalDate fechaVencimiento, Float descuentoMaximo, String tipo) {

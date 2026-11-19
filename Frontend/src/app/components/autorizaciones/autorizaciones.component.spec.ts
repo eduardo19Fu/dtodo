@@ -49,6 +49,22 @@ describe('AutorizacionesComponent', () => {
     expect(component.errorCarga).toBeFalse();
   });
 
+  it('el detalle de productos con descuento se despliega y se oculta con un clic', () => {
+    const proforma = dto({ topeDescuento: 15, lineas: [
+      { producto: 'RESMA', cantidad: 10, descuento: 20, tipoDescuento: 'MANUAL', importeDescuento: 100 },
+      { producto: 'LAPIZ', cantidad: 5, descuento: 18, tipoDescuento: 'CIENTO', importeDescuento: 9 }
+    ] });
+
+    expect(component.estaAbierta(proforma)).toBeFalse();
+    expect(component.resumenLineas(proforma)).toBe('2 productos sobre el 15 %');
+
+    component.alternarDetalle(proforma);
+    expect(component.estaAbierta(proforma)).toBeTrue();
+    component.alternarDetalle(proforma);
+    expect(component.estaAbierta(proforma)).toBeFalse();
+    expect(component.resumenLineas(dto())).toBe('');
+  });
+
   it('si una lista falla lo indica y deja de cargar', () => {
     servicio.vencidas.and.returnValue(throwError({ status: 500 }));
 

@@ -1,13 +1,22 @@
 package xyz.pangosoft.dtodo.service.impl;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import xyz.pangosoft.dtodo.dto.AutorizacionProformaDto;
+import xyz.pangosoft.dtodo.dto.LineaDescuentoDto;
+import xyz.pangosoft.dtodo.model.DetalleProforma;
+import xyz.pangosoft.dtodo.model.Producto;
+import xyz.pangosoft.dtodo.model.enums.TipoDescuentoEnum;
 import xyz.pangosoft.dtodo.error.exceptions.NotFoundException;
 import xyz.pangosoft.dtodo.error.exceptions.ReglaNegocioException;
 import xyz.pangosoft.dtodo.model.Proforma;
@@ -18,6 +27,7 @@ import xyz.pangosoft.dtodo.repository.IFacturaRepository;
 import xyz.pangosoft.dtodo.repository.IProformaRepository;
 import xyz.pangosoft.dtodo.service.IAutorizacionProformaService;
 import xyz.pangosoft.dtodo.service.IProformaAuditoriaService;
+import xyz.pangosoft.dtodo.service.IProformaMayoristaService;
 
 @Service
 @RequiredArgsConstructor
@@ -26,11 +36,53 @@ public class AutorizacionProformaServiceImpl implements IAutorizacionProformaSer
     private final IProformaRepository proformaRepository;
     private final IFacturaRepository facturaRepository;
     private final IProformaAuditoriaService auditoria;
+    private final IProformaMayoristaService mayoristaService;
 
     @Transactional(readOnly = true)
     @Override
     public List<AutorizacionProformaDto> pendientes() {
-        return proformaRepository.findPorAutorizar(EstadoAutorizacionEnum.PENDIENTE);
+        List<AutorizacionProformaDto> pendientes = proformaRepository.findPorAutorizar(EstadoAutorizacionEnum.PENDIENTE);
+        completarLineas(pendientes);
+        return pendientes;
+    }
+
+    /** Agrega a cada proforma las líneas que pasan del tope, para que se vea a qué producto se le aplica el descuento. */
+    private void completarLineas(List<AutorizacionProformaDto> pendientes) {
+        if (pendientes == null || pendientes.isEmpty()) {
+            return;
+        }
+        double tope = mayoristaService.descuentoMaximo();
+        Map<Long, Proforma> proformas = new HashMap<>();
+        proformaRepository.findAllById(pendientes.stream().map(AutorizacionProformaDto::getIdProforma).collect(Collectors.toList()))
+                .forEach(proforma -> proformas.put(proforma.getIdProforma(), proforma));
+        for (AutorizacionProformaDto dto : pendientes) {
+            dto.setTopeDescuento(tope);
+            Proforma proforma = proformas.get(dto.getIdProforma());
+            if (proforma == null || proforma.getItemsProforma() == null) {
+                continue;
+            }
+            dto.setLineas(proforma.getItemsProforma().stream()
+                    .filter(linea -> linea != null && linea.getTipoDescuento() != TipoDescuentoEnum.PRECIO_MAYORISTA
+                            && linea.getDescuento() != null && linea.getDescuento() > tope)
+                    .map(AutorizacionProformaServiceImpl::aLinea).collect(Collectors.toList()));
+        }
+    }
+
+    static LineaDescuentoDto aLinea(DetalleProforma linea) {
+        LineaDescuentoDto dto = new LineaDescuentoDto();
+        Producto producto = linea.getProducto();
+        dto.setCodigo(producto == null ? null : producto.getCodProducto());
+        dto.setProducto(producto == null ? null : producto.getNombre());
+        dto.setCantidad(linea.getCantidad());
+        BigDecimal lista = producto == null || producto.getPrecioVenta() == null ? null : producto.getPrecioVenta();
+        dto.setPrecioUnitario(lista);
+        dto.setDescuento(linea.getDescuento());
+        dto.setTipoDescuento(linea.getTipoDescuento());
+        if (lista != null && linea.getCantidad() != null && linea.getSubTotalDescuento() != null) {
+            dto.setImporteDescuento(lista.multiply(BigDecimal.valueOf(linea.getCantidad())).subtract(linea.getSubTotalDescuento())
+                    .setScale(2, RoundingMode.HALF_UP));
+        }
+        return dto;
     }
 
     @Transactional(readOnly = true)
