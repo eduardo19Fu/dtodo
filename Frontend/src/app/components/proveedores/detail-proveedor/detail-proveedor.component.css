@@ -1,12 +1,12 @@
 :host {
-  --green-900: #33214f;
-  --green-800: #5b3e91;
-  --green-700: #7654b5;
-  --green-100: #e5dcf2;
-  --green-50: #f8f5fb;
+  --green-900: var(--app-blue-900);
+  --green-800: var(--app-blue-800);
+  --green-700: var(--app-blue-700);
+  --green-100: var(--app-blue-100);
+  --green-50: var(--app-blue-50);
   --ink: #243247;
   --muted: #6d7b8f;
-  --border: #e3ddec;
+  --border: var(--app-border);
 }
 
 .sucursal-detail-overlay {
@@ -31,7 +31,7 @@
 .sucursal-detail-content {
   background: #fff;
   border-radius: 18px;
-  box-shadow: 0 24px 70px rgba(51, 33, 79, 0.3);
+  box-shadow: 0 24px 70px rgba(var(--app-accent-dark-rgb), 0.3);
   display: flex;
   flex-direction: column;
   max-height: calc(100vh - 56px);
@@ -105,11 +105,11 @@
 }
 
 .sucursal-detail-body {
-  background: #faf8fc;
+  background: var(--app-blue-50);
   min-height: 0;
   overflow-y: auto;
   padding: 26px 28px;
-  scrollbar-color: #baa9d7 transparent;
+  scrollbar-color: var(--app-hover-border) transparent;
   scrollbar-width: thin;
 }
 
@@ -123,7 +123,7 @@
 .profile-summary {
   align-items: center;
   background: linear-gradient(135deg, #f5f1fa, #fbf9fd);
-  border: 1px solid #e5ddef;
+  border: 1px solid var(--app-border);
   border-radius: 13px;
   display: flex;
   flex-wrap: wrap;
@@ -136,7 +136,7 @@
   background: linear-gradient(135deg, var(--green-800), var(--green-700));
   border: 4px solid #fff;
   border-radius: 50%;
-  box-shadow: 0 6px 16px rgba(91, 62, 145, 0.22);
+  box-shadow: 0 6px 16px rgba(var(--app-accent-dark-rgb), 0.22);
   color: #fff;
   display: flex;
   flex: 0 0 66px;
@@ -222,7 +222,7 @@
 .information-card {
   align-items: center;
   background: #faf9fc;
-  border: 1px solid #e8e2ef;
+  border: 1px solid var(--app-border);
   border-radius: 11px;
   display: flex;
   gap: 12px;

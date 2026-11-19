@@ -1,7 +1,7 @@
 :host {
-  --warehouse-accent: #b8732b;
-  --warehouse-dark: #8f5518;
-  --warehouse-tint: #f8eee2;
+  --warehouse-accent: var(--app-accent);
+  --warehouse-dark: var(--app-accent-dark);
+  --warehouse-tint: var(--app-tint);
 }
 
 .import-backdrop {
@@ -28,7 +28,7 @@
 
 .import-header {
   align-items: center;
-  background: linear-gradient(135deg, #6e410f, var(--warehouse-dark));
+  background: linear-gradient(135deg, var(--app-blue-900), var(--warehouse-dark));
   color: #fff;
   display: flex;
   gap: 14px;
@@ -142,7 +142,7 @@
 .btn-confirm {
   background: linear-gradient(135deg, var(--warehouse-accent), var(--warehouse-dark));
   border: 0;
-  box-shadow: 0 6px 14px rgba(143, 85, 24, 0.27);
+  box-shadow: 0 6px 14px rgba(var(--app-accent-dark-rgb), 0.27);
   color: #fff;
 }
 

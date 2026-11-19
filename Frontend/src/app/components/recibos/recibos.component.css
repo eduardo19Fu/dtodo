@@ -35,7 +35,7 @@
 }
 :host .receipt-canceled-toggle > span { min-width: 0; }
 :host .receipt-canceled-toggle .listing-switch { flex: 0 0 40px; margin: 0; }
-:host .receipt-canceled-toggle:focus-within { border-color: #2f7d6b; box-shadow: 0 0 0 3px rgba(47, 125, 107, 0.14); }
+:host .receipt-canceled-toggle:focus-within { border-color: var(--app-blue-700); box-shadow: 0 0 0 3px rgba(var(--app-accent-rgb), 0.14); }
 :host .receipt-list-caption { color: #607087; display: flex; flex-wrap: wrap; font-size: 13px; gap: 8px 16px; justify-content: space-between; line-height: 1.5; margin-bottom: 14px; }
 :host .receipt-list .table thead th { padding: 10px 12px; }
 :host .receipt-list .table tbody td { padding: 10px 12px; }
@@ -95,7 +95,7 @@
 .cliente-quitar:hover { color: #c0392b; }
 
 :host .adjunto-formulario { align-items: center; background: #fff; border: 1px dashed #9fb2c8; border-radius: 7px; color: #3e526b; cursor: pointer; display: flex; font-size: 14px; gap: 8px; margin: 8px 0 0; min-height: 44px; padding: 8px 12px; }
-:host .adjunto-formulario:hover { border-color: #2f7d6b; color: #1f5a4c; }
+:host .adjunto-formulario:hover { border-color: var(--app-blue-700); color: var(--app-blue-900); }
 :host .adjunto-formulario span { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 :host .adjunto-formulario .adjunto-quitar { background: none; border: 0; color: #9a3b3b; cursor: pointer; padding: 0 4px; }
 

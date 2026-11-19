@@ -1,49 +1,12 @@
 :host { display: contents; }
 
 .date-range-theme {
-  --date-accent: #2783b7;
-  --date-accent-dark: #1c688f;
-  --date-accent-rgb: 39, 131, 183;
-  --date-tint: #e5f3f8;
+  --date-accent: var(--app-accent);
+  --date-accent-dark: var(--app-accent-dark);
+  --date-accent-rgb: var(--app-accent-rgb);
+  --date-tint: var(--app-tint);
   display: contents;
 }
-.date-range-theme-ventas {
-  --date-accent: #7f704f;
-  --date-accent-dark: #5c5038;
-  --date-accent-rgb: 127, 112, 79;
-  --date-tint: #f3efe7;
-}
-.date-range-theme-proformas {
-  --date-accent: #5b6fc0;
-  --date-accent-dark: #43559b;
-  --date-accent-rgb: 91, 111, 192;
-  --date-tint: #edf0fb;
-}
-.date-range-theme-notas {
-  --date-accent: #b04486;
-  --date-accent-dark: #843164;
-  --date-accent-rgb: 176, 68, 134;
-  --date-tint: #f7e8f1;
-}
-.date-range-theme-compras {
-  --date-accent: #7654b5;
-  --date-accent-dark: #5b3e91;
-  --date-accent-rgb: 118, 84, 181;
-  --date-tint: #f0ebf8;
-}
-.date-range-theme-bodegas {
-  --date-accent: #b8732b;
-  --date-accent-dark: #8f5518;
-  --date-accent-rgb: 184, 115, 43;
-  --date-tint: #f8eee2;
-}
-.date-range-theme-usuarios {
-  --date-accent: #b95765;
-  --date-accent-dark: #95434f;
-  --date-accent-rgb: 185, 87, 101;
-  --date-tint: #faeaec;
-}
-
 .date-picker-column { position: relative; }
 .filter-label { color: #495057; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem; }
 .date-trigger {

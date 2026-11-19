@@ -40,9 +40,9 @@
 
 .route-arrow {
   align-items: center;
-  background: #f8eee2;
+  background: var(--app-tint);
   border-radius: 50%;
-  color: #8f5518;
+  color: var(--app-accent-dark);
   display: inline-flex;
   flex: 0 0 24px;
   font-size: 11px;

@@ -1,13 +1,13 @@
 .correlative-form-page {
-  --blue-950: #403829;
-  --blue-900: #514735;
-  --blue-800: #625641;
-  --blue-700: #706248;
-  --blue-600: #7f704f;
-  --blue-500: #96845c;
-  --blue-100: #e7dfcf;
-  --blue-50: #faf8f3;
-  --border: #e3ddd1;
+  --blue-950: var(--app-blue-950);
+  --blue-900: var(--app-blue-900);
+  --blue-800: var(--app-blue-800);
+  --blue-700: var(--app-blue-700);
+  --blue-600: var(--app-blue-600);
+  --blue-500: var(--app-blue-500);
+  --blue-100: var(--app-blue-100);
+  --blue-50: var(--app-blue-50);
+  --border: var(--app-border);
   max-width: 1240px;
 }
 
@@ -24,28 +24,28 @@
 }
 
 .correlative-form-page .heading-icon {
-  background: #f3efe7;
+  background: var(--app-tint);
   border-color: #ded5c3;
-  color: #5c5038;
+  color: var(--app-accent);
 }
 
 .correlative-form-page .product-card {
-  border-color: rgba(92, 80, 56, 0.13);
-  box-shadow: 0 18px 50px rgba(92, 80, 56, 0.13);
+  border-color: rgba(var(--app-accent-rgb), 0.13);
+  box-shadow: 0 18px 50px rgba(var(--app-accent-rgb), 0.13);
 }
 
 .correlative-form-page .card-hero p span,
 .correlative-form-page .status-pill i { color: #e4dbc7; }
 
 .correlative-form-page .section-number {
-  background: #faf8f3;
-  border-color: #e7dfcf;
+  background: var(--app-blue-50);
+  border-color: var(--app-blue-100);
 }
 
 .correlative-form-page .control-with-icon > i { color: #827354; }
 
 .correlative-form-page .field-group .form-control:focus {
-  box-shadow: 0 0 0 3px rgba(127, 112, 79, 0.15);
+  box-shadow: 0 0 0 3px rgba(var(--app-accent-rgb), 0.15);
 }
 
 .correlative-form-page .form-actions {
@@ -54,12 +54,12 @@
 }
 
 .correlative-form-page .primary-action {
-  box-shadow: 0 7px 16px rgba(92, 80, 56, 0.27);
+  box-shadow: 0 7px 16px rgba(var(--app-accent-rgb), 0.27);
 }
 
 .correlative-form-page .primary-action:hover,
 .correlative-form-page .primary-action:focus {
-  box-shadow: 0 10px 22px rgba(92, 80, 56, 0.36);
+  box-shadow: 0 10px 22px rgba(var(--app-accent-rgb), 0.36);
 }
 
 @media (max-width: 767.98px) {

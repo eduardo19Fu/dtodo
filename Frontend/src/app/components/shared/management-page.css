@@ -1,9 +1,9 @@
 /* Lenguaje visual compartido por Pedidos, Mayoristas y Cuentas por cobrar.
    Se carga después del estilo local y queda encapsulado en cada componente. */
 :host {
-  --management-accent: #2f7d6b;
-  --management-accent-dark: #1f5a4c;
-  --management-tint: #edf6f2;
+  --management-accent: var(--app-accent);
+  --management-accent-dark: var(--app-accent-dark);
+  --management-tint: var(--app-tint);
   --management-ink: #24344d;
   --management-muted: #607087;
   --management-border: #dce4ec;
@@ -105,7 +105,7 @@
 :host .form-control::placeholder { color: #718095; }
 :host .form-control:disabled,
 :host .form-control[readonly] { background: #f0f3f6; color: #657488; }
-:host .form-control:focus { border-color: var(--management-accent); box-shadow: 0 0 0 3px rgba(47, 125, 107, 0.14); }
+:host .form-control:focus { border-color: var(--management-accent); box-shadow: 0 0 0 3px rgba(var(--app-accent-rgb), 0.14); }
 :host .listing-check { font-weight: 500; line-height: 1.5; }
 :host input[type='checkbox'] { accent-color: var(--management-accent); }
 :host .listing-tile { border-radius: 8px; min-height: var(--management-control-height); transition: border-color 0.15s ease, box-shadow 0.15s ease; }
@@ -117,7 +117,7 @@
 :host .listing-tile-input { font-weight: 500; }
 :host .listing-tile-select,
 :host .listing-tile-input { height: 28px; }
-:host .listing-tile:focus-within { border-color: var(--management-accent); box-shadow: 0 0 0 3px rgba(47, 125, 107, 0.14); }
+:host .listing-tile:focus-within { border-color: var(--management-accent); box-shadow: 0 0 0 3px rgba(var(--app-accent-rgb), 0.14); }
 :host .listing-switch:checked { background: var(--management-accent); }
 :host .listing-tile-actions { flex-wrap: wrap; gap: 8px; min-height: var(--management-control-height); }
 :host .listing-tile-actions .btn.listing-page-action { min-height: var(--management-control-height); }
@@ -153,7 +153,7 @@
 :host a:focus-visible,
 :host input:focus-visible,
 :host select:focus-visible,
-:host textarea:focus-visible { outline: 3px solid #438d7c; outline-offset: 3px; }
+:host textarea:focus-visible { outline: 3px solid var(--app-blue-500); outline-offset: 3px; }
 :host .action-buttons,
 :host .acciones,
 :host .listing-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; }
@@ -204,7 +204,7 @@
 :host .listing-pagination { border-top-color: var(--management-border); margin-top: 20px; padding-top: 16px; }
 :host .listing-pagination .page-link { border-radius: 6px; box-shadow: none; min-height: 38px; }
 :host .listing-pagination .page-item.active .page-link { background: var(--management-accent); border-color: var(--management-accent); box-shadow: none; }
-:host .listing-pagination .page-item:not(.active):not(.disabled) .page-link:hover { background: var(--management-tint); border-color: #b4d3c9; box-shadow: none; color: var(--management-accent-dark); transform: none; }
+:host .listing-pagination .page-item:not(.active):not(.disabled) .page-link:hover { background: var(--management-tint); border-color: var(--app-hover-border); box-shadow: none; color: var(--management-accent-dark); transform: none; }
 :host .listing-pagination .page-link:disabled { background: #f7f9fb; color: #78879a; cursor: not-allowed; }
 :host .form-section-title { color: var(--management-ink); font-size: 15px; font-weight: 700; margin: 0 0 16px; }
 :host .form-section-title i { color: var(--management-accent); margin-right: 8px; }
@@ -235,9 +235,9 @@
 :host .indicador-aro { align-items: flex-start; text-align: left; }
 :host .aro { align-self: center; height: 120px; width: 120px; }
 :host .aro-centro { height: 96px; width: 96px; }
-:host .barra-participacion { background: #e6eeea; border-radius: 4px; height: 24px; }
-:host .barra-participacion > span { background: #b1d4c8; border-radius: 0; }
-:host .barra-participacion > em { color: #243f35; font-size: 12px; font-weight: 600; line-height: 24px; text-shadow: none; }
+:host .barra-participacion { background: var(--app-blue-100); border-radius: 4px; height: 24px; }
+:host .barra-participacion > span { background: var(--app-blue-500); border-radius: 0; }
+:host .barra-participacion > em { color: var(--app-accent-dark); font-size: 12px; font-weight: 600; line-height: 24px; text-shadow: none; }
 :host .grupo-titulo { color: var(--management-ink); }
 :host .grupo-titulo > i { color: var(--management-accent); margin-right: 8px; }
 :host .grupo-resumen { color: var(--management-muted); display: block; font-size: 13px; font-weight: 400; margin: 4px 0 0; }
@@ -276,7 +276,7 @@
 :host .categoria-card h5 { color: var(--management-ink); font-size: 17px; }
 :host .categoria-descripcion { color: var(--management-muted); line-height: 1.6; margin: 8px 0 20px; min-height: 48px; }
 :host .niveles { flex: 1; gap: 8px; margin-bottom: 20px; }
-:host .nivel-chip { background: #fbefe3; border-color: #efd5bb; border-radius: 6px; font-size: 14px; padding: 4px 6px 4px 10px; }
+:host .nivel-chip { background: var(--app-tint); border-color: var(--app-border); border-radius: 6px; font-size: 14px; padding: 4px 6px 4px 10px; }
 :host .nivel-chip button { min-height: 28px; min-width: 28px; }
 :host .nivel-nuevo { align-items: end; flex-wrap: wrap; gap: 8px; }
 :host .nivel-nuevo .listing-field { flex: 1 1 100px; }

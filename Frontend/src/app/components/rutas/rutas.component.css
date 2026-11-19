@@ -14,7 +14,7 @@
 .info-paginacion { color: #607087; font-size: 12px; line-height: 1.5; }
 .sort-header { align-items: center; background: transparent; border: 0; color: inherit; cursor: pointer; display: flex; font: inherit; gap: 8px; justify-content: space-between; padding: 0; text-align: left; width: 100%; }
 .sort-header i { color: #718297; }
-.sort-header .fa-sort-up, .sort-header .fa-sort-down { color: #2f7d6b; }
+.sort-header .fa-sort-up, .sort-header .fa-sort-down { color: var(--app-blue-700); }
 .search-control .form-control { min-width: 0; }
 select.page-size-select { min-width: 64px; width: auto; }
 @media (max-width: 767.98px) {

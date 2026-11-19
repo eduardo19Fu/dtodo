@@ -1,7 +1,7 @@
 :host {
-  --warehouse-accent: #b8732b;
-  --warehouse-dark: #8f5518;
-  --warehouse-tint: #f8eee2;
+  --warehouse-accent: var(--app-accent);
+  --warehouse-dark: var(--app-accent-dark);
+  --warehouse-tint: var(--app-tint);
 }
 
 .movement-backdrop {
@@ -28,7 +28,7 @@
 
 .movement-header {
   align-items: center;
-  background: linear-gradient(135deg, #6e410f, var(--warehouse-dark));
+  background: linear-gradient(135deg, var(--app-blue-900), var(--warehouse-dark));
   color: #fff;
   display: flex;
   gap: 14px;
@@ -107,14 +107,14 @@
 
 .movement-field .form-control:focus {
   border-color: var(--warehouse-accent);
-  box-shadow: 0 0 0 3px rgba(184, 115, 43, 0.15);
+  box-shadow: 0 0 0 3px rgba(var(--app-accent-rgb), 0.15);
 }
 
 .required-mark { color: #b42318; }
 
 .input-icon { position: relative; }
 .input-icon > i {
-  color: #a7794a;
+  color: var(--app-accent);
   left: 12px;
   pointer-events: none;
   position: absolute;
@@ -133,7 +133,7 @@
   background: linear-gradient(135deg, var(--warehouse-accent), var(--warehouse-dark));
   border: 0;
   border-radius: 9px;
-  box-shadow: 0 5px 12px rgba(143, 85, 24, 0.25);
+  box-shadow: 0 5px 12px rgba(var(--app-accent-dark-rgb), 0.25);
   color: #fff;
   cursor: pointer;
   height: calc(1.5em + 0.75rem + 2px);
@@ -152,7 +152,7 @@
 .product-chip {
   align-items: center;
   background: var(--warehouse-tint);
-  border: 1px solid #ecd7bd;
+  border: 1px solid var(--app-border);
   border-radius: 12px;
   display: flex;
   gap: 12px;
@@ -249,7 +249,7 @@
 .btn-confirm {
   background: linear-gradient(135deg, var(--warehouse-accent), var(--warehouse-dark));
   border: 0;
-  box-shadow: 0 6px 14px rgba(143, 85, 24, 0.27);
+  box-shadow: 0 6px 14px rgba(var(--app-accent-dark-rgb), 0.27);
   color: #fff;
 }
 

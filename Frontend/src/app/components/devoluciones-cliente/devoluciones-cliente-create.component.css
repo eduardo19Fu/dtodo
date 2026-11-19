@@ -1,18 +1,18 @@
 /* Registro de devoluciones: misma estructura de creación que Productos, Rutas y Recibos. */
 :host .return-form-page {
-  --blue-950: #123d33;
-  --blue-900: #1f5a4c;
-  --blue-800: #2a6f5e;
-  --blue-700: #2f7d6b;
-  --blue-600: #3a937e;
-  --blue-500: #52a994;
-  --blue-100: #dcefe9;
-  --blue-50: #f3faf7;
-  --border: #d3e6df;
+  --blue-950: var(--app-blue-950);
+  --blue-900: var(--app-blue-900);
+  --blue-800: var(--app-blue-800);
+  --blue-700: var(--app-blue-700);
+  --blue-600: var(--app-blue-600);
+  --blue-500: var(--app-blue-500);
+  --blue-100: var(--app-blue-100);
+  --blue-50: var(--app-blue-50);
+  --border: var(--app-border);
   margin: 0 auto;
   max-width: 1120px;
 }
-:host .return-form-page .heading-icon { background: #e6f3ef; border-color: #c4e0d7; color: #1f5a4c; }
+:host .return-form-page .heading-icon { background: var(--app-blue-100); border-color: var(--app-border); color: var(--app-blue-900); }
 :host .return-form-page .product-card { border-color: #dce4ec; }
 :host .return-fields-grid { align-items: start; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 :host .return-span-all { grid-column: 1 / -1; }
@@ -21,7 +21,7 @@
 :host .return-form-page .field-group .form-control { background-color: #fff; box-sizing: border-box; height: 50px; padding: 10px 12px 10px 40px; width: 100%; }
 :host .return-form-page .field-group select.form-control { padding-right: 42px; }
 :host .return-form-page .field-group textarea.form-control { height: auto; min-height: 92px; padding-top: 12px; resize: vertical; }
-:host .return-form-page .control-with-icon > i { color: #648575; top: 16px; }
+:host .return-form-page .control-with-icon > i { color: var(--app-blue-500); top: 16px; }
 :host .return-form-page .field-group small { color: #607087; font-size: 12px; line-height: 1.6; margin-top: 8px; }
 
 /* Cliente: el campo abre el directorio, igual que en Recibos y Proformas. */
@@ -29,16 +29,16 @@
 :host .return-client-picker.has-client { grid-template-columns: minmax(0, 1fr) 50px 50px; }
 :host .return-client-value { flex: 1 1 280px; min-width: 0; }
 :host .return-form-page .return-client-value input { cursor: pointer; padding-right: 12px; }
-:host .return-client-picker.is-elegido .form-control { border-color: #83b4a5; color: #245b4b; font-weight: 600; }
+:host .return-client-picker.is-elegido .form-control { border-color: var(--app-hover-border); color: var(--app-accent-dark); font-weight: 600; }
 :host .return-search-client,
 :host .return-cancel-action,
-:host .return-remove-client { align-items: center; background: #fff; border: 1px solid #cbd6e2; border-radius: 7px; color: #245b4b; cursor: pointer; display: inline-flex; font-size: 14px; font-weight: 600; gap: 8px; justify-content: center; min-height: 50px; padding: 10px 16px; }
+:host .return-remove-client { align-items: center; background: #fff; border: 1px solid #cbd6e2; border-radius: 7px; color: var(--app-accent-dark); cursor: pointer; display: inline-flex; font-size: 14px; font-weight: 600; gap: 8px; justify-content: center; min-height: 50px; padding: 10px 16px; }
 :host .return-search-client:hover,
 :host .return-cancel-action:hover,
-:host .return-remove-client:hover { background: #edf6f2; border-color: #83b4a5; }
+:host .return-remove-client:hover { background: var(--app-blue-50); border-color: var(--app-hover-border); }
 :host .return-remove-client { color: #607087; min-width: 50px; padding: 10px; }
-:host .return-client-picker .return-search-client { background: linear-gradient(135deg, #4d61ad, #7183cc); border: 0; border-radius: 9px; box-shadow: 0 2px 8px rgba(77, 97, 173, 0.2); color: #fff; height: 50px; min-width: 50px; padding: 0; width: 50px; }
-:host .return-client-picker .return-search-client:hover { background: #43559b; }
+:host .return-client-picker .return-search-client { background: linear-gradient(135deg, var(--app-blue-700), var(--app-blue-500)); border: 0; border-radius: 9px; box-shadow: 0 2px 8px rgba(var(--app-accent-rgb), 0.2); color: #fff; height: 50px; min-width: 50px; padding: 0; width: 50px; }
+:host .return-client-picker .return-search-client:hover { background: var(--app-blue-800); }
 :host .return-search-client:disabled,
 :host .return-cancel-action:disabled,
 :host .return-remove-client:disabled { cursor: not-allowed; opacity: 0.55; }
@@ -54,8 +54,8 @@
 :host .return-form-actions > p { color: #607087; font-size: 13px; }
 :host .return-action-buttons { display: flex; flex-wrap: wrap; gap: 12px; margin-left: auto; }
 :host .return-action-buttons > .primary-action { width: auto; }
-:host .return-form-page .primary-action { background: linear-gradient(135deg, #2f7d6b, #3a937e); min-height: 50px; }
-:host .return-form-page .primary-action:hover:not(:disabled) { background: #1f5a4c; }
+:host .return-form-page .primary-action { background: linear-gradient(135deg, var(--app-blue-700), var(--app-blue-600)); min-height: 50px; }
+:host .return-form-page .primary-action:hover:not(:disabled) { background: var(--app-blue-900); }
 
 @media (max-width: 767.98px) {
   :host .return-form-page .form-content { padding: 0 20px; }

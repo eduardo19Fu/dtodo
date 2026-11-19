@@ -1,28 +1,28 @@
 :host {
-  --desc-accent: #b4651f;
-  --desc-dark: #7d4410;
-  --desc-tint: #fbefe3;
+  --desc-accent: var(--app-accent);
+  --desc-dark: var(--app-accent-dark);
+  --desc-tint: var(--app-tint);
 }
 
 .descuentos-subtitle { color: #6c757d; margin: 0.25rem 0 0; max-width: 760px; }
 
 .categoria-card {
   background: var(--desc-tint);
-  border: 1px solid #efd5bb;
+  border: 1px solid var(--app-border);
   border-radius: 10px;
   height: 100%;
   padding: 1rem 1.1rem;
 }
 
 .categoria-card h5 { color: var(--desc-dark); font-weight: 700; margin: 0; }
-.categoria-descripcion { color: #7a6552; font-size: 0.85rem; margin: 0.2rem 0 0.8rem; min-height: 2.4em; }
+.categoria-descripcion { color: var(--app-blue-900); font-size: 0.85rem; margin: 0.2rem 0 0.8rem; min-height: 2.4em; }
 
 .niveles { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.8rem; min-height: 2rem; }
 
 .nivel-chip {
   align-items: center;
   background: #fff;
-  border: 1px solid #e3c5a5;
+  border: 1px solid var(--app-border);
   border-radius: 999px;
   color: var(--desc-dark);
   display: inline-flex;
@@ -34,7 +34,7 @@
 .nivel-chip button {
   background: transparent;
   border: 0;
-  color: #a77b52;
+  color: var(--app-blue-500);
   cursor: pointer;
   padding: 0 0.3rem;
 }
@@ -70,7 +70,7 @@
 .descuentos-aviso-texto span { color: #607087; font-size: 0.88rem; }
 .descuentos-aviso-enlace {
   background: #fff;
-  border: 1px solid #e3c5a5;
+  border: 1px solid var(--app-border);
   border-radius: 8px;
   color: var(--desc-dark);
   font-size: 0.85rem;

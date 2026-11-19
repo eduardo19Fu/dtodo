@@ -1,25 +1,25 @@
 /* Complementa los estilos del detalle compartidos en ../../bodegas/detail-bodega/detail-bodega.component.css.
-   Aquí va la identidad verde de clientes y mayoristas (el compartido es el ocre de Bodegas) y lo propio de la ficha. */
+   Aquí se conserva la paleta azul compartida y lo propio de la ficha. */
 
 :host {
-  --green-900: #1f5a4c;
-  --green-800: #2a6f5e;
-  --green-700: #2f7d6b;
-  --green-100: #e3f3ee;
-  --green-50: #f3faf7;
+  --green-900: var(--app-blue-900);
+  --green-800: var(--app-blue-800);
+  --green-700: var(--app-blue-700);
+  --green-100: var(--app-blue-100);
+  --green-50: var(--app-blue-50);
   --ink: #243247;
   --muted: #6d7b8f;
-  --border: #d3e6df;
+  --border: var(--app-border);
 }
 
 .cliente-detail-dialog { max-width: 1020px; }
 
 .sucursal-detail-body {
-  background: #f5faf8;
-  scrollbar-color: #b3d4c8 transparent;
+  background: var(--app-blue-50);
+  scrollbar-color: var(--app-hover-border) transparent;
 }
 
-.total-card { box-shadow: 0 8px 18px rgba(31, 90, 76, 0.22); }
+.total-card { box-shadow: 0 8px 18px rgba(var(--app-accent-dark-rgb), 0.22); }
 
 .header-sub {
   color: rgba(255, 255, 255, 0.78);
@@ -30,8 +30,8 @@
 
 /* ---- Ruta, vendedor y categoría ---- */
 .ruta-ribbon {
-  background: linear-gradient(135deg, #f3faf7 0%, #fff 100%);
-  border: 1px solid #cfe5dc;
+  background: linear-gradient(135deg, var(--app-blue-50) 0%, #fff 100%);
+  border: 1px solid var(--app-border);
   border-radius: 12px;
   display: grid;
   gap: 14px 22px;
@@ -95,10 +95,10 @@
 .credit-available { margin-left: auto; }
 .credit-available b { color: var(--ink); font-weight: 800; }
 
-.credit-meter { background: #dfeee8; border-radius: 999px; height: 10px; margin-top: 10px; overflow: hidden; }
+.credit-meter { background: var(--app-border); border-radius: 999px; height: 10px; margin-top: 10px; overflow: hidden; }
 
 .credit-meter-fill {
-  background: linear-gradient(90deg, #3a937e, #2f7d6b);
+  background: linear-gradient(90deg, var(--app-blue-600), var(--app-blue-700));
   border-radius: 999px;
   display: block;
   height: 100%;

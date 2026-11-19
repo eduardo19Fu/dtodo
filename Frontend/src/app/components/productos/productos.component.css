@@ -1,7 +1,7 @@
 :host {
-  --product-accent: #2783b7;
-  --product-dark: #1c688f;
-  --product-tint: #e5f3f8;
+  --product-accent: var(--app-accent);
+  --product-dark: var(--app-accent-dark);
+  --product-tint: var(--app-tint);
 }
 
 .sucursal-subtitle { margin: 6px 0 16px; color: #6c757d; }
@@ -19,7 +19,7 @@
   background: #f8fbfd url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='m1 1 5 5 5-5' fill='none' stroke='%231c688f' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 12px center;
   border: 1px solid #c9dce7;
   border-radius: 6px;
-  box-shadow: 0 1px 2px rgba(28, 104, 143, 0.06);
+  box-shadow: 0 1px 2px rgba(var(--app-accent-dark-rgb), 0.06);
   color: #24344d;
   cursor: pointer;
   font: inherit;
@@ -30,7 +30,7 @@
 }
 .catalog-controls select:hover, .import-inventory-select:hover { background-color: var(--product-tint); border-color: #9dc6d8; }
 .catalog-controls select:focus, .import-inventory-select:focus {
-  background-color: white; border-color: var(--product-accent); box-shadow: 0 0 0 3px rgba(39, 131, 183, 0.12);
+  background-color: white; border-color: var(--product-accent); box-shadow: 0 0 0 3px rgba(var(--app-accent-rgb), 0.12);
 }
 .catalog-controls select:disabled, .import-inventory-select:disabled { cursor: not-allowed; opacity: 0.6; }
 #productPageSize { min-width: 72px; }
@@ -174,9 +174,9 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px s
 .mayorista-etiqueta {
   align-items: center;
   align-self: flex-start;
-  background: #fbefe3;
+  background: var(--app-tint);
   border-radius: 999px;
-  color: #8f5518;
+  color: var(--app-accent-dark);
   display: inline-flex;
   font-size: 0.7rem;
   font-weight: 800;

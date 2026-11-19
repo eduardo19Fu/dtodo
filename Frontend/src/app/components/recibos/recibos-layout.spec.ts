@@ -174,7 +174,7 @@ describe('Selector de sucursal de recibos', () => {
     select.style.transition = 'none';
     select.focus();
     expect(document.activeElement).toBe(select);
-    expect(getComputedStyle(select).borderColor).toBe('rgb(47, 125, 107)');
+    expect(getComputedStyle(select).borderColor).toBe('rgb(39, 131, 183)');
   });
 
   [1240, 760, 360].forEach(width => {

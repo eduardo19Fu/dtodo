@@ -1,19 +1,19 @@
 .compra-page {
-  --blue-950: #33214f;
-  --blue-900: #493176;
-  --blue-800: #5b3e91;
-  --blue-700: #6749a2;
-  --blue-600: #7654b5;
-  --blue-500: #8f70c7;
-  --blue-100: #e5dcf2;
-  --blue-50: #f8f5fb;
-  --border: #dfd6ec;
+  --blue-950: var(--app-blue-950);
+  --blue-900: var(--app-blue-900);
+  --blue-800: var(--app-blue-800);
+  --blue-700: var(--app-blue-700);
+  --blue-600: var(--app-blue-600);
+  --blue-500: var(--app-blue-500);
+  --blue-100: var(--app-blue-100);
+  --blue-50: var(--app-blue-50);
+  --border: var(--app-border);
   max-width: 1500px;
 }
 
 .compra-page .product-card {
-  border-color: rgba(91, 62, 145, 0.11);
-  box-shadow: 0 18px 50px rgba(91, 62, 145, 0.13);
+  border-color: rgba(var(--app-accent-dark-rgb), 0.11);
+  box-shadow: 0 18px 50px rgba(var(--app-accent-dark-rgb), 0.13);
   overflow: visible;
 }
 
@@ -22,7 +22,7 @@
 }
 
 .compra-page .heading-icon {
-  border-color: #d9cceb;
+  border-color: var(--app-border);
 }
 
 .compra-page .card-hero p span,
@@ -32,28 +32,28 @@
 
 .compra-page .field-group .form-control:focus,
 .compra-page .detail-edit-input-wrap .form-control:focus {
-  box-shadow: 0 0 0 3px rgba(118, 84, 181, 0.15);
+  box-shadow: 0 0 0 3px rgba(var(--app-accent-rgb), 0.15);
 }
 
 .compra-page .control-with-icon > i,
 .compra-page .select-control > i {
-  color: #8068a7;
+  color: var(--app-blue-500);
 }
 
 .compra-page .select-control::after {
-  border-top-color: #8068a7;
+  border-top-color: var(--app-blue-500);
 }
 
 .compra-page .inline-search-button,
 .compra-page .add-line-button {
-  box-shadow: 0 6px 14px rgba(91, 62, 145, 0.25);
+  box-shadow: 0 6px 14px rgba(var(--app-accent-dark-rgb), 0.25);
 }
 
 .compra-page .inline-search-button:hover,
 .compra-page .inline-search-button:focus,
 .compra-page .add-line-button:hover,
 .compra-page .add-line-button:focus {
-  box-shadow: 0 9px 18px rgba(91, 62, 145, 0.34);
+  box-shadow: 0 9px 18px rgba(var(--app-accent-dark-rgb), 0.34);
 }
 
 .compra-page .detail-edit-eyebrow {
@@ -68,21 +68,21 @@
 .compra-actions {
   backdrop-filter: blur(10px);
   background: rgba(250, 248, 253, 0.97);
-  border: 1px solid #e5ddef;
+  border: 1px solid var(--app-border);
   border-radius: 12px;
-  box-shadow: 0 10px 28px rgba(91, 62, 145, 0.14);
+  box-shadow: 0 10px 28px rgba(var(--app-accent-dark-rgb), 0.14);
   gap: 24px;
   margin: 12px 18px 0;
   padding: 14px 16px;
 }
 
 .compra-actions .primary-action {
-  box-shadow: 0 7px 16px rgba(91, 62, 145, 0.27);
+  box-shadow: 0 7px 16px rgba(var(--app-accent-dark-rgb), 0.27);
 }
 
 .compra-actions .primary-action:hover,
 .compra-actions .primary-action:focus {
-  box-shadow: 0 10px 22px rgba(91, 62, 145, 0.36);
+  box-shadow: 0 10px 22px rgba(var(--app-accent-dark-rgb), 0.36);
 }
 
 .compra-add-grid {

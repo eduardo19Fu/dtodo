@@ -1,11 +1,11 @@
 :host {
-  --purple-950: #123f58;
-  --purple-900: #185675;
-  --purple-800: #1c688f;
-  --purple-700: #2277a4;
-  --purple-600: #2783b7;
-  --purple-100: #d4eaf3;
-  --purple-50: #f1f8fb;
+  --purple-950: var(--app-blue-950);
+  --purple-900: var(--app-blue-900);
+  --purple-800: var(--app-blue-800);
+  --purple-700: var(--app-blue-700);
+  --purple-600: var(--app-blue-600);
+  --purple-100: var(--app-blue-100);
+  --purple-50: var(--app-blue-50);
   --ink: #1e293b;
   --muted: #718096;
   --border: #e3e7ef;
@@ -43,7 +43,7 @@
 .product-picker-dialog {
   background: #fff;
   border-radius: 18px;
-  box-shadow: 0 28px 75px rgba(18, 63, 88, 0.32);
+  box-shadow: 0 28px 75px rgba(var(--app-accent-dark-rgb), 0.32);
   display: flex;
   flex-direction: column;
   margin: 24px auto;
@@ -170,7 +170,7 @@
   background: #fff;
   border: 1px solid var(--border);
   border-radius: 13px;
-  box-shadow: 0 7px 20px rgba(28, 104, 143, 0.05);
+  box-shadow: 0 7px 20px rgba(var(--app-accent-dark-rgb), 0.05);
   display: grid;
   gap: 26px;
   grid-template-columns: minmax(190px, 0.45fr) minmax(320px, 1.55fr);
@@ -218,7 +218,7 @@
 .search-control .form-control:focus {
   background: #fff;
   border-color: var(--purple-600);
-  box-shadow: 0 0 0 3px rgba(39, 131, 183, 0.13);
+  box-shadow: 0 0 0 3px rgba(var(--app-accent-rgb), 0.13);
   outline: 0;
 }
 
@@ -463,7 +463,7 @@
 .choose-product-button:focus {
   background: var(--purple-700);
   border-color: var(--purple-700);
-  box-shadow: 0 5px 12px rgba(28, 104, 143, 0.22);
+  box-shadow: 0 5px 12px rgba(var(--app-accent-dark-rgb), 0.22);
   color: #fff;
   outline: 0;
 }
@@ -553,7 +553,7 @@
 .results-footer .page-item.active .page-link {
   background: var(--purple-700);
   border-color: var(--purple-700);
-  box-shadow: 0 4px 10px rgba(28, 104, 143, 0.23);
+  box-shadow: 0 4px 10px rgba(var(--app-accent-dark-rgb), 0.23);
   color: #fff;
 }
 

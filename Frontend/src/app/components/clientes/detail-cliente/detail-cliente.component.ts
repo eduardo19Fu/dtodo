@@ -19,7 +19,7 @@ const DESCRIPCION_CATEGORIA: { [categoria: string]: string } = {
 
 /**
  * Detalle de un cliente mayorista: sus datos, su ruta y, para quien puede ver cobros, su cuenta (saldo, crédito y pedidos).
- * Sigue el patrón de los demás detalles del sistema: el modal se mueve al body y comparte el CSS de bodegas con otra paleta.
+ * Sigue el patrón de los demás detalles del sistema: el modal se mueve al body y comparte el CSS de bodegas y la paleta azul de Productos.
  */
 @Component({
   selector: 'app-detail-cliente',

@@ -1,4 +1,4 @@
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import Swal from 'sweetalert2';
 
@@ -19,7 +19,7 @@ interface CategoriaDefinicion {
   templateUrl: './reportes.component.html',
   styleUrls: ['./reportes.component.css']
 })
-export class ReportesComponent implements OnInit, OnDestroy {
+export class ReportesComponent implements OnInit {
   readonly categorias: CategoriaDefinicion[] = [
     { codigo: 'VENTAS', titulo: 'Ventas', icono: 'fa-chart-line' },
     { codigo: 'INVENTARIO', titulo: 'Inventario', icono: 'fa-boxes' },
@@ -114,6 +114,7 @@ export class ReportesComponent implements OnInit, OnDestroy {
   ];
 
   busquedaReportes = '';
+  categoriaActiva: CategoriaReporte;
   reporteSeleccionado: ReporteDefinicion;
   sucursales: ReporteSelectorOpcionDto[] = [];
   usuarios: ReporteSelectorOpcionDto[] = [];
@@ -162,12 +163,6 @@ export class ReportesComponent implements OnInit, OnDestroy {
     { codigo: 'REALIZADO', nombre: 'Realizados' },
     { codigo: 'CANCELADO', nombre: 'Cancelados' }
   ];
-  guiaLado: 'top' | 'right' | 'bottom' | 'left' = 'top';
-  estilosGuia: { [propiedad: string]: string } = { '--guide-offset': '50%' };
-
-  private cardOrigen: HTMLElement;
-  private guiaPendiente = false;
-  private readonly escucharScroll = () => this.programarGuia();
   private sucursalesCargadas = false;
   private proveedoresCargados = false;
   private bodegasCargadas = false;
@@ -185,22 +180,33 @@ export class ReportesComponent implements OnInit, OnDestroy {
     private reporteService: ReporteService
   ) {
     this.seleccionarMesActual();
-    window.addEventListener('scroll', this.escucharScroll, true);
   }
 
   ngOnInit(): void {
     this.idSucursal = this.auth.usuario && this.auth.usuario.sucursal
       ? this.auth.usuario.sucursal.idSucursal : null;
     this.cargarSucursales();
+    this.categoriaActiva = this.categoriasVisibles.length ? this.categoriasVisibles[0].codigo : null;
   }
 
-  ngOnDestroy(): void {
-    window.removeEventListener('scroll', this.escucharScroll, true);
+  get categoriasVisibles(): CategoriaDefinicion[] {
+    return this.categorias.filter(categoria => this.reportes.some(reporte =>
+      reporte.categoria === categoria.codigo && this.puedeVer(reporte)));
   }
 
-  @HostListener('window:resize')
-  reposicionarGuia(): void {
-    this.programarGuia();
+  get buscando(): boolean {
+    return !!this.busquedaReportes.trim();
+  }
+
+  get categoriasMostradas(): CategoriaDefinicion[] {
+    return this.categoriasVisibles.filter(categoria =>
+      (this.buscando || categoria.codigo === this.categoriaActiva) && this.reportesPorCategoria(categoria.codigo).length > 0);
+  }
+
+  seleccionarCategoria(categoria: CategoriaReporte): void {
+    this.categoriaActiva = categoria;
+    this.busquedaReportes = '';
+    this.cerrarConfiguracion();
   }
 
   reportesPorCategoria(categoria: CategoriaReporte): ReporteDefinicion[] {
@@ -223,11 +229,11 @@ export class ReportesComponent implements OnInit, OnDestroy {
     this.actualizarBusqueda('');
   }
 
-  seleccionarReporte(reporte: ReporteDefinicion, evento?: MouseEvent): void {
+  seleccionarReporte(reporte: ReporteDefinicion): void {
     if (!reporte.disponible) {
       return;
     }
-    this.cardOrigen = evento ? evento.currentTarget as HTMLElement : null;
+    this.categoriaActiva = reporte.categoria;
     this.reporteSeleccionado = reporte;
     this.idUsuario = null;
     this.idProveedor = null;
@@ -259,12 +265,18 @@ export class ReportesComponent implements OnInit, OnDestroy {
     if (reporte.filtros.includes('RUTA')) {
       this.cargarRutas();
     }
-    this.programarGuia();
+    if (window.innerWidth < 1200) {
+      window.requestAnimationFrame(() => {
+        const titulo = document.getElementById('report-config-title');
+        if (titulo) {
+          titulo.focus();
+        }
+      });
+    }
   }
 
   cerrarConfiguracion(): void {
     this.reporteSeleccionado = null;
-    this.cardOrigen = null;
   }
 
   limpiarFiltros(): void {
@@ -324,10 +336,6 @@ export class ReportesComponent implements OnInit, OnDestroy {
   seleccionarSucursal(valor: number): void {
     this.idSucursal = valor;
     this.onSucursalChange();
-  }
-
-  alCambiarDespliegueSelector(): void {
-    this.programarGuia();
   }
 
   get categoriaSeleccionada(): string {
@@ -619,109 +627,6 @@ export class ReportesComponent implements OnInit, OnDestroy {
     const mes = String(fecha.getMonth() + 1).padStart(2, '0');
     const dia = String(fecha.getDate()).padStart(2, '0');
     return `${anio}-${mes}-${dia}`;
-  }
-
-  private programarGuia(): void {
-    if (!this.reporteSeleccionado || !this.cardOrigen || this.guiaPendiente) {
-      return;
-    }
-    this.guiaPendiente = true;
-    window.requestAnimationFrame(() => {
-      this.guiaPendiente = false;
-      this.actualizarGuia();
-    });
-  }
-
-  private actualizarGuia(): void {
-    if (!this.cardOrigen) {
-      return;
-    }
-    const panel = document.getElementById('report-config-panel');
-    if (!panel) {
-      return;
-    }
-
-    if (window.innerWidth <= 767) {
-      this.estilosGuia = { '--guide-offset': '50%' };
-      return;
-    }
-
-    const card = this.cardOrigen.getBoundingClientRect();
-    const modal = panel.getBoundingClientRect();
-    const margen = 16;
-    const separacion = 26;
-    const anchoDeseado = 650;
-    const anchoMinimoLateral = 360;
-    const altoMinimoVertical = 260;
-    const espacioIzquierda = card.left - separacion - margen;
-    const espacioDerecha = window.innerWidth - card.right - separacion - margen;
-    const espacioArriba = card.top - separacion - margen;
-    const espacioAbajo = window.innerHeight - card.bottom - separacion - margen;
-    const centroCardX = card.left + card.width / 2;
-    const centroCardY = card.top + card.height / 2;
-    const ladosHorizontales: Array<'left' | 'right'> = centroCardX <= window.innerWidth / 2
-      ? ['right', 'left'] : ['left', 'right'];
-    const ladoHorizontal = ladosHorizontales.find(lado =>
-      (lado === 'left' ? espacioIzquierda : espacioDerecha) >= anchoMinimoLateral);
-
-    let izquierda: number;
-    let arriba: number;
-    let ancho = Math.min(anchoDeseado, window.innerWidth - margen * 2);
-    let altoMaximo = window.innerHeight - margen * 2;
-
-    if (ladoHorizontal) {
-      const espacio = ladoHorizontal === 'left' ? espacioIzquierda : espacioDerecha;
-      ancho = Math.min(anchoDeseado, espacio);
-      izquierda = ladoHorizontal === 'left' ? card.left - separacion - ancho : card.right + separacion;
-      arriba = this.limitar(centroCardY - modal.height / 2, margen,
-        Math.max(margen, window.innerHeight - modal.height - margen));
-      this.guiaLado = ladoHorizontal === 'left' ? 'right' : 'left';
-    } else {
-      const colocarAbajo = espacioAbajo >= altoMinimoVertical || espacioAbajo >= espacioArriba;
-      izquierda = this.limitar(centroCardX - ancho / 2, margen, window.innerWidth - ancho - margen);
-
-      if (colocarAbajo) {
-        arriba = card.bottom + separacion;
-        altoMaximo = Math.max(1, espacioAbajo);
-        this.guiaLado = 'top';
-      } else {
-        altoMaximo = Math.max(1, espacioArriba);
-        arriba = Math.max(margen, card.top - separacion - Math.min(modal.height, altoMaximo));
-        this.guiaLado = 'bottom';
-      }
-    }
-
-    this.estilosGuia = {
-      '--guide-offset': '50%',
-      'bottom': 'auto',
-      'left': `${Math.round(izquierda)}px`,
-      'max-height': `${Math.round(altoMaximo)}px`,
-      'right': 'auto',
-      'top': `${Math.round(arriba)}px`,
-      'width': `${Math.round(ancho)}px`
-    };
-
-    window.requestAnimationFrame(() => this.actualizarPuntero(panel));
-  }
-
-  private actualizarPuntero(panel: HTMLElement): void {
-    if (!this.cardOrigen || window.innerWidth <= 767) {
-      return;
-    }
-
-    const card = this.cardOrigen.getBoundingClientRect();
-    const modal = panel.getBoundingClientRect();
-    const centroX = card.left + card.width / 2;
-    const centroY = card.top + card.height / 2;
-    const desplazamiento = this.guiaLado === 'top' || this.guiaLado === 'bottom'
-      ? this.limitar(centroX - modal.left, 54, modal.width - 54)
-      : this.limitar(centroY - modal.top, 54, modal.height - 54);
-    this.estilosGuia = Object.assign({}, this.estilosGuia,
-      { '--guide-offset': `${Math.round(desplazamiento)}px` });
-  }
-
-  private limitar(valor: number, minimo: number, maximo: number): number {
-    return Math.max(minimo, Math.min(valor, maximo));
   }
 
   private reporte(

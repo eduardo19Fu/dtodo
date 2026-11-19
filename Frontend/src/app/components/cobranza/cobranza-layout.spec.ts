@@ -36,7 +36,7 @@ describe('Distribución de filtros de cobranza', () => {
     expect(getComputedStyle(summary).display).toBe('grid');
     expect(getComputedStyle(summary).backgroundColor).toBe('rgb(255, 255, 255)');
     expect(getComputedStyle(summary).borderTopLeftRadius).toBe('10px');
-    expect(getComputedStyle(total).backgroundColor).toBe('rgb(237, 246, 242)');
+    expect(getComputedStyle(total).backgroundColor).toBe('rgb(243, 250, 253)');
     expect(getComputedStyle(amount).display).toBe('block');
     expect(getComputedStyle(amount).fontSize).toBe('30px');
     expect(periods.length).toBe(4);

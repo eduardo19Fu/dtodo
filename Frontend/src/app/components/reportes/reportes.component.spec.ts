@@ -4,6 +4,46 @@ import Swal from 'sweetalert2';
 import { ReportesComponent } from './reportes.component';
 
 describe('ReportesComponent', () => {
+  it('inicia en la primera categoría permitida y oculta las categorías sin acceso', () => {
+    const auth: any = { usuario: {}, hasRole: (role: string) => role === 'ROLE_BODEGA' };
+    const component = new ReportesComponent(auth, {} as any);
+
+    component.ngOnInit();
+
+    expect(component.categoriaActiva).toBe('BODEGAS');
+    expect(component.categoriasVisibles.map(categoria => categoria.codigo)).toEqual(['BODEGAS']);
+    expect(component.categoriasMostradas.map(categoria => categoria.codigo)).toEqual(['BODEGAS']);
+  });
+
+  it('cambiar de categoría limpia la búsqueda y cierra el reporte anterior', () => {
+    const auth: any = { usuario: {}, hasRole: () => true };
+    const component = new ReportesComponent(auth, {} as any);
+    component.busquedaReportes = 'ventas';
+    component.reporteSeleccionado = component.reportes[0];
+
+    component.seleccionarCategoria('INVENTARIO');
+
+    expect(component.busquedaReportes).toBe('');
+    expect(component.reporteSeleccionado).toBeNull();
+    expect(component.categoriasMostradas.map(categoria => categoria.codigo)).toEqual(['INVENTARIO']);
+  });
+
+  it('busca en todas las categorías y mantiene visible el reporte elegido al limpiar la búsqueda', () => {
+    const auth: any = { usuario: {}, hasRole: () => true };
+    const component = new ReportesComponent(auth, {} as any);
+    component.seleccionarCategoria('VENTAS');
+    component.actualizarBusqueda('existencias');
+
+    expect(component.categoriasMostradas.map(categoria => categoria.codigo)).toEqual(['INVENTARIO', 'BODEGAS']);
+
+    component.seleccionarReporte(component.reportes.find(reporte => reporte.codigo === 'EXISTENCIAS'));
+    component.limpiarBusqueda();
+
+    expect(component.categoriaActiva).toBe('INVENTARIO');
+    expect(component.categoriasMostradas.map(categoria => categoria.codigo)).toEqual(['INVENTARIO']);
+    expect(component.reporteSeleccionado.codigo).toBe('EXISTENCIAS');
+  });
+
   it('incluye los 26 reportes aprobados en el catálogo', () => {
     const auth: any = { usuario: {}, hasRole: () => true };
     const component = new ReportesComponent(auth, {} as any);

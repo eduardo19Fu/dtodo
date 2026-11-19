@@ -1,21 +1,21 @@
 :host {
-  /* Identidad de Bodegas: ocre. Sobrescribe la paleta azul de la hoja compartida de create-producto. */
-  --blue-950: #4a2c08;
-  --blue-900: #6e410f;
-  --blue-800: #8f5518;
-  --blue-700: #b8732b;
-  --blue-600: #b8732b;
-  --blue-500: #cd8b46;
-  --blue-100: #f8eee2;
-  --blue-50: #fcf7f1;
-  --border: #e8e0d6;
+  /* Identidad azul compartida con Productos. */
+  --blue-950: var(--app-blue-950);
+  --blue-900: var(--app-blue-900);
+  --blue-800: var(--app-blue-800);
+  --blue-700: var(--app-blue-700);
+  --blue-600: var(--app-blue-600);
+  --blue-500: var(--app-blue-500);
+  --blue-100: var(--app-blue-100);
+  --blue-50: var(--app-blue-50);
+  --border: var(--app-border);
 }
 
-.heading-icon { border-color: #ecd7bd; }
+.heading-icon { border-color: var(--app-border); }
 
 .product-card {
-  border-color: rgba(143, 85, 24, 0.12);
-  box-shadow: 0 18px 50px rgba(143, 85, 24, 0.13);
+  border-color: rgba(var(--app-accent-dark-rgb), 0.12);
+  box-shadow: 0 18px 50px rgba(var(--app-accent-dark-rgb), 0.13);
 }
 
 .card-hero p span,
@@ -25,12 +25,12 @@
 .field-group select.form-control:focus,
 .field-group textarea.form-control:focus {
   border-color: var(--blue-700);
-  box-shadow: 0 0 0 3px rgba(184, 115, 43, 0.15);
+  box-shadow: 0 0 0 3px rgba(var(--app-accent-rgb), 0.15);
 }
 
-.primary-action { box-shadow: 0 7px 16px rgba(143, 85, 24, 0.27); }
+.primary-action { box-shadow: 0 7px 16px rgba(var(--app-accent-dark-rgb), 0.27); }
 .primary-action:hover,
-.primary-action:focus { box-shadow: 0 10px 22px rgba(143, 85, 24, 0.36); }
+.primary-action:focus { box-shadow: 0 10px 22px rgba(var(--app-accent-dark-rgb), 0.36); }
 
 .description-field textarea { resize: vertical; }
 

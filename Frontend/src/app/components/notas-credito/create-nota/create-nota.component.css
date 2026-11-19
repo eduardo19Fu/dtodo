@@ -29,7 +29,7 @@
 
 .credit-products-header {
     align-items: center;
-    background: linear-gradient(125deg, #a9561e 0%, #d87932 52%, #eb9b55 100%);
+    background: linear-gradient(125deg, var(--app-blue-900) 0%, var(--app-accent) 52%, var(--app-blue-500) 100%);
     border: 0;
     color: #fff;
     min-height: 104px;
@@ -88,7 +88,7 @@
 
 .credit-products-close {
     align-items: center;
-    background: rgba(96, 40, 8, 0.18);
+    background: rgba(var(--app-accent-rgb), 0.18);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 10px;
     color: #fff;
@@ -103,21 +103,21 @@
 
 .credit-products-close:hover,
 .credit-products-close:focus {
-    background: rgba(96, 40, 8, 0.34);
+    background: rgba(var(--app-accent-rgb), 0.34);
     color: #fff;
     outline: 0;
     transform: translateY(-1px);
 }
 
 .credit-products-body {
-    background: #fffdfa;
+    background: var(--app-blue-50);
     padding: 26px 28px 20px;
 }
 
 .credit-products-intro {
     align-items: center;
-    background: #fff5ea;
-    border: 1px solid #f4dac1;
+    background: var(--app-blue-50);
+    border: 1px solid var(--app-border);
     border-radius: 13px;
     display: flex;
     gap: 13px;
@@ -127,9 +127,9 @@
 .credit-products-info-icon {
     align-items: center;
     background: #fff;
-    border: 1px solid #efcfb0;
+    border: 1px solid var(--app-border);
     border-radius: 10px;
-    color: #c56b29;
+    color: var(--app-accent);
     display: flex;
     flex: 0 0 40px;
     height: 40px;
@@ -143,7 +143,7 @@
 }
 
 .credit-products-intro strong {
-    color: #3f3025;
+    color: var(--app-blue-900);
     font-size: 14px;
 }
 
@@ -155,9 +155,9 @@
 
 .credit-products-count {
     background: #fff;
-    border: 1px solid #efcfb0;
+    border: 1px solid var(--app-border);
     border-radius: 999px;
-    color: #a7561f;
+    color: var(--app-accent-dark);
     font-size: 11px;
     font-weight: 700;
     margin-left: auto;
@@ -186,13 +186,13 @@
 }
 
 .credit-products-page-size label {
-    color: #3b3028;
+    color: var(--app-blue-900);
     font-weight: 700;
     margin: 0;
 }
 
 .credit-products-page-size .form-control {
-    border: 1px solid #decfc1;
+    border: 1px solid var(--app-border);
     border-radius: 9px;
     font-size: 13px;
     height: 40px;
@@ -206,7 +206,7 @@
 }
 
 .credit-products-range i {
-    color: #ce752f;
+    color: var(--app-accent);
     margin-right: 7px;
 }
 
@@ -218,7 +218,7 @@
 }
 
 .credit-products-search i {
-    color: #c56b29;
+    color: var(--app-accent);
     left: 14px;
     position: absolute;
     z-index: 1;
@@ -226,7 +226,7 @@
 
 .credit-products-search .form-control {
     background: #fff;
-    border: 1px solid #decfc1;
+    border: 1px solid var(--app-border);
     border-radius: 10px;
     font-size: 13px;
     height: 42px;
@@ -234,12 +234,12 @@
 }
 
 .credit-products-search .form-control:focus {
-    border-color: #d47b37;
-    box-shadow: 0 0 0 3px rgba(212, 123, 55, 0.13);
+    border-color: var(--app-accent);
+    box-shadow: 0 0 0 3px rgba(var(--app-accent-rgb), 0.13);
 }
 
 .credit-products-table-wrap {
-    border: 1px solid #eadfd5;
+    border: 1px solid var(--app-border);
     border-radius: 13px;
     overflow-x: auto;
 }
@@ -255,8 +255,8 @@
 
 .credit-products-table th {
     background: #f8eee5;
-    border-bottom: 1px solid #e8d8ca;
-    color: #6a4b36;
+    border-bottom: 1px solid var(--app-border);
+    color: var(--app-accent-dark);
     font-size: 10px;
     font-weight: 800;
     letter-spacing: 0.55px;
@@ -267,7 +267,7 @@
 
 .credit-products-table td {
     background: #fff;
-    border-bottom: 1px solid #eee5dd;
+    border-bottom: 1px solid var(--app-border);
     padding: 13px 12px;
     transition: background 0.18s ease;
     vertical-align: middle;
@@ -278,15 +278,15 @@
 }
 
 .credit-products-table tbody tr:hover td {
-    background: #fffbf7;
+    background: var(--app-blue-50);
 }
 
 .credit-products-table tbody tr.is-selected td {
-    background: #fff3e7;
+    background: var(--app-tint);
 }
 
 .credit-products-table tbody tr.is-selected td:first-child {
-    box-shadow: inset 4px 0 #dc7c34;
+    box-shadow: inset 4px 0 var(--app-accent);
 }
 
 .select-column {
@@ -320,7 +320,7 @@
 .credit-product-checkbox span {
     align-items: center;
     background: #fff;
-    border: 2px solid #d9c9ba;
+    border: 2px solid var(--app-border);
     border-radius: 6px;
     color: transparent;
     display: flex;
@@ -331,15 +331,15 @@
 }
 
 .credit-product-checkbox input:checked + span {
-    background: #d97931;
-    border-color: #d97931;
+    background: var(--app-accent);
+    border-color: var(--app-accent);
     color: #fff;
 }
 
 .product-code {
-    background: #f6eee8;
+    background: var(--app-tint);
     border-radius: 7px;
-    color: #8a4a20;
+    color: var(--app-accent-dark);
     display: inline-block;
     font-family: Consolas, monospace;
     font-weight: 700;
@@ -360,10 +360,10 @@
 
 .product-cube {
     align-items: center;
-    background: #fff3e8;
-    border: 1px solid #f1d3b8;
+    background: var(--app-tint);
+    border: 1px solid var(--app-border);
     border-radius: 8px;
-    color: #ca6c27;
+    color: var(--app-accent);
     display: flex;
     flex: 0 0 34px;
     height: 34px;
@@ -371,9 +371,9 @@
 }
 
 .original-quantity {
-    background: #fff0e2;
+    background: var(--app-tint);
     border-radius: 999px;
-    color: #a8521d;
+    color: var(--app-accent-dark);
     display: inline-block;
     font-weight: 800;
     min-width: 34px;
@@ -388,7 +388,7 @@
 }
 
 .pending-quantity {
-    border: 1px solid #dccabb;
+    border: 1px solid var(--app-border);
     border-radius: 8px;
     height: 38px;
     margin: 0 auto;
@@ -397,12 +397,12 @@
 }
 
 .pending-quantity:focus {
-    border-color: #d47b37;
-    box-shadow: 0 0 0 3px rgba(212, 123, 55, 0.13);
+    border-color: var(--app-accent);
+    box-shadow: 0 0 0 3px rgba(var(--app-accent-rgb), 0.13);
 }
 
 .pending-quantity:disabled {
-    background: #f2f0ee;
+    background: var(--app-blue-50);
     color: #9b938d;
 }
 
@@ -415,7 +415,7 @@
 
 .credit-products-pagination button {
     background: #fff;
-    border: 1px solid #dfd2c7;
+    border: 1px solid var(--app-border);
     border-radius: 9px;
     color: #6e6259;
     font-size: 13px;
@@ -427,22 +427,22 @@
 
 .credit-products-pagination button:not(:disabled):hover,
 .credit-products-pagination button.is-active {
-    background: linear-gradient(135deg, #bd6224, #e28a43);
+    background: linear-gradient(135deg, var(--app-accent-dark), var(--app-blue-500));
     border-color: transparent;
-    box-shadow: 0 6px 14px rgba(190, 98, 36, 0.22);
+    box-shadow: 0 6px 14px rgba(var(--app-accent-rgb), 0.22);
     color: #fff;
 }
 
 .credit-products-pagination button:disabled {
-    background: #f4f1ee;
+    background: var(--app-blue-50);
     color: #c0b8b1;
     cursor: not-allowed;
 }
 
 .credit-products-empty {
     align-items: center;
-    background: #fff8f1;
-    border: 1px dashed #e4c4a7;
+    background: var(--app-blue-50);
+    border: 1px dashed var(--app-border);
     border-radius: 13px;
     color: #8b6d57;
     display: flex;
@@ -452,15 +452,15 @@
 }
 
 .credit-products-empty i {
-    color: #d47b37;
+    color: var(--app-accent);
     font-size: 23px;
     margin-bottom: 3px;
 }
 
 .credit-products-footer {
     align-items: center;
-    background: #fcf8f4;
-    border-top: 1px solid #eadfd5;
+    background: var(--app-blue-50);
+    border-top: 1px solid var(--app-border);
     display: flex;
     justify-content: space-between;
     padding: 16px 28px;
@@ -472,7 +472,7 @@
 }
 
 .credit-products-footer-note i {
-    color: #cf752f;
+    color: var(--app-accent);
     margin-right: 6px;
 }
 
@@ -492,14 +492,14 @@
 
 .credit-products-cancel {
     background: #fff;
-    border: 1px solid #d8cbc0;
+    border: 1px solid var(--app-border);
     color: #655950;
 }
 
 .credit-products-confirm {
-    background: linear-gradient(135deg, #bd6224, #e28a43);
+    background: linear-gradient(135deg, var(--app-accent-dark), var(--app-blue-500));
     border: 0;
-    box-shadow: 0 7px 16px rgba(190, 98, 36, 0.22);
+    box-shadow: 0 7px 16px rgba(var(--app-accent-rgb), 0.22);
     color: #fff;
     min-width: 205px;
 }
@@ -574,29 +574,29 @@
 }
 
 :host {
-    --credit-fuchsia-800: #99115f;
-    --credit-fuchsia-700: #b51276;
-    --credit-fuchsia-600: #d31791;
-    --credit-fuchsia-500: #e629a7;
-    --credit-fuchsia-100: #f8cfe9;
-    --credit-fuchsia-50: #fff2fa;
-    --credit-green-800: #12613f;
-    --credit-green-700: #16784d;
-    --credit-green-600: #1c9360;
-    --credit-green-500: #28ad73;
-    --credit-green-100: #cceedd;
-    --credit-green-50: #f0fbf5;
+    --credit-fuchsia-800: var(--app-blue-800);
+    --credit-fuchsia-700: var(--app-blue-700);
+    --credit-fuchsia-600: var(--app-blue-600);
+    --credit-fuchsia-500: var(--app-blue-500);
+    --credit-fuchsia-100: var(--app-blue-100);
+    --credit-fuchsia-50: var(--app-blue-50);
+    --credit-green-800: var(--app-blue-800);
+    --credit-green-700: var(--app-blue-700);
+    --credit-green-600: var(--app-blue-600);
+    --credit-green-500: var(--app-blue-500);
+    --credit-green-100: var(--app-blue-100);
+    --credit-green-50: var(--app-blue-50);
 }
 
 .credit-note-page {
-    --blue-950: #4e1939;
-    --blue-900: #64234b;
-    --blue-800: #843164;
-    --blue-700: #993873;
-    --blue-600: #b04486;
-    --blue-500: #c55e9b;
-    --blue-100: #f0d3e4;
-    --blue-50: #fdf7fa;
+    --blue-950: var(--app-blue-950);
+    --blue-900: var(--app-blue-900);
+    --blue-800: var(--app-blue-800);
+    --blue-700: var(--app-blue-700);
+    --blue-600: var(--app-blue-600);
+    --blue-500: var(--app-blue-500);
+    --blue-100: var(--app-blue-100);
+    --blue-50: var(--app-blue-50);
     max-width: 1500px;
 }
 
@@ -663,12 +663,12 @@
 
 .credit-note-action-bar.origin-factura-theme .credit-note-save-button {
     background: linear-gradient(135deg, var(--credit-green-700), var(--credit-green-500));
-    box-shadow: 0 7px 16px rgba(28, 147, 96, 0.24);
+    box-shadow: 0 7px 16px rgba(var(--app-accent-rgb), 0.24);
 }
 
 .credit-note-action-bar.origin-factura-theme .credit-note-save-button:not(:disabled):hover,
 .credit-note-action-bar.origin-factura-theme .credit-note-save-button:not(:disabled):focus {
-    box-shadow: 0 10px 21px rgba(28, 147, 96, 0.34);
+    box-shadow: 0 10px 21px rgba(var(--app-accent-rgb), 0.34);
 }
 
 .credit-note-action-title span {
@@ -735,7 +735,7 @@
     background: linear-gradient(135deg, var(--credit-fuchsia-700), var(--credit-fuchsia-500));
     border: 0;
     border-radius: 9px;
-    box-shadow: 0 7px 16px rgba(211, 23, 145, 0.24);
+    box-shadow: 0 7px 16px rgba(var(--app-accent-rgb), 0.24);
     color: #fff;
     cursor: pointer;
     display: inline-flex;
@@ -752,7 +752,7 @@
 
 .credit-note-save-button:not(:disabled):hover,
 .credit-note-save-button:not(:disabled):focus {
-    box-shadow: 0 10px 21px rgba(211, 23, 145, 0.34);
+    box-shadow: 0 10px 21px rgba(var(--app-accent-rgb), 0.34);
     color: #fff;
     outline: 0;
     transform: translateY(-1px);
@@ -833,8 +833,8 @@
 
 .credit-note-form .form-control:focus {
     background: #fff;
-    border-color: #b04486;
-    box-shadow: 0 0 0 3px rgba(176, 68, 134, 0.14);
+    border-color: var(--app-blue-700);
+    box-shadow: 0 0 0 3px rgba(var(--app-accent-rgb), 0.14);
     outline: 0;
 }
 
@@ -851,10 +851,10 @@
 
 .credit-note-form .bg-fuchsia {
     align-items: center;
-    background: linear-gradient(135deg, #b04486, #843164) !important;
+    background: linear-gradient(135deg, var(--app-blue-700), var(--app-blue-800)) !important;
     border: 0;
     border-radius: 9px;
-    box-shadow: 0 6px 14px rgba(176, 68, 134, 0.22);
+    box-shadow: 0 6px 14px rgba(var(--app-accent-rgb), 0.22);
     display: inline-flex;
     height: 46px;
     justify-content: center;
@@ -920,8 +920,8 @@
 }
 
 .origen-option.origen-proforma:hover {
-    background-color: #ffd8f0;
-    color: #b3267a;
+    background-color: var(--app-blue-100);
+    color: var(--app-accent-dark);
 }
 
 .origen-option:active {

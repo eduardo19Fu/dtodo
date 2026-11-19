@@ -1,25 +1,25 @@
-/* Paleta de las rutas (verde azulado), sobre la estructura compartida del formulario de productos. */
+/* Paleta azul compartida de las rutas, sobre la estructura compartida del formulario de productos. */
 .product-form-page.route-form-page {
-  --blue-950: #123d33;
-  --blue-900: #1f5a4c;
-  --blue-800: #2a6f5e;
-  --blue-700: #2f7d6b;
-  --blue-600: #3a937e;
-  --blue-500: #52a994;
-  --blue-100: #dcefe9;
-  --blue-50: #f3faf7;
-  --border: #d3e6df;
+  --blue-950: var(--app-blue-950);
+  --blue-900: var(--app-blue-900);
+  --blue-800: var(--app-blue-800);
+  --blue-700: var(--app-blue-700);
+  --blue-600: var(--app-blue-600);
+  --blue-500: var(--app-blue-500);
+  --blue-100: var(--app-blue-100);
+  --blue-50: var(--app-blue-50);
+  --border: var(--app-border);
 }
 
 .product-form-page.route-form-page .heading-icon {
-  background: #e6f3ef;
-  border-color: #c4e0d7;
-  color: #1f5a4c;
+  background: var(--app-blue-100);
+  border-color: var(--app-border);
+  color: var(--app-blue-900);
 }
 
 .product-form-page.route-form-page .product-card {
-  border-color: rgba(31, 90, 76, 0.12);
-  box-shadow: 0 18px 50px rgba(31, 90, 76, 0.13);
+  border-color: rgba(var(--app-accent-dark-rgb), 0.12);
+  box-shadow: 0 18px 50px rgba(var(--app-accent-dark-rgb), 0.13);
 }
 
 .product-form-page.route-form-page .card-hero p span,
@@ -28,8 +28,8 @@
 }
 
 .product-form-page.route-form-page .section-number {
-  background: #f3faf7;
-  border-color: #dcefe9;
+  background: var(--app-blue-50);
+  border-color: var(--app-blue-100);
 }
 
 .product-form-page.route-form-page .control-with-icon > i {
@@ -37,16 +37,16 @@
 }
 
 .product-form-page.route-form-page .field-group .form-control:focus {
-  box-shadow: 0 0 0 3px rgba(47, 125, 107, 0.15);
+  box-shadow: 0 0 0 3px rgba(var(--app-accent-rgb), 0.15);
 }
 
 .product-form-page.route-form-page .form-actions {
-  background: #f6faf8;
+  background: var(--app-blue-50);
   border-top-color: #e2ede9;
 }
 
 .product-form-page.route-form-page .primary-action {
-  box-shadow: 0 7px 16px rgba(31, 90, 76, 0.27);
+  box-shadow: 0 7px 16px rgba(var(--app-accent-dark-rgb), 0.27);
 }
 
 .route-fields-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -63,11 +63,11 @@
 }
 .route-form-page .form-actions { flex-wrap: wrap; gap: 16px; }
 .route-cancel-action { border: 1px solid #cbd6e2; border-radius: 9px; color: #344459; font-size: 14px; font-weight: 600; padding: 10px 20px; text-align: center; }
-.route-cancel-action:hover { background: #edf3f0; color: #1f5a4c; }
+.route-cancel-action:hover { background: #edf3f0; color: var(--app-blue-900); }
 .route-form-page a:focus-visible,
 .route-form-page button:focus-visible,
 .route-form-page input:focus-visible,
-.route-form-page select:focus-visible { outline: 3px solid #438d7c; outline-offset: 3px; }
+.route-form-page select:focus-visible { outline: 3px solid var(--app-blue-500); outline-offset: 3px; }
 
 @media (max-width: 991.98px) {
   .route-fields-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }

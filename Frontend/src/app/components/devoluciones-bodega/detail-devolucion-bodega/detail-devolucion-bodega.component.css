@@ -3,8 +3,8 @@
 
 .route-ribbon {
   align-items: center;
-  background: linear-gradient(135deg, #fcf7f1 0%, #fffdfa 100%);
-  border: 1px solid #ecd7bd;
+  background: linear-gradient(135deg, var(--app-blue-50) 0%, var(--app-blue-50) 100%);
+  border: 1px solid var(--app-border);
   border-radius: 12px;
   display: grid;
   gap: 14px;
@@ -30,7 +30,7 @@
 }
 
 .route-point strong {
-  color: #4a2c08;
+  color: var(--app-blue-950);
   display: block;
   font-size: 15px;
   overflow: hidden;
@@ -39,7 +39,7 @@
 }
 
 .route-point-kind {
-  color: #a7794a;
+  color: var(--app-accent);
   display: block;
   font-size: 10px;
   font-weight: 800;
@@ -50,9 +50,9 @@
 .route-point-icon {
   align-items: center;
   background: #fff;
-  border: 2px solid #8f5518;
+  border: 2px solid var(--app-accent-dark);
   border-radius: 12px;
-  color: #8f5518;
+  color: var(--app-accent-dark);
   display: inline-flex;
   flex: 0 0 40px;
   height: 40px;
@@ -61,7 +61,7 @@
 }
 
 .route-point-end.is-reached .route-point-icon {
-  background: #8f5518;
+  background: var(--app-accent-dark);
   color: #fff;
 }
 
@@ -72,7 +72,7 @@
 }
 
 .route-line-track {
-  border-top: 3px dashed #dcb98f;
+  border-top: 3px dashed var(--app-hover-border);
   left: 0;
   position: absolute;
   right: 0;
@@ -81,7 +81,7 @@
 }
 
 .route-line.is-done .route-line-track {
-  border-top: 3px solid #8f5518;
+  border-top: 3px solid var(--app-accent-dark);
 }
 
 .route-line.is-stopped .route-line-track {
@@ -91,9 +91,9 @@
 .route-line-truck {
   align-items: center;
   background: #fff;
-  border: 2px solid #8f5518;
+  border: 2px solid var(--app-accent-dark);
   border-radius: 50%;
-  color: #8f5518;
+  color: var(--app-accent-dark);
   display: inline-flex;
   font-size: 11px;
   height: 26px;
@@ -133,7 +133,7 @@
   }
 
   .route-line-track {
-    border-left: 3px dashed #dcb98f;
+    border-left: 3px dashed var(--app-hover-border);
     border-top: 0;
     bottom: 0;
     left: 50%;
@@ -143,7 +143,7 @@
   }
 
   .route-line.is-done .route-line-track {
-    border-left: 3px solid #8f5518;
+    border-left: 3px solid var(--app-accent-dark);
     border-top: 0;
   }
 

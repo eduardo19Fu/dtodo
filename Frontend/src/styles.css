@@ -1,6 +1,26 @@
 @import "./app/components/cobranza/cobranza-summary.css";
 @import "./app/components/recibos/recibos-responsive.css";
 
+/* Paleta de Productos compartida por todos los módulos. Los colores de estado
+   (éxito, advertencia y error) se mantienen independientes de esta identidad. */
+:root {
+  --app-blue-950: #103e54;
+  --app-blue-900: #155675;
+  --app-blue-800: #1c688f;
+  --app-blue-700: #2783b7;
+  --app-blue-600: #2783b7;
+  --app-blue-500: #3c9aca;
+  --app-blue-100: #dceef5;
+  --app-blue-50: #f3fafd;
+  --app-accent: var(--app-blue-700);
+  --app-accent-dark: var(--app-blue-800);
+  --app-accent-rgb: 39, 131, 183;
+  --app-accent-dark-rgb: 28, 104, 143;
+  --app-tint: #e5f3f8;
+  --app-border: #d7e5eb;
+  --app-hover-border: #9dc6d8;
+}
+
 /* You can add global styles to this file, and also import other style files */
 .requerido{
     color: red;
@@ -26,15 +46,15 @@ textarea.form-control[readonly] {
 /* Foco de selectores unificado. La prioridad es intencional: los formularios
    heredados definen colores locales y todos deben conservar el mismo foco. */
 :root {
-  --select-focus-border: #2f7d6b;
-  --select-focus-ring: #438d7c;
+  --select-focus-border: var(--app-blue-700);
+  --select-focus-ring: var(--app-blue-500);
 }
 
 select:not(.listing-tile-select):focus,
 .report-select-trigger:focus,
 .listing-tile:has(select:focus) {
   border-color: var(--select-focus-border) !important;
-  box-shadow: 0 0 0 3px rgba(47, 125, 107, 0.14) !important;
+  box-shadow: 0 0 0 3px rgba(var(--app-accent-rgb), 0.14) !important;
 }
 
 select:not(.listing-tile-select):focus-visible,
@@ -598,6 +618,13 @@ form label,
   transform: translateY(-1px);
 }
 
+/* Las acciones se distinguen por función, independientemente del módulo. */
+.btn.listing-action-stock { color: #9a6500; }
+.btn.listing-action-stock:not(:disabled):hover,
+.btn.listing-action-stock:not(:disabled):focus { background: #9a6500; border-color: #9a6500; color: #fff; }
+.btn.listing-action-dispatch { color: #087f8c; }
+.btn.listing-action-dispatch:not(:disabled):hover,
+.btn.listing-action-dispatch:not(:disabled):focus { background: #087f8c; border-color: #087f8c; color: #fff; }
 .btn.listing-action-view { color: #1559ad; }
 .btn.listing-action-view:not(:disabled):hover,
 .btn.listing-action-view:not(:disabled):focus { background: #1559ad; border-color: #1559ad; color: #fff; }
@@ -804,7 +831,7 @@ select.page-size-select:focus {
 
 /* Toast compacto utilizado para operaciones breves de carga. */
 .swal2-popup.app-loading-toast {
-  border-left: 4px solid #5f9ea0;
+  border-left: 4px solid var(--app-blue-600);
   border-radius: 11px;
   box-shadow: 0 12px 30px rgba(35, 73, 75, 0.2);
   padding: 0.85rem 1rem;
@@ -812,7 +839,7 @@ select.page-size-select:focus {
 
 .app-loading-toast .swal2-icon {
   border-color: #a9d2d3;
-  color: #4b8587;
+  color: var(--app-blue-700);
   margin: 0 0.8rem 0 0;
 }
 
@@ -830,7 +857,7 @@ select.page-size-select:focus {
 }
 
 .app-loading-toast .swal2-loader {
-  border-color: #5f9ea0 transparent #5f9ea0 transparent;
+  border-color: var(--app-blue-600) transparent var(--app-blue-600) transparent;
   height: 1.5rem;
   margin: 0 0 0 0.8rem;
   width: 1.5rem;
@@ -903,16 +930,8 @@ select.page-size-select:focus {
 }
 
 .stock-alert-product {
-  align-items: center;
-  background: #f6f9fd;
-  border: 1px solid #dce7f4;
-  border-left: 4px solid #d31791;
-  border-radius: 11px;
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: minmax(0, 1fr) auto;
-  padding: 0.8rem 0.9rem;
-}
+    grid-template-columns: 1fr;
+  }
 
 .stock-alert-product-code {
   min-width: 0;
@@ -938,11 +957,8 @@ select.page-size-select:focus {
 }
 
 .stock-alert-quantities {
-  align-items: center;
-  display: flex;
-  gap: 0.75rem;
-  text-align: center;
-}
+    justify-content: space-between;
+  }
 
 .stock-alert-quantities span {
   min-width: 62px;
@@ -1023,10 +1039,10 @@ select.page-size-select:focus {
    círculo, campos como los de los formularios y botones como los de los listados.
    ========================================================================== */
 .swal2-popup.app-dialog {
-  --dlg-a: #1f5a4c;
-  --dlg-b: #2f7d6b;
-  --dlg-soft: #e3f1ec;
-  --dlg-ring: rgba(47, 125, 107, 0.2);
+  --dlg-a: var(--app-blue-900);
+  --dlg-b: var(--app-blue-700);
+  --dlg-soft: var(--app-blue-100);
+  --dlg-ring: rgba(var(--app-accent-rgb), 0.2);
   border: 1px solid #dfe8f3;
   border-radius: 18px;
   box-shadow: 0 24px 65px rgba(11, 31, 68, 0.28);
@@ -1612,12 +1628,12 @@ select.page-size-select:focus {
    Franja de fichas para filtros: cada control comparte la anatomía del selector de fechas
    (cuadro de icono tintado + rótulo en mayúsculas pequeñas + valor) y la misma altura, en una
    cuadrícula que alinea las etiquetas arriba y los bordes inferiores abajo.
-   Los colores siguen el tema «ventas» del selector de fechas para que la franja se vea de una pieza.
+   Los colores usan la paleta azul compartida con el selector de fechas.
    ========================================================================== */
 .listing-filter-grid {
-  --tile-accent: #5c5038;
-  --tile-accent-rgb: 127, 112, 79;
-  --tile-tint: #f3efe7;
+  --tile-accent: var(--app-accent);
+  --tile-accent-rgb: var(--app-accent-rgb);
+  --tile-tint: var(--app-tint);
   --tile-height: 50px;
   align-items: end;
   background: linear-gradient(180deg, #fbfcfe 0%, #f5f8fc 100%);
@@ -1669,20 +1685,20 @@ select.page-size-select:focus {
 }
 
 .listing-tile:hover {
-  border-color: rgba(var(--tile-accent-rgb, 127, 112, 79), 0.55);
+  border-color: rgba(var(--tile-accent-rgb, var(--app-accent-rgb)), 0.55);
 }
 
 .listing-tile:focus-within {
-  border-color: var(--tile-accent, #5c5038);
-  box-shadow: 0 0 0 3px rgba(var(--tile-accent-rgb, 127, 112, 79), 0.14);
+  border-color: var(--tile-accent, var(--app-accent));
+  box-shadow: 0 0 0 3px rgba(var(--tile-accent-rgb, var(--app-accent-rgb)), 0.14);
 }
 
 .listing-tile-icon {
   align-items: center;
   align-self: stretch;
-  background: var(--tile-tint, #f3efe7);
+  background: var(--tile-tint, var(--app-tint));
   border-radius: 9px 0 0 9px;
-  color: var(--tile-accent, #5c5038);
+  color: var(--tile-accent, var(--app-accent));
   display: flex;
   flex: 0 0 48px;
   font-size: 1rem;
@@ -1787,7 +1803,7 @@ input.listing-tile-input::placeholder {
 }
 
 .listing-switch:checked {
-  background: var(--tile-accent, #5c5038);
+  background: var(--tile-accent, var(--app-accent));
 }
 
 .listing-switch:checked::after {
@@ -1795,7 +1811,7 @@ input.listing-tile-input::placeholder {
 }
 
 .listing-switch:focus-visible {
-  outline: 2px solid rgba(var(--tile-accent-rgb, 127, 112, 79), 0.5);
+  outline: 2px solid rgba(var(--tile-accent-rgb, var(--app-accent-rgb)), 0.5);
   outline-offset: 2px;
 }
 
@@ -1886,8 +1902,8 @@ input.listing-tile-input::placeholder {
 .tl-edicion .listing-timeline-icon { --tl-color: #6545a5; --tl-tint: #efe9fa; }
 .tl-autorizacion .listing-timeline-icon { --tl-color: #9a6500; --tl-tint: #fff3d6; }
 .tl-entrega .listing-timeline-icon { --tl-color: #087785; --tl-tint: #e4f5f7; }
-.tl-devolucion .listing-timeline-icon { --tl-color: #b04486; --tl-tint: #f7e8f1; }
-.tl-factura .listing-timeline-icon { --tl-color: #5c5038; --tl-tint: #f3efe7; }
+.tl-devolucion .listing-timeline-icon { --tl-color: var(--app-accent); --tl-tint: var(--app-tint); }
+.tl-factura .listing-timeline-icon { --tl-color: var(--app-accent); --tl-tint: var(--app-tint); }
 .tl-recibo .listing-timeline-icon { --tl-color: #2f7d6b; --tl-tint: #e6f3ef; }
 .tl-anulacion .listing-timeline-icon { --tl-color: #bd3434; --tl-tint: #fde9e9; }
 
@@ -2018,14 +2034,14 @@ input.listing-tile-input::placeholder {
 }
 
 .btn.search-button {
-  background: linear-gradient(135deg, #2783b7, #1c688f);
-  border: 1px solid #2783b7;
-  box-shadow: 0 5px 12px rgba(28, 104, 143, 0.2);
+  background: linear-gradient(135deg, var(--app-blue-600), var(--app-blue-800));
+  border: 1px solid var(--app-blue-600);
+  box-shadow: 0 5px 12px rgba(var(--app-accent-dark-rgb), 0.2);
   color: #fff;
 }
 
 .btn.search-button:hover,
-.btn.search-button:focus { box-shadow: 0 7px 16px rgba(28, 104, 143, 0.28); color: #fff; transform: translateY(-1px); }
+.btn.search-button:focus { box-shadow: 0 7px 16px rgba(var(--app-accent-dark-rgb), 0.28); color: #fff; transform: translateY(-1px); }
 
 .btn.clear-button { background: #fff; border: 1px solid #cbd5e1; color: #42526a; }
 
@@ -2046,7 +2062,7 @@ input.listing-tile-input::placeholder {
   padding: 0.4rem 1rem;
 }
 
-.filter-card .btn.search-button { box-shadow: 0 3px 8px rgba(28, 104, 143, 0.2); }
+.filter-card .btn.search-button { box-shadow: 0 3px 8px rgba(var(--app-accent-dark-rgb), 0.2); }
 
 /* Dentro de la tarjeta de filtros, las franjas de campos pierden su propio recuadro. */
 .filter-card-body .listing-filter-grid {

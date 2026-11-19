@@ -1,28 +1,28 @@
-.sucursal-subtitle i { color: #b95765; }
+.sucursal-subtitle i { color: var(--app-accent); }
 
 :host {
-  --user-accent: #b95765;
-  --user-dark: #95434f;
-  --user-tint: #faeaec;
+  --user-accent: var(--app-accent);
+  --user-dark: var(--app-accent-dark);
+  --user-tint: var(--app-tint);
 }
 
 .btn.listing-primary-action {
   background: linear-gradient(135deg, var(--user-accent), var(--user-dark));
   border-color: var(--user-accent);
-  box-shadow: 0 6px 15px rgba(149, 67, 79, 0.23);
+  box-shadow: 0 6px 15px rgba(var(--app-accent-dark-rgb), 0.23);
 }
 
 .btn.listing-primary-action:hover,
 .btn.listing-primary-action:focus {
-  background: linear-gradient(135deg, #c76774, var(--user-dark));
+  background: linear-gradient(135deg, var(--app-blue-500), var(--user-dark));
   border-color: var(--user-accent);
-  box-shadow: 0 9px 19px rgba(149, 67, 79, 0.33);
+  box-shadow: 0 9px 19px rgba(var(--app-accent-dark-rgb), 0.33);
 }
 
 .listing-search-control .form-control:focus,
 select.page-size-select:focus {
   border-color: var(--user-accent);
-  box-shadow: 0 0 0 3px rgba(185, 87, 101, 0.15);
+  box-shadow: 0 0 0 3px rgba(var(--app-accent-rgb), 0.15);
 }
 
 .listing-id-pill,
@@ -31,30 +31,20 @@ select.page-size-select:focus {
   color: var(--user-dark);
 }
 
-.btn.listing-action-view,
-.btn.listing-action-edit { color: var(--user-dark); }
 
-.btn.listing-action-view:not(:disabled):hover,
-.btn.listing-action-view:not(:disabled):focus,
-.btn.listing-action-edit:not(:disabled):hover,
-.btn.listing-action-edit:not(:disabled):focus {
-  background: var(--user-dark);
-  border-color: var(--user-dark);
-  color: #fff;
-}
 
 .listing-pagination .page-item:not(.active):not(.disabled) .page-link:hover,
 .listing-pagination .page-item:not(.active):not(.disabled) .page-link:focus {
   background: var(--user-tint);
   border-color: #d9aab1;
-  box-shadow: 0 4px 10px rgba(149, 67, 79, 0.13);
+  box-shadow: 0 4px 10px rgba(var(--app-accent-dark-rgb), 0.13);
   color: var(--user-dark);
 }
 
 .listing-pagination .page-item.active .page-link {
   background: linear-gradient(135deg, var(--user-accent), var(--user-dark));
   border-color: var(--user-accent);
-  box-shadow: 0 6px 13px rgba(149, 67, 79, 0.27);
+  box-shadow: 0 6px 13px rgba(var(--app-accent-dark-rgb), 0.27);
 }
 
 .info-paginacion {
@@ -206,5 +196,5 @@ select.page-size-select:focus {
 
 .sort-header i { color: #9aa8ba; }
 .sort-header .fa-sort-up,
-.sort-header .fa-sort-down { color: #2f7d6b; }
-.sort-header:focus { outline: 2px solid rgba(47, 125, 107, 0.45); outline-offset: 2px; }
+.sort-header .fa-sort-down { color: var(--app-blue-700); }
+.sort-header:focus { outline: 2px solid rgba(var(--app-accent-rgb), 0.45); outline-offset: 2px; }

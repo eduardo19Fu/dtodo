@@ -1,12 +1,12 @@
 :host {
-  --branch-900: #293d4c;
-  --branch-800: #3d576b;
-  --branch-700: #52728a;
-  --branch-100: #dce6ec;
-  --branch-50: #f3f7f9;
+  --branch-900: var(--app-blue-900);
+  --branch-800: var(--app-blue-800);
+  --branch-700: var(--app-blue-700);
+  --branch-100: var(--app-blue-100);
+  --branch-50: var(--app-blue-50);
   --ink: #243247;
   --muted: #6d7b8f;
-  --border: #d7e0e6;
+  --border: var(--app-border);
 }
 
 .sucursal-detail-overlay {
@@ -31,7 +31,7 @@
 .sucursal-detail-content {
   background: #fff;
   border-radius: 18px;
-  box-shadow: 0 24px 70px rgba(41, 61, 76, 0.3);
+  box-shadow: 0 24px 70px rgba(var(--app-accent-dark-rgb), 0.3);
   display: flex;
   flex-direction: column;
   max-height: calc(100vh - 56px);
@@ -136,7 +136,7 @@
   background: linear-gradient(135deg, var(--branch-800), var(--branch-700));
   border: 4px solid #fff;
   border-radius: 50%;
-  box-shadow: 0 6px 16px rgba(61, 87, 107, 0.22);
+  box-shadow: 0 6px 16px rgba(var(--app-accent-dark-rgb), 0.22);
   color: #fff;
   display: flex;
   flex: 0 0 66px;

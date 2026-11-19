@@ -1,9 +1,9 @@
 :host {
-  --teal-900: #315f61;
-  --teal-700: #4b8587;
-  --teal-600: #5f9ea0;
-  --teal-100: #cfe5e5;
-  --teal-50: #f2f8f8;
+  --teal-900: var(--app-blue-900);
+  --teal-700: var(--app-blue-700);
+  --teal-600: var(--app-blue-600);
+  --teal-100: var(--app-blue-100);
+  --teal-50: var(--app-blue-50);
   --ink: #273044;
 }
 
@@ -61,7 +61,7 @@
 }
 .select-control .form-control:focus,
 .date-control .form-control:focus {
-  border-color: var(--teal-600); box-shadow: 0 0 0 3px rgba(95, 158, 160, 0.16); outline: 0;
+  border-color: var(--teal-600); box-shadow: 0 0 0 3px rgba(var(--app-accent-rgb), 0.16); outline: 0;
 }
 .select-arrow {
   color: #728789 !important; font-size: 14px; left: auto !important; pointer-events: none;
@@ -83,7 +83,7 @@
 .export-warning > i { color: #c69318; font-size: 15px; }
 .export-warning strong { color: #67521c; margin-right: 3px; }
 .export-footer {
-  align-items: center; background: #f7faf9; border-top: 1px solid #dfeaea; display: flex; justify-content: space-between; padding: 15px 26px;
+  align-items: center; background: var(--app-blue-50); border-top: 1px solid #dfeaea; display: flex; justify-content: space-between; padding: 15px 26px;
 }
 .required-note { color: #718486; font-size: 11px; }
 .required-note i { color: var(--teal-600); margin-right: 5px; }
@@ -95,7 +95,7 @@
 .export-all { background: #fff9e8; border: 1px solid #e8cf85; color: #735b18; }
 .export-range {
   background: linear-gradient(135deg, var(--teal-700), var(--teal-600)); border: 0;
-  box-shadow: 0 7px 16px rgba(75, 133, 135, 0.27); color: #fff; min-width: 143px;
+  box-shadow: 0 7px 16px rgba(var(--app-accent-rgb), 0.27); color: #fff; min-width: 143px;
 }
 .export-cancel i,
 .export-all i,
@@ -105,7 +105,7 @@
 .export-all:hover,
 .export-all:focus { background: #fff3cb; color: #5e4810; outline: 0; }
 .export-range:hover,
-.export-range:focus { box-shadow: 0 9px 19px rgba(75, 133, 135, 0.34); color: #fff; outline: 0; transform: translateY(-1px); }
+.export-range:focus { box-shadow: 0 9px 19px rgba(var(--app-accent-rgb), 0.34); color: #fff; outline: 0; transform: translateY(-1px); }
 .export-all:disabled,
 .export-range:disabled { box-shadow: none; cursor: not-allowed; opacity: 0.45; transform: none; }
 

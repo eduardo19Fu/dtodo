@@ -1,8 +1,8 @@
 :host {
-  --warehouse-accent: #b8732b;
-  --warehouse-dark: #8f5518;
-  --warehouse-tint: #f8eee2;
-  --warehouse-border: #e8e0d6;
+  --warehouse-accent: var(--app-accent);
+  --warehouse-dark: var(--app-accent-dark);
+  --warehouse-tint: var(--app-tint);
+  --warehouse-border: var(--app-border);
   display: block;
 }
 
@@ -28,18 +28,18 @@
 
 .origin-option:hover,
 .origin-option:focus {
-  border-color: #dcbf9a;
+  border-color: var(--app-hover-border);
   outline: 0;
 }
 
 .origin-option:focus-visible {
-  box-shadow: 0 0 0 3px rgba(184, 115, 43, 0.25);
+  box-shadow: 0 0 0 3px rgba(var(--app-accent-rgb), 0.25);
 }
 
 .origin-option.selected {
   background: var(--warehouse-tint);
   border-color: var(--warehouse-accent);
-  box-shadow: 0 6px 16px rgba(143, 85, 24, 0.14);
+  box-shadow: 0 6px 16px rgba(var(--app-accent-dark-rgb), 0.14);
 }
 
 .origin-icon {
@@ -97,7 +97,7 @@
 
 .origin-detail .form-control:focus {
   border-color: var(--warehouse-accent);
-  box-shadow: 0 0 0 3px rgba(184, 115, 43, 0.15);
+  box-shadow: 0 0 0 3px rgba(var(--app-accent-rgb), 0.15);
 }
 
 .excel-layout {
@@ -117,7 +117,7 @@
 .file-drop {
   align-items: center;
   background: #fff;
-  border: 2px dashed #dcbf9a;
+  border: 2px dashed var(--app-hover-border);
   border-radius: 12px;
   color: var(--warehouse-dark);
   cursor: pointer;
@@ -134,7 +134,7 @@
 }
 
 .visually-hidden-input:focus + .file-drop {
-  box-shadow: 0 0 0 3px rgba(184, 115, 43, 0.25);
+  box-shadow: 0 0 0 3px rgba(var(--app-accent-rgb), 0.25);
 }
 
 .file-drop > i {
@@ -219,8 +219,8 @@
 }
 
 .sheet-row > span {
-  border-bottom: 1px solid #e1e8e4;
-  border-right: 1px solid #e1e8e4;
+  border-bottom: 1px solid var(--app-border);
+  border-right: 1px solid var(--app-border);
   overflow: hidden;
   padding: 5px 8px;
   text-overflow: ellipsis;
@@ -237,7 +237,7 @@
 
 .sheet-letters > span,
 .sheet-index {
-  background: #f1f4f2;
+  background: var(--app-blue-50);
   color: #6d7b8f;
   text-align: center;
 }
@@ -254,7 +254,7 @@
 }
 
 .sheet-head > .opcional {
-  background: #f1f4f2;
+  background: var(--app-blue-50);
   color: #52647a;
 }
 
@@ -283,7 +283,7 @@
 }
 
 .legend-chip.opcional {
-  background: #f1f4f2;
+  background: var(--app-blue-50);
   color: #52647a;
 }
 

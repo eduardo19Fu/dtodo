@@ -88,12 +88,12 @@
 }
 
 .view-tabs button i { margin-right: 6px; }
-.view-tabs button:hover { border-color: #dcbf9a; color: var(--warehouse-dark); }
+.view-tabs button:hover { border-color: var(--app-hover-border); color: var(--warehouse-dark); }
 
 .view-tabs button.active {
   background: linear-gradient(135deg, var(--warehouse-accent), var(--warehouse-dark));
   border-color: var(--warehouse-accent);
-  box-shadow: 0 6px 14px rgba(143, 85, 24, 0.25);
+  box-shadow: 0 6px 14px rgba(var(--app-accent-dark-rgb), 0.25);
   color: #fff;
 }
 

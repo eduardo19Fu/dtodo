@@ -257,11 +257,11 @@ describe('DetailClienteComponent', () => {
     expect(document.body.contains(raiz)).toBeFalse();
   });
 
-  it('usa la identidad verde de clientes y no el ocre del módulo de bodegas', async () => {
+  it('usa la paleta azul compartida de Productos', async () => {
     await crear();
     const raiz = fixture.nativeElement as HTMLElement;
 
-    expect(getComputedStyle(raiz).getPropertyValue('--green-900').trim()).toBe('#1f5a4c');
-    expect(getComputedStyle(raiz.querySelector('.sucursal-detail-body')).backgroundColor).toBe('rgb(245, 250, 248)');
+    expect(getComputedStyle(raiz).getPropertyValue('--green-900').trim()).toBe('#155675');
+    expect(getComputedStyle(raiz.querySelector('.sucursal-detail-body')).backgroundColor).toBe('rgb(243, 250, 253)');
   });
 });

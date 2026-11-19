@@ -1,7 +1,7 @@
 :host {
-  --purchase-accent: #7654b5;
-  --purchase-dark: #5b3e91;
-  --purchase-tint: #f0ebf8;
+  --purchase-accent: var(--app-accent);
+  --purchase-dark: var(--app-accent-dark);
+  --purchase-tint: var(--app-tint);
 }
 
 .sucursal-subtitle i,
@@ -72,20 +72,20 @@
 .btn.listing-primary-action {
   background: linear-gradient(135deg, var(--purchase-accent), var(--purchase-dark));
   border-color: var(--purchase-accent);
-  box-shadow: 0 6px 15px rgba(91, 62, 145, 0.23);
+  box-shadow: 0 6px 15px rgba(var(--app-accent-dark-rgb), 0.23);
 }
 
 .btn.listing-primary-action:hover,
 .btn.listing-primary-action:focus {
-  background: linear-gradient(135deg, #8464be, var(--purchase-dark));
+  background: linear-gradient(135deg, var(--app-accent-dark), var(--purchase-dark));
   border-color: var(--purchase-accent);
-  box-shadow: 0 9px 19px rgba(91, 62, 145, 0.33);
+  box-shadow: 0 9px 19px rgba(var(--app-accent-dark-rgb), 0.33);
 }
 
 .listing-search-control .form-control:focus,
 select.page-size-select:focus {
   border-color: var(--purchase-accent);
-  box-shadow: 0 0 0 3px rgba(118, 84, 181, 0.15);
+  box-shadow: 0 0 0 3px rgba(var(--app-accent-rgb), 0.15);
 }
 
 .listing-id-pill,
@@ -94,29 +94,20 @@ select.page-size-select:focus {
   color: var(--purchase-dark);
 }
 
-.btn.listing-action-view {
-  color: var(--purchase-dark);
-}
 
-.btn.listing-action-view:not(:disabled):hover,
-.btn.listing-action-view:not(:disabled):focus {
-  background: var(--purchase-dark);
-  border-color: var(--purchase-dark);
-  color: #fff;
-}
 
 .listing-pagination .page-item:not(.active):not(.disabled) .page-link:hover,
 .listing-pagination .page-item:not(.active):not(.disabled) .page-link:focus {
   background: var(--purchase-tint);
-  border-color: #baa9d7;
-  box-shadow: 0 4px 10px rgba(91, 62, 145, 0.13);
+  border-color: var(--app-hover-border);
+  box-shadow: 0 4px 10px rgba(var(--app-accent-dark-rgb), 0.13);
   color: var(--purchase-dark);
 }
 
 .listing-pagination .page-item.active .page-link {
   background: linear-gradient(135deg, var(--purchase-accent), var(--purchase-dark));
   border-color: var(--purchase-accent);
-  box-shadow: 0 6px 13px rgba(91, 62, 145, 0.27);
+  box-shadow: 0 6px 13px rgba(var(--app-accent-dark-rgb), 0.27);
 }
 
 @media (max-width: 767.98px) {
