@@ -6,6 +6,9 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Corregido — La rueda del ratón ya no cambia los montos
+- Un campo numérico enfocado cambiaba su valor al girar la rueda del ratón (con paso de 0.01, Q25,000.00 podía quedar en Q24,999.99 sin que nadie lo notara). Ahora la rueda no modifica ningún campo numérico del sistema (montos de recibos, límites de crédito, precios, porcentajes, cantidades). Las flechas del teclado siguen funcionando. Es la causa más probable de un cheque que se registró por Q24,999.99 en lugar de Q25,000.00.
+
 ### Cambiado — La proforma se bloquea cuando el pedido queda empacado
 - Desde la etapa **Empacado** (y en ruta) la proforma ya no se puede editar ni anular, para evitar trabajo repetido a los empacadores. Antes solo se bloqueaba al entregar y editar un pedido empacado lo devolvía a Confirmado. La lista de proformas muestra el candado y deshabilita el botón de editar, el formulario avisa, y el servidor rechaza el cambio con un mensaje claro. Para corregir un pedido empacado, bodega lo regresa a una etapa anterior. En *En preparación* y *Listo para empaque* se sigue pudiendo editar (con el reinicio a Confirmado).
 
