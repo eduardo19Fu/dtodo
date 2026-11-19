@@ -298,6 +298,13 @@
             <p class="discount-hint discount-hint-warning" *ngIf="avisoMinimo">
               <i class="fas fa-exclamation-triangle" aria-hidden="true"></i> {{ avisoMinimo }}
             </p>
+            <p class="discount-hint discount-hint-warning" *ngIf="propuestaTramos as tramos">
+              <i class="fas fa-layer-group" aria-hidden="true"></i>
+              Los {{ tramos.resto }} que sobran de los fardos cerrados no llevan el descuento de fardo.
+              <button type="button" class="btn-link" (click)="agregarPorTramos()">
+                Dividir: {{ tramos.fardos }} a {{ tramos.porcentajeFardo }} % y {{ tramos.resto }} a {{ tramos.porcentajeResto }} % (por ciento)
+              </button>
+            </p>
             <p class="discount-hint" *ngIf="opciones && opciones.precioMayorista">
               <i class="fas fa-info-circle" aria-hidden="true"></i>
               Precio de venta Q{{ opciones.precioVenta | number: '1.2-2' }} · precio mayorista

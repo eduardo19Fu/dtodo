@@ -6,6 +6,10 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Cambiado — Un producto en varias líneas y descuento por tramos (proformas)
+- Al agregar un producto que ya está en la proforma, si el descuento es **distinto** se crea una **línea aparte** (antes se sumaba la cantidad y se pisaba el descuento de la línea); con el mismo descuento se sigue sumando. El tope de stock se reparte entre todas las líneas del producto, también al editar una cantidad.
+- Con descuento de **fardo cerrado**, si la cantidad pasa de los fardos completos (por ejemplo 150 con fardo de 125), la pantalla propone **dividir**: los fardos con su descuento y el resto con el de por ciento. Es opcional: el vendedor decide si divide. Pendiente confirmar con el cliente que esa es la regla.
+
 ### Agregado — Segunda tanda de ajustes pedidos por el cliente
 - **Modalidad de entrega** de cada pedido mayorista: *Entrega en ruta*, *Recoge en tienda* o *Envío por transporte ajeno* (con el nombre del transporte). Solo la entrega en ruta pide piloto y entra a la nota de envío; las otras dos se cierran sin piloto. Script `23_modalidad_entrega_y_cotizacion.sql`.
 - **Cotización**: una proforma mayorista puede guardarse como cotización (solo precios): no es un pedido, no pide autorización ni crédito, no se factura ni recibe recibos, sale en el PDF como «COTIZACIÓN · SOLO PRECIOS» y se convierte en pedido con el botón de la lista (nace confirmada y vigente 15 días).

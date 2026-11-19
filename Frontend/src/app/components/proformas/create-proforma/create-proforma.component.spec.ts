@@ -357,6 +357,80 @@ describe('CreateProformaComponent - descuentos del cliente mayorista', () => {
     expect(component.proforma.itemsProforma[0].tipoDescuento).toBe('CATEGORIA');
   });
 
+  function elegirResma(stock: number = 500): void {
+    component.producto = Object.assign(new Producto(), { idProducto: 1, nombre: 'RESMA', precioVenta: 50, stock });
+  }
+
+  it('el mismo producto con otro descuento va en una línea aparte y con el mismo descuento se suma', () => {
+    component.cliente = new Cliente();
+    component.descuentoProducto = 5;
+    component.agregarLinea();
+
+    elegirResma();
+    component.cantidadProducto = 4;
+    component.descuentoProducto = 5;
+    component.agregarLinea();
+    expect(component.proforma.itemsProforma.length).toBe(1);
+    expect(component.proforma.itemsProforma[0].cantidad).toBe(14);
+
+    elegirResma();
+    component.cantidadProducto = 3;
+    component.descuentoProducto = 12;
+    component.agregarLinea();
+    expect(component.proforma.itemsProforma.length).toBe(2);
+    expect(component.proforma.itemsProforma.map(i => i.descuento)).toEqual([5, 12]);
+    expect(component.proforma.itemsProforma[0].cantidad).toBe(14);
+  });
+
+  it('el stock se reparte entre las líneas del mismo producto', () => {
+    component.cliente = new Cliente();
+    elegirResma(20);
+    component.cantidadProducto = 15;
+    component.descuentoProducto = 5;
+    component.agregarLinea();
+
+    elegirResma(20);
+    component.cantidadProducto = 10;
+    component.descuentoProducto = 12;
+    component.agregarLinea();
+
+    expect(component.proforma.itemsProforma.length).toBe(1);
+    expect(component.cantidadEnLineas(1)).toBe(15);
+    expect(component.cantidadEnLineas(1, 0)).toBe(0);
+  });
+
+  it('con más unidades que fardos cerrados propone dividir y agrega dos líneas, fardos y resto por ciento', () => {
+    descuentoService.getOpciones.and.returnValue(of(opciones({ opciones: [
+      { tipo: 'FARDO', etiqueta: 'Fardo', porcentaje: 20, niveles: [], cantidadMinima: 125, alcanzaMinimo: true, precio: null },
+      { tipo: 'CIENTO', etiqueta: 'Ciento', porcentaje: 12, niveles: [], cantidadMinima: 100, alcanzaMinimo: true, precio: null },
+      { tipo: 'MANUAL', etiqueta: 'Manual', porcentaje: null, niveles: [], cantidadMinima: null, alcanzaMinimo: true, precio: null }
+    ] })));
+    component.cliente = mayorista();
+    elegirResma();
+    component.cantidadProducto = 150;
+    component.cargarOpciones();
+    component.cambiarTipoDescuento('FARDO');
+
+    expect(component.propuestaTramos).toEqual({ fardos: 125, resto: 25, porcentajeFardo: 20, porcentajeResto: 12 });
+    component.agregarPorTramos();
+
+    const lineas = component.proforma.itemsProforma;
+    expect(lineas.map(l => [l.cantidad, l.descuento, l.tipoDescuento])).toEqual([[125, 20, 'FARDO'], [25, 12, 'CIENTO']]);
+  });
+
+  it('no propone dividir cuando la cantidad es de fardos exactos', () => {
+    descuentoService.getOpciones.and.returnValue(of(opciones({ opciones: [
+      { tipo: 'FARDO', etiqueta: 'Fardo', porcentaje: 20, niveles: [], cantidadMinima: 125, alcanzaMinimo: true, precio: null },
+      { tipo: 'CIENTO', etiqueta: 'Ciento', porcentaje: 12, niveles: [], cantidadMinima: 100, alcanzaMinimo: true, precio: null }
+    ] })));
+    component.cliente = mayorista();
+    component.cantidadProducto = 250;
+    component.cargarOpciones();
+    component.cambiarTipoDescuento('FARDO');
+
+    expect(component.propuestaTramos).toBeNull();
+  });
+
   it('avisa, sin bloquear, cuando la cantidad no llega al mínimo del descuento elegido', () => {
     component.cliente = mayorista();
     component.cargarOpciones();

@@ -182,6 +182,48 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
     return '';
   }
 
+  /**
+   * Cuando la cantidad pasa de los fardos cerrados, lo que sobra no lleva el descuento de fardo: se propone cobrarlo con el
+   * descuento por ciento del producto. Solo se propone; el vendedor decide si divide la línea.
+   */
+  get propuestaTramos(): { fardos: number; resto: number; porcentajeFardo: number; porcentajeResto: number } | null {
+    if (!this.opciones || this.tipoDescuento !== 'FARDO') {
+      return null;
+    }
+    const fardo = this.opciones.opciones.find(o => o.tipo === 'FARDO');
+    const ciento = this.opciones.opciones.find(o => o.tipo === 'CIENTO');
+    const tamano = fardo && Number(fardo.cantidadMinima);
+    const cantidad = Number(this.cantidadProducto);
+    if (!fardo || !ciento || !tamano || fardo.porcentaje === null || ciento.porcentaje === null
+      || !Number.isInteger(cantidad) || cantidad <= tamano || cantidad % tamano === 0) {
+      return null;
+    }
+    const resto = cantidad % tamano;
+    return { fardos: cantidad - resto, resto, porcentajeFardo: fardo.porcentaje, porcentajeResto: ciento.porcentaje };
+  }
+
+  /** Agrega dos líneas del mismo producto: los fardos cerrados con su descuento y el resto con el de por ciento. */
+  agregarPorTramos(): void {
+    const propuesta = this.propuestaTramos;
+    const producto = this.producto;
+    const opciones = this.opciones;
+    if (!propuesta || !producto) {
+      return;
+    }
+    if (this.cantidadEnLineas(producto.idProducto) + propuesta.fardos + propuesta.resto > Number(producto.stock)) {
+      swal.fire('Stock Insuficiente', 'No existen las suficientes existencias de este producto.', 'warning');
+      return;
+    }
+    this.cantidadProducto = propuesta.fardos;
+    this.agregarLinea();
+    this.producto = producto;
+    this.opciones = opciones;
+    this.tipoDescuento = 'CIENTO';
+    this.descuentoProducto = propuesta.porcentajeResto;
+    this.cantidadProducto = propuesta.resto;
+    this.agregarLinea();
+  }
+
   notaAbierta(item: DetalleProforma): boolean {
     return this.notasAbiertas.has(item);
   }
@@ -511,12 +553,13 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
           return;
         }
 
-        if (itemProforma.cantidad > this.producto.stock) {
+        // El stock se reparte entre todas las líneas del mismo producto (pueden ir con descuentos distintos).
+        if (this.cantidadEnLineas(this.producto.idProducto) + itemProforma.cantidad > this.producto.stock) {
           swal.fire('Stock Insuficiente', 'No existen las suficientes existencias de este producto.', 'warning');
           return;
         } else {
           if (itemProforma.cantidad && itemProforma.cantidad !== 0) {
-            if (this.existeItem(this.producto.idProducto)) {
+            if (this.existeLineaIgual(this.producto.idProducto, itemProforma.descuento, itemProforma.tipoDescuento)) {
               this.incrementaCantidad(this.producto.idProducto, itemProforma.cantidad, itemProforma.descuento,
                 itemProforma.tipoDescuento);
               this.producto = new Producto();
@@ -553,6 +596,18 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
       }
     });
     return existe;
+  }
+
+  /** Cantidad del producto sumando todas sus líneas, opcionalmente sin contar una (la que se está editando). */
+  cantidadEnLineas(idProducto: number, sinIndice: number = -1): number {
+    return this.proforma.itemsProforma.reduce((total, item, indice) =>
+      indice !== sinIndice && item.producto.idProducto === idProducto ? total + Number(item.cantidad) : total, 0);
+  }
+
+  /** Ya hay una línea del producto con ese mismo descuento: solo en ese caso se suma la cantidad; si no, va en una línea aparte. */
+  existeLineaIgual(id: number, descuento: number, tipoDescuento: TipoDescuento): boolean {
+    return this.proforma.itemsProforma.some(item => item.producto.idProducto === id
+      && Number(item.descuento) === Number(descuento) && item.tipoDescuento === tipoDescuento);
   }
 
   eliminarItem(index: number): void {
@@ -618,8 +673,9 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
         this.errorEdicionDetalle = 'La cantidad debe ser un número entero mayor a 0.';
         return;
       }
-      if (nuevoValor > Number(item.producto.stock)) {
-        this.errorEdicionDetalle = `La cantidad no puede superar el stock disponible (${item.producto.stock}).`;
+      const disponible = Number(item.producto.stock) - this.cantidadEnLineas(item.producto.idProducto, this.indiceDetalleEdicion);
+      if (nuevoValor > disponible) {
+        this.errorEdicionDetalle = `La cantidad no puede superar el stock disponible (${disponible}).`;
         return;
       }
       item.cantidad = nuevoValor;
@@ -654,7 +710,7 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
 
   get stockDetalleEdicion(): number {
     const item = this.proforma.itemsProforma[this.indiceDetalleEdicion];
-    return item ? Number(item.producto.stock) : 0;
+    return item ? Number(item.producto.stock) - this.cantidadEnLineas(item.producto.idProducto, this.indiceDetalleEdicion) : 0;
   }
 
   private cerrarEdicionDetalle(): void {
@@ -671,7 +727,7 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
 
   incrementaCantidad(idProducto: number, cantidad: number, descuento: number, tipoDescuento: TipoDescuento = 'MANUAL'): void {
     this.proforma.itemsProforma = this.proforma.itemsProforma.map((item: DetalleProforma) => {
-      if (idProducto === item.producto.idProducto) {
+      if (idProducto === item.producto.idProducto && Number(item.descuento) === Number(descuento) && item.tipoDescuento === tipoDescuento) {
         item.cantidad = item.cantidad + cantidad;
         item.descuento = descuento;
         item.tipoDescuento = tipoDescuento;
