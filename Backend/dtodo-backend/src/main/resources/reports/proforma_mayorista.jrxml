@@ -52,7 +52,7 @@ INNER JOIN usuarios AS us ON us.id_usuario = pr.id_usuario
 LEFT JOIN sucursales AS s ON s.id_sucursal = pr.id_sucursal
 LEFT JOIN rutas AS ru ON ru.id_ruta = pr.id_ruta
 WHERE pr.id_proforma =  $P{proformaId}
-ORDER BY p.nombre ASC]]>
+ORDER BY p.nombre ASC, prd.id_detalle ASC]]>
 	</queryString>
 	<field name="nombre" class="java.lang.String"/>
 	<field name="nombre_negocio" class="java.lang.String"/>

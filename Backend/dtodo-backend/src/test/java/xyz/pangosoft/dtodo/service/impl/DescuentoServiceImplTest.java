@@ -260,6 +260,23 @@ class DescuentoServiceImplTest {
     }
 
     @Test
+    void elMismoProductoAdmiteUnCientoSurtidoYCientosCerradosEnLineasSeparadas() {
+        mayorista(5, CategoriaClienteEnum.B);
+        niveles(CategoriaClienteEnum.B, "8.00");
+        descuentoProducto(TipoDescuentoEnum.CIENTO, 100, "24.40");
+        descuentoProducto(TipoDescuentoEnum.FARDO, 100, "33.00");
+        DetalleProforma surtido = linea(TipoDescuentoEnum.CIENTO, 24.4f, 100);
+        DetalleProforma cerrados = linea(TipoDescuentoEnum.FARDO, 33f, 200);
+
+        service.prepararLineas(proforma(5, surtido, cerrados));
+
+        assertEquals(TipoDescuentoEnum.CIENTO, surtido.getTipoDescuento());
+        assertEquals(TipoDescuentoEnum.FARDO, cerrados.getTipoDescuento());
+        assertEquals(bd("50.00"), surtido.getPrecioUnitario());
+        assertEquals(bd("50.00"), cerrados.getPrecioUnitario());
+    }
+
+    @Test
     void rechazaUnNivelQueNoEsDeLaCategoriaDelCliente() {
         mayorista(5, CategoriaClienteEnum.VOLUMEN);
         niveles(CategoriaClienteEnum.VOLUMEN, "12.00", "15.00", "20.00");

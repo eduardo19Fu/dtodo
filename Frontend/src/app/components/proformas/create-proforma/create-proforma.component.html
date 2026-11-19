@@ -337,6 +337,11 @@
           <span>Este pedido <strong>ya se entregó</strong>: la proforma no se puede modificar. Para corregir algo, usa una
             devolución o una nota de crédito.</span>
         </div>
+        <div class="autorizacion-aviso aviso-entregado" *ngIf="pedidoEmpacado" role="alert">
+          <i class="fas fa-lock" aria-hidden="true"></i>
+          <span>Este pedido <strong>ya está empacado</strong>: la proforma no se puede modificar. Si hay que corregirlo, pide a
+            bodega que lo regrese a una etapa anterior.</span>
+        </div>
         <div class="autorizacion-aviso" *ngIf="pedidoEnPreparacion" role="status">
           <i class="fas fa-dolly" aria-hidden="true"></i>
           <span>Bodega ya empezó a preparar este pedido. Si guardas los cambios volverá a <strong>Confirmado</strong> y

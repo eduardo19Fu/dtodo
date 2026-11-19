@@ -41,7 +41,8 @@
                p.cod_producto AS codigo,
                p.nombre AS producto,
                d.cantidad AS cantidad,
-               d.observacion AS observacion
+               d.observacion AS observacion,
+               CASE d.tipo_descuento WHEN 'CIENTO' THEN 'Por ciento' WHEN 'FARDO' THEN 'Fardo cerrado' ELSE NULL END AS tipo_precio
           FROM proformas pr
           INNER JOIN clientes c ON c.id_cliente = pr.id_cliente
           INNER JOIN usuarios u ON u.id_usuario = pr.id_usuario
@@ -49,7 +50,7 @@
           INNER JOIN productos p ON p.id_producto = d.id_producto
           LEFT JOIN rutas r ON r.id_ruta = pr.id_ruta
          WHERE pr.id_proforma = $P{ID_PROFORMA}
-         ORDER BY p.nombre
+         ORDER BY p.nombre, d.id_detalle
     ]]></queryString>
 
     <field name="no_proforma" class="java.lang.String"/>
@@ -67,6 +68,7 @@
     <field name="producto" class="java.lang.String"/>
     <field name="cantidad" class="java.lang.Integer"/>
     <field name="observacion" class="java.lang.String"/>
+    <field name="tipo_precio" class="java.lang.String"/>
 
     <variable name="TOTAL_UNIDADES" class="java.lang.Integer" calculation="Sum">
         <variableExpression><![CDATA[$F{cantidad}]]></variableExpression>
@@ -151,7 +153,7 @@
     <detail>
         <band height="26" splitType="Stretch">
             <textField isBlankWhenNull="true"><reportElement style="Cell" stretchType="RelativeToTallestObject" x="0" y="0" width="66" height="26"/><textElement textAlignment="Center"><font size="8"/></textElement><textFieldExpression><![CDATA[$F{codigo}]]></textFieldExpression></textField>
-            <textField isBlankWhenNull="true" textAdjust="StretchHeight"><reportElement style="Cell" stretchType="RelativeToTallestObject" x="66" y="0" width="214" height="26"/><textElement><font size="8.5"/></textElement><textFieldExpression><![CDATA[$F{producto}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true" textAdjust="StretchHeight"><reportElement style="Cell" stretchType="RelativeToTallestObject" x="66" y="0" width="214" height="26"/><textElement><font size="8.5"/></textElement><textFieldExpression><![CDATA[$F{producto} + ($F{tipo_precio} == null ? "" : "\n- " + $F{tipo_precio})]]></textFieldExpression></textField>
             <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" stretchType="RelativeToTallestObject" x="280" y="0" width="72" height="26"/><textElement textAlignment="Center"><font size="12" isBold="true"/></textElement><textFieldExpression><![CDATA[$F{cantidad}]]></textFieldExpression></textField>
             <textField isBlankWhenNull="true" textAdjust="StretchHeight"><reportElement style="Cell" stretchType="RelativeToTallestObject" x="352" y="0" width="166" height="26"/><textElement><font size="8" isItalic="true"/></textElement><textFieldExpression><![CDATA[$F{observacion}]]></textFieldExpression></textField>
             <staticText><reportElement style="Cell" stretchType="RelativeToTallestObject" x="518" y="0" width="38" height="26"/><text><![CDATA[]]></text></staticText>

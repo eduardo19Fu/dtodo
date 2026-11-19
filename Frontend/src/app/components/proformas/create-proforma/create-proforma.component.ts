@@ -138,10 +138,16 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
     return this.esProformaMayorista && (etapa === 'ENTREGADA' || etapa === 'ENTREGADA_PARCIAL');
   }
 
+  /** El pedido ya está empacado o en ruta: el servidor rechaza cualquier cambio hasta que bodega lo regrese a una etapa anterior. */
+  get pedidoEmpacado(): boolean {
+    const etapa = this.proforma.estadoPedido;
+    return this.esProformaMayorista && (etapa === 'EMPACADA' || etapa === 'EN_RUTA');
+  }
+
   /** Editar un pedido que bodega ya empezó a preparar lo devuelve a «Confirmado»: hay que imprimir de nuevo el picking. */
   get pedidoEnPreparacion(): boolean {
     const etapa = this.proforma.estadoPedido;
-    return this.esProformaMayorista && (etapa === 'EN_PREPARACION' || etapa === 'LISTO_PARA_EMPAQUE' || etapa === 'EMPACADA' || etapa === 'EN_RUTA');
+    return this.esProformaMayorista && (etapa === 'EN_PREPARACION' || etapa === 'LISTO_PARA_EMPAQUE');
   }
 
   /** Una línea mayorista con más del tope, que no sea precio mayorista fijo, deja la proforma pendiente de autorización. */

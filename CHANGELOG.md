@@ -6,6 +6,12 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Cambiado — La proforma se bloquea cuando el pedido queda empacado
+- Desde la etapa **Empacado** (y en ruta) la proforma ya no se puede editar ni anular, para evitar trabajo repetido a los empacadores. Antes solo se bloqueaba al entregar y editar un pedido empacado lo devolvía a Confirmado. La lista de proformas muestra el candado y deshabilita el botón de editar, el formulario avisa, y el servidor rechaza el cambio con un mensaje claro. Para corregir un pedido empacado, bodega lo regresa a una etapa anterior. En *En preparación* y *Listo para empaque* se sigue pudiendo editar (con el reinicio a Confirmado).
+
+### Cambiado — Un ciento surtido y cientos cerrados del mismo producto en un pedido
+- Un mismo código puede llevar, en el mismo pedido, un ciento surtido (descuento por ciento) y cientos cerrados (fardo cerrado) en líneas separadas, cada una con su precio; una prueba lo confirma. La proforma y la hoja de picking listan las líneas del mismo producto en el orden en que se agregaron. La hoja de picking y la lista de empaque indican bajo el producto el tipo de precio (**Por ciento** o **Fardo cerrado**) para distinguir qué líneas son surtidas y cuáles cerradas.
+
 ### Corregido — Hoja de picking cortaba las cantidades de 4 cifras
 - En la hoja de picking, una cantidad como 1,000 salía como «1,00» porque la columna Cant. era muy angosta para el número en negrita. La columna es más ancha (también cabe 12,500) y una prueba verifica que ningún texto del picking salga cortado.
 

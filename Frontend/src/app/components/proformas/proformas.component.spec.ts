@@ -32,6 +32,12 @@ describe('ProformasComponent - etapa del pedido mayorista', () => {
     expect(component.entregada({ estadoPedido: 'ENTREGADA' } as any)).toBeTrue();
     expect(component.entregada({ estadoPedido: 'ENTREGADA_PARCIAL' } as any)).toBeTrue();
     expect(component.entregada({ estadoPedido: 'EN_RUTA' } as any)).toBeFalse();
+    expect(component.bloqueada({ estadoPedido: 'EMPACADA' } as any)).toBeTrue();
+    expect(component.bloqueada({ estadoPedido: 'EN_RUTA' } as any)).toBeTrue();
+    expect(component.bloqueada({ estadoPedido: 'ENTREGADA' } as any)).toBeTrue();
+    expect(component.bloqueada({ estadoPedido: 'LISTO_PARA_EMPAQUE' } as any)).toBeFalse();
+    expect(component.bloqueada({ estadoPedido: 'EN_PREPARACION' } as any)).toBeFalse();
+    expect(component.textoBloqueo({ estadoPedido: 'EMPACADA' } as any)).toContain('empacado');
     expect(component.entregada({} as any)).toBeFalse();
   });
 

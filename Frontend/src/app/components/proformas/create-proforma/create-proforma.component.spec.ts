@@ -697,8 +697,13 @@ describe('CreateProformaComponent - autorización y motivo de cambios', () => {
 
   it('avisa que editar un pedido en preparación lo devuelve a confirmado', () => {
     component.cliente = mayoristaConRuta();
-    component.proforma.estadoPedido = 'EMPACADA';
+    component.proforma.estadoPedido = 'EN_PREPARACION';
     expect(component.pedidoEnPreparacion).toBeTrue();
+    expect(component.pedidoEmpacado).toBeFalse();
+
+    component.proforma.estadoPedido = 'EMPACADA';
+    expect(component.pedidoEnPreparacion).toBeFalse();
+    expect(component.pedidoEmpacado).toBeTrue();
 
     component.proforma.estadoPedido = 'CONFIRMADA';
     expect(component.pedidoEnPreparacion).toBeFalse();

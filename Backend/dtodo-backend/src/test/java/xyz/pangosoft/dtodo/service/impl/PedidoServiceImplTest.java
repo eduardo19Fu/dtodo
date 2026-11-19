@@ -238,9 +238,19 @@ class PedidoServiceImplTest {
         entregado.setEstadoPedido(EstadoPedidoEnum.ENTREGADA_PARCIAL);
         assertThrows(ReglaNegocioException.class, () -> service.exigirEditable(entregado));
 
-        Proforma enRuta = new Proforma();
-        enRuta.setEstadoPedido(EstadoPedidoEnum.EN_RUTA);
-        service.exigirEditable(enRuta);
+        for (EstadoPedidoEnum etapa : new EstadoPedidoEnum[] { EstadoPedidoEnum.EMPACADA, EstadoPedidoEnum.EN_RUTA }) {
+            Proforma empacado = new Proforma();
+            empacado.setNoProforma("8P");
+            empacado.setEstadoPedido(etapa);
+            ReglaNegocioException error = assertThrows(ReglaNegocioException.class, () -> service.exigirEditable(empacado));
+            assertTrue(error.getMessage().contains("empacado"), etapa.name());
+        }
+        for (EstadoPedidoEnum etapa : new EstadoPedidoEnum[] { EstadoPedidoEnum.CONFIRMADA, EstadoPedidoEnum.EN_PREPARACION,
+                EstadoPedidoEnum.LISTO_PARA_EMPAQUE }) {
+            Proforma enCurso = new Proforma();
+            enCurso.setEstadoPedido(etapa);
+            service.exigirEditable(enCurso);
+        }
         service.exigirEditable(new Proforma());
         service.exigirEditable(null);
     }

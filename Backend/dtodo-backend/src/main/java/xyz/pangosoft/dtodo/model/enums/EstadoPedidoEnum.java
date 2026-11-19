@@ -53,6 +53,14 @@ public enum EstadoPedidoEnum {
         }
     }
 
+    /**
+     * Desde que el pedido queda empacado la proforma ya no se edita: bodega terminó su trabajo y un cambio lo echaría a perder.
+     * Para corregirla, bodega debe regresar el pedido a una etapa anterior.
+     */
+    public boolean bloqueaEdicion() {
+        return this == EMPACADA || this == EN_RUTA || entregado();
+    }
+
     /** Ya se entregó, completa o en parte: el pedido deja de poder modificarse. */
     public boolean entregado() {
         return this == ENTREGADA_PARCIAL || this == ENTREGADA;

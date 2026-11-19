@@ -141,6 +141,21 @@ export class ProformasComponent implements OnInit, OnDestroy {
     return proforma.estadoPedido === 'ENTREGADA' || proforma.estadoPedido === 'ENTREGADA_PARCIAL';
   }
 
+  /** Empacado o en ruta: bodega ya terminó y la proforma no se puede modificar (para corregirla, bodega regresa el pedido). */
+  empacada(proforma: ProformaDto): boolean {
+    return proforma.estadoPedido === 'EMPACADA' || proforma.estadoPedido === 'EN_RUTA';
+  }
+
+  /** La proforma ya no se puede editar: el pedido se empacó o se entregó. */
+  bloqueada(proforma: ProformaDto): boolean {
+    return this.entregada(proforma) || this.empacada(proforma);
+  }
+
+  textoBloqueo(proforma: ProformaDto): string {
+    return this.entregada(proforma) ? 'El pedido ya se entregó: la proforma no se puede modificar'
+      : 'El pedido ya está empacado: la proforma no se puede modificar. Bodega debe regresarlo a una etapa anterior para corregirlo';
+  }
+
   /** Una cotización es solo de precios: no es un pedido y no se factura hasta que se convierta. */
   esCotizacion(proforma: ProformaDto): boolean {
     return !!proforma.esCotizacion;

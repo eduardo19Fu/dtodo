@@ -113,6 +113,24 @@ class PedidoDocumentosTemplateTest {
 
     @Test
     @SuppressWarnings("unchecked")
+    void elPickingIndicaElTipoDePrecioCuandoEsPorCientoOFardoCerrado() throws Exception {
+        JasperReport reporte = compilar("/reports/pedido_bodega.jrxml");
+        Map<String, Object> surtido = linea("CHINA-5", "PAPEL CHINA COLORES", 100, "colores surtidos");
+        surtido.put("tipo_precio", "Por ciento");
+        Map<String, Object> cerrado = linea("CHINA-5", "PAPEL CHINA COLORES", 200, null);
+        cerrado.put("tipo_precio", "Fardo cerrado");
+        Map<String, Object> normal = linea("A-1", "REGLA", 5, null);
+
+        TextosImpresos textos = new TextosImpresos(llenar(reporte, parametros("PICKING"), surtido, cerrado, normal));
+
+        assertTrue(textos.contiene("Por ciento"));
+        assertTrue(textos.contiene("Fardo cerrado"));
+        assertEquals(2, textos.todos().stream().filter(t -> t != null && t.startsWith("PAPEL CHINA COLORES")).count());
+        assertFalse(textos.todos().stream().anyMatch(t -> t != null && t.startsWith("REGLA") && t.contains("- ")));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
     void elEmpaqueSiMuestraLaObservacionGeneralYPideBultos() throws Exception {
         JasperReport reporte = compilar("/reports/pedido_bodega.jrxml");
 

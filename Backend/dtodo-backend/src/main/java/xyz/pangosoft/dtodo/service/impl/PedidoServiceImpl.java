@@ -217,10 +217,15 @@ public class PedidoServiceImpl implements IPedidoService {
 
     @Override
     public void exigirEditable(Proforma proforma) {
-        if (proforma != null && proforma.getEstadoPedido() != null && proforma.getEstadoPedido().entregado()) {
+        if (proforma == null || proforma.getEstadoPedido() == null || !proforma.getEstadoPedido().bloqueaEdicion()) {
+            return;
+        }
+        if (proforma.getEstadoPedido().entregado()) {
             throw new ReglaNegocioException("El pedido " + proforma.getNoProforma()
                     + " ya se entregó y la proforma no se puede modificar.");
         }
+        throw new ReglaNegocioException("El pedido " + proforma.getNoProforma() + " ya está empacado y la proforma no se puede "
+                + "modificar. Si hay que corregirlo, bodega debe regresarlo a una etapa anterior.");
     }
 
     private Proforma cargarPedido(Long idProforma) {

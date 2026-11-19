@@ -149,8 +149,8 @@
             </span>
             <span *ngIf="etapaPedido(proforma) && proforma.idEstado !== 4" class="listing-status-pill etapa-pedido-pill"
                   [ngClass]="entregada(proforma) ? 'listing-status-success' : 'listing-status-info'"
-                  [title]="entregada(proforma) ? 'El pedido ya se entregó: la proforma no se puede modificar' : 'Etapa del pedido'">
-              <i class="fas" [ngClass]="entregada(proforma) ? 'fa-lock' : 'fa-dolly'" aria-hidden="true"></i> {{etapaPedido(proforma)}}
+                  [title]="bloqueada(proforma) ? textoBloqueo(proforma) : 'Etapa del pedido'">
+              <i class="fas" [ngClass]="bloqueada(proforma) ? 'fa-lock' : 'fa-dolly'" aria-hidden="true"></i> {{etapaPedido(proforma)}}
             </span>
             <span *ngIf="proforma.estadoAutorizacion === 'PENDIENTE' || proforma.estadoAutorizacion === 'RECHAZADA'"
                   class="listing-status-pill autorizacion-pill"
@@ -186,11 +186,11 @@
               <i class="fas" [ngClass]="imprimiendoId === proforma.idProforma ? 'fa-spinner fa-spin' : 'fa-print'"></i>
             </button>
             <button class="btn btn-sm table-action action-edit" type="button"
-                    [appTooltip]="entregada(proforma) ? 'Ya se entregó: la proforma no se puede editar' : 'Editar proforma'"
+                    [appTooltip]="bloqueada(proforma) ? textoBloqueo(proforma) : 'Editar proforma'"
                     aria-label="Editar proforma"
                     *ngIf="auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_INVENTARIO') || (auth.hasRole('ROLE_VENDEDOR') && !facturada(proforma))"
-                    [disabled]="entregada(proforma)"
-                    [routerLink]="entregada(proforma) ? null : ['/proformas/create', proforma.idProforma]">
+                    [disabled]="bloqueada(proforma)"
+                    [routerLink]="bloqueada(proforma) ? null : ['/proformas/create', proforma.idProforma]">
               <i class="fas fa-edit"></i>
             </button>
             <button class="btn btn-sm table-action action-convert" type="button" *ngIf="esCotizacion(proforma) && proforma.idEstado !== 4 && (auth.hasRole('ROLE_ADMIN') || auth.hasRole('ROLE_INVENTARIO') || auth.hasRole('ROLE_VENDEDOR'))"
