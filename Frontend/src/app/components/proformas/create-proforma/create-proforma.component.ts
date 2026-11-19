@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
 
 import { Producto } from '../../../models/producto';
 import { Cliente } from '../../../models/cliente';
@@ -437,10 +438,27 @@ export class CreateProformaComponent implements OnInit {
             return item;
           });
           this.recalcularTotal();
+          this.actualizarStockDeLineas();
         }
       }, error => {
         swal.fire(`Error: ${error.error.status}`, `${error.error.message}`, 'error');
       }
+    );
+  }
+
+  /**
+   * Los productos de una proforma guardada traen la columna legada `productos.stock`, que ya no se mantiene.
+   * Se vuelve a consultar cada producto (con la sucursal activa) para que la edición de cantidad
+   * valide contra las existencias reales y no contra ese valor desactualizado.
+   */
+  actualizarStockDeLineas(): void {
+    const items = this.proforma.itemsProforma || [];
+    if (items.length === 0) {
+      return;
+    }
+
+    forkJoin(items.map(item => this.productoService.getProductoByCode(item.producto.codProducto))).subscribe(
+      productos => productos.forEach((producto, index) => items[index].producto.stock = producto.stock)
     );
   }
 
