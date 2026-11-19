@@ -5,6 +5,9 @@ import { Cliente } from '../../../models/cliente';
 import { OpcionesDescuento } from '../../../dtos/descuento-dto';
 import { DetalleProforma } from '../../../models/detalle-proforma';
 import { Producto } from '../../../models/producto';
+import { Proforma } from '../../../models/proforma';
+import { ProductoService } from '../../../services/producto.service';
+import { ProformaService } from '../../../services/proformas/proforma.service';
 import { CreateProformaComponent } from './create-proforma.component';
 import swal from 'sweetalert2';
 
@@ -629,5 +632,91 @@ describe('CreateProformaComponent - autorización y motivo de cambios', () => {
     component.proforma.estadoPedido = 'EN_RUTA';
     component.cliente = new Cliente();
     expect(component.pedidoEnPreparacion).toBeFalse();
+  });
+});
+
+describe('CreateProformaComponent - stock de una proforma guardada', () => {
+  let component: CreateProformaComponent;
+  let productoService: jasmine.SpyObj<ProductoService>;
+  let proformaService: jasmine.SpyObj<ProformaService>;
+
+  const nuevaLinea = (codigo: string, stockLegado: number, cantidad: number): DetalleProforma => {
+    const producto = new Producto();
+    producto.idProducto = 1;
+    producto.codProducto = codigo;
+    producto.nombre = 'Producto ' + codigo;
+    producto.precioVenta = 10;
+    producto.stock = stockLegado;
+
+    const linea = new DetalleProforma();
+    linea.producto = producto;
+    linea.cantidad = cantidad;
+    linea.descuento = 0;
+    linea.subTotal = linea.calcularImporte();
+    linea.subTotalDescuento = linea.calcularImporteDescuento();
+    linea.nuevoPrecioVenta = linea.calcularNuevoPrecioVenta();
+    return linea;
+  };
+
+  const productoConStock = (codigo: string, stock: number): Producto => {
+    const producto = new Producto();
+    producto.codProducto = codigo;
+    producto.stock = stock;
+    return producto;
+  };
+
+  beforeEach(() => {
+    productoService = jasmine.createSpyObj<ProductoService>('ProductoService', ['getProductoByCode']);
+    proformaService = jasmine.createSpyObj<ProformaService>('ProformaService', ['getProforma']);
+    component = new CreateProformaComponent(proformaService, productoService, null, null, null, null, null, null, null);
+  });
+
+  it('permite editar por encima del stock legado cuando las existencias reales alcanzan', () => {
+    component.proforma.itemsProforma = [nuevaLinea('712L', 23, 3)];
+    productoService.getProductoByCode.and.returnValue(of(productoConStock('712L', 933)));
+
+    component.actualizarStockDeLineas();
+    component.abrirEdicionDetalle(0, 'cantidad', document.createElement('button'));
+    component.valorDetalleNuevo = 66;
+    component.confirmarEdicionDetalle();
+
+    expect(productoService.getProductoByCode).toHaveBeenCalledWith('712L');
+    expect(component.proforma.itemsProforma[0].cantidad).toBe(66);
+    expect(component.errorEdicionDetalle).toBe('');
+  });
+
+  it('rechaza una cantidad mayor a las existencias reales aunque el stock legado sea más alto', () => {
+    component.proforma.itemsProforma = [nuevaLinea('7891040321230', 23, 1)];
+    productoService.getProductoByCode.and.returnValue(of(productoConStock('7891040321230', 6)));
+
+    component.actualizarStockDeLineas();
+    component.abrirEdicionDetalle(0, 'cantidad', document.createElement('button'));
+    component.valorDetalleNuevo = 10;
+    component.confirmarEdicionDetalle();
+
+    expect(component.proforma.itemsProforma[0].cantidad).toBe(1);
+    expect(component.errorEdicionDetalle).toContain('(6)');
+  });
+
+  it('actualiza el stock de cada línea al cargar una proforma guardada', () => {
+    const guardada = new Proforma();
+    guardada.idProforma = 7;
+    guardada.cliente = new Cliente();
+    guardada.itemsProforma = [nuevaLinea('A', 32, 2), nuevaLinea('B', 23, 1)];
+    proformaService.getProforma.and.returnValue(of(guardada));
+    productoService.getProductoByCode.and.callFake((codigo: string) =>
+      of(productoConStock(codigo, codigo === 'A' ? 193 : 5)));
+
+    component.buscarProformaPorId(7);
+
+    expect(component.proforma.itemsProforma.map(i => i.producto.stock)).toEqual([193, 5]);
+  });
+
+  it('no consulta productos cuando la proforma no tiene líneas', () => {
+    component.proforma.itemsProforma = [];
+
+    component.actualizarStockDeLineas();
+
+    expect(productoService.getProductoByCode).not.toHaveBeenCalled();
   });
 });
