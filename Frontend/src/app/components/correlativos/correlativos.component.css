@@ -32,7 +32,7 @@ select.page-size-select:focus {
 .document-pagination .page-item:not(.active):not(.disabled) .page-link:hover,
 .document-pagination .page-item:not(.active):not(.disabled) .page-link:focus {
   background: var(--invoice-tint);
-  border-color: #d8bd81;
+  border-color: var(--app-hover-border);
   box-shadow: 0 4px 10px rgba(var(--app-accent-rgb), 0.13);
   color: var(--invoice-dark);
 }

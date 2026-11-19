@@ -41,12 +41,12 @@
 }
 .quick-client-heading .modal-title { color: #fff; font-size: 24px; font-weight: 700; line-height: 1.25; }
 .quick-client-close {
-  align-items: center; background: rgba(10, 53, 34, 0.24); border: 1px solid rgba(255, 255, 255, 0.22);
+  align-items: center; background: rgba(var(--app-accent-dark-rgb), 0.24); border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 10px; color: #fff; display: flex; height: 40px; justify-content: center;
   position: relative; transition: background 0.2s ease, transform 0.2s ease; width: 40px; z-index: 2;
 }
 .quick-client-close:hover,
-.quick-client-close:focus { background: rgba(10, 53, 34, 0.44); color: #fff; outline: 0; transform: translateY(-1px); }
+.quick-client-close:focus { background: rgba(var(--app-accent-dark-rgb), 0.44); color: #fff; outline: 0; transform: translateY(-1px); }
 
 .quick-client-body { background: #fcfefd; padding: 24px 28px 26px; }
 .quick-client-intro {

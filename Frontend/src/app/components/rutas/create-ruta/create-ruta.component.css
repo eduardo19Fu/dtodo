@@ -63,7 +63,7 @@
 }
 .route-form-page .form-actions { flex-wrap: wrap; gap: 16px; }
 .route-cancel-action { border: 1px solid #cbd6e2; border-radius: 9px; color: #344459; font-size: 14px; font-weight: 600; padding: 10px 20px; text-align: center; }
-.route-cancel-action:hover { background: #edf3f0; color: var(--app-blue-900); }
+.route-cancel-action:hover { background: var(--app-blue-50); color: var(--app-blue-900); }
 .route-form-page a:focus-visible,
 .route-form-page button:focus-visible,
 .route-form-page input:focus-visible,

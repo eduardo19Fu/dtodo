@@ -36,7 +36,7 @@ select.page-size-select:focus {
 .listing-pagination .page-item:not(.active):not(.disabled) .page-link:hover,
 .listing-pagination .page-item:not(.active):not(.disabled) .page-link:focus {
   background: var(--user-tint);
-  border-color: #d9aab1;
+  border-color: var(--app-hover-border);
   box-shadow: 0 4px 10px rgba(var(--app-accent-dark-rgb), 0.13);
   color: var(--user-dark);
 }

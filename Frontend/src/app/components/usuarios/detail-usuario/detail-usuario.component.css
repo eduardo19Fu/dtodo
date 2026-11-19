@@ -128,7 +128,7 @@
 
 .profile-summary {
   align-items: center;
-  background: linear-gradient(135deg, #fdf3f4, var(--app-blue-50));
+  background: linear-gradient(135deg, var(--app-blue-50), var(--app-blue-50));
   border: 1px solid #efdadd;
   border-radius: 13px;
   display: flex;
@@ -273,7 +273,7 @@
 .sucursal-edit-button:hover,
 .sucursal-edit-button:focus {
   background: var(--green-50);
-  border-color: #ead2d6;
+  border-color: var(--app-border);
   color: var(--green-800);
   outline: 0;
 }
@@ -301,7 +301,7 @@
 }
 
 .sucursal-select:hover {
-  border-color: #dcb8be;
+  border-color: var(--app-hover-border);
 }
 
 .sucursal-select:focus {
@@ -355,7 +355,7 @@
 
 .sucursal-cancel-button:not(:disabled):hover,
 .sucursal-cancel-button:not(:disabled):focus {
-  background: #e7e0da;
+  background: var(--app-border);
   outline: 0;
 }
 

@@ -122,7 +122,7 @@
 
 .profile-summary {
   align-items: center;
-  background: linear-gradient(135deg, #f5f1fa, #fbf9fd);
+  background: linear-gradient(135deg, var(--app-blue-50), var(--app-blue-50));
   border: 1px solid var(--app-border);
   border-radius: 13px;
   display: flex;
@@ -320,7 +320,7 @@
 .close-action:hover,
 .close-action:focus {
   background: var(--green-50);
-  border-color: #ad9acb;
+  border-color: var(--app-hover-border);
   color: var(--green-900);
   outline: 0;
 }

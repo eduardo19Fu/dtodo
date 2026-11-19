@@ -91,7 +91,7 @@ select.page-size-select.filter-select { min-width: 190px; width: auto; }
 
 .btn.listing-primary-action:hover,
 .btn.listing-primary-action:focus {
-  background: linear-gradient(135deg, #c98339, var(--warehouse-dark));
+  background: linear-gradient(135deg, var(--app-blue-500), var(--warehouse-dark));
   border-color: var(--warehouse-accent);
   box-shadow: 0 9px 19px rgba(var(--app-accent-dark-rgb), 0.33);
 }

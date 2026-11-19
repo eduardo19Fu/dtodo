@@ -100,9 +100,9 @@
 .secondary-action:hover,
 .secondary-action:focus {
   background: var(--app-tint);
-  border-color: #c49a48;
+  border-color: var(--app-hover-border);
   box-shadow: 0 6px 14px rgba(var(--app-accent-rgb), 0.15);
-  color: #6f4f13;
+  color: var(--app-accent-dark);
   transform: translateY(-1px);
 }
 

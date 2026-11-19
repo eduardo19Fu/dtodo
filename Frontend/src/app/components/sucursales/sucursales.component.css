@@ -86,7 +86,7 @@
 
 .btn.listing-primary-action:hover,
 .btn.listing-primary-action:focus {
-  background: linear-gradient(135deg, #5e7e96, var(--branch-dark));
+  background: linear-gradient(135deg, var(--app-blue-500), var(--branch-dark));
   border-color: var(--branch-accent);
   box-shadow: 0 9px 19px rgba(var(--app-accent-dark-rgb), 0.33);
 }

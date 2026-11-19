@@ -100,7 +100,7 @@
 
 .btn.listing-primary-action:hover,
 .btn.listing-primary-action:focus {
-  background: linear-gradient(135deg, #469b76, var(--client-dark));
+  background: linear-gradient(135deg, var(--app-blue-500), var(--client-dark));
   border-color: var(--client-accent);
   box-shadow: 0 9px 19px rgba(var(--app-accent-rgb), 0.33);
 }
@@ -122,7 +122,7 @@ select.page-size-select:focus {
 .listing-pagination .page-item:not(.active):not(.disabled) .page-link:hover,
 .listing-pagination .page-item:not(.active):not(.disabled) .page-link:focus {
   background: var(--client-tint);
-  border-color: #a5cbb7;
+  border-color: var(--app-hover-border);
   box-shadow: 0 4px 10px rgba(var(--app-accent-rgb), 0.13);
   color: var(--client-dark);
 }

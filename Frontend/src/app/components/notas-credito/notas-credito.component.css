@@ -1119,7 +1119,7 @@
 .document-pagination .page-item:not(.active):not(.disabled) .page-link:hover,
 .document-pagination .page-item:not(.active):not(.disabled) .page-link:focus {
     background: var(--app-tint);
-    border-color: #d9a6c5;
+    border-color: var(--app-hover-border);
     box-shadow: 0 4px 10px rgba(var(--app-accent-dark-rgb), 0.13);
     color: var(--app-blue-800);
     outline: 0;

@@ -1,7 +1,7 @@
 :host {
   --np-ink: #2c2438;
   --np-muted: #7c7288;
-  --np-border: #e6dcee;
+  --np-border: var(--app-border);
 }
 
 .np-dialog {
@@ -141,7 +141,7 @@
 
 .field-group .form-control:focus {
   border-color: var(--purple-600);
-  box-shadow: 0 0 0 3px rgba(128, 68, 175, 0.14);
+  box-shadow: 0 0 0 3px rgba(var(--app-accent-rgb), 0.14);
   outline: 0;
 }
 
@@ -229,7 +229,7 @@
   background: #fff;
   border: 1.5px solid var(--purple-600);
   border-radius: 11px;
-  box-shadow: 0 0 0 4px var(--purple-50), 0 10px 22px rgba(87, 39, 124, 0.14);
+  box-shadow: 0 0 0 4px var(--purple-50), 0 10px 22px rgba(var(--app-accent-dark-rgb), 0.14);
   padding: 12px 14px 14px;
   position: relative;
 }
@@ -262,7 +262,7 @@
 
 .np-result-control .form-control:focus {
   border-color: var(--purple-600);
-  box-shadow: 0 0 0 3px rgba(128, 68, 175, 0.14);
+  box-shadow: 0 0 0 3px rgba(var(--app-accent-rgb), 0.14);
 }
 
 .product-picker-footer {
@@ -292,8 +292,8 @@
 
 .np-cancel {
   background: #fff;
-  border: 1px solid #d7c4e6;
-  color: #6a5580;
+  border: 1px solid var(--app-border);
+  color: var(--app-accent-dark);
 }
 
 .np-cancel:hover,
@@ -305,14 +305,14 @@
 .np-submit {
   background: linear-gradient(120deg, var(--purple-800), var(--purple-600));
   border: 0;
-  box-shadow: 0 8px 18px rgba(87, 39, 124, 0.26);
+  box-shadow: 0 8px 18px rgba(var(--app-accent-dark-rgb), 0.26);
   color: #fff;
   min-width: 190px;
 }
 
 .np-submit:hover,
 .np-submit:focus {
-  box-shadow: 0 11px 22px rgba(87, 39, 124, 0.34);
+  box-shadow: 0 11px 22px rgba(var(--app-accent-dark-rgb), 0.34);
   color: #fff;
   transform: translateY(-1px);
 }
