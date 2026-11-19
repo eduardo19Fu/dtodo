@@ -6,6 +6,9 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Corregido — Hoja de picking cortaba las cantidades de 4 cifras
+- En la hoja de picking, una cantidad como 1,000 salía como «1,00» porque la columna Cant. era muy angosta para el número en negrita. La columna es más ancha (también cabe 12,500) y una prueba verifica que ningún texto del picking salga cortado.
+
 ### Cambiado — Autorizaciones: se ven los productos con descuento
 - En **Descuentos por autorizar**, cada proforma tiene una flecha que despliega los productos que pasan del tope: producto, código, cantidad, precio, descuento, tipo y cuánto se deja de cobrar. La fila indica cuántos productos pasan del tope. Ya no hace falta abrir la proforma para editarla y saber a quién se le aplica el descuento.
 

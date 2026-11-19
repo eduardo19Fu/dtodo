@@ -142,8 +142,8 @@
             </rectangle>
             <staticText><reportElement x="0" y="0" width="66" height="24" forecolor="#FFFFFF"/><textElement textAlignment="Center" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Código]]></text></staticText>
             <staticText><reportElement x="66" y="0" width="214" height="24" forecolor="#FFFFFF"/><textElement verticalAlignment="Middle"><font size="8" isBold="true"/><paragraph leftIndent="5"/></textElement><text><![CDATA[Producto]]></text></staticText>
-            <staticText><reportElement x="280" y="0" width="46" height="24" forecolor="#FFFFFF"/><textElement textAlignment="Center" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Cant.]]></text></staticText>
-            <staticText><reportElement x="326" y="0" width="192" height="24" forecolor="#FFFFFF"/><textElement verticalAlignment="Middle"><font size="8" isBold="true"/><paragraph leftIndent="5"/></textElement><text><![CDATA[Observación]]></text></staticText>
+            <staticText><reportElement x="280" y="0" width="72" height="24" forecolor="#FFFFFF"/><textElement textAlignment="Center" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Cant.]]></text></staticText>
+            <staticText><reportElement x="352" y="0" width="166" height="24" forecolor="#FFFFFF"/><textElement verticalAlignment="Middle"><font size="8" isBold="true"/><paragraph leftIndent="5"/></textElement><text><![CDATA[Observación]]></text></staticText>
             <staticText><reportElement x="518" y="0" width="38" height="24" forecolor="#FFFFFF"/><textElement textAlignment="Center" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Listo]]></text></staticText>
         </band>
     </columnHeader>
@@ -152,8 +152,8 @@
         <band height="26" splitType="Stretch">
             <textField isBlankWhenNull="true"><reportElement style="Cell" stretchType="RelativeToTallestObject" x="0" y="0" width="66" height="26"/><textElement textAlignment="Center"><font size="8"/></textElement><textFieldExpression><![CDATA[$F{codigo}]]></textFieldExpression></textField>
             <textField isBlankWhenNull="true" textAdjust="StretchHeight"><reportElement style="Cell" stretchType="RelativeToTallestObject" x="66" y="0" width="214" height="26"/><textElement><font size="8.5"/></textElement><textFieldExpression><![CDATA[$F{producto}]]></textFieldExpression></textField>
-            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" stretchType="RelativeToTallestObject" x="280" y="0" width="46" height="26"/><textElement textAlignment="Center"><font size="12" isBold="true"/></textElement><textFieldExpression><![CDATA[$F{cantidad}]]></textFieldExpression></textField>
-            <textField isBlankWhenNull="true" textAdjust="StretchHeight"><reportElement style="Cell" stretchType="RelativeToTallestObject" x="326" y="0" width="192" height="26"/><textElement><font size="8" isItalic="true"/></textElement><textFieldExpression><![CDATA[$F{observacion}]]></textFieldExpression></textField>
+            <textField pattern="#,##0" isBlankWhenNull="true"><reportElement style="Cell" stretchType="RelativeToTallestObject" x="280" y="0" width="72" height="26"/><textElement textAlignment="Center"><font size="12" isBold="true"/></textElement><textFieldExpression><![CDATA[$F{cantidad}]]></textFieldExpression></textField>
+            <textField isBlankWhenNull="true" textAdjust="StretchHeight"><reportElement style="Cell" stretchType="RelativeToTallestObject" x="352" y="0" width="166" height="26"/><textElement><font size="8" isItalic="true"/></textElement><textFieldExpression><![CDATA[$F{observacion}]]></textFieldExpression></textField>
             <staticText><reportElement style="Cell" stretchType="RelativeToTallestObject" x="518" y="0" width="38" height="26"/><text><![CDATA[]]></text></staticText>
             <!-- casilla para marcar lo ya preparado -->
             <rectangle radius="3">

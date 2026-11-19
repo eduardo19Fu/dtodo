@@ -2,6 +2,7 @@ package xyz.pangosoft.dtodo.reports;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -87,6 +88,27 @@ class PedidoDocumentosTemplateTest {
         assertTrue(textos.contiene("Preparó:"));
         assertFalse(textos.contiene("Observaciones del pedido"));
         assertFalse(textos.contiene("Q "));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void laCantidadDelPickingNoSeCortaConCuatroOMasCifras() throws Exception {
+        JasperReport reporte = compilar("/reports/pedido_bodega.jrxml");
+
+        net.sf.jasperreports.engine.JasperPrint print = llenar(reporte, parametros("PICKING"),
+                linea("A-1", "CUADERNO ARIMANY", 1000, null), linea("B-2", "PAPEL CHINA", 12500, null), linea("C-3", "REGLA", 200, null));
+
+        for (net.sf.jasperreports.engine.JRPrintPage pagina : print.getPages()) {
+            for (net.sf.jasperreports.engine.JRPrintElement elemento : pagina.getElements()) {
+                if (elemento instanceof net.sf.jasperreports.engine.JRPrintText) {
+                    net.sf.jasperreports.engine.JRPrintText texto = (net.sf.jasperreports.engine.JRPrintText) elemento;
+                    assertNull(texto.getTextTruncateIndex(), "Texto cortado en el picking: " + texto.getFullText());
+                }
+            }
+        }
+        TextosImpresos textos = new TextosImpresos(print);
+        assertTrue(textos.contiene("1,000"));
+        assertTrue(textos.contiene("12,500"));
     }
 
     @Test
