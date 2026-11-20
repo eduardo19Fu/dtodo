@@ -495,6 +495,37 @@ describe('CreateProformaComponent - descuentos del cliente mayorista', () => {
     expect(component.tipoDescuento).toBe('MANUAL');
     expect(component.descuentoEditable).toBeTrue();
   });
+
+  it('muestra el precio unitario con el descuento aplicado, sin redondearlo a centavos', () => {
+    component.opciones = opciones({ precioVenta: 0.5 });
+
+    // Papel china a Q0.50 con 33 % de fardo queda en Q0.335
+    expect(component.precioConPorcentaje(33)).toBe(0.335);
+    expect(component.textoPrecioUnidad(0.335)).toBe('Q0.335 c/u');
+    expect(component.textoPrecioUnidad(0.4)).toBe('Q0.40 c/u');
+    expect(component.textoPrecioUnidad(12)).toBe('Q12.00 c/u');
+    expect(component.precioConPorcentaje(null)).toBeNull();
+    expect(component.textoPrecioUnidad(null)).toBe('');
+  });
+
+  it('el precio de una opción usa su porcentaje, y el precio mayorista su precio fijo', () => {
+    component.opciones = opciones({ precioVenta: 50 });
+
+    expect(component.precioDeOpcion({ tipo: 'CIENTO', porcentaje: 12, precio: null })).toBe(44);
+    expect(component.precioDeOpcion({ tipo: 'PRECIO_MAYORISTA', porcentaje: 9.9998, precio: 45.02 })).toBe(45.02);
+    expect(component.precioDeOpcion({ tipo: 'MANUAL', porcentaje: null, precio: null })).toBeNull();
+  });
+
+  it('el precio de la opción elegida sigue al porcentaje que se escribe', () => {
+    component.opciones = opciones({ precioVenta: 0.5 });
+    component.tipoDescuento = 'MANUAL';
+    component.descuentoProducto = 33;
+
+    expect(component.precioUnitarioElegido).toBe('Q0.335 c/u');
+
+    component.descuentoProducto = 0;
+    expect(component.precioUnitarioElegido).toBe('Q0.50 c/u');
+  });
 });
 
 describe('CreateProformaComponent - proforma mayorista', () => {

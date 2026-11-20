@@ -6,6 +6,9 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+### Agregado — Precio con descuento visible en la proforma mayorista
+- El selector de descuento muestra, junto a cada opción (por ciento, fardo cerrado, categoría, manual), el **precio unitario ya con el descuento aplicado**, sin redondear a centavos: papel china a Q0.50 con 33 % de fardo aparece como **Q0.335 c/u**. También se ve en el botón del descuento elegido y en los niveles de categoría. Es solo informativo: el cálculo de los totales no cambió. Pendiente confirmar con el cliente si el cobro debe usar los tres decimales (la columna «Nuevo precio» del detalle sigue redondeando a centavos).
+
 ### Corregido — La rueda del ratón ya no cambia los montos
 - Un campo numérico enfocado cambiaba su valor al girar la rueda del ratón (con paso de 0.01, Q25,000.00 podía quedar en Q24,999.99 sin que nadie lo notara). Ahora la rueda no modifica ningún campo numérico del sistema (montos de recibos, límites de crédito, precios, porcentajes, cantidades). Las flechas del teclado siguen funcionando. Es la causa más probable de un cheque que se registró por Q24,999.99 en lugar de Q25,000.00.
 

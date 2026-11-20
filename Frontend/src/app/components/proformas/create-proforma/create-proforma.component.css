@@ -1331,7 +1331,8 @@
   text-transform: uppercase;
 }
 
-.descuento-option-value { color: var(--blue-800); font-size: 14px; font-weight: 800; }
+.descuento-option-value { color: var(--blue-800); font-size: 14px; font-weight: 800; text-align: right; }
+.descuento-option-precio { color: #52647c; display: block; font-size: 12px; font-weight: 600; }
 
 .descuento-option-check { color: var(--blue-600); font-size: 12px; opacity: 0; width: 12px; }
 .descuento-option.is-selected .descuento-option-check { opacity: 1; }

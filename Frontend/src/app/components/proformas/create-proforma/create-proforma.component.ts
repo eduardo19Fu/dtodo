@@ -323,6 +323,48 @@ export class CreateProformaComponent implements OnInit, OnDestroy {
     return `${this.descuentoProducto || 0} %`;
   }
 
+  /** Precio unitario ya con el porcentaje aplicado, sin redondear a centavos (Q0.50 con 33 % es Q0.335). */
+  precioConPorcentaje(porcentaje: number | null | undefined): number | null {
+    const base = this.opciones ? Number(this.opciones.precioVenta) : NaN;
+    if (porcentaje === null || porcentaje === undefined || isNaN(base) || isNaN(Number(porcentaje))) {
+      return null;
+    }
+    return Math.round(base * (1 - Number(porcentaje) / 100) * 10000) / 10000;
+  }
+
+  /** Precio de una opción de descuento: el fijo para el precio mayorista, o el calculado con su porcentaje. */
+  precioDeOpcion(opcion: { tipo: TipoDescuento; porcentaje: number | null; precio?: number | null }): number | null {
+    if (opcion.tipo === 'PRECIO_MAYORISTA') {
+      return opcion.precio !== null && opcion.precio !== undefined ? Number(opcion.precio) : null;
+    }
+    return this.precioConPorcentaje(opcion.porcentaje);
+  }
+
+  /** «Q0.335 c/u»: dos decimales como mínimo y hasta cuatro cuando el precio los necesita. */
+  textoPrecioUnidad(precio: number | null): string {
+    if (precio === null || precio === undefined || isNaN(precio)) {
+      return '';
+    }
+    let texto = Number(precio).toFixed(4).replace(/0+$/, '');
+    const decimales = texto.length - texto.indexOf('.') - 1;
+    if (decimales < 2) {
+      texto = Number(precio).toFixed(2);
+    }
+    return `Q${texto} c/u`;
+  }
+
+  /** Precio con el descuento que está elegido ahora, para la línea que se va a agregar. */
+  get precioUnitarioElegido(): string {
+    if (!this.opciones) {
+      return '';
+    }
+    if (this.tipoDescuento === 'PRECIO_MAYORISTA') {
+      const fijo = this.opciones.opciones.find(o => o.tipo === 'PRECIO_MAYORISTA');
+      return fijo ? this.textoPrecioUnidad(this.precioDeOpcion(fijo)) : '';
+    }
+    return this.textoPrecioUnidad(this.precioConPorcentaje(this.descuentoProducto || 0));
+  }
+
   /** El valor de una opción en la lista: el precio fijo para el precio mayorista (no su porcentaje equivalente) o el porcentaje. */
   textoValorOpcion(opcion: { tipo: TipoDescuento; porcentaje: number | null; precio?: number | null }): string {
     if (opcion.tipo === 'PRECIO_MAYORISTA' && opcion.precio !== null && opcion.precio !== undefined) {

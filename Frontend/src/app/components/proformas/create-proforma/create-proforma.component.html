@@ -240,7 +240,7 @@
                   <i class="fas" [ngClass]="iconoTipo(tipoDescuento)" aria-hidden="true"></i>
                   <span class="descuento-trigger-copy">
                     <strong>{{ textoDescuentoElegido }}</strong>
-                    <small>{{ etiquetaTipo(tipoDescuento) }}{{ nivelSeleccionado !== null ? ' · nivel ' + nivelSeleccionado + ' %' : '' }}</small>
+                    <small>{{ etiquetaTipo(tipoDescuento) }}{{ nivelSeleccionado !== null ? ' · nivel ' + nivelSeleccionado + ' %' : '' }}{{ precioUnitarioElegido ? ' · ' + precioUnitarioElegido : '' }}</small>
                   </span>
                   <i class="fas fa-chevron-down descuento-trigger-chevron" aria-hidden="true"></i>
                 </button>
@@ -262,12 +262,15 @@
                         </strong>
                         <small>{{ detalleOpcion(opcion) }}</small>
                       </span>
-                      <span class="descuento-option-value" *ngIf="opcion.tipo !== 'MANUAL' && opcion.porcentaje !== null">{{ textoValorOpcion(opcion) }}</span>
+                      <span class="descuento-option-value" *ngIf="opcion.tipo !== 'MANUAL' && opcion.porcentaje !== null">
+                        {{ textoValorOpcion(opcion) }}
+                        <small class="descuento-option-precio" *ngIf="opcion.tipo !== 'PRECIO_MAYORISTA' && precioDeOpcion(opcion) !== null">{{ textoPrecioUnidad(precioDeOpcion(opcion)) }}</small>
+                      </span>
                       <i class="fas fa-check descuento-option-check" aria-hidden="true"></i>
                     </button>
                     <div class="descuento-niveles" *ngIf="opcion.tipo === 'CATEGORIA' && opcion.tipo === tipoDescuento && nivelesDisponibles.length > 0">
                       <button type="button" *ngFor="let nivel of nivelesDisponibles" class="descuento-chip"
-                        [class.is-active]="nivelSeleccionado === nivel" (click)="elegirNivelDescuento(nivel)">{{ nivel }} %</button>
+                        [class.is-active]="nivelSeleccionado === nivel" (click)="elegirNivelDescuento(nivel)">{{ nivel }} % · {{ textoPrecioUnidad(precioConPorcentaje(nivel)) }}</button>
                     </div>
                     <div class="descuento-manual" *ngIf="opcion.tipo === 'MANUAL' && opcion.tipo === tipoDescuento">
                       <div class="control-with-icon">
